@@ -179,13 +179,13 @@ void MotorDrive::update()
 		if(mControlPower > 0)
 		{
 			//ç∂Ç…ã»Ç™ÇÈ
-			mMotorL.set(mRatioL * controlRatio * drivePowerRatio);
-			mMotorR.set(-mRatioR * drivePowerRatio);
+			mMotorL.set(mRatioL * drivePowerRatio);
+			mMotorR.set(-mRatioR * controlRatio * drivePowerRatio);
 		}else
 		{
 			//âEÇ…ã»Ç™ÇÈ
-			mMotorL.set(mRatioL * drivePowerRatio);
-			mMotorR.set(-mRatioR * controlRatio * drivePowerRatio);
+			mMotorL.set(mRatioL * controlRatio * drivePowerRatio);
+			mMotorR.set(-mRatioR * drivePowerRatio);
 		}
 	}
 	

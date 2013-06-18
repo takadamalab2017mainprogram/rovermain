@@ -53,6 +53,7 @@ int main(int argc, char** argv)
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
+	gWebCamera.setRunMode(true);
 
 	//アクチュエータ設定
 	gBuzzer.setRunMode(true);

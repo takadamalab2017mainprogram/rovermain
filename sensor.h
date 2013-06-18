@@ -135,8 +135,25 @@ public:
 	LightSensor();
 	~LightSensor();
 };
+
+//Webカメラの映像をキャプチャするクラス
+class WebCamera : public TaskBase
+{
+protected:
+	virtual bool command(const std::vector<std::string> args);
+	virtual void clean();
+public:
+	void start(const char* filename = NULL);
+	void stop();
+
+	WebCamera();
+	~WebCamera();
+};
+
 extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
+extern WebCamera gWebCamera;
+
 

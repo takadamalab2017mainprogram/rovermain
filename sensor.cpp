@@ -2,6 +2,7 @@
 #include <wiringPi.h>
 #include <time.h>
 #include <string.h>
+#include <sstream>
 #include <unistd.h>
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
@@ -13,6 +14,7 @@ PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
 GyroSensor gGyroSensor;
 LightSensor gLightSensor;
+WebCamera gWebCamera;
 
 //////////////////////////////////////////////
 // Pressure Sensor
@@ -318,7 +320,7 @@ double GyroSensor::getRz()
 }
 double GyroSensor::normalize(double pos)
 {
-	while(abs(pos) >= 180)pos += (pos > 0) ? -360 : 360;
+	while(pos >= 180 || pos < -180)pos += (pos > 0) ? -360 : 360;
 	return pos;
 }
 void GyroSensor::normalize(VECTOR3& pos)
@@ -357,7 +359,7 @@ bool LightSensor::command(const std::vector<std::string> args)
 }
 bool LightSensor::get()
 {
-	return digitalRead(mPin) != 0;
+	return digitalRead(mPin) == 0;
 }
 LightSensor::LightSensor()
 {
@@ -368,3 +370,67 @@ LightSensor::~LightSensor()
 {
 }
 
+///////////////////////////////////////////////
+// WebÉJÉÅÉâ
+///////////////////////////////////////////////
+
+bool WebCamera::command(const std::vector<std::string> args)
+{
+	if(args.size() >= 2)
+	{
+		if(args[1].compare("start") == 0)
+		{
+			stop();
+			Debug::print(LOG_MINIMUM, "Start capturing!\r\n");
+			if(args.size() == 3)start(args[2].c_str());
+			else start();
+
+			return true;
+		}else if(args[1].compare("stop") == 0)
+		{
+			stop();
+			return true;
+		}
+	}else
+	{
+		Debug::print(LOG_MINIMUM, "camera start [filename] : save movie to filename\r\n\
+camera stop             : stop capturing movie\r\n");
+		return true;
+	}
+	return false;
+}
+void WebCamera::clean()
+{
+	stop();
+}
+void WebCamera::start(const char* filename)
+{
+	time_t timer = time(NULL);
+	std::stringstream ss;
+	std::string name;
+	if(filename == NULL)
+	{
+		name = ctime(&timer) + std::string(".avi");
+	}else
+	{
+		name = filename;
+	}
+
+	ss << "mencoder tv:// -tv width=320:height=240:device=/dev/video0 -nosound -ovc lavc -o \"" << name << "\" 1> /dev/null 2>&1 &";
+	system(ss.str().c_str());
+}
+void WebCamera::stop()
+{
+	//Todo: ññîˆÇ™5ïbÇ≠ÇÁÇ¢ï€ë∂Ç≥ÇÍÇ»Ç¢ñ‚ëË
+	system("killall -15 mencoder 1> /dev/null 2>&1 ");
+	Debug::print(LOG_DETAIL, "Send kill signal to mencoder\r\n");
+}
+
+WebCamera::WebCamera()
+{
+	setName("capture");
+	setPriority(UINT_MAX,UINT_MAX);
+}
+WebCamera::~WebCamera()
+{
+}
