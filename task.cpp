@@ -10,6 +10,8 @@ TaskBase::TaskBase() : mName(""),mPriority(UINT_MAX),mInterval(UINT_MAX),mSlept(
 }
 TaskBase::~TaskBase()
 {
+	TaskManager* pManager = TaskManager::getInstance();
+	pManager->del(this);
 }
 
 
@@ -95,27 +97,22 @@ bool TaskManager::command(const std::vector<std::string> args)
 {
 	if(args.size() != 0)
 	{
-		std::vector<TaskBase*>::iterator it = mTasks.begin();
-		while(it != mTasks.end())
+		TaskBase* pTask = get(args[0]);
+		if(pTask != NULL)
 		{
-			TaskBase* pTask = *it;
-			if(pTask != NULL)
+			//コマンド実行対象のタスクが見つかったらコマンドを実行
+			if(pTask->mName.compare(args[0]) == 0)
 			{
-				//コマンド実行対象のタスクが見つかったらコマンドを実行
-				if(pTask->mName.compare(args[0]) == 0)
+				if(pTask->mIsRunning)
 				{
-					if(pTask->mIsRunning)
-					{
-						if(pTask->command(args))return true;
-					}else
-					{
-						//アクティブではないタスクの場合
-						Debug::print(LOG_MINIMUM, "This task is not working.");
-						return false;
-					}
+					if(pTask->command(args))return true;
+				}else
+				{
+					//アクティブではないタスクの場合
+					Debug::print(LOG_MINIMUM, "This task is not working.");
+					return false;
 				}
 			}
-			++it;
 		}
 		Debug::print(LOG_MINIMUM, "Command Not Found\r\n");
 	}
@@ -138,6 +135,24 @@ void TaskManager::update()
 		}
 		++it;
 	}
+}
+
+TaskBase* TaskManager::get(const std::string name)
+{
+	std::vector<TaskBase*>::iterator it = mTasks.begin();
+	while(it != mTasks.end())
+	{
+		TaskBase* pTask = *it;
+		if(pTask != NULL)
+		{
+			if(pTask->mName.compare(name) == 0)
+			{
+				return pTask;
+			}
+		}
+		++it;
+	}
+	return NULL;
 }
 
 void TaskManager::add(TaskBase* pTask)

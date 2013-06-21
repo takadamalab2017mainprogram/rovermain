@@ -206,8 +206,8 @@ bool GyroSensor::init()
 	//データサンプリング無効化
 	wiringPiI2CWriteReg8(mFileHandle,0x20,0x00);
 
-	//ビッグエンディアンでのデータ出力に設定
-	wiringPiI2CWriteReg8(mFileHandle,0x23,0x40);
+	//ビッグエンディアンでのデータ出力に設定&スケールを2000dpsに変更
+	wiringPiI2CWriteReg8(mFileHandle,0x23,0x40 | 0x20);
 
 	//FIFO有効化(ストリームモード)
 	wiringPiI2CWriteReg8(mFileHandle,0x24,0x40);
@@ -237,9 +237,9 @@ void GyroSensor::update()
 	while((status_reg = wiringPiI2CReadReg8(mFileHandle,0x27)) & 0x08)
 	{
 		if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
-		newRvx += (short int)wiringPiI2CReadReg16(mFileHandle,0x28) * 0.00875;
-		newRvy += (short int)wiringPiI2CReadReg16(mFileHandle,0x2A) * 0.00875;
-		newRvz += (short int)wiringPiI2CReadReg16(mFileHandle,0x2C) * 0.00875;
+		newRvx += (short int)wiringPiI2CReadReg16(mFileHandle,0x28) * 0.070;
+		newRvy += (short int)wiringPiI2CReadReg16(mFileHandle,0x2A) * 0.070;
+		newRvz += (short int)wiringPiI2CReadReg16(mFileHandle,0x2C) * 0.070;
 		++data_samples;
 	}
 	

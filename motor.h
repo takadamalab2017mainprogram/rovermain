@@ -27,7 +27,7 @@ public:
         bool init(int powPin,int revPin);
 
 		// モータ出力を更新(ratioはほかのモータとの個体差吸収用)
-		void update();
+		void update(double elapsedSeconds);
 
         // Controle motor power. Negative value means reverse
 		// range: [-MOTOR_MAX_POWER MOTOR_MAX_POWER]
@@ -92,6 +92,9 @@ private:
 		double mAngle;//目標角度
 		double mControlPower;//前回の操作量
 		int mDrivePower;//走行速度
+
+		//最後にモータ出力を更新した時刻
+		struct timespec mLastUpdateTime;
 protected:
 		//初期化
         virtual bool init();

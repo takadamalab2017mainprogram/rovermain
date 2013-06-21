@@ -19,13 +19,13 @@ const static int PIN_LIGHT_SENSOR = 14;		//Cdsセンサピン
 const static int PIN_SERVO = 1;				//サーボピン
 
 //モータ設定
-const static double MOTOR_MAX_POWER_CHANGE = 0.5;//モータ出力の最大変化量
 const static int MOTOR_MAX_POWER = 100;
+const static double MOTOR_MAX_POWER_CHANGE = MOTOR_MAX_POWER;//モータ出力の1秒あたりの最大変化量
 
 //サーボ設定
-const static int SERVO_RANGE = 9000;
-const static int SERVO_MOVABLE_RANGE = 1200;
-const static int SERVO_BASE_VALUE = 900 - SERVO_MOVABLE_RANGE / 2;
+const static int SERVO_RANGE = 9000;//パルス間隔
+const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
+const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 
 
 //////////////////////////////////////////////

@@ -89,8 +89,11 @@ public:
 	bool command(const std::vector<std::string> args);
 	//ある程度の時間ごとに呼び出すこと
 	void update();
+	//指定されたタスクへのポインタを返す(NULLはエラー)
+	TaskBase* get(const std::string name);
 
-	//指定されたタスクを登録
+
+	//指定されたタスクを登録(基本的に呼び出す必要なし)
 	void add(TaskBase* pTask);
 	void del(TaskBase* pTask);
 

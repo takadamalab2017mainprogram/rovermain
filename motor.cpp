@@ -31,18 +31,20 @@ bool Motor::init(int powPin, int revPin)
     mCurPower = 0;
     return true;
 }
-void Motor::update()
+void Motor::update(double elapsedSeconds)
 {
 	if(fabs(mCurPower - mTargetPower) > 0.5)//目標出力と現在出力に差がある場合
 	{
 		//なめらかにモータ出力を変化させる
 		double curFrameTarget = mTargetPower;//この呼び出しで設定するモーター出力
 
+		double maxMotorPowerChange = MOTOR_MAX_POWER_CHANGE * mCoeff * elapsedSeconds;
+
 		//モータ出力変化量を制限
-		if(fabs(mTargetPower - mCurPower) > MOTOR_MAX_POWER_CHANGE * mCoeff)
+		if(fabs(mTargetPower - mCurPower) > maxMotorPowerChange)
 		{
 			curFrameTarget = mCurPower;
-			curFrameTarget += ((mTargetPower > mCurPower) ? MOTOR_MAX_POWER_CHANGE : -MOTOR_MAX_POWER_CHANGE) * mCoeff;
+			curFrameTarget += ((mTargetPower > mCurPower) ? maxMotorPowerChange : -maxMotorPowerChange);
 			Debug::print(LOG_DETAIL,"MOTOR power Limitation %f %f(%d) \r\n",mCurPower,curFrameTarget,mTargetPower);
 		}
 
@@ -147,7 +149,10 @@ bool MotorDrive::init()
 		Debug::print(LOG_MINIMUM,"Failed to initialize Motor Encoders\r\n");
 		return false;
 	}
-
+	if(clock_gettime(CLOCK_MONOTONIC_RAW,&mLastUpdateTime) != 0)
+	{
+		Debug::print(LOG_MINIMUM,"Unable to get time!\r\n");
+	}
 	Debug::print(LOG_DETAIL,"MotorDrive is Ready!\r\n");
     return true;
 }
@@ -159,6 +164,15 @@ void MotorDrive::clean()
 
 void MotorDrive::update()
 {
+	//最後の出力更新からの経過時間を取得
+	double dt = 0;
+	struct timespec newTime;
+	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) == 0)
+	{
+		dt = ((double)(newTime.tv_sec - mLastUpdateTime.tv_sec) * 1000000000 + newTime.tv_nsec - mLastUpdateTime.tv_nsec) / 1000000000.0;
+		mLastUpdateTime = newTime;
+	}
+
 	if(mDriveMode == DRIVE_PID)
 	{
 		//ずれ情報を更新
@@ -190,8 +204,8 @@ void MotorDrive::update()
 	}
 	
 	//モータ出力を更新
-	mMotorL.update();
-	mMotorR.update();
+	mMotorL.update(dt);
+	mMotorR.update(dt);
 }
 void MotorDrive::setRatio(int ratioL,int ratioR)
 {
