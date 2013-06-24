@@ -7,12 +7,8 @@
 #include <fstream>
 #include <string>
 #include <iostream>
-#include "constants.h"
+#include "sequence.h"
 #include "utils.h"
-#include "motor.h"
-#include "serial_command.h"
-#include "sensor.h"
-#include "actuator.h"
 
 void sigHandler(int p_signame);
 bool setSighandle(int p_signame);
@@ -70,9 +66,8 @@ int main(int argc, char** argv)
 		}
 	}else
 	{
-		//存在しない場合すべてのタスクを有効にする
-		Debug::print(LOG_SUMMARY, "Not Found.\r\nLoading All Tasks...\r\n");
-		pTaskMan->setRunMode(true);
+		Debug::print(LOG_SUMMARY, "Not Found.\r\nLoading Default Task...\r\n");
+		gTestingState.setRunMode(true);
 	}
 
 

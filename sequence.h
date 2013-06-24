@@ -2,6 +2,21 @@
 #include <time.h>
 #include "task.h"
 
+//テスト用状態
+class Testing : public TaskBase
+{
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+
+	//次の状態に移行
+	void nextState();
+
+public:
+	Testing();
+	~Testing();
+};
+
 //筒の中に入っている状態
 class Waiting : public TaskBase
 {
@@ -54,3 +69,8 @@ public:
 	Separating();
 	~Separating();
 };
+
+extern Testing gTestingState;
+extern Waiting gWaitingState;
+extern Falling gFallingState;
+extern Separating gSeparatingState;

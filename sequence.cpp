@@ -4,10 +4,72 @@
 #include "serial_command.h"
 #include "sensor.h"
 #include "actuator.h"
+#include "motor.h"
 
+Testing gTestingState;
 Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
+
+bool Testing::onInit(const struct timespec& time)
+{
+	TaskManager::getInstance()->setRunMode(false);
+	setRunMode(true);
+	gBuzzer.setRunMode(true);
+	gServo.setRunMode(true);
+	gXbeeSleep.setRunMode(true);
+
+	gPressureSensor.setRunMode(true);
+	gGPSSensor.setRunMode(true);
+	gGyroSensor.setRunMode(true);
+	gLightSensor.setRunMode(true);
+	gWebCamera.setRunMode(true);
+
+	gMotorDrive.setRunMode(true);
+
+	gSerialCommand.setRunMode(true);
+
+	return true;
+}
+bool Testing::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 3)
+	{
+		if(args[1].compare("start") == 0)
+		{
+			TaskBase* pTask = TaskManager::getInstance()->get(args[2]);
+			if(pTask != NULL)
+			{
+				Debug::print(LOG_SUMMARY, "Starting %s...\r\n",args[2].c_str());
+				pTask->setRunMode(true);
+				return true;
+			}else Debug::print(LOG_SUMMARY, "%s Not Found\r\n",args[2].c_str());
+			return false;
+		}else if(args[1].compare("stop") == 0)
+		{
+			TaskBase* pTask = TaskManager::getInstance()->get(args[2]);
+			if(pTask != NULL)
+			{
+				Debug::print(LOG_SUMMARY, "Starting %s...\r\n",args[2].c_str());
+				pTask->setRunMode(true);
+				return true;
+			}else Debug::print(LOG_SUMMARY, "%s Not Found\r\n",args[2].c_str());
+			return false;
+		}
+	}
+	Debug::print(LOG_PRINT, "testing [start/stop] module_name\r\n");
+
+	return false;
+}
+Testing::Testing()
+{
+	setName("testing");
+	setPriority(UINT_MAX,UINT_MAX);
+}
+Testing::~Testing()
+{
+}
+
 
 bool Waiting::onInit(const struct timespec& time)
 {

@@ -109,7 +109,7 @@ bool TaskManager::command(std::string arg)
 		Debug::print(LOG_SUMMARY, "Command Not Found\r\n");
 	}else
 	{
-		Debug::print(LOG_PRINT, " W Priority Interval Name\r\n");
+		Debug::print(LOG_PRINT, " Active Priority Interval Name\r\n");
 
 		//すべてのタスクとその状態を列挙して表示
 		std::vector<TaskBase*>::iterator it = mTasks.begin();
@@ -118,7 +118,7 @@ bool TaskManager::command(std::string arg)
 			TaskBase* pTask = *it;
 			if(pTask != NULL)
 			{
-				Debug::print(LOG_SUMMARY, " %c %8d %8d %s\r\n",pTask->mIsRunning ? 'W' : ' ',pTask->mPriority,pTask->mInterval,pTask->mName.c_str());
+				Debug::print(LOG_SUMMARY, " %s %8d %8d %s\r\n",pTask->mIsRunning ? "Yes   " : "No    ",pTask->mPriority,pTask->mInterval,pTask->mName.c_str());
 			}
 			++it;
 		}
