@@ -24,16 +24,14 @@
 
 typedef enum
 {
-	LOG_DETAIL = 0,	//完全なデバッグログ
-	LOG_SUMMARY,	//実験時に表示するもの
-	LOG_MINIMUM		//本番に表示するもの
+	LOG_DETAIL = 0,	//デバッグログ(バグが出たときの状況確認用)
+	LOG_SUMMARY,	//ファイル保存、画面表示共にするもの
+	LOG_PRINT		//画面にのみ表示するもの
 }LOG_LEVEL;			//ログレベル(Apacheとかと似た感じで)
 
 class Debug
 {
 public:
-	static LOG_LEVEL mLogLevel;
-
 	static void print(LOG_LEVEL level, const char* fmt, ... );
 	Debug();
 };

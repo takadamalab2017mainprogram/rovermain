@@ -8,7 +8,7 @@
 // Buzzer
 //////////////////////////////////////////////
 
-bool Buzzer::init()
+bool Buzzer::onInit()
 {
 	mPin = PIN_BUZZER;
 	mPeriod = 0;
@@ -16,32 +16,32 @@ bool Buzzer::init()
 	digitalWrite(mPin, LOW);
 	return true;
 }
-void Buzzer::clean()
+void Buzzer::onClean()
 {
 	digitalWrite(mPin, LOW);
 }
-bool Buzzer::command(const std::vector<std::string> args)
+bool Buzzer::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() >= 2)
 	{
 		if(args[1].compare("stop") == 0)
 		{
 			stop();
-			Debug::print(LOG_MINIMUM,"Command Executed!\r\n");
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			return true;
 		}else if(args.size() == 2)
 		{
 			int period = atoi(args[1].c_str());
 			start(period);
-			Debug::print(LOG_MINIMUM,"Command Executed!\r\n");
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 		}
 	}else{
-			Debug::print(LOG_MINIMUM,"buzzer [period]       : wake buzzer while period\r\n\
+			Debug::print(LOG_PRINT,"buzzer [period]       : wake buzzer while period\r\n\
 buzzer stop           : stop buzzer\r\n");
 	}
 	return true;
 }
-void Buzzer::update()
+void Buzzer::onUpdate()
 {
 	if(mPeriod > 0)--mPeriod;
 	else
@@ -73,7 +73,7 @@ Buzzer::~Buzzer()
 // Servo
 //////////////////////////////////////////////
 
-bool Servo::init()
+bool Servo::onInit()
 {
 	mPin = PIN_SERVO;
 	pinMode(mPin, PWM_OUTPUT);
@@ -85,18 +85,18 @@ bool Servo::init()
 	pwmWrite (mPin, 0);
 	return true;
 }
-void Servo::clean()
+void Servo::onClean()
 {
 	digitalWrite(mPin, LOW);
 }
-bool Servo::command(const std::vector<std::string> args)
+bool Servo::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() >= 2)
 	{
 		if(args[1].compare("stop") == 0)
 		{
 			stop();
-			Debug::print(LOG_MINIMUM,"Command Executed!\r\n");
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			return true;
 		}else
 		{
@@ -107,12 +107,12 @@ bool Servo::command(const std::vector<std::string> args)
 				period = atof(args[1].c_str());
 			}
 			start(period);
-			Debug::print(LOG_MINIMUM,"Command Executed!\r\n");
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			return true;
 		}
 	}else
 	{
-		Debug::print(LOG_MINIMUM,"servo [0-1]          : set servo angle\r\n\
+		Debug::print(LOG_PRINT,"servo [0-1]          : set servo angle\r\n\
 servo stop           : stop servo\r\n");
 	}
 	return true;
@@ -143,35 +143,35 @@ Servo::~Servo()
 // XBee Sleep
 //////////////////////////////////////////////
 
-bool XBeeSleep::init()
+bool XBeeSleep::onInit()
 {
 	mPin = PIN_XBEE_SLEEP;
 	pinMode(mPin, OUTPUT);
 	digitalWrite(mPin, LOW);
 	return true;
 }
-void XBeeSleep::clean()
+void XBeeSleep::onClean()
 {
 	digitalWrite(mPin, LOW);
 }
-bool XBeeSleep::command(const std::vector<std::string> args)
+bool XBeeSleep::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() == 2)
 	{
 		if(args[1].compare("sleep") == 0)
 		{
-			Debug::print(LOG_MINIMUM,"Command Executed!\r\n");
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			setState(true);
 			return true;
 		}else if(args[1].compare("wake") == 0)
 		{
-			Debug::print(LOG_MINIMUM,"Command Executed!\r\n");
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			setState(false);
 			return true;
 		}
 	}else
 	{
-		Debug::print(LOG_MINIMUM,"xbee [sleep/wake] : set sleep mode\r\n");
+		Debug::print(LOG_PRINT,"xbee [sleep/wake] : set sleep mode\r\n");
 	}
 	return true;
 }

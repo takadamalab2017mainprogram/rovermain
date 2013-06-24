@@ -33,6 +33,7 @@ private:
 	unsigned int mPriority,mInterval;//タスク実行設定(優先度、実行間隔)
 	unsigned int mSlept;//実行がスキップされた回数
 	bool mIsRunning;//実行中
+	bool mNewRunningState;//新しい実行状態
 protected:
 	//このタスクに名前を設定することでコマンドを受け付けるようにする
 	void setName(const char* name);
@@ -44,13 +45,13 @@ protected:
 	//各タスクが実装する関数
 	///////////////////////////////////////////////////
 	//このタスクを初期化する
-	virtual bool init();
+	virtual bool onInit();
 	//このタスクを開放する
-	virtual void clean();
+	virtual void onClean();
 	//指定されたコマンドを実行する
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string> args);
 	//ある程度の時間ごとに呼び出される関数
-	virtual void update();
+	virtual void onUpdate();
 	///////////////////////////////////////////////////
 
 public:
@@ -72,10 +73,11 @@ private:
 	class TaskSoter {
 	public:
 		bool operator()(const TaskBase* riLeft, const TaskBase* riRight) const {
-			return riLeft->mPriority > riRight->mPriority;
+			return riLeft->mPriority <= riRight->mPriority;
 		}
 	};
 	void sortByPriority();
+	void split(const std::string& input,std::vector<std::string>& outputs);
 	TaskManager();
 public:
 	//インスタンスを取得
@@ -85,13 +87,15 @@ public:
 	bool init();
 	//開放
 	void clean();
-	//指定されたコマンドを実行する
-	bool command(const std::vector<std::string> args);
+	//指定されたコマンドを実行する(空白文字区切り)
+	bool command(std::string arg);
 	//ある程度の時間ごとに呼び出すこと
 	void update();
 	//指定されたタスクへのポインタを返す(NULLはエラー)
 	TaskBase* get(const std::string name);
 
+	//全タスクの実行状態を変更する
+	void setRunMode(bool running);
 
 	//指定されたタスクを登録(基本的に呼び出す必要なし)
 	void add(TaskBase* pTask);

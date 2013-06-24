@@ -11,14 +11,7 @@
 
 SerialCommand gSerialCommand;
 
-void SerialCommand::split(const std::string& input,std::vector<std::string>& outputs)
-{
-	//文字列を空白文字で分割してvectorに格納
-	outputs.clear();
-	std::istringstream iss(input);
-	std::copy(std::istream_iterator<std::string>(iss),  std::istream_iterator<std::string>(), std::back_inserter(outputs));
-}
-void SerialCommand::update()
+void SerialCommand::onUpdate()
 {
 	int c;
 	while((c = getchar()) != EOF)
@@ -38,7 +31,7 @@ void SerialCommand::update()
 					std::list<std::string>::iterator lastIterator = mHistoryIterator++;
 					if(mHistoryIterator == mHistory.end())mHistoryIterator = lastIterator;
 
-					Debug::print(LOG_MINIMUM, "\r\033[2K%s",mCommandBuffer.c_str());
+					Debug::print(LOG_PRINT, "\r\033[2K%s",mCommandBuffer.c_str());
 					need2update = false;
 				}else if(mCommandBuffer[mCommandBuffer.size() - 2] == '[' && mCommandBuffer[mCommandBuffer.size() - 1] == 'B')
 				{
@@ -49,21 +42,19 @@ void SerialCommand::update()
 						mCommandBuffer = *mHistoryIterator;
 					}else mCommandBuffer.clear();
 				
-					Debug::print(LOG_MINIMUM, "\r\033[2K%s",mCommandBuffer.c_str());
+					Debug::print(LOG_PRINT, "\r\033[2K%s",mCommandBuffer.c_str());
 					need2update = false;
 				}
 			}
 		}
-		if(need2update)Debug::print(LOG_MINIMUM, "%c", c);//文字を表示
+		if(need2update)Debug::print(LOG_PRINT, "%c", c);//文字を表示
 		
 		if(c == '\n')
 		{
 			mCommandBuffer.erase(mCommandBuffer.size()-1);//改行文字を削除
 
 			//コマンドを実行
-			std::vector<std::string> args;
-			split(mCommandBuffer,args);
-			TaskManager::getInstance()->command(args);
+			TaskManager::getInstance()->command(mCommandBuffer);
 
 			if(mCommandBuffer.length() != 0)mHistory.push_front(mCommandBuffer);
 			mHistoryIterator = mHistory.begin();

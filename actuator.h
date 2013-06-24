@@ -15,10 +15,10 @@ private:
 	int mPin;
 	int mPeriod;//0以上なら鳴らす、負なら鳴らさない
 protected:
-	virtual bool init();
-	virtual void clean();
-	virtual bool command(const std::vector<std::string> args);
-	virtual void update();
+	virtual bool onInit();
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string> args);
+	virtual void onUpdate();
 
 public:
 	//ブザーをperiod[ms]だけ鳴らす(長さは厳密ではありません！)
@@ -36,9 +36,9 @@ class Servo : public TaskBase
 private:
 	int mPin;
 protected:
-	virtual bool init();
-	virtual void clean();
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onInit();
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string> args);
 public:
 	//サーボを指定されたangle[0-1]になるように制御を開始する
 	void start(double angle);
@@ -55,9 +55,9 @@ class XBeeSleep : public TaskBase
 private:
 	int mPin;
 protected:
-	virtual bool init();
-	virtual void clean();
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onInit();
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string> args);
 
 public:
 	void setState(bool sleep);

@@ -26,13 +26,13 @@ int main(int argc, char** argv)
 	//キーボードによる終了を阻止
 	if(!(setSighandle(SIGINT) && setSighandle(SIGQUIT)))
 	{
-		Debug::print(LOG_MINIMUM,"Failed to set signal!\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to set signal!\r\n");
 	}
 
 	//wiring pi初期化
     if(wiringPiSetup() != 0)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to setup wiringPi!\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to setup wiringPi!\r\n");
 		return -1;
 	}
 
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 	gServo.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 
-	Debug::print(LOG_MINIMUM, "Ready.\r\n");
+	Debug::print(LOG_SUMMARY, "Ready.\r\n");
 
 	
 	////////////////////////////////////////////

@@ -25,11 +25,11 @@ float PressureSensor::val2float(unsigned int val, int total_bits, int fractional
 	return static_cast<float>((short int)val) / ((unsigned int)1 << (16 - total_bits + fractional_bits + zero_pad));
 }
 
-bool PressureSensor::init()
+bool PressureSensor::onInit()
 {
 	if((mFileHandle = wiringPiI2CSetup(0x60)) == -1)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to setup Pressure Sensor\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to setup Pressure Sensor\r\n");
 		return false;
 	}
 
@@ -51,7 +51,7 @@ bool PressureSensor::init()
 	return true;
 }
 
-void PressureSensor::clean()
+void PressureSensor::onClean()
 {
 	close(mFileHandle);
 }
@@ -60,7 +60,7 @@ void PressureSensor::requestSample()
 	//新しい気圧取得要求(3ms後に値が読み込まれてレジスタに格納される)
 	wiringPiI2CWriteReg8(mFileHandle,0x12,0x01);
 }
-void PressureSensor::update()
+void PressureSensor::onUpdate()
 {
 	struct timespec newTime;
 	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) == 0)
@@ -84,9 +84,9 @@ void PressureSensor::update()
 	}
 }
 
-bool PressureSensor::command(const std::vector<std::string> args)
+bool PressureSensor::onCommand(const std::vector<std::string> args)
 {
-	Debug::print(LOG_MINIMUM, "Pressure: %d\r\n",mPressure);
+	Debug::print(LOG_SUMMARY, "Pressure: %d\r\n",mPressure);
 	return true;
 }
 
@@ -115,11 +115,11 @@ int wiringPiI2CReadReg16LittleEndian(int fd, int address)
 	return (short int)((unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
 
 }
-bool GPSSensor::init()
+bool GPSSensor::onInit()
 {
 	if((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to setup GPS Sensor\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to setup GPS Sensor\r\n");
 		return false;
 	}
 
@@ -134,14 +134,14 @@ bool GPSSensor::init()
 
 	return true;
 }
-void GPSSensor::clean()
+void GPSSensor::onClean()
 {
 	//動作を停止するコマンドを発行
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x06); 
 
 	close(mFileHandle);
 }
-void GPSSensor::update()
+void GPSSensor::onUpdate()
 {
 	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
 	if(status & 0x04)// Found Position
@@ -159,10 +159,10 @@ void GPSSensor::update()
 	//衛星個数を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
 	if(wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
 }
-bool GPSSensor::command(const std::vector<std::string> args)
+bool GPSSensor::onCommand(const std::vector<std::string> args)
 {
-	if(mSatelites < 4)Debug::print(LOG_MINIMUM, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
-	else Debug::print(LOG_MINIMUM, "Satelites: %d\r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
+	if(mSatelites < 4)Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
+	else Debug::print(LOG_SUMMARY, "Satelites: %d\r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
 	return true;
 }
 bool GPSSensor::get(VECTOR3& pos)
@@ -187,7 +187,7 @@ GPSSensor::~GPSSensor()
 // Gyro Sensor
 //////////////////////////////////////////////
 
-bool GyroSensor::init()
+bool GyroSensor::onInit()
 {
 	mRVel.x = mRVel.y = mRVel.z = 0;
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
@@ -195,12 +195,12 @@ bool GyroSensor::init()
 
 	if((mFileHandle = wiringPiI2CSetup(0x6b)) == -1)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to setup Gyro Sensor\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to setup Gyro Sensor\r\n");
 		return false;
 	}
 	if(wiringPiI2CReadReg8(mFileHandle,0x0F) != 0xD4)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to verify Gyro Sensor\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to verify Gyro Sensor\r\n");
 		return false;
 	}
 	//データサンプリング無効化
@@ -219,7 +219,7 @@ bool GyroSensor::init()
 	return true;
 }
 
-void GyroSensor::clean()
+void GyroSensor::onClean()
 {
 	//データサンプリング無効化
 	wiringPiI2CWriteReg8(mFileHandle,0x20,0x00);
@@ -227,7 +227,7 @@ void GyroSensor::clean()
 	close(mFileHandle);
 }
 
-void GyroSensor::update()
+void GyroSensor::onUpdate()
 {
 	int status_reg;
 	int data_samples = 0;
@@ -237,6 +237,8 @@ void GyroSensor::update()
 	while((status_reg = wiringPiI2CReadReg8(mFileHandle,0x27)) & 0x08)
 	{
 		if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
+
+		//ジャイロのFIFO内のデータをすべて読み込み、和を取る
 		newRvx += (short int)wiringPiI2CReadReg16(mFileHandle,0x28) * 0.070;
 		newRvy += (short int)wiringPiI2CReadReg16(mFileHandle,0x2A) * 0.070;
 		newRvz += (short int)wiringPiI2CReadReg16(mFileHandle,0x2C) * 0.070;
@@ -265,10 +267,10 @@ void GyroSensor::update()
 				normalize(mRAngle);
 			}
 			mLastSampleTime = newTime;
-		}else Debug::print(LOG_MINIMUM,"Failed to get time\r\n");
+		}else Debug::print(LOG_SUMMARY,"Failed to get time\r\n");
 	}
 }
-bool GyroSensor::command(const std::vector<std::string> args)
+bool GyroSensor::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() >= 2)
 	{
@@ -279,7 +281,7 @@ bool GyroSensor::command(const std::vector<std::string> args)
 		}
 		return false;
 	}
-	Debug::print(LOG_MINIMUM, "Angle: %f %f %f\r\nAngle Velocity: %f %f %f\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
+	Debug::print(LOG_SUMMARY, "Angle: %f %f %f\r\nAngle Velocity: %f %f %f\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
 	return true;
 }
 void GyroSensor::getRVel(VECTOR3& vel)
@@ -342,19 +344,19 @@ GyroSensor::~GyroSensor()
 ///////////////////////////////////////////////
 // CdS Sensor
 ///////////////////////////////////////////////
-bool LightSensor::init()
+bool LightSensor::onInit()
 {
 	mPin = PIN_LIGHT_SENSOR;
 	pinMode(mPin, INPUT);
 	return true;
 }
-void LightSensor::clean()
+void LightSensor::onClean()
 {
 }
-bool LightSensor::command(const std::vector<std::string> args)
+bool LightSensor::onCommand(const std::vector<std::string> args)
 {
-	if(get())Debug::print(LOG_MINIMUM,"light is high\r\n");
-	else Debug::print(LOG_MINIMUM,"light is low\r\n");
+	if(get())Debug::print(LOG_SUMMARY,"light is high\r\n");
+	else Debug::print(LOG_SUMMARY,"light is low\r\n");
 	return true;
 }
 bool LightSensor::get()
@@ -374,14 +376,14 @@ LightSensor::~LightSensor()
 // Webカメラ
 ///////////////////////////////////////////////
 
-bool WebCamera::command(const std::vector<std::string> args)
+bool WebCamera::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() >= 2)
 	{
 		if(args[1].compare("start") == 0)
 		{
 			stop();
-			Debug::print(LOG_MINIMUM, "Start capturing!\r\n");
+			Debug::print(LOG_SUMMARY, "Start capturing!\r\n");
 			if(args.size() == 3)start(args[2].c_str());
 			else start();
 
@@ -393,13 +395,13 @@ bool WebCamera::command(const std::vector<std::string> args)
 		}
 	}else
 	{
-		Debug::print(LOG_MINIMUM, "camera start [filename] : save movie to filename\r\n\
+		Debug::print(LOG_PRINT, "camera start [filename] : save movie to filename\r\n\
 camera stop             : stop capturing movie\r\n");
 		return true;
 	}
 	return false;
 }
-void WebCamera::clean()
+void WebCamera::onClean()
 {
 	stop();
 }

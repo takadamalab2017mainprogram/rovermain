@@ -21,7 +21,7 @@ bool Motor::init(int powPin, int revPin)
     pinMode(mPowerPin, OUTPUT);
     if(softPwmCreate(mPowerPin ,0,100) != 0)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to initialize soft-PWM\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to initialize soft-PWM\r\n");
 		return false;
 	}
     pinMode(mReversePin, OUTPUT);
@@ -102,7 +102,7 @@ bool MotorEncoder::init()
 	//ピンのパルスを監視する
 	if(wiringPiISR(mEncoderPinL, INT_EDGE_RISING, pulseLCallback) == -1 || wiringPiISR(mEncoderPinR, INT_EDGE_RISING, pulseRCallback) == -1)
 	{
-		Debug::print(LOG_MINIMUM,"Failed to initialize Motor encoder\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to onInitialize Motor encoder\r\n");
 		return false;
 	}
 	return true;
@@ -137,32 +137,32 @@ MotorEncoder::~MotorEncoder()
 	clean();
 }
 
-bool MotorDrive::init()
+bool MotorDrive::onInit()
 {
     if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
 	{
-		Debug::print(LOG_MINIMUM,"Failed to initialize Motors\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to initialize Motors\r\n");
 		return false;
 	}
 	if(!mpMotorEncoder->init())
 	{
-		Debug::print(LOG_MINIMUM,"Failed to initialize Motor Encoders\r\n");
+		Debug::print(LOG_SUMMARY,"Failed to initialize Motor Encoders\r\n");
 		return false;
 	}
 	if(clock_gettime(CLOCK_MONOTONIC_RAW,&mLastUpdateTime) != 0)
 	{
-		Debug::print(LOG_MINIMUM,"Unable to get time!\r\n");
+		Debug::print(LOG_SUMMARY,"Unable to get time!\r\n");
 	}
 	Debug::print(LOG_DETAIL,"MotorDrive is Ready!\r\n");
     return true;
 }
 
-void MotorDrive::clean()
+void MotorDrive::onClean()
 {
 	mpMotorEncoder->clean();
 }
 
-void MotorDrive::update()
+void MotorDrive::onUpdate()
 {
 	//最後の出力更新からの経過時間を取得
 	double dt = 0;
@@ -223,7 +223,7 @@ void MotorDrive::drive(int powerL, int powerR)
 
 void MotorDrive::set(double p,double i,double d)
 {
-	Debug::print(LOG_MINIMUM, "PID params: %f %f %f\r\n",p,i,d);
+	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n",p,i,d);
 	mP = p;
 	mI = i;
 	mD = d;
@@ -240,13 +240,13 @@ void MotorDrive::startPID(int angle,int power)
 	gGyroSensor.setZero();
 }
 
-bool MotorDrive::command(const std::vector<std::string> args)
+bool MotorDrive::onCommand(const std::vector<std::string> args)
 {
 	int size = args.size();
 	if(size == 1)
 	{
-		Debug::print(LOG_MINIMUM, "Current Motor Ratio: %d %d\r\n",mMotorL.getPower(),-mMotorR.getPower());
-		Debug::print(LOG_MINIMUM, "Current Motor Pulse: %lld %lld\r\n",mpMotorEncoder->getL(),mpMotorEncoder->getR());
+		Debug::print(LOG_PRINT, "Current Motor Ratio: %d %d\r\n",mMotorL.getPower(),-mMotorR.getPower());
+		Debug::print(LOG_PRINT, "Current Motor Pulse: %lld %lld\r\n",mpMotorEncoder->getL(),mpMotorEncoder->getR());
 	}else if(size >= 2)
 	{
 		if(args[1].compare("w") == 0)
@@ -307,7 +307,7 @@ bool MotorDrive::command(const std::vector<std::string> args)
 			}
 		}
 	}
-	Debug::print(LOG_MINIMUM, "motor [w/s/a/d/h]  : move\r\n\
+	Debug::print(LOG_PRINT, "motor [w/s/a/d/h]  : move\r\n\
 motor p            : pid start\r\n\
 motor p [angle]    : pid start with angle to move\r\n\
 motor p [P] [I] [D]: set pid params\r\n\

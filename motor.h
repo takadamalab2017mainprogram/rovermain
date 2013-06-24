@@ -97,13 +97,13 @@ private:
 		struct timespec mLastUpdateTime;
 protected:
 		//初期化
-        virtual bool init();
-		virtual void clean();
+        virtual bool onInit();
+		virtual void onClean();
 		//毎フレームの処理
-		virtual void update();
+		virtual void onUpdate();
 
 		//コマンド受付
-		virtual bool command(const std::vector<std::string> args);
+		virtual bool onCommand(const std::vector<std::string> args);
 public:
 		//モータの左右比を設定
 		void setRatio(int ratioL,int ratioR);

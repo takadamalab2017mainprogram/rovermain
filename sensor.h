@@ -27,15 +27,15 @@ private:
 	void requestSample();
 protected:
 	//気圧センサを初期化
-	virtual bool init();
+	virtual bool onInit();
 	//センサの使用を終了する
-	virtual void clean();
+	virtual void onClean();
 
 	//一定間隔ごとに気圧をアップデートする
-	virtual void update();
+	virtual void onUpdate();
 
 	//コマンドを処理する
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string> args);
 public:
 	//最後にアップデートされた気圧を返す
 	int get();
@@ -53,13 +53,13 @@ private:
 	int mSatelites;//補足した衛星の数
 protected:
 	//GPSを初期化
-	virtual bool init();
+	virtual bool onInit();
 	//センサの使用を終了する
-	virtual void clean();
+	virtual void onClean();
 	//現在の座標をアップデートする
-	virtual void update();
+	virtual void onUpdate();
 	//コマンドを処理する
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string> args);
 
 public:
 	//現在の座標を取得する(falseを返した場合は場所が不明)
@@ -79,15 +79,15 @@ private:
 	struct timespec mLastSampleTime;
 protected:
 	//ジャイロセンサを初期化
-	virtual bool init();
+	virtual bool onInit();
 	//センサの使用を終了する
-	virtual void clean();
+	virtual void onClean();
 
 	//一定間隔ごとにデータをアップデートする
-	virtual void update();
+	virtual void onUpdate();
 
 	//コマンドを処理する
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string> args);
 public:
 	//最後にアップデートされたデータを返す
 	void getRVel(VECTOR3& vel);
@@ -122,11 +122,11 @@ private:
 	int mPin;
 protected:
 	//初期化
-	virtual bool init();
+	virtual bool onInit();
 	//センサの使用を終了する
-	virtual void clean();
+	virtual void onClean();
 	//コマンドを処理する
-	virtual bool command(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string> args);
 
 public:
 	//現在の明るさを取得する
@@ -140,8 +140,8 @@ public:
 class WebCamera : public TaskBase
 {
 protected:
-	virtual bool command(const std::vector<std::string> args);
-	virtual void clean();
+	virtual bool onCommand(const std::vector<std::string> args);
+	virtual void onClean();
 public:
 	void start(const char* filename = NULL);
 	void stop();

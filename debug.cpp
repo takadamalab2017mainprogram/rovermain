@@ -4,11 +4,13 @@
 #include "debug.h"
 
 const static unsigned int MAX_STRING_LENGTH = 1024;//Print用のバッファサイズ
-LOG_LEVEL Debug::mLogLevel = LOG_SUMMARY;				//デフォルトのログ出力レベル
 
 void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 {
-	if(level < mLogLevel)return;//ログ出力しない
+#ifndef _DEBUG
+	if(level == LOG_DETAIL)return; //デバッグモードでなければログ出力しない
+#endif
+
 	char buf[MAX_STRING_LENGTH];
 
 	va_list argp;
@@ -18,6 +20,9 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 	//画面に出力
 	printf(buf);
 	//ログファイルに出力
-	std::ofstream of("log.txt",std::ios::out | std::ios::app);
-	of << buf;
+	if(level != LOG_PRINT)
+	{
+		std::ofstream of("log.txt",std::ios::out | std::ios::app);
+		of << buf;
+	}
 }

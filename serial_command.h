@@ -18,9 +18,8 @@ private:
 	std::list<std::string> mHistory;
 	std::list<std::string>::iterator mHistoryIterator;
 	struct termios mOldTermios,mNewTermios;
-	static void split(const std::string& input,std::vector<std::string> &outputs);//スペースで文字列を分割
 public:
-	virtual void update();//シリアルポートに到着したコマンドを確認する
+	virtual void onUpdate();//シリアルポートに到着したコマンドを確認する
 
 	SerialCommand();
 	~SerialCommand();
