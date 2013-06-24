@@ -38,6 +38,7 @@ public:
 class Falling : public TaskBase
 {
 private:
+	struct timespec mStartTime;//状態開始時刻
 	struct timespec mLastCheckTime;//前回のチェック時刻
 	int mLastPressure;//前回の気圧
 	unsigned int mContinuousPressureCount;//気圧が閾値以下の状態が続いた回数

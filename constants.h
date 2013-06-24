@@ -35,6 +35,7 @@ const static unsigned int WAITING_ABORT_TIME = 3600;//強制的に放出判定とする時間
 
 const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//前回との気圧の差がこれ以内なら停止中とカウント
 const static unsigned int FALLING_PRESSURE_COUNT = 5;//気圧変化量が閾値以下の状態がこれだけ続いたら着地と判定
+const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 
 const static double SEPARATING_SERVO_INTERVAL = 1;//サーボの向きを変える間隔(秒)
 const static unsigned int SEPARATING_SERVO_COUNT = 5;//サーボの向きを変える回数

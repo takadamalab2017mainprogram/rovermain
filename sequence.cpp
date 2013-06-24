@@ -40,7 +40,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 			TaskBase* pTask = TaskManager::getInstance()->get(args[2]);
 			if(pTask != NULL)
 			{
-				Debug::print(LOG_SUMMARY, "Starting %s...\r\n",args[2].c_str());
+				Debug::print(LOG_SUMMARY, "Start %s\r\n",args[2].c_str());
 				pTask->setRunMode(true);
 				return true;
 			}else Debug::print(LOG_SUMMARY, "%s Not Found\r\n",args[2].c_str());
@@ -50,7 +50,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 			TaskBase* pTask = TaskManager::getInstance()->get(args[2]);
 			if(pTask != NULL)
 			{
-				Debug::print(LOG_SUMMARY, "Starting %s...\r\n",args[2].c_str());
+				Debug::print(LOG_SUMMARY, "Stop %s\r\n",args[2].c_str());
 				pTask->setRunMode(true);
 				return true;
 			}else Debug::print(LOG_SUMMARY, "%s Not Found\r\n",args[2].c_str());
@@ -59,7 +59,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 	}
 	Debug::print(LOG_PRINT, "testing [start/stop] module_name\r\n");
 
-	return false;
+	return true;
 }
 Testing::Testing()
 {
@@ -80,7 +80,6 @@ bool Waiting::onInit(const struct timespec& time)
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
-	gSerialCommand.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 	gBuzzer.setRunMode(true);
@@ -126,6 +125,7 @@ void Waiting::onUpdate(const struct timespec& time)
 	{
 		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
 		nextState();
+		gSeparatingState.setRunMode(true);
 		return;
 	}
 }
@@ -143,7 +143,6 @@ bool Falling::onInit(const struct timespec& time)
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
-	gSerialCommand.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 
@@ -165,6 +164,13 @@ void Falling::onUpdate(const struct timespec& time)
 	//カウント回数が一定以上なら次の状態に移行
 	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT)
 	{
+		nextState();
+		return;
+	}
+
+	if(Time::dt(time,mStartTime) > FALLING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
+	{
+		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
 		nextState();
 		return;
 	}
@@ -194,7 +200,6 @@ bool Separating::onInit(const struct timespec& time)
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
-	gSerialCommand.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gServo.setRunMode(true);
 

@@ -213,7 +213,7 @@ void TaskManager::del(TaskBase* pTask)
 	{
 		if(pTask == *it)
 		{
-			*it = NULL;//vectorを直接deleteしてしまうとイテレータが使えなくなるため、NULLを代入しておく
+			*it = NULL;
 			Debug::print(LOG_DETAIL ,"TaskManager(del): Succeeded!\r\n");
 			return;
 		}

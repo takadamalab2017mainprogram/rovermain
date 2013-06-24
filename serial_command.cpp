@@ -73,6 +73,7 @@ SerialCommand::SerialCommand()
 	fcntl(STDIN_FILENO ,F_SETFL,O_NONBLOCK);
 
 	//É^ÉXÉNê›íË
+	setName("serial");
 	setPriority(TASK_PRIORITY_COMMUNICATION,TASK_INTERVAL_COMMUNICATION);
 }
 SerialCommand::~SerialCommand()

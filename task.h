@@ -73,8 +73,8 @@ private:
 	class TaskSoter {
 	public:
 		bool operator()(const TaskBase* riLeft, const TaskBase* riRight) const {
-			if(riLeft == NULL)return true;
-			if(riRight == NULL)return false;
+			if(riLeft == NULL)return false;
+			if(riRight == NULL)return true;
 			return riLeft->mPriority < riRight->mPriority;
 		}
 	};

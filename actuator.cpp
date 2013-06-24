@@ -124,7 +124,7 @@ void Servo::start(double angle)
 void Servo::stop()
 {
 	pwmWrite (mPin, 0);
-	Debug::print(LOG_DETAIL,"Servo Start!\r\n");
+	Debug::print(LOG_DETAIL,"Servo Stop!\r\n");
 }
 Servo::Servo()
 {
