@@ -8,7 +8,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "sensor.h"
-#include "debug.h"
+#include "utils.h"
 
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
@@ -25,7 +25,7 @@ float PressureSensor::val2float(unsigned int val, int total_bits, int fractional
 	return static_cast<float>((short int)val) / ((unsigned int)1 << (16 - total_bits + fractional_bits + zero_pad));
 }
 
-bool PressureSensor::onInit()
+bool PressureSensor::onInit(const struct timespec& time)
 {
 	if((mFileHandle = wiringPiI2CSetup(0x60)) == -1)
 	{
@@ -42,10 +42,9 @@ bool PressureSensor::onInit()
 	//気圧取得要求
 	requestSample();
 
-	//気圧を要求した時刻を記録
-	struct timespec newTime;
-	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) == 0)mLastUpdateRequest = newTime;
-	else memset(&mLastUpdateRequest,0,sizeof(mLastUpdateRequest));//時間取得に失敗したら0を設定する
+	//気圧更新リクエスト
+	mLastUpdateRequest = time;
+	requestSample();
 
 	Debug::print(LOG_SUMMARY,"Pressure Sensor is Ready!: (%f %f %f %f)\r\n",mA0,mB1,mB2,mC12);
 	return true;
@@ -60,27 +59,22 @@ void PressureSensor::requestSample()
 	//新しい気圧取得要求(3ms後に値が読み込まれてレジスタに格納される)
 	wiringPiI2CWriteReg8(mFileHandle,0x12,0x01);
 }
-void PressureSensor::onUpdate()
+void PressureSensor::onUpdate(const struct timespec& time)
 {
-	struct timespec newTime;
-	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) == 0)
+	if(Time::dt(time,mLastUpdateRequest) > 0.003)//前回のデータ要請から3ms以上経過している場合値を読み取って更新する
 	{
-		double dt = ((double)(newTime.tv_sec - mLastUpdateRequest.tv_sec) * 1000000000 + newTime.tv_nsec - mLastUpdateRequest.tv_nsec) / 1000000000.0;
-		if(dt > 0.003)//前回のデータ要請から3ms以上経過している場合値を読み取って更新する
-		{
-			//気圧値計算
-			unsigned int Padc = wiringPiI2CReadReg8(mFileHandle,0x00) << 2 | wiringPiI2CReadReg8(mFileHandle,0x01) >> 6;
-			unsigned int Tadc = wiringPiI2CReadReg8(mFileHandle,0x02) << 2 | wiringPiI2CReadReg8(mFileHandle,0x03) >> 6;
+		//気圧値計算
+		unsigned int Padc = wiringPiI2CReadReg8(mFileHandle,0x00) << 2 | wiringPiI2CReadReg8(mFileHandle,0x01) >> 6;
+		unsigned int Tadc = wiringPiI2CReadReg8(mFileHandle,0x02) << 2 | wiringPiI2CReadReg8(mFileHandle,0x03) >> 6;
 
-			float Pcomp = mA0 + (mB1 + mC12 * Tadc) * Padc + mB2 * Tadc;
-			mPressure = (Pcomp * (115 - 50) / 1023.0 + 50) * 10;
+		float Pcomp = mA0 + (mB1 + mC12 * Tadc) * Padc + mB2 * Tadc;
+		mPressure = (Pcomp * (115 - 50) / 1023.0 + 50) * 10;
 
-			//気圧更新要請
-			requestSample();
+		//気圧更新要請
+		requestSample();
 
-			//気圧更新要請時刻を記録
-			mLastUpdateRequest = newTime;
-		}
+		//気圧更新要請時刻を記録
+		mLastUpdateRequest = time;
 	}
 }
 
@@ -115,7 +109,7 @@ int wiringPiI2CReadReg16LittleEndian(int fd, int address)
 	return (short int)((unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
 
 }
-bool GPSSensor::onInit()
+bool GPSSensor::onInit(const struct timespec& time)
 {
 	if((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
 	{
@@ -141,7 +135,7 @@ void GPSSensor::onClean()
 
 	close(mFileHandle);
 }
-void GPSSensor::onUpdate()
+void GPSSensor::onUpdate(const struct timespec& time)
 {
 	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
 	if(status & 0x04)// Found Position
@@ -187,7 +181,7 @@ GPSSensor::~GPSSensor()
 // Gyro Sensor
 //////////////////////////////////////////////
 
-bool GyroSensor::onInit()
+bool GyroSensor::onInit(const struct timespec& time)
 {
 	mRVel.x = mRVel.y = mRVel.z = 0;
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
@@ -227,7 +221,7 @@ void GyroSensor::onClean()
 	close(mFileHandle);
 }
 
-void GyroSensor::onUpdate()
+void GyroSensor::onUpdate(const struct timespec& time)
 {
 	int status_reg;
 	int data_samples = 0;
@@ -254,20 +248,16 @@ void GyroSensor::onUpdate()
 		mRVel.z = newRvz / data_samples;
 
 		//積分
-		struct timespec newTime;
-		if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) == 0)
+		if(mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0 )
 		{
-			if(mLastSampleTime.tv_sec != 0)
-			{
-				double dt = ((double)(newTime.tv_sec - mLastSampleTime.tv_sec) * 1000000000 + newTime.tv_nsec - mLastSampleTime.tv_nsec) / 1000000000.0;
-				mRAngle.x += mRVel.x * dt;
-				mRAngle.y += mRVel.y * dt;
-				mRAngle.z += mRVel.z * dt;
+			double dt = Time::dt(time,mLastSampleTime);
+			mRAngle.x += mRVel.x * dt;
+			mRAngle.y += mRVel.y * dt;
+			mRAngle.z += mRVel.z * dt;
 
-				normalize(mRAngle);
-			}
-			mLastSampleTime = newTime;
-		}else Debug::print(LOG_SUMMARY,"Failed to get time\r\n");
+			normalize(mRAngle);
+		}
+		mLastSampleTime = time;
 	}
 }
 bool GyroSensor::onCommand(const std::vector<std::string> args)
@@ -344,7 +334,7 @@ GyroSensor::~GyroSensor()
 ///////////////////////////////////////////////
 // CdS Sensor
 ///////////////////////////////////////////////
-bool LightSensor::onInit()
+bool LightSensor::onInit(const struct timespec& time)
 {
 	mPin = PIN_LIGHT_SENSOR;
 	pinMode(mPin, INPUT);

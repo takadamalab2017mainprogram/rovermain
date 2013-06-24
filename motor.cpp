@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include "debug.h"
+#include "utils.h"
 #include "motor.h"
 #include "sensor.h"
 
@@ -134,10 +134,9 @@ MotorEncoder::MotorEncoder() : mEncoderPinL(-1),mEncoderPinR(-1),mPulseCountL(-1
 }
 MotorEncoder::~MotorEncoder()
 {
-	clean();
 }
 
-bool MotorDrive::onInit()
+bool MotorDrive::onInit(const struct timespec& time)
 {
     if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
 	{
@@ -162,16 +161,11 @@ void MotorDrive::onClean()
 	mpMotorEncoder->clean();
 }
 
-void MotorDrive::onUpdate()
+void MotorDrive::onUpdate(const struct timespec& time)
 {
 	//最後の出力更新からの経過時間を取得
-	double dt = 0;
-	struct timespec newTime;
-	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) == 0)
-	{
-		dt = ((double)(newTime.tv_sec - mLastUpdateTime.tv_sec) * 1000000000 + newTime.tv_nsec - mLastUpdateTime.tv_nsec) / 1000000000.0;
-		mLastUpdateTime = newTime;
-	}
+	double dt = Time::dt(time,mLastUpdateTime);
+	mLastUpdateTime = time;
 
 	if(mDriveMode == DRIVE_PID)
 	{

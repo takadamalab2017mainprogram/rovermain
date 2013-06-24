@@ -2,7 +2,7 @@ TARGET = out
 
 CXX = g++
 CXXFLAGS = -Wall -O2 
-OBJS = debug.o task.o motor.o sensor.o actuator.o serial_command.o main.o 
+OBJS = utils.o task.o motor.o sensor.o actuator.o serial_command.o sequence.o main.o 
 
 all:$(TARGET)
 

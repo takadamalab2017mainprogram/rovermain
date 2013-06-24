@@ -4,8 +4,11 @@
 #include <signal.h>
 #include <time.h>
 #include <stdio.h>
+#include <fstream>
+#include <string>
+#include <iostream>
 #include "constants.h"
-#include "debug.h"
+#include "utils.h"
 #include "motor.h"
 #include "serial_command.h"
 #include "sensor.h"
@@ -40,25 +43,38 @@ int main(int argc, char** argv)
 	TaskManager* pTaskMan = TaskManager::getInstance();
 
 	///////////////////////////////////////////
-	//タスクを使用するように設定
+	// タスクを使用するように設定
 
-	//コマンド受付設定
-	gSerialCommand.setRunMode(true);
+	Debug::print(LOG_SUMMARY, "Reading initialize.txt...");
+	std::ifstream ifs( "initialize.txt" );
+	std::string str;
+	if(ifs.good())
+	{
+		//initialize.txtが存在する場合、その中身に列挙されたタスクをすべて有効にする
+		ifs >> str;
+		Debug::print(LOG_SUMMARY, "OK!\r\n");
 
-	//モータ駆動設定
-	gMotorDrive.setRunMode(true);
-	
-	//センサー設定
-	gPressureSensor.setRunMode(true);
-	gGPSSensor.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gLightSensor.setRunMode(true);
-	gWebCamera.setRunMode(true);
+		std::vector<std::string> tasks;
+		String::split(str,tasks);
 
-	//アクチュエータ設定
-	gBuzzer.setRunMode(true);
-	gServo.setRunMode(true);
-	gXbeeSleep.setRunMode(true);
+		std::vector<std::string>::iterator it = tasks.begin();
+		while(it != tasks.end())
+		{
+			TaskBase* pTask = pTaskMan->get(*it);
+			if(pTask != NULL)
+			{
+				Debug::print(LOG_SUMMARY, "Loading %s...\r\n",it->c_str());
+				pTask->setRunMode(true);
+			}else Debug::print(LOG_SUMMARY, "%s is not Available!\r\n",it->c_str());
+			++it;
+		}
+	}else
+	{
+		//存在しない場合すべてのタスクを有効にする
+		Debug::print(LOG_SUMMARY, "Not Found.\r\nLoading All Tasks...\r\n");
+		pTaskMan->setRunMode(true);
+	}
+
 
 	Debug::print(LOG_SUMMARY, "Ready.\r\n");
 

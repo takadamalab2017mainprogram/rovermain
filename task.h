@@ -45,13 +45,13 @@ protected:
 	//各タスクが実装する関数
 	///////////////////////////////////////////////////
 	//このタスクを初期化する
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	//このタスクを開放する
 	virtual void onClean();
 	//指定されたコマンドを実行する
 	virtual bool onCommand(const std::vector<std::string> args);
 	//ある程度の時間ごとに呼び出される関数
-	virtual void onUpdate();
+	virtual void onUpdate(const struct timespec& time);
 	///////////////////////////////////////////////////
 
 public:
@@ -73,11 +73,12 @@ private:
 	class TaskSoter {
 	public:
 		bool operator()(const TaskBase* riLeft, const TaskBase* riRight) const {
-			return riLeft->mPriority <= riRight->mPriority;
+			if(riLeft == NULL)return true;
+			if(riRight == NULL)return false;
+			return riLeft->mPriority < riRight->mPriority;
 		}
 	};
 	void sortByPriority();
-	void split(const std::string& input,std::vector<std::string>& outputs);
 	TaskManager();
 public:
 	//インスタンスを取得

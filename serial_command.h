@@ -19,7 +19,7 @@ private:
 	std::list<std::string>::iterator mHistoryIterator;
 	struct termios mOldTermios,mNewTermios;
 public:
-	virtual void onUpdate();//シリアルポートに到着したコマンドを確認する
+	virtual void onUpdate(const struct timespec& time);//シリアルポートに到着したコマンドを確認する
 
 	SerialCommand();
 	~SerialCommand();

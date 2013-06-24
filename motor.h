@@ -97,10 +97,10 @@ private:
 		struct timespec mLastUpdateTime;
 protected:
 		//初期化
-        virtual bool onInit();
+        virtual bool onInit(const struct timespec& time);
 		virtual void onClean();
 		//毎フレームの処理
-		virtual void onUpdate();
+		virtual void onUpdate(const struct timespec& time);
 
 		//コマンド受付
 		virtual bool onCommand(const std::vector<std::string> args);

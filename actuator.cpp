@@ -2,16 +2,15 @@
 #include <stdlib.h>
 #include "actuator.h"
 #include "constants.h"
-#include "debug.h"
+#include "utils.h"
 
 //////////////////////////////////////////////
 // Buzzer
 //////////////////////////////////////////////
 
-bool Buzzer::onInit()
+bool Buzzer::onInit(const struct timespec& time)
 {
 	mPin = PIN_BUZZER;
-	mPeriod = 0;
 	pinMode(mPin, OUTPUT);
 	digitalWrite(mPin, LOW);
 	return true;
@@ -41,13 +40,10 @@ buzzer stop           : stop buzzer\r\n");
 	}
 	return true;
 }
-void Buzzer::onUpdate()
+void Buzzer::onUpdate(const struct timespec& time)
 {
+	if(mPeriod == 1)stop();
 	if(mPeriod > 0)--mPeriod;
-	else
-	{
-		stop();
-	}
 }
 void Buzzer::start(int period)
 {
@@ -58,12 +54,12 @@ void Buzzer::start(int period)
 void Buzzer::stop()
 {
 	digitalWrite(mPin, LOW);
+	Debug::print(LOG_DETAIL,"Buzzer Stop!\r\n");
 }
-Buzzer::Buzzer()
+Buzzer::Buzzer() : mPeriod(0)
 {
 	setName("buzzer");
 	setPriority(TASK_PRIORITY_ACTUATOR,TASK_INTERVAL_ACTUATOR);
-	Debug::print(LOG_DETAIL,"Buzzer Stop!\r\n");
 }
 Buzzer::~Buzzer()
 {
@@ -73,7 +69,7 @@ Buzzer::~Buzzer()
 // Servo
 //////////////////////////////////////////////
 
-bool Servo::onInit()
+bool Servo::onInit(const struct timespec& time)
 {
 	mPin = PIN_SERVO;
 	pinMode(mPin, PWM_OUTPUT);
@@ -143,7 +139,7 @@ Servo::~Servo()
 // XBee Sleep
 //////////////////////////////////////////////
 
-bool XBeeSleep::onInit()
+bool XBeeSleep::onInit(const struct timespec& time)
 {
 	mPin = PIN_XBEE_SLEEP;
 	pinMode(mPin, OUTPUT);

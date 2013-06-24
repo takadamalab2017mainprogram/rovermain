@@ -27,6 +27,17 @@ const static int SERVO_RANGE = 9000;//パルス間隔
 const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
 const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 
+//////////////////////////////////////////////
+// シーケンス系設定
+//////////////////////////////////////////////
+const static unsigned int CONTINUOUS_LIGHT_COUNT = 100;//何回連続で光っていると判定されたときに放出判定とするか
+const static unsigned int WAITING_ABORT_TIME = 3600;//強制的に放出判定とする時間（秒）
+
+const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//前回との気圧の差がこれ以内なら停止中とカウント
+const static unsigned int FALLING_PRESSURE_COUNT = 5;//気圧変化量が閾値以下の状態がこれだけ続いたら着地と判定
+
+const static double SEPARATING_SERVO_INTERVAL = 1;//サーボの向きを変える間隔(秒)
+const static unsigned int SEPARATING_SERVO_COUNT = 5;//サーボの向きを変える回数
 
 //////////////////////////////////////////////
 //タスク系設定
@@ -36,9 +47,11 @@ const static unsigned int TASK_PRIORITY_SENSOR = 10;
 const static unsigned int TASK_PRIORITY_MOTOR = 100;
 const static unsigned int TASK_PRIORITY_COMMUNICATION = 0;
 const static unsigned int TASK_PRIORITY_ACTUATOR = 10000;
+const static unsigned int TASK_PRIORITY_SEQUENCE = 1000;
 //タスク実行間隔(低いほど多く実行される)
 const static unsigned int TASK_INTERVAL_GYRO = 0;
 const static unsigned int TASK_INTERVAL_SENSOR = 10;
 const static unsigned int TASK_INTERVAL_MOTOR = 0;
 const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
+const static unsigned int TASK_INTERVAL_SEQUENCE = 0;

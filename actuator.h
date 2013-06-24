@@ -15,10 +15,10 @@ private:
 	int mPin;
 	int mPeriod;//0以上なら鳴らす、負なら鳴らさない
 protected:
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
-	virtual void onUpdate();
+	virtual void onUpdate(const struct timespec& time);
 
 public:
 	//ブザーをperiod[ms]だけ鳴らす(長さは厳密ではありません！)
@@ -36,7 +36,7 @@ class Servo : public TaskBase
 private:
 	int mPin;
 protected:
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
@@ -55,7 +55,7 @@ class XBeeSleep : public TaskBase
 private:
 	int mPin;
 protected:
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
 

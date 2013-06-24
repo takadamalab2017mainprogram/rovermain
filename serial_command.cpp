@@ -5,13 +5,13 @@
 #include <sstream>
 #include <iostream>
 #include <string>
-#include "debug.h"
+#include "utils.h"
 #include "serial_command.h"
 #include "motor.h"
 
 SerialCommand gSerialCommand;
 
-void SerialCommand::onUpdate()
+void SerialCommand::onUpdate(const struct timespec& time)
 {
 	int c;
 	while((c = getchar()) != EOF)

@@ -1,14 +1,15 @@
 /*
-	デバッグプログラム
+	その他関数など
 
 	デバッグ用マクロやprint関数を用意してあります
 	・print関数は画面とファイル両方に出力します
 	・ログレベルは重要ではないログで画面が埋め尽くされないように設定します
-	　実行に大した影響がないログはLOG_DETAIL、それなりに影響があるログはLOG_SUMMARY、常に表示するログはLOG_MINIMUMを設定してください
 	・staticクラスのため単純にDebug::print()のように呼び出してください
 */
 
 #pragma once
+#include <vector>
+#include <string>
 #include "constants.h"
 
 #ifdef _DEBUG
@@ -32,8 +33,20 @@ typedef enum
 class Debug
 {
 public:
-	static void print(LOG_LEVEL level, const char* fmt, ... );
+	static void print(LOG_LEVEL level, const char* fmt, ... );//ストリーム面倒だからprintfタイプでいいよね
 	Debug();
 };
 
-//ストリーム面倒だからprintfタイプでいいよね
+class Time
+{
+public:
+	//時間の変化量を計算(秒)
+	static double dt(const struct timespec& now,const struct timespec& last);
+};
+
+class String
+{
+public:
+	//文字列を空白で分割
+	static void split(const std::string& input,std::vector<std::string>& outputs);
+};

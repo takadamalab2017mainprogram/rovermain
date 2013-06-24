@@ -27,12 +27,12 @@ private:
 	void requestSample();
 protected:
 	//気圧センサを初期化
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	//センサの使用を終了する
 	virtual void onClean();
 
 	//一定間隔ごとに気圧をアップデートする
-	virtual void onUpdate();
+	virtual void onUpdate(const struct timespec& time);
 
 	//コマンドを処理する
 	virtual bool onCommand(const std::vector<std::string> args);
@@ -53,11 +53,11 @@ private:
 	int mSatelites;//補足した衛星の数
 protected:
 	//GPSを初期化
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	//センサの使用を終了する
 	virtual void onClean();
 	//現在の座標をアップデートする
-	virtual void onUpdate();
+	virtual void onUpdate(const struct timespec& time);
 	//コマンドを処理する
 	virtual bool onCommand(const std::vector<std::string> args);
 
@@ -79,12 +79,12 @@ private:
 	struct timespec mLastSampleTime;
 protected:
 	//ジャイロセンサを初期化
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	//センサの使用を終了する
 	virtual void onClean();
 
 	//一定間隔ごとにデータをアップデートする
-	virtual void onUpdate();
+	virtual void onUpdate(const struct timespec& time);
 
 	//コマンドを処理する
 	virtual bool onCommand(const std::vector<std::string> args);
@@ -122,7 +122,7 @@ private:
 	int mPin;
 protected:
 	//初期化
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 	//センサの使用を終了する
 	virtual void onClean();
 	//コマンドを処理する

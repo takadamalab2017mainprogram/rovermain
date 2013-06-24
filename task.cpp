@@ -1,8 +1,5 @@
 #include <algorithm>
-#include <iterator>
-#include <sstream>
-#include <iostream>
-#include "debug.h"
+#include "utils.h"
 #include "task.h"
 
 
@@ -37,7 +34,7 @@ void TaskBase::setPriority(unsigned int pri,unsigned int interval)
 	mPriority = pri;
 	mInterval = interval;
 }
-bool TaskBase::onInit()
+bool TaskBase::onInit(const struct timespec& time)
 {
 	return true;
 }
@@ -52,7 +49,7 @@ bool TaskBase::onCommand(const std::vector<std::string> args)
 	return true;
 }
 
-void TaskBase::onUpdate()
+void TaskBase::onUpdate(const struct timespec& time)
 {
 }
 
@@ -79,7 +76,7 @@ void TaskManager::clean()
 	std::vector<TaskBase*>::iterator it = mTasks.begin();
 	while(it != mTasks.end())
 	{
-		if(*it != NULL)(*it)->onClean();
+		if(*it != NULL)if((**it).mIsRunning)(*it)->onClean();
 		++it;
 	}
 	mTasks.clear();
@@ -88,7 +85,7 @@ void TaskManager::clean()
 bool TaskManager::command(std::string arg)
 {
 	std::vector<std::string> args;
-	split(arg,args);
+	String::split(arg,args);
 	if(args.size() != 0)
 	{
 		Debug::print(LOG_SUMMARY, "> %s\r\n",arg.c_str());
@@ -104,7 +101,7 @@ bool TaskManager::command(std::string arg)
 				}else
 				{
 					//アクティブではないタスクの場合
-					Debug::print(LOG_PRINT, "This task is not working.");
+					Debug::print(LOG_PRINT, "This task is not working.\r\n");
 					return false;
 				}
 			}
@@ -112,7 +109,7 @@ bool TaskManager::command(std::string arg)
 		Debug::print(LOG_SUMMARY, "Command Not Found\r\n");
 	}else
 	{
-		Debug::print(LOG_PRINT, " Priority Interval Name\r\n");
+		Debug::print(LOG_PRINT, " W Priority Interval Name\r\n");
 
 		//すべてのタスクとその状態を列挙して表示
 		std::vector<TaskBase*>::iterator it = mTasks.begin();
@@ -121,7 +118,7 @@ bool TaskManager::command(std::string arg)
 			TaskBase* pTask = *it;
 			if(pTask != NULL)
 			{
-				Debug::print(LOG_SUMMARY, " %8d %8d %s\r\n",pTask->mPriority,pTask->mInterval,pTask->mName.c_str());
+				Debug::print(LOG_SUMMARY, " %c %8d %8d %s\r\n",pTask->mIsRunning ? 'W' : ' ',pTask->mPriority,pTask->mInterval,pTask->mName.c_str());
 			}
 			++it;
 		}
@@ -130,25 +127,29 @@ bool TaskManager::command(std::string arg)
 }
 void TaskManager::update()
 {
+	struct timespec newTime;
+	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) != 0)
+	{
+		Debug::print(LOG_DETAIL, "FAILED to get time!\r\n");
+	}
 	std::vector<TaskBase*>::iterator it = mTasks.begin();
 	while(it != mTasks.end())
 	{
 		TaskBase* pTask = *it;
 		if(pTask != NULL)
 		{
-			//実行状態を変更する必要がある場合変更する
 			if(pTask->mIsRunning != pTask->mNewRunningState)
 			{
-				if(pTask->mNewRunningState && pTask->mIsRunning == false)pTask->onInit();
-				else if(pTask->mNewRunningState && pTask->mIsRunning == true)pTask->onClean();
+				//実行状態を変更する必要がある場合変更する
+				if(pTask->mIsRunning == false)pTask->onInit(newTime);
+				else if(pTask->mIsRunning == true)pTask->onClean();
 
 				pTask->mIsRunning = pTask->mNewRunningState;
 				pTask->mSlept = 0;
-			}
-			//実行するタイミングであれば処理を行う(mIntervalがUINT_MAXならupdate不要なタスク)
-			if(pTask->mInterval != UINT_MAX && pTask->mIsRunning && (pTask->mInterval <= pTask->mSlept++))
+			}else if(pTask->mInterval != UINT_MAX && pTask->mIsRunning && (pTask->mInterval <= pTask->mSlept++))
 			{
-				pTask->onUpdate();
+				//実行するタイミングであれば処理を行う(mIntervalがUINT_MAXならupdate不要なタスク)
+				pTask->onUpdate(newTime);
 				pTask->mSlept = 0;
 			}
 		}
@@ -219,13 +220,6 @@ void TaskManager::del(TaskBase* pTask)
 		++it;
 	}
 	Debug::print(LOG_DETAIL ,"TaskManager(del): Task Not Found!\r\n");
-}
-void TaskManager::split(const std::string& input,std::vector<std::string>& outputs)
-{
-	//文字列を空白文字で分割してvectorに格納
-	outputs.clear();
-	std::istringstream iss(input);
-	std::copy(std::istream_iterator<std::string>(iss),  std::istream_iterator<std::string>(), std::back_inserter(outputs));
 }
 void  TaskManager::sortByPriority()
 {
