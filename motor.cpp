@@ -139,6 +139,10 @@ MotorEncoder::~MotorEncoder()
 
 bool MotorDrive::onInit(const struct timespec& time)
 {
+	//ÉWÉÉÉCÉçÇégÇ§ÇÊÇ§Ç…ê›íË
+	gGyroSensor.setRunMode(true);
+
+	//èâä˙âª
     if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
 	{
 		Debug::print(LOG_SUMMARY,"Failed to initialize Motors\r\n");
@@ -226,9 +230,11 @@ void MotorDrive::set(double p,double i,double d)
 	mD = d;
 }
 
-void MotorDrive::startPID(int angle,int power)
+void MotorDrive::startPID(double angle,int power)
 {
-	Debug::print(LOG_SUMMARY, "PID is Started!!\r\n");
+	angle = GyroSensor::normalize(angle);
+	power = max(min(power,MOTOR_MAX_POWER),0);
+	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",angle,power);
 	mDiff1 = mDiff2 = mDiff3 = 0;
 	mAngle = angle;
 	mControlPower = 0;

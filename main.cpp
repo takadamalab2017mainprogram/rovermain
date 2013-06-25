@@ -16,6 +16,53 @@ bool setSighandle(int p_signame);
 //実行中フラグ(falseで終了)
 static bool gIsRunning = true;
 
+//initialize.txtを読み込んで初期設定を行う関数
+// 1行目　　：使用するタスクをスペースで区切って列挙
+// 2行目以降：実行するコマンドを行ごとに列挙
+bool parseInitializer()
+{
+	TaskManager* pTaskMan = TaskManager::getInstance();
+	Debug::print(LOG_SUMMARY, "Reading initialize.txt...");
+	std::ifstream ifs( "initialize.txt" );
+	std::string str;
+	if(ifs.good())
+	{
+		//initialize.txtが存在する場合
+		
+		//先頭行に列挙されたタスクを使用するように設定する
+		std::getline(ifs,str);
+		Debug::print(LOG_SUMMARY, "OK!\r\n");
+
+		std::vector<std::string> tasks;
+		String::split(str,tasks);
+
+		std::vector<std::string>::iterator it = tasks.begin();
+		while(it != tasks.end())
+		{
+			TaskBase* pTask = pTaskMan->get(*it);
+			if(pTask != NULL)
+			{
+				Debug::print(LOG_SUMMARY, "Loading %s...\r\n",it->c_str());
+				pTask->setRunMode(true);
+			}else Debug::print(LOG_SUMMARY, "%s is not Available!\r\n",it->c_str());
+			++it;
+		}
+
+		//使用するタスクを初期化する
+		pTaskMan->update();
+
+		Debug::print(LOG_SUMMARY, "Executing Initializing Commands...\r\n");
+		//2行目以降のコマンドをすべて実行する
+		while(!ifs.eof() && !ifs.fail() && !ifs.bad())
+		{
+			std::getline(ifs,str);
+			pTaskMan->command(str);
+		}
+		return true;
+	}
+	return false;
+}
+
 int main(int argc, char** argv)
 {
 	time_t timer;
@@ -40,37 +87,12 @@ int main(int argc, char** argv)
 
 	///////////////////////////////////////////
 	// タスクを使用するように設定
-
-	Debug::print(LOG_SUMMARY, "Reading initialize.txt...");
-	std::ifstream ifs( "initialize.txt" );
-	std::string str;
-	if(ifs.good())
+	if(!parseInitializer())
 	{
-		//initialize.txtが存在する場合、その中身に列挙されたタスクをすべて有効にする
-		ifs >> str;
-		Debug::print(LOG_SUMMARY, "OK!\r\n");
-
-		std::vector<std::string> tasks;
-		String::split(str,tasks);
-
-		std::vector<std::string>::iterator it = tasks.begin();
-		while(it != tasks.end())
-		{
-			TaskBase* pTask = pTaskMan->get(*it);
-			if(pTask != NULL)
-			{
-				Debug::print(LOG_SUMMARY, "Loading %s...\r\n",it->c_str());
-				pTask->setRunMode(true);
-			}else Debug::print(LOG_SUMMARY, "%s is not Available!\r\n",it->c_str());
-			++it;
-		}
-	}else
-	{
+		//initialize.txtが読み込めなかったため、標準状態で起動する
 		Debug::print(LOG_SUMMARY, "Not Found.\r\nLoading Default Task...\r\n");
 		gTestingState.setRunMode(true);
 	}
-
-
 	Debug::print(LOG_SUMMARY, "Ready.\r\n");
 
 	

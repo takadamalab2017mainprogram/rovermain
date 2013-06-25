@@ -102,18 +102,10 @@ bool TaskManager::command(std::string arg)
 			//コマンド実行対象のタスクが見つかったらコマンドを実行
 			if(pTask->mName.compare(args[0]) == 0)
 			{
-				if(pTask->mIsRunning)//アクティブなタスクの場合コマンド実行
-				{
-					if(pTask->onCommand(args))return true;
-				}else
-				{
-					//アクティブではないタスクの場合
-					Debug::print(LOG_SUMMARY, "This task is not working.\r\n");
-					return false;
-				}
+				if(pTask->onCommand(args))return true;
 			}
 		}
-		Debug::print(LOG_SUMMARY, "Command Not Found\r\n");
+		Debug::print(LOG_SUMMARY, "Failed to exec command!\r\n");
 	}else
 	{
 		Debug::print(LOG_SUMMARY, " Active Priority Interval Name\r\n");

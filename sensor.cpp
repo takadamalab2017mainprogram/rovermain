@@ -80,7 +80,7 @@ void PressureSensor::onUpdate(const struct timespec& time)
 
 bool PressureSensor::onCommand(const std::vector<std::string> args)
 {
-	Debug::print(LOG_SUMMARY, "Pressure: %d\r\n",mPressure);
+	if(isActive())Debug::print(LOG_SUMMARY, "Pressure: %d\r\n",mPressure);
 	return true;
 }
 
@@ -155,6 +155,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 }
 bool GPSSensor::onCommand(const std::vector<std::string> args)
 {
+	if(!isActive())return false;
 	if(mSatelites < 4)Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
 	else Debug::print(LOG_SUMMARY, "Satelites: %d\r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
 	return true;
@@ -168,6 +169,7 @@ bool GPSSensor::get(VECTOR3& pos)
 	}
 	return false;//Invalid Position
 }
+
 GPSSensor::GPSSensor() : mSatelites(0)
 {
 	setName("gps");
@@ -262,6 +264,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 }
 bool GyroSensor::onCommand(const std::vector<std::string> args)
 {
+	if(!isActive())return false;
 	if(args.size() >= 2)
 	{
 		if(args[1].compare("reset") == 0)
@@ -345,6 +348,7 @@ void LightSensor::onClean()
 }
 bool LightSensor::onCommand(const std::vector<std::string> args)
 {
+	if(!isActive())return false;
 	if(get())Debug::print(LOG_SUMMARY,"light is high\r\n");
 	else Debug::print(LOG_SUMMARY,"light is low\r\n");
 	return true;
@@ -368,6 +372,7 @@ LightSensor::~LightSensor()
 
 bool WebCamera::onCommand(const std::vector<std::string> args)
 {
+	if(!isActive())return false;
 	if(args.size() >= 2)
 	{
 		if(args[1].compare("start") == 0)

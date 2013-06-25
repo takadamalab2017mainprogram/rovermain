@@ -6,6 +6,14 @@
 //本番はコメントアウトすること！！（Ctrl-Cによるプログラム終了が無効になります）
 #define _DEBUG 1
 
+//詳細なログ表示が必要な場合はつかってください
+//#define _LOG_DETAIL 1
+
+
+
+//////////////////////////////////////////////
+// ハードウェア系設定
+//////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
 const static int PIN_PWM_A = 4;		//モータPWM Right
 const static int PIN_PWM_B = 5;
@@ -42,6 +50,11 @@ const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
 const static unsigned int SEPARATING_SERVO_COUNT = 5;//サーボの向きを変える回数
 
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)
+const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
+const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近時の速度(最大比)
+const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒)
+
 //////////////////////////////////////////////
 //タスク系設定
 //////////////////////////////////////////////
@@ -58,3 +71,8 @@ const static unsigned int TASK_INTERVAL_MOTOR = 0;
 const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
+
+//////////////////////////////////////////////
+//その他数値
+//////////////////////////////////////////////
+const static double degree2meter = 111111.111111;//これを度に掛けるとメートルに変換できる

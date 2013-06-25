@@ -1,6 +1,7 @@
 #pragma once
 #include <time.h>
 #include "task.h"
+#include "utils.h"
 
 //テスト用状態
 class Testing : public TaskBase
@@ -54,7 +55,7 @@ public:
 	~Falling();
 };
 
-//パラ分離状態
+//パラ分離状態(サーボを動かしてパラを切り離す)
 class Separating : public TaskBase
 {
 private:
@@ -72,7 +73,31 @@ public:
 	~Separating();
 };
 
+//ゴールへの移動中
+class Navigating : public TaskBase
+{
+private:
+	struct timespec mLastCheckTime;//前回のチェック時刻
+
+	//ゴール、現在位置、前回の位置(zの値が0の場合位置が有効であるとする)
+	VECTOR3 mGoalPos,mCurrentPos,mLastPos;
+	bool mIsGoalPos,mIsCurrentPos,mIsLastPos;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+
+	//次の状態に移行
+	void nextState();
+public:
+	void setGoal(const VECTOR3& pos);
+
+	Navigating();
+	~Navigating();
+};
+
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
 extern Separating gSeparatingState;
+extern Navigating gNavigatingState;

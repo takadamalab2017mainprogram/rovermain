@@ -6,11 +6,7 @@
 */
 #pragma once
 #include "task.h"
-
-typedef struct
-{
-	double x,y,z;
-}VECTOR3;
+#include "utils.h"
 
 //MPL115A2からデータを取得するクラス
 //気圧の値はhPa単位で+-10hPaの誤差あり

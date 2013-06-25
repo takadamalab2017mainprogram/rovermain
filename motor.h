@@ -114,7 +114,7 @@ public:
 		//PID制御用パラメータを設定
 		void set(double p,double i,double d);
 		//PID制御を開始する(ジャイロのZ回転軸の角度が一定になるように制御する)
-		void startPID(int angle,int power);
+		void startPID(double angle,int power);
 
         MotorDrive();
         ~MotorDrive();

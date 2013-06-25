@@ -53,3 +53,25 @@ public:
 	//文字列を空白で分割
 	static void split(const std::string& input,std::vector<std::string>& outputs);
 };
+
+class VECTOR3
+{
+public:
+	double x,y,z;
+
+	VECTOR3 operator+() const;
+	VECTOR3 operator-() const;
+	VECTOR3& operator+=(const VECTOR3& v);
+	VECTOR3& operator-=(const VECTOR3& v);
+	VECTOR3 operator+(const VECTOR3& u) const;
+	VECTOR3 operator-(const VECTOR3& u) const;
+
+
+	VECTOR3();
+	VECTOR3(double tx, double ty, double tz);
+
+	//XY平面状の2点を結ぶ直線の角度(北が0度で+180度(東)～-180度(西))。ジャイロの角度とは正負が逆です
+	static double calcAngleXY(const VECTOR3& current,const VECTOR3& target);
+	//2点間の距離を計算
+	static double calcDistanceXY(const VECTOR3& current,const VECTOR3& target);
+};
