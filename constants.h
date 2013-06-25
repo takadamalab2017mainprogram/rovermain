@@ -20,7 +20,7 @@ const static int PIN_SERVO = 1;				//サーボピン
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
-const static double MOTOR_MAX_POWER_CHANGE = MOTOR_MAX_POWER;//モータ出力の1秒あたりの最大変化量
+const static double MOTOR_MAX_POWER_CHANGE = MOTOR_MAX_POWER * 2;//モータ出力の1秒あたりの最大変化量
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
@@ -30,14 +30,16 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 //////////////////////////////////////////////
 // シーケンス系設定
 //////////////////////////////////////////////
-const static unsigned int CONTINUOUS_LIGHT_COUNT = 100;//何回連続で光っていると判定されたときに放出判定とするか
+const static unsigned int WAITING_LIGHT_COUNT = 100;//何回連続で光っていると判定されたときに放出判定とするか
 const static unsigned int WAITING_ABORT_TIME = 3600;//強制的に放出判定とする時間（秒）
 
-const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//前回との気圧の差がこれ以内なら停止中とカウント
+const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 4;//前回との気圧の差がこれ以内なら停止中とカウント(1秒間隔でサンプリング)
 const static unsigned int FALLING_PRESSURE_COUNT = 5;//気圧変化量が閾値以下の状態がこれだけ続いたら着地と判定
+const static double FALLING_GYRO_THRESHOLD = 0.5;//角速度がこの値以下なら停止中とカウント
+const static unsigned int FALLING_GYRO_COUNT = 100;//角速度の値が閾値以下のサンプルがこれだけ連続したら着地と判定
 const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 
-const static double SEPARATING_SERVO_INTERVAL = 1;//サーボの向きを変える間隔(秒)
+const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
 const static unsigned int SEPARATING_SERVO_COUNT = 5;//サーボの向きを変える回数
 
 //////////////////////////////////////////////

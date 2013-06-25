@@ -41,6 +41,12 @@ protected:
 	//このタスクに優先度(小さいほど先に実行される)と実行間隔(小さいほどたくさん実行する)を設定する
 	void setPriority(unsigned int pri,unsigned int interval);
 
+	//このタスクの実行状態を返す
+	bool isActive();
+
+	//このタスクを管理するTaskManagerのインスタンスを返す
+	virtual TaskManager* getManager();
+
 	///////////////////////////////////////////////////
 	//各タスクが実装する関数
 	///////////////////////////////////////////////////
@@ -78,7 +84,6 @@ private:
 			return riLeft->mPriority < riRight->mPriority;
 		}
 	};
-	void sortByPriority();
 	TaskManager();
 public:
 	//インスタンスを取得
@@ -101,6 +106,9 @@ public:
 	//指定されたタスクを登録(基本的に呼び出す必要なし)
 	void add(TaskBase* pTask);
 	void del(TaskBase* pTask);
+
+	//タスクリストを優先度順に並び替える(基本的に呼び出す必要なし)
+	void sortByPriority();
 
 	~TaskManager();
 };

@@ -230,7 +230,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 	//蓄えられたサンプルの平均値を現時点での速度とする
 	while((status_reg = wiringPiI2CReadReg8(mFileHandle,0x27)) & 0x08)
 	{
-		if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
+		//if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
 
 		//ジャイロのFIFO内のデータをすべて読み込み、和を取る
 		newRvx += (short int)wiringPiI2CReadReg16(mFileHandle,0x28) * 0.070;
@@ -356,7 +356,7 @@ bool LightSensor::get()
 LightSensor::LightSensor()
 {
 	setName("light");
-	setPriority(UINT_MAX,UINT_MAX);
+	setPriority(TASK_PRIORITY_SENSOR,UINT_MAX);
 }
 LightSensor::~LightSensor()
 {

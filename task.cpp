@@ -5,15 +5,12 @@
 
 TaskBase::TaskBase() : mName(""),mPriority(UINT_MAX),mInterval(UINT_MAX),mSlept(0),mIsRunning(false),mNewRunningState(false)
 {
-	TaskManager* pManager = TaskManager::getInstance();
-	pManager->add(this);
+	getManager()->add(this);
 }
 TaskBase::~TaskBase()
 {
-	TaskManager* pManager = TaskManager::getInstance();
-	pManager->del(this);
+	getManager()->del(this);
 }
-
 
 void TaskBase::setRunMode(bool running)
 {
@@ -33,6 +30,16 @@ void TaskBase::setPriority(unsigned int pri,unsigned int interval)
 {
 	mPriority = pri;
 	mInterval = interval;
+
+	getManager()->sortByPriority();
+}
+bool TaskBase::isActive()
+{
+	return mIsRunning;
+}
+TaskManager* TaskBase::getManager()
+{
+	return TaskManager::getInstance();
 }
 bool TaskBase::onInit(const struct timespec& time)
 {
@@ -101,7 +108,7 @@ bool TaskManager::command(std::string arg)
 				}else
 				{
 					//アクティブではないタスクの場合
-					Debug::print(LOG_PRINT, "This task is not working.\r\n");
+					Debug::print(LOG_SUMMARY, "This task is not working.\r\n");
 					return false;
 				}
 			}
@@ -109,7 +116,7 @@ bool TaskManager::command(std::string arg)
 		Debug::print(LOG_SUMMARY, "Command Not Found\r\n");
 	}else
 	{
-		Debug::print(LOG_PRINT, " Active Priority Interval Name\r\n");
+		Debug::print(LOG_SUMMARY, " Active Priority Interval Name\r\n");
 
 		//すべてのタスクとその状態を列挙して表示
 		std::vector<TaskBase*>::iterator it = mTasks.begin();
@@ -132,7 +139,26 @@ void TaskManager::update()
 	{
 		Debug::print(LOG_DETAIL, "FAILED to get time!\r\n");
 	}
+
+	//タスクのupdate処理を実行
 	std::vector<TaskBase*>::iterator it = mTasks.begin();
+	while(it != mTasks.end())
+	{
+		TaskBase* pTask = *it;
+		if(pTask != NULL)
+		{
+			if(pTask->mInterval != UINT_MAX && pTask->mIsRunning && (pTask->mInterval <= pTask->mSlept++))
+			{
+				//実行するタイミングであれば処理を行う(mIntervalがUINT_MAXならupdate不要なタスク)
+				pTask->onUpdate(newTime);
+				pTask->mSlept = 0;
+			}
+		}
+		++it;
+	}
+
+	//タスクの実行状態を切り替え
+	it = mTasks.begin();
 	while(it != mTasks.end())
 	{
 		TaskBase* pTask = *it;
@@ -145,11 +171,6 @@ void TaskManager::update()
 				else if(pTask->mIsRunning == true)pTask->onClean();
 
 				pTask->mIsRunning = pTask->mNewRunningState;
-				pTask->mSlept = 0;
-			}else if(pTask->mInterval != UINT_MAX && pTask->mIsRunning && (pTask->mInterval <= pTask->mSlept++))
-			{
-				//実行するタイミングであれば処理を行う(mIntervalがUINT_MAXならupdate不要なタスク)
-				pTask->onUpdate(newTime);
 				pTask->mSlept = 0;
 			}
 		}
@@ -219,7 +240,7 @@ void TaskManager::del(TaskBase* pTask)
 		}
 		++it;
 	}
-	Debug::print(LOG_DETAIL ,"TaskManager(del): Task Not Found!\r\n");
+	//Debug::print(LOG_DETAIL ,"TaskManager(del): Task Not Found!\r\n");
 }
 void  TaskManager::sortByPriority()
 {

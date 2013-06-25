@@ -47,12 +47,13 @@ void Buzzer::onUpdate(const struct timespec& time)
 }
 void Buzzer::start(int period)
 {
+	if(mPeriod == 0 && period > 1)Debug::print(LOG_DETAIL,"Buzzer Start!\r\n");
 	mPeriod = period;
 	digitalWrite(mPin, HIGH);
-	Debug::print(LOG_DETAIL,"Buzzer Start!\r\n");
 }
 void Buzzer::stop()
 {
+	mPeriod = 0;
 	digitalWrite(mPin, LOW);
 	Debug::print(LOG_DETAIL,"Buzzer Stop!\r\n");
 }
@@ -129,7 +130,7 @@ void Servo::stop()
 Servo::Servo()
 {
 	setName("servo");
-	setPriority(UINT_MAX,UINT_MAX);
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
 Servo::~Servo()
 {
@@ -178,7 +179,7 @@ void XBeeSleep::setState(bool sleep)
 XBeeSleep::XBeeSleep()
 {
 	setName("xbee");
-	setPriority(UINT_MAX,UINT_MAX);
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
 XBeeSleep::~XBeeSleep()
 {

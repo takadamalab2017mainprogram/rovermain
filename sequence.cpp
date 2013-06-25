@@ -112,10 +112,10 @@ void Waiting::onUpdate(const struct timespec& time)
 	if(gLightSensor.get())
 	{
 		++mContinuousLightCount;
-		gBuzzer.start(1);
+		gBuzzer.start(2);
 	}else mContinuousLightCount = 0;
 
-	if(mContinuousLightCount >= CONTINUOUS_LIGHT_COUNT)//明るい場合放出判定
+	if(mContinuousLightCount >= WAITING_LIGHT_COUNT)//明るい場合放出判定
 	{
 		nextState();
 		return;
@@ -140,29 +140,43 @@ bool Falling::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Falling...\r\n");
 
+	mStartTime = mLastCheckTime = time;
+	mLastPressure = gPressureSensor.get();
+	mContinuousPressureCount = 0;
+
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
-
-	mLastCheckTime = time;
+	gGyroSensor.setRunMode(true);
 
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
 {
-	//1秒ごとに気圧をチェック
+	if(gGyroSensor.getRvx() < FALLING_GYRO_THRESHOLD && gGyroSensor.getRvy() < FALLING_GYRO_THRESHOLD && gGyroSensor.getRvz() < FALLING_GYRO_THRESHOLD)
+	{
+		if(mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
+	}else mCoutinuousGyroCount = 0;
+
+	//1秒ごとに以下の処理を行う
 	if(Time::dt(time,mLastCheckTime) < 1)return;
 	mLastCheckTime = time;
 
-	//気圧の差が一定以上ならカウント
+	//気圧の差が一定以下ならカウント
 	int newPressure = gPressureSensor.get();
-	if(abs((int)(newPressure - mLastPressure)) < FALLING_DELTA_PRESSURE_THRESHOLD)++mContinuousPressureCount;
-	else mContinuousPressureCount = 0;
+	if(abs((int)(newPressure - mLastPressure)) < FALLING_DELTA_PRESSURE_THRESHOLD)
+	{
+		if(mContinuousPressureCount < FALLING_PRESSURE_COUNT)++mContinuousPressureCount;
+		Debug::print(LOG_SUMMARY, "Pressure Count %d / %d\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT);
+	}else mContinuousPressureCount = 0;
+
+	//ジャイロの判定状態を表示
+	Debug::print(LOG_SUMMARY, "Gyro Count     %d / %d\r\n",mCoutinuousGyroCount,FALLING_GYRO_COUNT);
 
 	//カウント回数が一定以上なら次の状態に移行
-	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT)
+	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT && mCoutinuousGyroCount >= FALLING_GYRO_COUNT)
 	{
 		nextState();
 		return;
@@ -230,7 +244,7 @@ void Separating::nextState()
 	gBuzzer.start(100);
 
 	//次の状態を設定
-	//gLandingState.setRunMode(true);
+	gTestingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Separating Finished!\r\n");
 }

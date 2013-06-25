@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <math.h>
 #include "utils.h"
 #include "motor.h"
 #include "sensor.h"
@@ -33,7 +34,7 @@ bool Motor::init(int powPin, int revPin)
 }
 void Motor::update(double elapsedSeconds)
 {
-	if(fabs(mCurPower - mTargetPower) > 0.5)//目標出力と現在出力に差がある場合
+	if(fabs(mCurPower - mTargetPower) != 0)//目標出力と現在出力に差がある場合
 	{
 		//なめらかにモータ出力を変化させる
 		double curFrameTarget = mTargetPower;//この呼び出しで設定するモーター出力
@@ -153,6 +154,8 @@ bool MotorDrive::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY,"Unable to get time!\r\n");
 	}
 	Debug::print(LOG_DETAIL,"MotorDrive is Ready!\r\n");
+
+	mLastUpdateTime = time;
     return true;
 }
 
@@ -203,8 +206,8 @@ void MotorDrive::onUpdate(const struct timespec& time)
 }
 void MotorDrive::setRatio(int ratioL,int ratioR)
 {
-	if(ratioL <= MOTOR_MAX_POWER && ratioL > 0)mMotorL.setCoeff((double)(mRatioL = ratioL) / MOTOR_MAX_POWER);
-	if(ratioR <= MOTOR_MAX_POWER && ratioR > 0)mMotorR.setCoeff((double)(mRatioR = ratioR) / MOTOR_MAX_POWER);
+	mMotorL.setCoeff((double)(mRatioL = max(min(ratioL,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
+	mMotorR.setCoeff((double)(mRatioR = max(min(ratioR,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
 }
 
 void MotorDrive::drive(int powerL, int powerR)
@@ -239,8 +242,8 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 	int size = args.size();
 	if(size == 1)
 	{
-		Debug::print(LOG_PRINT, "Current Motor Ratio: %d %d\r\n",mMotorL.getPower(),-mMotorR.getPower());
-		Debug::print(LOG_PRINT, "Current Motor Pulse: %lld %lld\r\n",mpMotorEncoder->getL(),mpMotorEncoder->getR());
+		Debug::print(LOG_SUMMARY, "Current Motor Ratio: %d %d\r\n",mMotorL.getPower(),-mMotorR.getPower());
+		Debug::print(LOG_SUMMARY, "Current Motor Pulse: %lld %lld\r\n",mpMotorEncoder->getL(),mpMotorEncoder->getR());
 	}else if(size >= 2)
 	{
 		if(args[1].compare("w") == 0)
