@@ -88,7 +88,7 @@ int PressureSensor::get()
 {
 	return mPressure;
 }
-PressureSensor::PressureSensor()
+PressureSensor::PressureSensor() : mA0(0),mB1(0),mB2(0),mC12(0),mPressure(0),mFileHandle(-1)
 {
 	setName("pressure");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
@@ -170,7 +170,7 @@ bool GPSSensor::get(VECTOR3& pos)
 	return false;//Invalid Position
 }
 
-GPSSensor::GPSSensor() : mSatelites(0)
+GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0)
 {
 	setName("gps");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
@@ -324,7 +324,7 @@ void GyroSensor::normalize(VECTOR3& pos)
 	pos.y = normalize(pos.y);
 	pos.z = normalize(pos.z);
 }
-GyroSensor::GyroSensor()
+GyroSensor::GyroSensor() : mFileHandle(-1),mRVel(),mRAngle()
 {
 	setName("gyro");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_GYRO);
@@ -339,7 +339,6 @@ GyroSensor::~GyroSensor()
 ///////////////////////////////////////////////
 bool LightSensor::onInit(const struct timespec& time)
 {
-	mPin = PIN_LIGHT_SENSOR;
 	pinMode(mPin, INPUT);
 	return true;
 }
@@ -357,7 +356,7 @@ bool LightSensor::get()
 {
 	return digitalRead(mPin) == 0;
 }
-LightSensor::LightSensor()
+LightSensor::LightSensor() : mPin(PIN_LIGHT_SENSOR)
 {
 	setName("light");
 	setPriority(TASK_PRIORITY_SENSOR,UINT_MAX);

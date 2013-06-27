@@ -50,13 +50,27 @@ protected:
 	///////////////////////////////////////////////////
 	//各タスクが実装する関数
 	///////////////////////////////////////////////////
-	//このタスクを初期化する
+	/* このタスクを初期化する
+	  呼び出しタイミングはTaskManagerのupdateメソッド内で実行中タスクのonUpdate処理が終わった後
+	  falseを返した場合、TaskManagerのupdateメソッドが呼ばれるたびに再度呼び出される
+	*/
 	virtual bool onInit(const struct timespec& time);
-	//このタスクを開放する
+
+	/* このタスクを開放する
+	  不要な電力消費を抑えるために、極力最小限の状態に変更すること
+	*/
 	virtual void onClean();
-	//指定されたコマンドを実行する
+
+	/* 指定されたコマンドを実行する
+	  このメソッドは実行状態にかかわらず呼び出されるため注意
+	  falseを返すと、コマンドの実行に失敗した旨が表示される
+	*/
 	virtual bool onCommand(const std::vector<std::string> args);
-	//ある程度の時間ごとに呼び出される関数
+
+	/* ある程度の時間ごとに呼び出される関数
+	  数ms以内に処理を返すこと！！
+	  実行中状態の場合にのみ呼び出される
+	*/
 	virtual void onUpdate(const struct timespec& time);
 	///////////////////////////////////////////////////
 
@@ -103,7 +117,7 @@ public:
 	//全タスクの実行状態を変更する
 	void setRunMode(bool running);
 
-	//指定されたタスクを登録(基本的に呼び出す必要なし)
+	//指定されたタスクを登録/削除(基本的に呼び出す必要なし)
 	void add(TaskBase* pTask);
 	void del(TaskBase* pTask);
 

@@ -89,16 +89,15 @@ bool Waiting::onInit(const struct timespec& time)
 
 	mContinuousLightCount = 0;
 
+	//現在の時刻を保存
+	mStartTime = time;
+
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 	gBuzzer.setRunMode(true);
-
-	//現在の時刻を保存
-	mStartTime = time;
-	
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -154,6 +153,7 @@ bool Falling::onInit(const struct timespec& time)
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
+	mCoutinuousGyroCount = 0;
 
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
@@ -213,7 +213,7 @@ void Falling::nextState()
 	
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
 }
-Falling::Falling()
+Falling::Falling() : mLastPressure(0),mContinuousPressureCount(0),mCoutinuousGyroCount(0)
 {
 	setName("falling");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -265,7 +265,7 @@ void Separating::nextState()
 	Debug::print(LOG_SUMMARY, "Separating Finished!\r\n");
 }
 
-Separating::Separating()
+Separating::Separating() : mCurServoState(false),mServoCount(0)
 {
 	setName("separating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -373,7 +373,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f ,%f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mIsGoalPos(false)
+Navigating::Navigating() : mGoalPos(), mCurrentPos(), mLastPos(), mIsGoalPos(false), mIsCurrentPos(false), mIsLastPos(false)
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

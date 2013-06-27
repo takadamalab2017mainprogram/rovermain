@@ -10,7 +10,6 @@
 
 bool Buzzer::onInit(const struct timespec& time)
 {
-	mPin = PIN_BUZZER;
 	pinMode(mPin, OUTPUT);
 	digitalWrite(mPin, LOW);
 	return true;
@@ -57,7 +56,7 @@ void Buzzer::stop()
 	digitalWrite(mPin, LOW);
 	Debug::print(LOG_DETAIL,"Buzzer Stop!\r\n");
 }
-Buzzer::Buzzer() : mPeriod(0)
+Buzzer::Buzzer() : mPin(PIN_BUZZER),mPeriod(0)
 {
 	setName("buzzer");
 	setPriority(TASK_PRIORITY_ACTUATOR,TASK_INTERVAL_ACTUATOR);
@@ -72,7 +71,6 @@ Buzzer::~Buzzer()
 
 bool Servo::onInit(const struct timespec& time)
 {
-	mPin = PIN_SERVO;
 	pinMode(mPin, PWM_OUTPUT);
 
 	pwmSetMode(PWM_MODE_MS);
@@ -84,7 +82,7 @@ bool Servo::onInit(const struct timespec& time)
 }
 void Servo::onClean()
 {
-	digitalWrite(mPin, LOW);
+	stop();
 }
 bool Servo::onCommand(const std::vector<std::string> args)
 {
@@ -127,7 +125,7 @@ void Servo::stop()
 	pwmWrite (mPin, 0);
 	Debug::print(LOG_DETAIL,"Servo Stop!\r\n");
 }
-Servo::Servo()
+Servo::Servo() : mPin(PIN_SERVO)
 {
 	setName("servo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
@@ -176,7 +174,7 @@ void XBeeSleep::setState(bool sleep)
 {
 	digitalWrite(mPin, sleep ? HIGH : LOW);
 }
-XBeeSleep::XBeeSleep()
+XBeeSleep::XBeeSleep() : mPin(PIN_XBEE_SLEEP)
 {
 	setName("xbee");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);

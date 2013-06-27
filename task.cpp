@@ -159,10 +159,17 @@ void TaskManager::update()
 			if(pTask->mIsRunning != pTask->mNewRunningState)
 			{
 				//実行状態を変更する必要がある場合変更する
-				if(pTask->mIsRunning == false)pTask->onInit(newTime);
-				else if(pTask->mIsRunning == true)pTask->onClean();
-
-				pTask->mIsRunning = pTask->mNewRunningState;
+				if(pTask->mIsRunning == false)
+				{
+					//実行開始する場合：onInitを呼び出し、成功した場合は実行中状態に設定
+					if(pTask->onInit(newTime))pTask->mIsRunning = pTask->mNewRunningState;
+					else Debug::print(LOG_SUMMARY, "FAILED to initialize task %s!!\r\n", pTask->mName.c_str());//失敗した場合はログ出力
+				}else
+				{
+					//実行停止する場合：onCleanを呼び出し
+					pTask->onClean();
+					pTask->mIsRunning = pTask->mNewRunningState;
+				}
 				pTask->mSlept = 0;
 			}
 		}
@@ -228,7 +235,6 @@ void TaskManager::del(TaskBase* pTask)
 		{
 			*it = NULL;
 			Debug::print(LOG_DETAIL ,"TaskManager(del): Succeeded!\r\n");
-			return;
 		}
 		++it;
 	}

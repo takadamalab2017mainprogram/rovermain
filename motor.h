@@ -26,6 +26,8 @@ public:
         // Initialize Motor by 2 pins
         bool init(int powPin,int revPin);
 
+		void clean();
+
 		// モータ出力を更新(ratioはほかのモータとの個体差吸収用)
 		void update(double elapsedSeconds);
 

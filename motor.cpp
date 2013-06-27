@@ -50,11 +50,17 @@ void Motor::update(double elapsedSeconds)
 		}
 
 		//新しいpowerをもとにpinの状態を設定する
-		if(curFrameTarget < 0 && mCurPower >= 0)digitalWrite(mReversePin, HIGH);
+		if(curFrameTarget <= 0 && mCurPower > 0)digitalWrite(mReversePin, HIGH);
 		else if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, LOW);
 		mCurPower = curFrameTarget;
 		softPwmWrite(mPowerPin, fabs(mCurPower));
 	}
+}
+void Motor::clean()
+{
+	if(mPowerPin >= 0)pwmWrite(mPowerPin, 0);
+	if(mReversePin >= 0)digitalWrite(mReversePin, LOW);
+	mCurPower = 0;
 }
 void Motor::set(int power)
 {
@@ -78,7 +84,6 @@ Motor::Motor() : mPowerPin(-1), mReversePin(-1), mCurPower(0), mTargetPower(0), 
 }
 Motor::~Motor()
 {
-    if(mPowerPin >= 0)digitalWrite(mPowerPin, LOW);
 }
 MotorEncoder* MotorEncoder::getInstance()
 {
@@ -95,9 +100,6 @@ void MotorEncoder::pulseRCallback()
 }
 bool MotorEncoder::init()
 {
-	mEncoderPinL = PIN_PULSE_B;
-	mEncoderPinR = PIN_PULSE_A;
-
 	mPulseCountL = mPulseCountR = 0;
 
 	//ピンのパルスを監視する
@@ -130,7 +132,7 @@ long long MotorEncoder::getR()
 }
 
 
-MotorEncoder::MotorEncoder() : mEncoderPinL(-1),mEncoderPinR(-1),mPulseCountL(-1),mPulseCountR(-1)
+MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B),mEncoderPinR(PIN_PULSE_A),mPulseCountL(0),mPulseCountR(0)
 {
 }
 MotorEncoder::~MotorEncoder()
@@ -166,6 +168,8 @@ bool MotorDrive::onInit(const struct timespec& time)
 void MotorDrive::onClean()
 {
 	mpMotorEncoder->clean();
+	mMotorL.clean();
+	mMotorR.clean();
 }
 
 void MotorDrive::onUpdate(const struct timespec& time)
@@ -318,7 +322,7 @@ motor r [l] [r]    : set motor ratio\r\n\
 motor [l] [r]      : drive motor by specified ratio\r\n");
 	return true;
 }
-MotorDrive::MotorDrive() : mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
+MotorDrive::MotorDrive() : mMotorL(),mMotorR(),mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
 {
 	setName("motor");
 	setPriority(TASK_PRIORITY_MOTOR,TASK_INTERVAL_MOTOR);
