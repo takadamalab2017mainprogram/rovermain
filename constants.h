@@ -28,7 +28,7 @@ const static int PIN_SERVO = 1;				//サーボピン
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
-const static double MOTOR_MAX_POWER_CHANGE = MOTOR_MAX_POWER * 2;//モータ出力の1秒あたりの最大変化量
+const static double MOTOR_MAX_POWER_CHANGE = MOTOR_MAX_POWER * 4;//モータ出力の1秒あたりの最大変化量
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
@@ -44,16 +44,17 @@ const static unsigned int WAITING_ABORT_TIME = 3600;//強制的に放出判定とする時間
 const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 4;//前回との気圧の差がこれ以内なら停止中とカウント(1秒間隔でサンプリング)
 const static unsigned int FALLING_PRESSURE_COUNT = 5;//気圧変化量が閾値以下の状態がこれだけ続いたら着地と判定
 const static double FALLING_GYRO_THRESHOLD = 0.5;//角速度がこの値以下なら停止中とカウント
-const static unsigned int FALLING_GYRO_COUNT = 100;//角速度の値が閾値以下のサンプルがこれだけ連続したら着地と判定
+const static unsigned int FALLING_GYRO_COUNT = 1000;//角速度の値が閾値以下のサンプルがこれだけ連続したら着地と判定
 const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
-const static unsigned int SEPARATING_SERVO_COUNT = 5;//サーボの向きを変える回数
+const static unsigned int SEPARATING_SERVO_COUNT = 6;//サーボの向きを変える回数
 
 const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近時の速度(最大比)
-const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒)
+const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 3;//進行方向を変更する間隔(秒)
+const static unsigned int NAVIGATING_NUMBER_OF_POSITION_HISTORIES = 5;//新しい進行方向を計算するために用いる最大の過去の座標数
 
 //////////////////////////////////////////////
 //タスク系設定
@@ -73,6 +74,7 @@ const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
 
 //////////////////////////////////////////////
-//その他数値
+//その他
 //////////////////////////////////////////////
-const static double degree2meter = 111111.111111;//これを度に掛けるとメートルに変換できる
+const static double DEGREE_2_METER = 111111.111111;//これを度に掛けるとメートルに変換できる
+const static char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt";

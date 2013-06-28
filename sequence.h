@@ -1,5 +1,6 @@
 #pragma once
 #include <time.h>
+#include <list>
 #include "task.h"
 #include "utils.h"
 
@@ -79,9 +80,12 @@ class Navigating : public TaskBase
 private:
 	struct timespec mLastCheckTime;//前回のチェック時刻
 
-	//ゴール、現在位置、前回の位置(zの値が0の場合位置が有効であるとする)
-	VECTOR3 mGoalPos,mCurrentPos,mLastPos;
-	bool mIsGoalPos,mIsCurrentPos,mIsLastPos;
+	//ゴール位置
+	VECTOR3 mGoalPos;
+	bool mIsGoalPos;
+
+	//GPS座標から計算された過去数回分の位置
+	std::list<VECTOR3> mLastPos;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

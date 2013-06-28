@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include <fstream>
 #include "sequence.h"
 #include "utils.h"
 #include "serial_command.h"
@@ -57,19 +58,8 @@ bool Testing::onCommand(const std::vector<std::string> args)
 			}else Debug::print(LOG_SUMMARY, "%s Not Found\r\n",args[2].c_str());
 			return false;
 		}
-	}else if(args.size() == 4)
-	{
-		if(args[1].compare("goal") == 0)
-		{
-			VECTOR3 goal;
-			goal.x = atof(args[2].c_str());
-			goal.y = atof(args[3].c_str());
-			gNavigatingState.setGoal(goal);
-			return true;
-		}
 	}
-	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n\
-testing goal [x] [y]              : set goal\r\n");
+	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n");
 
 	return true;
 }
@@ -287,16 +277,29 @@ bool Navigating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
-	mIsCurrentPos = mIsLastPos = false;
 	mLastCheckTime = time;
+	mLastPos.clear();
 
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
 {
+	VECTOR3 currentPos;
 	//新しい位置を取得
-	if(gGPSSensor.get(mCurrentPos))mIsCurrentPos = true;
-	else return;
+	if(!gGPSSensor.get(currentPos))return;
+
+	//最初の座標を取得したら移動を開始する
+	if(mLastPos.empty())
+	{
+		Debug::print(LOG_SUMMARY, "NAVIGATING: Got Position! Starting...\r\n");
+		gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+	}
+
+	//過去の座標リストを更新
+	if(mLastPos.back() != currentPos)mLastPos.push_back(currentPos);
+	//古いデータを削除
+	if(mLastPos.size() > NAVIGATING_NUMBER_OF_POSITION_HISTORIES)mLastPos.pop_front();
+
 
 	//ゴールが設定されているか確認
 	if(!mIsGoalPos)
@@ -306,7 +309,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	//ゴールとの距離を確認
-	double distance = VECTOR3::calcDistanceXY(mCurrentPos,mGoalPos);
+	double distance = VECTOR3::calcDistanceXY(currentPos,mGoalPos);
 	if(distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD)
 	{
 		//ゴール判定
@@ -319,39 +322,52 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
-	//前回の座標を古い座標として設定
-	mIsLastPos = mIsCurrentPos;
-	mLastPos = mCurrentPos;
-
-	//2つの位置情報を取得したか確認
-	if(!mIsLastPos)
+	//過去の座標の平均値を計算する
+	VECTOR3 averagePos;
+	std::list<VECTOR3>::iterator it = mLastPos.begin();
+	while(it != mLastPos.end())
 	{
-		//まだ1つしか位置情報がない
-		Debug::print(LOG_SUMMARY, "Calculating Direction\r\n");
-		return;
+		averagePos += *it;
+		++it;
 	}
+	averagePos /= mLastPos.size();
 
 	//新しい角度を計算
-	double currentDirection = -VECTOR3::calcAngleXY(mLastPos,mCurrentPos);
-	double newDirection = -VECTOR3::calcAngleXY(mCurrentPos,mGoalPos);
+	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
+	double newDirection = -VECTOR3::calcAngleXY(currentPos,mGoalPos);
 	double deltaDirection = GyroSensor::normalize(newDirection - currentDirection);
 
+	//新しい速度を計算
 	double speed = MOTOR_MAX_POWER;
 	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;//接近したら速度を落とす
 
-	gMotorDrive.startPID(deltaDirection ,speed);
+	//方向と速度を変更
+	gMotorDrive.drivePID(deltaDirection ,speed);
 
-	Debug::print(LOG_SUMMARY, "NAVIGATING: delta_direction = %3.8f distance = %f\r\n",deltaDirection,distance * degree2meter);
-	Debug::print(LOG_SUMMARY, "Last (%f) Current(%f)\r\n",currentDirection,newDirection);
+	Debug::print(LOG_SUMMARY, "NAVIGATING: distance = %f (m)\r\n",distance * DEGREE_2_METER);
+	Debug::print(LOG_SUMMARY, "Last (%f %f) Current(%f %f)\r\n",averagePos.x,averagePos.y,currentPos.x,currentPos.y);
 }
 bool Navigating::onCommand(const std::vector<std::string> args)
 {
+	if(args.size() == 1)
+	{
+		VECTOR3 pos;
+		if(!gGPSSensor.get(pos))
+		{
+			Debug::print(LOG_SUMMARY, "Unable to get current position!\r\n");
+			return true;
+		}
+
+		setGoal(pos);
+		return true;
+	}
 	if(args.size() == 3)
 	{
-		mIsGoalPos = true;
-		mGoalPos.x = atof(args[1].c_str());
-		mGoalPos.y = atof(args[2].c_str());
-		Debug::print(LOG_SUMMARY, "Set Goal ( %f ,%f )\r\n",mGoalPos.x,mGoalPos.y);
+		VECTOR3 pos;
+		pos.x = atof(args[1].c_str());
+		pos.y = atof(args[2].c_str());
+
+		setGoal(pos);
 		return true;
 	}
 	Debug::print(LOG_PRINT, "navigating [pos x] [pos y]\r\n");
@@ -373,7 +389,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f ,%f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mGoalPos(), mCurrentPos(), mLastPos(), mIsGoalPos(false), mIsCurrentPos(false), mIsLastPos(false)
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

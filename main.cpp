@@ -23,7 +23,7 @@ bool parseInitializer()
 {
 	TaskManager* pTaskMan = TaskManager::getInstance();
 	Debug::print(LOG_SUMMARY, "Reading initialize.txt...");
-	std::ifstream ifs( "initialize.txt" );
+	std::ifstream ifs( INITIALIZE_SCRIPT_FILENAME );
 	std::string str;
 	if(ifs.good())
 	{
@@ -123,7 +123,7 @@ void sigHandler(int p_signame)
 	
 	switch(p_signame)
 	{
-	case 2:	//Ctrl-Cを無視
+	case 2:	//SIGINT
 		{
 			static time_t last_pressed = 0;
 			time_t cur_time;
@@ -146,7 +146,7 @@ void sigHandler(int p_signame)
 			last_pressed = cur_time;
 			break;
 		}
-	case 3: //キーボードによる中止を無視
+	case 3: //SIGQUIT
 		Debug::print(LOG_SUMMARY,"Quit by keyboard is disabled\r\n");
 		break;
 	}

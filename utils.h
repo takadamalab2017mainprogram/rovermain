@@ -65,7 +65,12 @@ public:
 	VECTOR3& operator-=(const VECTOR3& v);
 	VECTOR3 operator+(const VECTOR3& u) const;
 	VECTOR3 operator-(const VECTOR3& u) const;
-
+	VECTOR3& operator*=(const double v);
+	VECTOR3& operator/=(const double v);
+	VECTOR3 operator*(const double v) const;
+	VECTOR3 operator/(const double v) const;
+	bool operator==(const VECTOR3& v)const;
+	bool operator!=(const VECTOR3& v)const;
 
 	VECTOR3();
 	VECTOR3(double tx, double ty, double tz);

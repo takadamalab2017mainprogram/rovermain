@@ -82,7 +82,36 @@ VECTOR3 VECTOR3::operator-(const VECTOR3& v) const
 {
 	return VECTOR3(x - v.x,y - v.y,z - v.z);
 }
-
+VECTOR3& VECTOR3::operator*=(const double v)
+{
+	x *= v;
+	y *= v;	
+	z *= v;
+	return *this;
+}
+VECTOR3& VECTOR3::operator/=(const double v)
+{
+	x /= v;
+	y /= v;	
+	z /= v;
+	return *this;
+}
+VECTOR3 VECTOR3::operator*(const double v) const
+{
+	return VECTOR3(x * v,y * v,z * v);
+}
+VECTOR3 VECTOR3::operator/(const double v) const
+{
+	return VECTOR3(x / v,y / v,z / v);
+}
+bool VECTOR3::operator==(const VECTOR3& v) const
+{
+	return (x == v.x) && (y == v.y) && (z == v.z);
+}
+bool VECTOR3::operator!=(const VECTOR3& v) const
+{
+	return (x != v.x) || (y != v.y) || (z != v.z);
+}
 
 VECTOR3::VECTOR3() : x(0),y(0),z(0){}
 VECTOR3::VECTOR3(double tx, double ty, double tz) : x(tx),y(ty),z(tz){}

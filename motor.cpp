@@ -162,6 +162,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 	Debug::print(LOG_DETAIL,"MotorDrive is Ready!\r\n");
 
 	mLastUpdateTime = time;
+	mAngle = 0;
     return true;
 }
 
@@ -224,6 +225,8 @@ void MotorDrive::drive(int powerL, int powerR)
 	Debug::print(LOG_DETAIL,"Motor ratio: %d %d\r\n",powerL,powerR);
     mMotorL.set(mRatioL * powerL / MOTOR_MAX_POWER);
     mMotorR.set(-mRatioR * powerR / MOTOR_MAX_POWER);
+
+	mAngle = 0;
 }
 
 void MotorDrive::set(double p,double i,double d)
@@ -236,17 +239,18 @@ void MotorDrive::set(double p,double i,double d)
 
 void MotorDrive::startPID(double angle,int power)
 {
-	angle = GyroSensor::normalize(angle);
-	power = max(min(power,MOTOR_MAX_POWER),0);
-	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",angle,power);
-	mDiff1 = mDiff2 = mDiff3 = 0;
-	mAngle = angle;
-	mControlPower = 0;
-	mDrivePower = power;
-	mDriveMode = DRIVE_PID;
 	gGyroSensor.setZero();
+	drivePID(angle,power);
+	mDiff1 = mDiff2 = mDiff3 = 0;
+	mControlPower = 0;
 }
-
+void MotorDrive::drivePID(double angle,int power)
+{
+	mAngle = GyroSensor::normalize(angle + mAngle);
+	mDrivePower = max(min(power,MOTOR_MAX_POWER),0);
+	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
+	mDriveMode = DRIVE_PID;
+}
 bool MotorDrive::onCommand(const std::vector<std::string> args)
 {
 	int size = args.size();

@@ -16,6 +16,15 @@ GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 WebCamera gWebCamera;
 
+int wiringPiI2CReadReg32LittleEndian(int fd, int address)
+{
+	return (int)((unsigned int)wiringPiI2CReadReg8(fd, address + 3) << 24 | (unsigned int)wiringPiI2CReadReg8(fd, address + 2) << 16 | (unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
+}
+int wiringPiI2CReadReg16LittleEndian(int fd, int address)
+{
+	return (short int)((unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
+}
+
 //////////////////////////////////////////////
 // Pressure Sensor
 //////////////////////////////////////////////
@@ -30,6 +39,14 @@ bool PressureSensor::onInit(const struct timespec& time)
 	if((mFileHandle = wiringPiI2CSetup(0x60)) == -1)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to setup Pressure Sensor\r\n");
+		return false;
+	}
+
+	//気圧センサーの動作を確認(0xc - 0xfに0が入っているか確かめる)
+	if(wiringPiI2CReadReg32LittleEndian(mFileHandle,0x0c) != 0)
+	{
+		close(mFileHandle);
+		Debug::print(LOG_SUMMARY,"Failed to verify Pressure Sensor\r\n");
 		return false;
 	}
 
@@ -100,15 +117,6 @@ PressureSensor::~PressureSensor()
 //////////////////////////////////////////////
 // GPS Sensor
 //////////////////////////////////////////////
-int wiringPiI2CReadReg32LittleEndian(int fd, int address)
-{
-	return (int)((unsigned int)wiringPiI2CReadReg8(fd, address + 3) << 24 | (unsigned int)wiringPiI2CReadReg8(fd, address + 2) << 16 | (unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
-}
-int wiringPiI2CReadReg16LittleEndian(int fd, int address)
-{
-	return (short int)((unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
-
-}
 bool GPSSensor::onInit(const struct timespec& time)
 {
 	if((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
@@ -188,12 +196,14 @@ bool GyroSensor::onInit(const struct timespec& time)
 	mRVel.x = mRVel.y = mRVel.z = 0;
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
 	memset(&mLastSampleTime,0,sizeof(mLastSampleTime));
-
+	
 	if((mFileHandle = wiringPiI2CSetup(0x6b)) == -1)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to setup Gyro Sensor\r\n");
 		return false;
 	}
+
+	//ジャイロセンサーが正常動作中か確認
 	if(wiringPiI2CReadReg8(mFileHandle,0x0F) != 0xD4)
 	{
 		close(mFileHandle);
@@ -390,8 +400,8 @@ bool WebCamera::onCommand(const std::vector<std::string> args)
 		}
 	}else
 	{
-		Debug::print(LOG_PRINT, "camera start [filename] : save movie to filename\r\n\
-camera stop             : stop capturing movie\r\n");
+		Debug::print(LOG_PRINT, "capture start [filename] : save movie to filename\r\n\
+capture stop             : stop capturing movie\r\n");
 		return true;
 	}
 	return false;
