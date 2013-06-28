@@ -196,6 +196,7 @@ bool GyroSensor::onInit(const struct timespec& time)
 	}
 	if(wiringPiI2CReadReg8(mFileHandle,0x0F) != 0xD4)
 	{
+		close(mFileHandle);
 		Debug::print(LOG_SUMMARY,"Failed to verify Gyro Sensor\r\n");
 		return false;
 	}

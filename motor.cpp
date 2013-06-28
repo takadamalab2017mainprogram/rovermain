@@ -50,15 +50,15 @@ void Motor::update(double elapsedSeconds)
 		}
 
 		//V‚µ‚¢power‚ğ‚à‚Æ‚Épin‚Ìó‘Ô‚ğİ’è‚·‚é
-		if(curFrameTarget <= 0 && mCurPower > 0)digitalWrite(mReversePin, HIGH);
-		else if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, LOW);
+		if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, HIGH);
+		else if(curFrameTarget < 0 && mCurPower >= 0)digitalWrite(mReversePin, LOW);
 		mCurPower = curFrameTarget;
 		softPwmWrite(mPowerPin, fabs(mCurPower));
 	}
 }
 void Motor::clean()
 {
-	if(mPowerPin >= 0)pwmWrite(mPowerPin, 0);
+	if(mPowerPin >= 0)softPwmWrite(mPowerPin, 0);
 	if(mReversePin >= 0)digitalWrite(mReversePin, LOW);
 	mCurPower = 0;
 }
