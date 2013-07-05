@@ -16,14 +16,19 @@ GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 WebCamera gWebCamera;
 
-int wiringPiI2CReadReg32LittleEndian(int fd, int address)
+unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
-	return (int)((unsigned int)wiringPiI2CReadReg8(fd, address + 3) << 24 | (unsigned int)wiringPiI2CReadReg8(fd, address + 2) << 16 | (unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
+	return (unsigned int)((unsigned long)wiringPiI2CReadReg8(fd, address + 3) << 24 | (unsigned int)wiringPiI2CReadReg8(fd, address + 2) << 16 | (unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
 }
-int wiringPiI2CReadReg16LittleEndian(int fd, int address)
+unsigned short wiringPiI2CReadReg16LE(int fd, int address)
 {
-	return (short int)((unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
+	return (unsigned short)((unsigned short)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned short)wiringPiI2CReadReg8(fd, address));
 }
+unsigned short wiringPiI2CReadReg16BE(int fd, int address)
+{
+	return (unsigned short)((unsigned short)wiringPiI2CReadReg8(fd, address + 1) | (unsigned short)wiringPiI2CReadReg8(fd, address) << 8);
+}
+
 
 //////////////////////////////////////////////
 // Pressure Sensor
@@ -43,7 +48,7 @@ bool PressureSensor::onInit(const struct timespec& time)
 	}
 
 	//気圧センサーの動作を確認(0xc - 0xfに0が入っているか確かめる)
-	if(wiringPiI2CReadReg32LittleEndian(mFileHandle,0x0c) != 0)
+	if(wiringPiI2CReadReg32LE(mFileHandle,0x0c) != 0)
 	{
 		close(mFileHandle);
 		Debug::print(LOG_SUMMARY,"Failed to verify Pressure Sensor\r\n");
@@ -51,10 +56,10 @@ bool PressureSensor::onInit(const struct timespec& time)
 	}
 
 	//気圧計算用の係数を取得
-	mA0 = val2float((unsigned int)wiringPiI2CReadReg8(mFileHandle,0x04) << 8 | (unsigned int)wiringPiI2CReadReg8(mFileHandle,0x05),16,3,0);
-	mB1 = val2float((unsigned int)wiringPiI2CReadReg8(mFileHandle,0x06) << 8 | (unsigned int)wiringPiI2CReadReg8(mFileHandle,0x07),16,13,0);
-	mB2 = val2float((unsigned int)wiringPiI2CReadReg8(mFileHandle,0x08) << 8 | (unsigned int)wiringPiI2CReadReg8(mFileHandle,0x09),16,14,0);
-	mC12 = val2float((unsigned int)wiringPiI2CReadReg8(mFileHandle,0x0A) << 8 | (unsigned int)wiringPiI2CReadReg8(mFileHandle,0x0B),14,13,9);
+	mA0 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x04),16,3,0);
+	mB1 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x06),16,13,0);
+	mB2 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x08),16,14,0);
+	mC12 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x0A),14,13,9);
 
 	//気圧取得要求
 	requestSample();
@@ -97,7 +102,8 @@ void PressureSensor::onUpdate(const struct timespec& time)
 
 bool PressureSensor::onCommand(const std::vector<std::string> args)
 {
-	if(isActive())Debug::print(LOG_SUMMARY, "Pressure: %d\r\n",mPressure);
+	if(!isActive())return false;
+	Debug::print(LOG_SUMMARY, "Pressure: %d\r\n",mPressure);
 	return true;
 }
 
@@ -133,6 +139,8 @@ bool GPSSensor::onInit(const struct timespec& time)
 	Debug::print(LOG_SUMMARY,"GPS Firmware Version:%d\r\n",wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
+	mGroundDirection = mGroundSpeed = 0;
+	mIsNewData = false;
 
 	return true;
 }
@@ -146,17 +154,32 @@ void GPSSensor::onClean()
 void GPSSensor::onUpdate(const struct timespec& time)
 {
 	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
-	if(status & 0x04)// Found Position
+	if(status & 0x06)// Found Position
 	{
 		//座標を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
-		int read = wiringPiI2CReadReg32LittleEndian(mFileHandle, 0x07);
-		if(read ==  wiringPiI2CReadReg32LittleEndian(mFileHandle, 0x07))mPos.x = read / 10000000.0;
 
-		read = wiringPiI2CReadReg32LittleEndian(mFileHandle, 0x0B);
-		if(read ==  wiringPiI2CReadReg32LittleEndian(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
+		//経度
+		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07);
+		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = (int)read / 10000000.0;
 
-		read = (unsigned int)wiringPiI2CReadReg16LittleEndian(mFileHandle, 0x21);
-		if(read == (unsigned int)wiringPiI2CReadReg16LittleEndian(mFileHandle, 0x21))mPos.z = read;
+		//緯度
+		read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B);
+		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = (int)read / 10000000.0;
+
+		//高度
+		read = wiringPiI2CReadReg16LE(mFileHandle, 0x21);
+		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
+
+		//地上での速度
+		read = wiringPiI2CReadReg16LE(mFileHandle, 0x07);
+		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x07))mGroundSpeed = read / 100.0;
+
+		//地上での進行方位
+		read = wiringPiI2CReadReg16LE(mFileHandle, 0x9C);
+		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x9C))mGroundDirection = (double)read / USHRT_MAX * 360;
+
+		//新しいデータが届いたことを記録する
+		if(status & 0x01)mIsNewData = true;
 	}
 	//衛星個数を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
 	if(wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
@@ -165,20 +188,32 @@ bool GPSSensor::onCommand(const std::vector<std::string> args)
 {
 	if(!isActive())return false;
 	if(mSatelites < 4)Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
-	else Debug::print(LOG_SUMMARY, "Satelites: %d\r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
+	else Debug::print(LOG_SUMMARY, "Satelites: %d Speed: %f m/s Direction: %f degrees\r\nPosition: %f %f %f\r\n",mSatelites,mGroundSpeed,mGroundDirection,mPos.x,mPos.y,mPos.z);
 	return true;
 }
 bool GPSSensor::get(VECTOR3& pos)
 {
 	if(mSatelites >= 4)//3D fix
 	{
-		pos = mPos;
+		mIsNewData = false;//データを取得したことを記録
+		pos = mPos;//引数のposに代入
 		return true;
 	}
 	return false;//Invalid Position
 }
-
-GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0)
+double GPSSensor::getSpeed()
+{
+	return mGroundSpeed;
+}
+double GPSSensor::getDirection()
+{
+	return mGroundDirection;
+}
+bool GPSSensor::isNewPos()
+{
+	return mIsNewData;
+}
+GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mGroundSpeed(0),mGroundDirection(0),mSatelites(0),mIsNewData(false)
 {
 	setName("gps");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
@@ -238,7 +273,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 {
 	int status_reg;
 	int data_samples = 0;
-	double newRvx = 0,newRvy = 0,newRvz = 0;
+	VECTOR3 newRv;
 
 	//蓄えられたサンプルの平均値を現時点での速度とする
 	while((status_reg = wiringPiI2CReadReg8(mFileHandle,0x27)) & 0x08)
@@ -246,9 +281,35 @@ void GyroSensor::onUpdate(const struct timespec& time)
 		//if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
 
 		//ジャイロのFIFO内のデータをすべて読み込み、和を取る
-		newRvx += (short int)wiringPiI2CReadReg16(mFileHandle,0x28) * 0.070;
-		newRvy += (short int)wiringPiI2CReadReg16(mFileHandle,0x2A) * 0.070;
-		newRvz += (short int)wiringPiI2CReadReg16(mFileHandle,0x2C) * 0.070;
+		VECTOR3 sample;
+		sample.x = (short)wiringPiI2CReadReg16BE(mFileHandle,0x28) * 0.070;
+		sample.y = (short)wiringPiI2CReadReg16BE(mFileHandle,0x2A) * 0.070;
+		sample.z = (short)wiringPiI2CReadReg16BE(mFileHandle,0x2C) * 0.070;
+		newRv += sample;
+
+		//ドリフト誤差計算中であれば配列にデータを突っ込む
+		if(mIsCalculatingOffset)
+		{
+			mRVelHistory.push_back(sample);
+			if(mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
+			{
+				//平均値を取ってみる
+				std::list<VECTOR3>::iterator it = mRVelHistory.begin();
+				while(it != mRVelHistory.end())
+				{
+					mRVelOffset += *it;
+					++it;
+				}
+				mRVelOffset /= mRVelHistory.size();
+				mRVelHistory.clear();
+				mIsCalculatingOffset = false;
+				Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n",mRVelOffset.x,mRVelOffset.y,mRVelOffset.z);
+			}
+		}
+
+		//ドリフト誤差を補正
+		newRv -= mRVelOffset;
+
 		++data_samples;
 	}
 	
@@ -256,20 +317,16 @@ void GyroSensor::onUpdate(const struct timespec& time)
 	if(data_samples != 0)
 	{
 		//平均
-		mRVel.x = newRvx / data_samples;
-		mRVel.y = newRvy / data_samples;
-		mRVel.z = newRvz / data_samples;
+		newRv /= data_samples;
 
 		//積分
 		if(mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0 )
 		{
 			double dt = Time::dt(time,mLastSampleTime);
-			mRAngle.x += mRVel.x * dt;
-			mRAngle.y += mRVel.y * dt;
-			mRAngle.z += mRVel.z * dt;
-
+			mRAngle += (newRv + mRVel) / 2 * dt;
 			normalize(mRAngle);
 		}
+		mRVel = newRv;
 		mLastSampleTime = time;
 	}
 }
@@ -282,10 +339,16 @@ bool GyroSensor::onCommand(const std::vector<std::string> args)
 		{
 			setZero();
 			return true;
+		}else if(args[1].compare("calib") == 0)
+		{
+			calibrate();
+			return true;
 		}
 		return false;
 	}
-	Debug::print(LOG_SUMMARY, "Angle: %f %f %f\r\nAngle Velocity: %f %f %f\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
+	Debug::print(LOG_SUMMARY, "Angle: %f %f %f\r\nAngle Velocity: %f %f %f\r\n\
+gyro reset  : set angle to zero point\r\n\
+gyro calib  : calibrate gyro *do NOT move*\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
 	return true;
 }
 void GyroSensor::getRVel(VECTOR3& vel)
@@ -324,6 +387,10 @@ double GyroSensor::getRz()
 {
 	return mRAngle.z;
 }
+void GyroSensor::calibrate()
+{
+	mIsCalculatingOffset = true;
+}
 double GyroSensor::normalize(double pos)
 {
 	while(pos >= 180 || pos < -180)pos += (pos > 0) ? -360 : 360;
@@ -335,7 +402,7 @@ void GyroSensor::normalize(VECTOR3& pos)
 	pos.y = normalize(pos.y);
 	pos.z = normalize(pos.z);
 }
-GyroSensor::GyroSensor() : mFileHandle(-1),mRVel(),mRAngle()
+GyroSensor::GyroSensor() : mFileHandle(-1),mRVel(),mRAngle(),mRVelHistory(),mRVelOffset(),mIsCalculatingOffset(false)
 {
 	setName("gyro");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_GYRO);

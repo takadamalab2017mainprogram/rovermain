@@ -7,6 +7,7 @@
 #pragma once
 #include "task.h"
 #include "utils.h"
+#include <list>
 
 //MPL115A2からデータを取得するクラス
 //気圧の値はhPa単位で+-10hPaの誤差あり
@@ -46,7 +47,10 @@ class GPSSensor : public TaskBase
 private:
 	int mFileHandle;//winringPi i2c　のファイルハンドラ
 	VECTOR3 mPos;//座標(経度、緯度、高度)
+	double mGroundSpeed;//地上での進行速度
+	double mGroundDirection;//地上での進行方位
 	int mSatelites;//補足した衛星の数
+	bool mIsNewData;//新しい座標データがあれば真
 protected:
 	//GPSを初期化
 	virtual bool onInit(const struct timespec& time);
@@ -61,6 +65,13 @@ public:
 	//現在の座標を取得する(falseを返した場合は場所が不明)
 	bool get(VECTOR3& pos);
 
+	//現在の速度と方角(+-180度、時計回り、0が北)
+	double getSpeed();
+	double getDirection();
+
+	//前回の座標取得以降にデータが更新された場合は真
+	bool isNewPos();
+
 	GPSSensor();
 	~GPSSensor();
 };
@@ -73,6 +84,11 @@ private:
 	VECTOR3 mRVel;//角速度
 	VECTOR3 mRAngle;//角度
 	struct timespec mLastSampleTime;
+
+	//ドリフト誤差補正用
+	std::list<VECTOR3> mRVelHistory;//過去の角速度
+	VECTOR3 mRVelOffset;//サンプルあたりのドリフト誤差の推定値
+	bool mIsCalculatingOffset;//ドリフト誤差計算中フラグ
 protected:
 	//ジャイロセンサを初期化
 	virtual bool onInit(const struct timespec& time);
@@ -102,6 +118,9 @@ public:
 	double getRx();
 	double getRy();
 	double getRz();
+
+	//ドリフト誤差を補正する(静止状態で呼び出すこと)
+	void calibrate();
 
 	//引数のベクトルを(-180～+180)の範囲に修正
 	static void normalize(VECTOR3& pos);

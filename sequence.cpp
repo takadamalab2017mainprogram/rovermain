@@ -285,21 +285,27 @@ bool Navigating::onInit(const struct timespec& time)
 void Navigating::onUpdate(const struct timespec& time)
 {
 	VECTOR3 currentPos;
+
+	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得
 	if(!gGPSSensor.get(currentPos))return;
 
 	//最初の座標を取得したら移動を開始する
 	if(mLastPos.empty())
 	{
-		Debug::print(LOG_SUMMARY, "NAVIGATING: Got Position! Starting...\r\n");
+		Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
 		gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 	}
 
-	//過去の座標リストを更新
-	if(mLastPos.back() != currentPos)mLastPos.push_back(currentPos);
-	//古いデータを削除
-	if(mLastPos.size() > NAVIGATING_NUMBER_OF_POSITION_HISTORIES)mLastPos.pop_front();
+	//新しい座標であればキューに追加
+	if(isNewData)
+	{
+		Debug::print(LOG_DETAIL, "NAVIGATING: Got Position (%f %f %f)\r\n",currentPos.x,currentPos.y,currentPos.z);
+		mLastPos.push_back(currentPos);
+	}
 
+	//古いデータを削除
+	//while(mLastPos.size() > NAVIGATING_NUMBER_OF_POSITION_HISTORIES)mLastPos.pop_front();
 
 	//ゴールが設定されているか確認
 	if(!mIsGoalPos)
@@ -324,6 +330,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	//過去の座標の平均値を計算する
 	VECTOR3 averagePos;
+	mLastPos.pop_back();//現在の位置を一時的に取り除く
 	std::list<VECTOR3>::iterator it = mLastPos.begin();
 	while(it != mLastPos.end())
 	{
@@ -331,6 +338,8 @@ void Navigating::onUpdate(const struct timespec& time)
 		++it;
 	}
 	averagePos /= mLastPos.size();
+
+	mLastPos.push_back(currentPos);//現在の位置を再び追加する
 
 	//新しい角度を計算
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
@@ -341,11 +350,14 @@ void Navigating::onUpdate(const struct timespec& time)
 	double speed = MOTOR_MAX_POWER;
 	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;//接近したら速度を落とす
 
+	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n",mLastPos.size(),averagePos.x,averagePos.y,currentPos.x,currentPos.y);
+	Debug::print(LOG_SUMMARY, "distance = %f (m)  angles(delta: %f old: %f new:%f)\r\n",distance * DEGREE_2_METER,deltaDirection,currentDirection,newDirection);
+
 	//方向と速度を変更
 	gMotorDrive.drivePID(deltaDirection ,speed);
 
-	Debug::print(LOG_SUMMARY, "NAVIGATING: distance = %f (m)\r\n",distance * DEGREE_2_METER);
-	Debug::print(LOG_SUMMARY, "Last (%f %f) Current(%f %f)\r\n",averagePos.x,averagePos.y,currentPos.x,currentPos.y);
+	//座標データをひとつ残して削除
+	while(mLastPos.size() > 1)mLastPos.pop_front();
 }
 bool Navigating::onCommand(const std::vector<std::string> args)
 {

@@ -35,6 +35,9 @@ const static int SERVO_RANGE = 9000;//パルス間隔
 const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
 const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 
+//ジャイロ設定
+const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
+
 //////////////////////////////////////////////
 // シーケンス系設定
 //////////////////////////////////////////////
@@ -54,7 +57,7 @@ const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 3;//進行方向を変更する間隔(秒)
-const static unsigned int NAVIGATING_NUMBER_OF_POSITION_HISTORIES = 5;//新しい進行方向を計算するために用いる最大の過去の座標数
+//const static unsigned int NAVIGATING_NUMBER_OF_POSITION_HISTORIES = 5;//新しい進行方向を計算するために用いる最大の過去の座標数
 
 //////////////////////////////////////////////
 //タスク系設定
