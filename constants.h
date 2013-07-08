@@ -41,7 +41,7 @@ const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ƒhƒŠƒtƒ
 //////////////////////////////////////////////
 // ƒV[ƒPƒ“ƒXŒnİ’è
 //////////////////////////////////////////////
-const static unsigned int WAITING_LIGHT_COUNT = 100;//‰½‰ñ˜A‘±‚ÅŒõ‚Á‚Ä‚¢‚é‚Æ”»’è‚³‚ê‚½‚Æ‚«‚É•úo”»’è‚Æ‚·‚é‚©
+const static unsigned int WAITING_LIGHT_COUNT = 3000;//‰½‰ñ˜A‘±‚ÅŒõ‚Á‚Ä‚¢‚é‚Æ”»’è‚³‚ê‚½‚Æ‚«‚É•úo”»’è‚Æ‚·‚é‚©
 const static unsigned int WAITING_ABORT_TIME = 3600;//‹­§“I‚É•úo”»’è‚Æ‚·‚éŠÔi•bj
 
 const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 4;//‘O‰ñ‚Æ‚Ì‹Cˆ³‚Ì·‚ª‚±‚êˆÈ“à‚È‚ç’â~’†‚ÆƒJƒEƒ“ƒg(1•bŠÔŠu‚ÅƒTƒ“ƒvƒŠƒ“ƒO)

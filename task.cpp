@@ -83,7 +83,11 @@ void TaskManager::clean()
 	std::vector<TaskBase*>::iterator it = mTasks.begin();
 	while(it != mTasks.end())
 	{
-		if(*it != NULL)if((**it).mIsRunning)(*it)->onClean();
+		if(*it != NULL)if((**it).mIsRunning)
+		{
+			(*it)->onClean();
+			(*it)->mIsRunning = false;
+		}
 		++it;
 	}
 	mTasks.clear();

@@ -300,7 +300,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 					mRVelOffset += *it;
 					++it;
 				}
-				mRVelOffset /= mRVelHistory.size();
+				mRVelOffset /= mRVelHistory.size();//ドリフト誤差補正量を適用
 				mRVelHistory.clear();
 				mIsCalculatingOffset = false;
 				Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n",mRVelOffset.x,mRVelOffset.y,mRVelOffset.z);
