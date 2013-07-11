@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include <math.h>
 #include <fstream>
 #include "sequence.h"
 #include "utils.h"
@@ -286,6 +287,16 @@ void Navigating::onUpdate(const struct timespec& time)
 {
 	VECTOR3 currentPos;
 
+	//ゴールが設定されているか確認
+	if(!mIsGoalPos)
+	{
+		//ゴールが設定されていないため移動できない
+		Debug::print(LOG_SUMMARY, "NAVIGATING : Please set goal!\r\n");
+		gMotorDrive.drive(0,0);
+		nextState();
+		return;
+	}
+
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得
 	if(!gGPSSensor.get(currentPos))return;
@@ -298,21 +309,10 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	//新しい座標であればキューに追加
-	if(isNewData)
+	if(isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
 	{
-		Debug::print(LOG_DETAIL, "NAVIGATING: Got Position (%f %f %f)\r\n",currentPos.x,currentPos.y,currentPos.z);
 		mLastPos.push_back(currentPos);
-	}
-
-	//古いデータを削除
-	//while(mLastPos.size() > NAVIGATING_NUMBER_OF_POSITION_HISTORIES)mLastPos.pop_front();
-
-	//ゴールが設定されているか確認
-	if(!mIsGoalPos)
-	{
-		//ゴールが設定されていないため移動できない
-		return;
-	}
+	}	
 
 	//ゴールとの距離を確認
 	double distance = VECTOR3::calcDistanceXY(currentPos,mGoalPos);
@@ -328,6 +328,9 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
+	//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す
+	if(mLastPos.size() < 2)return;
+
 	//過去の座標の平均値を計算する
 	VECTOR3 averagePos;
 	mLastPos.pop_back();//現在の位置を一時的に取り除く
@@ -338,13 +341,13 @@ void Navigating::onUpdate(const struct timespec& time)
 		++it;
 	}
 	averagePos /= mLastPos.size();
-
 	mLastPos.push_back(currentPos);//現在の位置を再び追加する
 
 	//新しい角度を計算
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
 	double newDirection = -VECTOR3::calcAngleXY(currentPos,mGoalPos);
 	double deltaDirection = GyroSensor::normalize(newDirection - currentDirection);
+	deltaDirection = max(min(deltaDirection,NAVIGATING_MAX_DELTA_DIRECTION),-1 * NAVIGATING_MAX_DELTA_DIRECTION);
 
 	//新しい速度を計算
 	double speed = MOTOR_MAX_POWER;

@@ -108,6 +108,9 @@ int main(int argc, char** argv)
 	}
 
 	pTaskMan->clean();
+
+	//書き込まれていないファイルを強制的にSDに書き込み
+	system("sync");
 	return 0;
 }
 

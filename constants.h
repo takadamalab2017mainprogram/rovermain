@@ -56,7 +56,8 @@ const static unsigned int SEPARATING_SERVO_COUNT = 6;//サーボの向きを変える回数
 const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近時の速度(最大比)
-const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 3;//進行方向を変更する間隔(秒)
+const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒)
+const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
 //const static unsigned int NAVIGATING_NUMBER_OF_POSITION_HISTORIES = 5;//新しい進行方向を計算するために用いる最大の過去の座標数
 
 //////////////////////////////////////////////

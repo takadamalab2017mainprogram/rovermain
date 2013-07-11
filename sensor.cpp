@@ -50,9 +50,9 @@ bool PressureSensor::onInit(const struct timespec& time)
 	//気圧センサーの動作を確認(0xc - 0xfに0が入っているか確かめる)
 	if(wiringPiI2CReadReg32LE(mFileHandle,0x0c) != 0)
 	{
-		close(mFileHandle);
+		//close(mFileHandle);
 		Debug::print(LOG_SUMMARY,"Failed to verify Pressure Sensor\r\n");
-		return false;
+		//return false;
 	}
 
 	//気圧計算用の係数を取得
@@ -333,7 +333,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 bool GyroSensor::onCommand(const std::vector<std::string> args)
 {
 	if(!isActive())return false;
-	if(args.size() >= 2)
+	if(args.size() == 2)
 	{
 		if(args[1].compare("reset") == 0)
 		{
@@ -345,10 +345,22 @@ bool GyroSensor::onCommand(const std::vector<std::string> args)
 			return true;
 		}
 		return false;
+	}else if(args.size() == 5)
+	{
+		if(args[1].compare("calib") == 0)
+		{
+			mRVelOffset.x = atof(args[2].c_str());
+			mRVelOffset.y = atof(args[3].c_str());
+			mRVelOffset.z = atof(args[4].c_str());
+			Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n",mRVelOffset.x,mRVelOffset.y,mRVelOffset.z);
+			return true;
+		}
+		return false;
 	}
 	Debug::print(LOG_SUMMARY, "Angle: %f %f %f\r\nAngle Velocity: %f %f %f\r\n\
 gyro reset  : set angle to zero point\r\n\
-gyro calib  : calibrate gyro *do NOT move*\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
+gyro calib  : calibrate gyro *do NOT move*\r\n\
+gyro calib [x_offset] [y_offset] [z_offset] : calibrate gyro by specified params\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
 	return true;
 }
 void GyroSensor::getRVel(VECTOR3& vel)
