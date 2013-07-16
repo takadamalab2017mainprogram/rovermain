@@ -306,6 +306,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
 		gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+		mLastCheckTime = time;
 	}
 
 	//新しい座標であればキューに追加
@@ -333,15 +334,14 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	//過去の座標の平均値を計算する
 	VECTOR3 averagePos;
-	mLastPos.pop_back();//現在の位置を一時的に取り除く
 	std::list<VECTOR3>::iterator it = mLastPos.begin();
 	while(it != mLastPos.end())
 	{
 		averagePos += *it;
 		++it;
 	}
-	averagePos /= mLastPos.size();
-	mLastPos.push_back(currentPos);//現在の位置を再び追加する
+	averagePos -= mLastPos.back();
+	averagePos /= mLastPos.size() - 1;
 
 	//新しい角度を計算
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
@@ -360,7 +360,9 @@ void Navigating::onUpdate(const struct timespec& time)
 	gMotorDrive.drivePID(deltaDirection ,speed);
 
 	//座標データをひとつ残して削除
-	while(mLastPos.size() > 1)mLastPos.pop_front();
+	currentPos = mLastPos.back();
+	mLastPos.clear();
+	mLastPos.push_back(currentPos);
 }
 bool Navigating::onCommand(const std::vector<std::string> args)
 {

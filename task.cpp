@@ -246,5 +246,5 @@ void TaskManager::del(TaskBase* pTask)
 }
 void  TaskManager::sortByPriority()
 {
-	std::sort(mTasks.begin(),mTasks.end(),TaskSoter());
+	std::sort(mTasks.begin(),mTasks.end(),TaskSorter());
 }

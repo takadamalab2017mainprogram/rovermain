@@ -46,7 +46,7 @@ const static unsigned int WAITING_ABORT_TIME = 3600;//強制的に放出判定とする時間
 
 const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 4;//前回との気圧の差がこれ以内なら停止中とカウント(1秒間隔でサンプリング)
 const static unsigned int FALLING_PRESSURE_COUNT = 5;//気圧変化量が閾値以下の状態がこれだけ続いたら着地と判定
-const static double FALLING_GYRO_THRESHOLD = 0.5;//角速度がこの値以下なら停止中とカウント
+const static double FALLING_GYRO_THRESHOLD = 10;//角速度がこの値以下なら停止中とカウント
 const static unsigned int FALLING_GYRO_COUNT = 1000;//角速度の値が閾値以下のサンプルがこれだけ連続したら着地と判定
 const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 

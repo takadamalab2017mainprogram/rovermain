@@ -90,7 +90,7 @@ private:
 	//ŠÇ—‰º‚Ìƒ^ƒXƒN
 	std::vector<TaskBase*> mTasks;
 
-	class TaskSoter {
+	class TaskSorter {
 	public:
 		bool operator()(const TaskBase* riLeft, const TaskBase* riRight) const {
 			if(riLeft == NULL)return false;

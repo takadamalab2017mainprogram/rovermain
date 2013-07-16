@@ -332,7 +332,6 @@ void GyroSensor::onUpdate(const struct timespec& time)
 }
 bool GyroSensor::onCommand(const std::vector<std::string> args)
 {
-	if(!isActive())return false;
 	if(args.size() == 2)
 	{
 		if(args[1].compare("reset") == 0)
@@ -341,6 +340,7 @@ bool GyroSensor::onCommand(const std::vector<std::string> args)
 			return true;
 		}else if(args[1].compare("calib") == 0)
 		{
+			if(!isActive())return false;
 			calibrate();
 			return true;
 		}
