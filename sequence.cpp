@@ -1,6 +1,9 @@
 #include<stdlib.h>
 #include <math.h>
 #include <fstream>
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include "sequence.h"
 #include "utils.h"
 #include "serial_command.h"

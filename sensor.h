@@ -151,7 +151,7 @@ public:
 	~LightSensor();
 };
 
-//Webカメラの映像をキャプチャするクラス
+//Webカメラの動画をキャプチャするクラス
 class WebCamera : public TaskBase
 {
 protected:
@@ -165,10 +165,26 @@ public:
 	~WebCamera();
 };
 
+//ステレオカメラの画像をキャプチャするクラス
+class StereoCamera : public TaskBase
+{
+	int mSavePicCount;
+protected:
+	virtual bool onCommand(const std::vector<std::string> args);
+	virtual void onClean();
+public:
+	void start();
+
+	StereoCamera();
+	~StereoCamera();
+};
+
 extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
 extern WebCamera gWebCamera;
+extern StereoCamera gStereoCamera;
+
 
 

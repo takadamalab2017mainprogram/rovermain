@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include "sensor.h"
 #include "utils.h"
 
@@ -15,6 +18,7 @@ GPSSensor gGPSSensor;
 GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 WebCamera gWebCamera;
+StereoCamera gStereoCamera;
 
 unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
@@ -520,3 +524,86 @@ WebCamera::WebCamera()
 WebCamera::~WebCamera()
 {
 }
+bool StereoCamera::onCommand(const std::vector<std::string> args)
+{
+	//if(!isActive())return false;
+	if(args.size() >= 1)
+	{
+		Debug::print(LOG_SUMMARY, "Start capturing!\r\n");
+		start();
+		return true;
+	}else
+	{
+		Debug::print(LOG_PRINT, "stereo [filename] : save movie to filename\r\n");
+		return true;
+	}
+	return false;
+}
+void StereoCamera::onClean()
+{
+}
+void StereoCamera::start()
+{
+	double w = 320, h = 240;                                                  //カメラ撮影サイズ
+	CvCapture* capture1 = cvCreateCameraCapture(0);							  //2つのWebカメラ
+    CvCapture* capture2 = cvCreateCameraCapture(1);
+    
+    IplImage* frame1;	IplImage* frame2;                                     //カメラ映像の1フレーム
+	IplImage* grayFrame1 = cvCreateImage(cvSize(w,h), IPL_DEPTH_8U, 1);       //グレースケール化済フレームひとつめ
+	IplImage* grayFrame2 = cvCreateImage(cvSize(w,h), IPL_DEPTH_8U, 1);       //グレースケール化済フレームふたつめ
+	
+	if(capture1 == NULL) //読み込み失敗時
+	{
+		Debug::print(LOG_SUMMARY, "Unable to initialize Camera0\r\n");return;
+	}
+	if(capture2 == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Unable to initialize Camera1\r\n");return;
+	}
+	
+	cvSetCaptureProperty (capture1, CV_CAP_PROP_FRAME_WIDTH, w); //撮影サイズを指定
+	cvSetCaptureProperty (capture1, CV_CAP_PROP_FRAME_HEIGHT, h);
+	cvSetCaptureProperty (capture2, CV_CAP_PROP_FRAME_WIDTH, w);
+	cvSetCaptureProperty (capture2, CV_CAP_PROP_FRAME_HEIGHT, h);
+	
+	frame1 = cvQueryFrame(capture1); //Webカメラから1フレームを格納
+	frame2 = cvQueryFrame(capture2);
+	cvCvtColor(frame1, grayFrame1, CV_BGR2GRAY); // グレースケールに変換
+	cvCvtColor(frame2, grayFrame2, CV_BGR2GRAY);
+
+	// 左カメラ ------------------------------------
+	// ファイル名
+	std::stringstream		streamL;
+	streamL << "stereo/l" <<  mSavePicCount << ".jpg";
+
+	// Convert stringstream to char*
+	const char* filename = streamL.str().c_str();
+
+	// 保存
+	cvSaveImage(filename, grayFrame1);
+
+	// 右カメラ ------------------------------------
+	// ファイル名
+	std::stringstream		streamR;
+	streamR << "stereo/r" <<  mSavePicCount << ".jpg";
+
+	// Convert stringstream to char*
+	filename = streamR.str().c_str();
+
+	// 保存
+	cvSaveImage(filename, grayFrame2);
+	
+	cvReleaseCapture(&capture1); //カメラの接続を切る
+	cvReleaseCapture(&capture2);
+
+	mSavePicCount++;
+}
+
+StereoCamera::StereoCamera() : mSavePicCount(0)
+{
+	setName("stereo");
+}
+StereoCamera::~StereoCamera()
+{
+}
+
