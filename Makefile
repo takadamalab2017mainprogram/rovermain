@@ -7,10 +7,11 @@ OBJS = utils.o task.o motor.o sensor.o actuator.o serial_command.o sequence.o ma
 all:$(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $(OBJS) -lwiringPi -lpthread -lrt
+	$(CXX) -o $@ $(OBJS) -lwiringPi -lpthread -lrt `pkg-config --libs opencv`
 
 .c.o:
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) -c -o $@ $< `pkg-config --cflags opencv`
+
 
 .PHONY : clean
 clean: 
