@@ -143,7 +143,6 @@ bool GPSSensor::onInit(const struct timespec& time)
 	Debug::print(LOG_SUMMARY,"GPS Firmware Version:%d\r\n",wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
-	mGroundDirection = mGroundSpeed = 0;
 	mIsNewData = false;
 
 	return true;
@@ -174,14 +173,6 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		read = wiringPiI2CReadReg16LE(mFileHandle, 0x21);
 		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
 
-		//地上での速度
-		read = wiringPiI2CReadReg16LE(mFileHandle, 0x07);
-		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x07))mGroundSpeed = read / 100.0;
-
-		//地上での進行方位
-		read = wiringPiI2CReadReg16LE(mFileHandle, 0x9C);
-		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x9C))mGroundDirection = (double)read / USHRT_MAX * 360;
-
 		//新しいデータが届いたことを記録する
 		if(status & 0x01)mIsNewData = true;
 	}
@@ -192,7 +183,7 @@ bool GPSSensor::onCommand(const std::vector<std::string> args)
 {
 	if(!isActive())return false;
 	if(mSatelites < 4)Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
-	else Debug::print(LOG_SUMMARY, "Satelites: %d Speed: %f m/s Direction: %f degrees\r\nPosition: %f %f %f\r\n",mSatelites,mGroundSpeed,mGroundDirection,mPos.x,mPos.y,mPos.z);
+	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
 	return true;
 }
 bool GPSSensor::get(VECTOR3& pos)
@@ -205,19 +196,11 @@ bool GPSSensor::get(VECTOR3& pos)
 	}
 	return false;//Invalid Position
 }
-double GPSSensor::getSpeed()
-{
-	return mGroundSpeed;
-}
-double GPSSensor::getDirection()
-{
-	return mGroundDirection;
-}
 bool GPSSensor::isNewPos()
 {
 	return mIsNewData;
 }
-GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mGroundSpeed(0),mGroundDirection(0),mSatelites(0),mIsNewData(false)
+GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0),mIsNewData(false)
 {
 	setName("gps");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
@@ -574,7 +557,7 @@ void StereoCamera::start()
 	// 左カメラ ------------------------------------
 	// ファイル名
 	std::stringstream		streamL;
-	streamL << "stereo/l" <<  mSavePicCount << ".jpg";
+	streamL << "stereo_l" <<  mSavePicCount << ".jpg";
 
 	// Convert stringstream to char*
 	const char* filename = streamL.str().c_str();
@@ -585,7 +568,7 @@ void StereoCamera::start()
 	// 右カメラ ------------------------------------
 	// ファイル名
 	std::stringstream		streamR;
-	streamR << "stereo/r" <<  mSavePicCount << ".jpg";
+	streamR << "stereo_r" <<  mSavePicCount << ".jpg";
 
 	// Convert stringstream to char*
 	filename = streamR.str().c_str();

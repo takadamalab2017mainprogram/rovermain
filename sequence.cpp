@@ -407,7 +407,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 {
 	mIsGoalPos = true;
 	mGoalPos = pos;
-	Debug::print(LOG_SUMMARY, "Set Goal ( %f ,%f )\r\n",mGoalPos.x,mGoalPos.y);
+	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
 }
 Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
 {

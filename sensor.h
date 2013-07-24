@@ -47,8 +47,6 @@ class GPSSensor : public TaskBase
 private:
 	int mFileHandle;//winringPi i2c　のファイルハンドラ
 	VECTOR3 mPos;//座標(経度、緯度、高度)
-	double mGroundSpeed;//地上での進行速度
-	double mGroundDirection;//地上での進行方位
 	int mSatelites;//補足した衛星の数
 	bool mIsNewData;//新しい座標データがあれば真
 protected:
@@ -64,10 +62,6 @@ protected:
 public:
 	//現在の座標を取得する(falseを返した場合は場所が不明)
 	bool get(VECTOR3& pos);
-
-	//現在の速度と方角(+-180度、時計回り、0が北)
-	double getSpeed();
-	double getDirection();
 
 	//前回の座標取得以降にデータが更新された場合は真
 	bool isNewPos();
