@@ -30,6 +30,7 @@ bool Testing::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
+	gStereoCamera.setRunMode(true);
 
 	gMotorDrive.setRunMode(true);
 
@@ -39,6 +40,29 @@ bool Testing::onInit(const struct timespec& time)
 }
 bool Testing::onCommand(const std::vector<std::string> args)
 {
+	if(args.size() == 2)
+	{
+		if(args[1].compare("sensor") == 0)
+		{
+			Debug::print(LOG_SUMMARY, "*** Sensor states ***\r\n");
+			
+			VECTOR3 vec;
+			gGPSSensor.get(vec);
+			if(gGPSSensor.isActive())Debug::print(LOG_SUMMARY, " GPS      (%f %f %f)\r\n",vec.x,vec.y,vec.z);
+
+			if(gPressureSensor.isActive())Debug::print(LOG_SUMMARY, " Pressure (%d) hPa\r\n",gPressureSensor.get());
+
+			gGyroSensor.getRPos(vec);
+			if(gGyroSensor.isActive())Debug::print(LOG_SUMMARY, " Gyro pos (%f %f %f) d\r\n",vec.x,vec.y,vec.z);
+			gGyroSensor.getRVel(vec);
+			if(gGyroSensor.isActive())Debug::print(LOG_SUMMARY, " Gyro vel (%f %f %f) dps\r\n",vec.x,vec.y,vec.z);
+
+			if(gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n",gLightSensor.get() ? "High" : "Low");
+
+			gStereoCamera.capture();
+			return true;
+		}
+	}
 	if(args.size() == 3)
 	{
 		if(args[1].compare("start") == 0)
@@ -63,7 +87,8 @@ bool Testing::onCommand(const std::vector<std::string> args)
 			return false;
 		}
 	}
-	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n");
+	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n\
+testing sensor                    : check sensor values\r\n");
 
 	return true;
 }
@@ -280,6 +305,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
+	gStereoCamera.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -332,6 +358,9 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
+	//ステレオカメラの画像を保存する
+	gStereoCamera.capture();
+
 	//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す
 	if(mLastPos.size() < 2)return;
 
@@ -350,7 +379,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
 	double newDirection = -VECTOR3::calcAngleXY(currentPos,mGoalPos);
 	double deltaDirection = GyroSensor::normalize(newDirection - currentDirection);
-	deltaDirection = max(min(deltaDirection,NAVIGATING_MAX_DELTA_DIRECTION),-1 * NAVIGATING_MAX_DELTA_DIRECTION);
+	deltaDirection = std::max(std::min(deltaDirection,NAVIGATING_MAX_DELTA_DIRECTION),-1 * NAVIGATING_MAX_DELTA_DIRECTION);
 
 	//新しい速度を計算
 	double speed = MOTOR_MAX_POWER;

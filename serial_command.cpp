@@ -51,14 +51,14 @@ void SerialCommand::onUpdate(const struct timespec& time)
 			{
 				//矢印左キー
 				mCommandBuffer.erase(mCursorPos - 2,3);
-				mCursorPos = max(mCursorPos - 2 - 1,0) - 1;
+				mCursorPos = std::max(mCursorPos - 2 - 1,0) - 1;
 				Debug::print(LOG_PRINT, "\033[D");
 			}else if(mCommandBuffer[mCursorPos - 1] == '[' && mCommandBuffer[mCursorPos - 0] == 'C')
 			{
 				//矢印右キー
 				mCommandBuffer.erase(mCursorPos - 2,3);
 				if((unsigned int)mCursorPos < mCommandBuffer.size() + 2)Debug::print(LOG_PRINT, "\033[C");
-				mCursorPos = min(mCursorPos - 2 + 1,mCommandBuffer.size()) - 1;
+				mCursorPos = std::min(mCursorPos - 2 + 1,(int)mCommandBuffer.size()) - 1;
 			}
 			mEscapeBeginPos = -2;
 		}

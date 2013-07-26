@@ -23,9 +23,6 @@
 	#define VERIFY(x)
 #endif
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
 typedef enum
 {
 	LOG_DETAIL = 0,	//デバッグログ(バグが出たときの状況確認用)

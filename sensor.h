@@ -96,7 +96,7 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
 	//最後にアップデートされたデータを返す
-	void getRVel(VECTOR3& vel);
+	bool getRVel(VECTOR3& vel);
 	double getRvx();
 	double getRvy();
 	double getRvz();
@@ -108,7 +108,7 @@ public:
 	void setZero();
 
 	//現在の角度を返す(-180～+180)
-	void getRPos(VECTOR3& pos);
+	bool getRPos(VECTOR3& pos);
 	double getRx();
 	double getRy();
 	double getRz();
@@ -159,15 +159,22 @@ public:
 	~WebCamera();
 };
 
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
+
 //ステレオカメラの画像をキャプチャするクラス
 class StereoCamera : public TaskBase
 {
+	const static int WIDTH = 384,HEIGHT = 288;
 	int mSavePicCount;
+	IplImage *mpGrayFrame1,*mpGrayFrame2;
 protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 	virtual void onClean();
+	virtual bool onInit(const struct timespec& time);
 public:
-	void start();
+	void capture();
 
 	StereoCamera();
 	~StereoCamera();

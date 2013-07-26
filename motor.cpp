@@ -215,8 +215,8 @@ void MotorDrive::onUpdate(const struct timespec& time)
 }
 void MotorDrive::setRatio(int ratioL,int ratioR)
 {
-	mMotorL.setCoeff((double)(mRatioL = max(min(ratioL,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
-	mMotorR.setCoeff((double)(mRatioR = max(min(ratioR,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
+	mMotorL.setCoeff((double)(mRatioL = std::max(std::min(ratioL,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
+	mMotorR.setCoeff((double)(mRatioR = std::max(std::min(ratioR,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
 }
 
 void MotorDrive::drive(int powerL, int powerR)
@@ -247,7 +247,7 @@ void MotorDrive::startPID(double angle,int power)
 void MotorDrive::drivePID(double angle,int power)
 {
 	mAngle = GyroSensor::normalize(angle + mAngle);
-	mDrivePower = max(min(power,MOTOR_MAX_POWER),0);
+	mDrivePower = std::max(std::min(power,MOTOR_MAX_POWER),0);
 	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
 	mDriveMode = DRIVE_PID;
 }

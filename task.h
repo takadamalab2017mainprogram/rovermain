@@ -41,9 +41,6 @@ protected:
 	//このタスクに優先度(小さいほど先に実行される)と実行間隔(小さいほどたくさん実行する)を設定する
 	void setPriority(unsigned int pri,unsigned int interval);
 
-	//このタスクの実行状態を返す
-	bool isActive();
-
 	//このタスクを管理するTaskManagerのインスタンスを返す
 	virtual TaskManager* getManager();
 
@@ -75,6 +72,9 @@ protected:
 	///////////////////////////////////////////////////
 
 public:
+	//このタスクの実行状態を返す
+	bool isActive();
+
 	//このタスクの実行状態を変更する(必要に応じてinit/cleanが呼ばれる)
 	void setRunMode(bool running);
 
