@@ -166,9 +166,10 @@ public:
 //ステレオカメラの画像をキャプチャするクラス
 class StereoCamera : public TaskBase
 {
-	const static int WIDTH = 384,HEIGHT = 288;
+	const static int WIDTH = 320,HEIGHT = 240;
 	int mSavePicCount;
 	IplImage *mpGrayFrame1,*mpGrayFrame2;
+	CvCapture *mpCapture1,*mpCapture2;
 protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 	virtual void onClean();
