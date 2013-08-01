@@ -326,8 +326,11 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 
+	//スタックしている場合はスタック時の動作を実行
+	if(mIsStucked)stuckMove(time);
+
 	bool isNewData = gGPSSensor.isNewPos();
-	//新しい位置を取得
+	//新しい位置を取得できなければ処理を返す
 	if(!gGPSSensor.get(currentPos))return;
 
 	//最初の座標を取得したら移動を開始する
@@ -338,7 +341,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		mLastCheckTime = time;
 	}
 
-	//新しい座標であればキューに追加
+	//新しい座標であればバッファに追加
 	if(isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
 	{
 		mLastPos.push_back(currentPos);
@@ -361,12 +364,45 @@ void Navigating::onUpdate(const struct timespec& time)
 	//ステレオカメラの画像を保存する
 	gStereoCamera.capture();
 
-	//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す
-	if(mLastPos.size() < 2)return;
+	//スタック判定
+	if(isStuck())
+	{
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
+		gBuzzer.start(10);
+		mLastStuckMoveUpdateTime.tv_sec = 0;
+		mLastStuckMoveUpdateTime.tv_nsec = 0;
+		mIsStucked = true;
+	}else
+	{
+		//方向転換処理
+		if(mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+		navigationMove(distance);//過去の座標から進行方向を変更する
+	}
 
+	//座標データをひとつ残して削除
+	currentPos = mLastPos.back();
+	mLastPos.clear();
+	mLastPos.push_back(currentPos);
+}
+bool Navigating::isStuck() const
+{
+	double averageVel = 0;
+	VECTOR3 lastPos = mLastPos.front();
+	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
+	while(it != mLastPos.end())
+	{
+		averageVel += VECTOR3::calcDistanceXY(*it,lastPos);
+		lastPos = *it;
+		++it;
+	}
+
+	return averageVel < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;
+}
+void Navigating::navigationMove(double distance) const
+{
 	//過去の座標の平均値を計算する
 	VECTOR3 averagePos;
-	std::list<VECTOR3>::iterator it = mLastPos.begin();
+	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
 	while(it != mLastPos.end())
 	{
 		averagePos += *it;
@@ -376,6 +412,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	averagePos /= mLastPos.size() - 1;
 
 	//新しい角度を計算
+	VECTOR3 currentPos = mLastPos.back();
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
 	double newDirection = -VECTOR3::calcAngleXY(currentPos,mGoalPos);
 	double deltaDirection = GyroSensor::normalize(newDirection - currentDirection);
@@ -386,15 +423,18 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;//接近したら速度を落とす
 
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n",mLastPos.size(),averagePos.x,averagePos.y,currentPos.x,currentPos.y);
-	Debug::print(LOG_SUMMARY, "distance = %f (m)  angles(delta: %f old: %f new:%f)\r\n",distance * DEGREE_2_METER,deltaDirection,currentDirection,newDirection);
+	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n",distance * DEGREE_2_METER,deltaDirection,deltaDirection > 0 ? "LEFT" : "RIGHT");
 
 	//方向と速度を変更
 	gMotorDrive.drivePID(deltaDirection ,speed);
+}
+void Navigating::stuckMove(const struct timespec& time)
+{
+	//進行方向をランダムで変更
+	if(Time::dt(time,mLastStuckMoveUpdateTime) < 2)return;
+	mLastStuckMoveUpdateTime = time;
 
-	//座標データをひとつ残して削除
-	currentPos = mLastPos.back();
-	mLastPos.clear();
-	mLastPos.push_back(currentPos);
+	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
 }
 bool Navigating::onCommand(const std::vector<std::string> args)
 {
@@ -438,7 +478,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false),mIsStucked(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

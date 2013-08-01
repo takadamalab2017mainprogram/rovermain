@@ -58,6 +58,7 @@ const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒)
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
+const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.5 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
 //const static unsigned int NAVIGATING_NUMBER_OF_POSITION_HISTORIES = 5;//新しい進行方向を計算するために用いる最大の過去の座標数
 
 //////////////////////////////////////////////

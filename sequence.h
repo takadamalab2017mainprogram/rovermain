@@ -84,12 +84,20 @@ private:
 	VECTOR3 mGoalPos;
 	bool mIsGoalPos;
 
+	//スタック判定関連
+	bool mIsStucked;//スタック中
+	struct timespec mLastStuckMoveUpdateTime;//前回の進行方向変更時刻@スタック
+
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
+
+	void stuckMove(const struct timespec& time);//スタック時の移動処理
+	void navigationMove(double distance) const; //通常時の移動処理
+	bool isStuck() const;//スタック判定
 
 	//次の状態に移行
 	void nextState();
