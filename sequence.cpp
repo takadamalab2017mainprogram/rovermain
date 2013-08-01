@@ -374,9 +374,17 @@ void Navigating::onUpdate(const struct timespec& time)
 		mIsStucked = true;
 	}else
 	{
-		//方向転換処理
-		if(mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
-		navigationMove(distance);//過去の座標から進行方向を変更する
+		if(mIsStucked)
+		{
+			//ローバーがひっくり返っている可能性があるため、しばらく前進する
+			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+			mIsStucked = false;
+		}else
+		{
+			//方向転換処理
+			if(mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+			navigationMove(distance);//過去の座標から進行方向を変更する
+		}
 	}
 
 	//座標データをひとつ残して削除
