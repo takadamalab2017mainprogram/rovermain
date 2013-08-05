@@ -520,24 +520,35 @@ void* DistanceSensor::waitingThread(void* arg)
 {
 	DistanceSensor& parent = *reinterpret_cast<DistanceSensor*>(arg);
 	struct timespec newTime;
-	pinMode(PIN_DISTANCE, OUTPUT);
 
 	//Send Ping
+	pinMode(PIN_DISTANCE, OUTPUT);
 	digitalWrite(PIN_DISTANCE, HIGH);
 	clock_gettime(CLOCK_MONOTONIC_RAW,&parent.mLastSampleTime);
 	do
 	{
 		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
 	}while(Time::dt(newTime,parent.mLastSampleTime) < 0.000001);
-	parent.mLastSampleTime = newTime;
 	digitalWrite(PIN_DISTANCE, LOW);
 
 	//Wait For Result
 	pinMode(PIN_DISTANCE, INPUT);
-	while(digitalRead(PIN_DISTANCE) == LOW)
+	do
 	{
 		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
-		if(Time::dt(newTime,parent.mLastSampleTime) > 0.04)
+		if(Time::dt(newTime,parent.mLastSampleTime) > 0.03)
+		{
+			//Timeout
+			parent.mIsCalculating = false;
+			parent.mLastDistance = -1;
+			return NULL;
+		}	
+	}while(digitalRead(PIN_DISTANCE) == LOW);
+	parent.mLastSampleTime = newTime;
+	while(digitalRead(PIN_DISTANCE) == HIGH)
+	{
+		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+		if(Time::dt(newTime,parent.mLastSampleTime) > 0.03)
 		{
 			//Timeout
 			parent.mIsCalculating = false;
@@ -548,8 +559,8 @@ void* DistanceSensor::waitingThread(void* arg)
 	clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
 
 	double delay = Time::dt(newTime,parent.mLastSampleTime);
-	parent.mLastDistance = delay * 10000 / 29 / 2;
-	if(delay > 0.03)parent.mLastDistance = -1;
+	parent.mLastDistance = delay * 100 * 3 / 2;
+	if(delay > 0.022)parent.mLastDistance = -1;
 	parent.mIsNewData = true;
 	parent.mIsCalculating = false;
 
@@ -557,7 +568,6 @@ void* DistanceSensor::waitingThread(void* arg)
 }
 bool DistanceSensor::onInit(const struct timespec& time)
 {
-	mLastSampleTime = time;
 	return true;
 }
 void DistanceSensor::onClean()
@@ -577,7 +587,7 @@ bool DistanceSensor::onCommand(const std::vector<std::string> args)
 	if(!isActive())return false;
 	if(args.size() == 1)
 	{
-		Debug::print(LOG_SUMMARY, "Distance: %f m\r\n",mLastDistance);
+		Debug::print(LOG_SUMMARY, "Distance: %f cm\r\n",mLastDistance);
 		if(ping())Debug::print(LOG_SUMMARY, "Calculating New Distance!\n",mLastDistance);
 		return true;
 	}
