@@ -31,6 +31,7 @@ bool Testing::onInit(const struct timespec& time)
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
 	gStereoCamera.setRunMode(true);
+	gDistanceSensor.setRunMode(true);
 
 	gMotorDrive.setRunMode(true);
 
