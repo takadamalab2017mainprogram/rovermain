@@ -15,7 +15,6 @@ GPSSensor gGPSSensor;
 GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 WebCamera gWebCamera;
-StereoCamera gStereoCamera;
 
 unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
@@ -514,95 +513,3 @@ WebCamera::WebCamera()
 WebCamera::~WebCamera()
 {
 }
-bool StereoCamera::onCommand(const std::vector<std::string> args)
-{
-	//if(!isActive())return false;
-	if(args.size() >= 1)
-	{
-		Debug::print(LOG_SUMMARY, "Start capturing!\r\n");
-		capture();
-		return true;
-	}else
-	{
-		Debug::print(LOG_PRINT, "stereo [filename] : save movie to filename\r\n");
-		return true;
-	}
-	return false;
-}
-void StereoCamera::onClean()
-{
-	if(mpCapture1 != NULL)cvReleaseCapture(&mpCapture1);
-	if(mpCapture2 != NULL)cvReleaseCapture(&mpCapture2);
-	if(mpGrayFrame1 != NULL)cvReleaseImage(&mpGrayFrame1);
-	if(mpGrayFrame2 != NULL)cvReleaseImage(&mpGrayFrame2);
-}
-bool StereoCamera::onInit(const struct timespec& time)
-{
-	mpCapture1 = cvCreateCameraCapture(0);							  //2つのWebカメラ
-	if(mpCapture1 != NULL)
-	{
-		cvSetCaptureProperty (mpCapture1, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //撮影サイズを指定
-		cvSetCaptureProperty (mpCapture1, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
-	}else Debug::print(LOG_SUMMARY, "Unable to initialize Camera0\r\n");
-
-    mpCapture2 = cvCreateCameraCapture(1);
-	if(mpCapture2 != NULL)
-	{
-		cvSetCaptureProperty (mpCapture2, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //撮影サイズを指定
-		cvSetCaptureProperty (mpCapture2, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
-	}else Debug::print(LOG_SUMMARY, "Unable to initialize Camera1\r\n");
-
-	mpGrayFrame1 = cvCreateImage(cvSize(WIDTH,HEIGHT), IPL_DEPTH_8U, 1);
-	mpGrayFrame2 = cvCreateImage(cvSize(WIDTH,HEIGHT), IPL_DEPTH_8U, 1); 
-	return mpGrayFrame1 != NULL && mpGrayFrame2 != NULL;
-}
-void StereoCamera::capture()
-{
-	if(!isActive())return;
-
-	IplImage *frame1, *frame2;
-	
-	//左右で同じ瞬間の画像を保存するために、GrabFrameを同時期に呼び出してから実際の保存操作を行うようにしてあります
-	if(mpCapture1 != NULL)cvGrabFrame(mpCapture1);//画像を確保
-	if(mpCapture2 != NULL)cvGrabFrame(mpCapture2);//画像を確保
-	
-	
-	if(mpCapture1 != NULL)
-	{
-		frame1 = cvRetrieveFrame(mpCapture1); //Webカメラから1フレームを格納
-		cvCvtColor(frame1, mpGrayFrame1, CV_BGR2GRAY); // グレースケールに変換
-
-		// 保存
-		std::stringstream filename;
-		filename << "stereo_l" <<  mSavePicCount << ".jpg";
-		cvSaveImage(filename.str().c_str(), mpGrayFrame1);
-
-		filename << ".bmp";
-		cvSaveImage(filename.str().c_str(), mpGrayFrame1);
-	}else Debug::print(LOG_SUMMARY, "Camera0 is Unavailable\r\n");
-	
-	if(mpCapture2 != NULL)
-	{
-		frame2 = cvRetrieveFrame(mpCapture2);
-		cvCvtColor(frame2, mpGrayFrame2, CV_BGR2GRAY);
-
-		// 保存
-		std::stringstream filename;
-		filename << "stereo_r" <<  mSavePicCount << ".jpg";
-		cvSaveImage(filename.str().c_str(), mpGrayFrame2);
-
-		filename << ".bmp";
-		cvSaveImage(filename.str().c_str(), mpGrayFrame2);
-	}else Debug::print(LOG_SUMMARY, "Camera1 is Unavailable\r\n");
-	mSavePicCount++;
-}
-
-StereoCamera::StereoCamera() : mSavePicCount(0),mpGrayFrame1(NULL),mpGrayFrame2(NULL),mpCapture1(NULL),mpCapture2(NULL)
-{
-	setName("stereo");
-	setPriority(TASK_PRIORITY_SENSOR,UINT_MAX);
-}
-StereoCamera::~StereoCamera()
-{
-}
-

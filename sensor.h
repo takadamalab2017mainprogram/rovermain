@@ -159,34 +159,12 @@ public:
 	~WebCamera();
 };
 
-#include <opencv2/opencv.hpp>
-#include <opencv/cvaux.h>
-#include <opencv/highgui.h>
-
-//ステレオカメラの画像をキャプチャするクラス
-class StereoCamera : public TaskBase
-{
-	const static int WIDTH = 320,HEIGHT = 240;
-	int mSavePicCount;
-	IplImage *mpGrayFrame1,*mpGrayFrame2;
-	CvCapture *mpCapture1,*mpCapture2;
-protected:
-	virtual bool onCommand(const std::vector<std::string> args);
-	virtual void onClean();
-	virtual bool onInit(const struct timespec& time);
-public:
-	void capture();
-
-	StereoCamera();
-	~StereoCamera();
-};
 
 extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
 extern WebCamera gWebCamera;
-extern StereoCamera gStereoCamera;
 
 
 

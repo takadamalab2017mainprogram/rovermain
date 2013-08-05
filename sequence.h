@@ -85,7 +85,9 @@ private:
 	bool mIsGoalPos;
 
 	//スタック判定関連
-	bool mIsStucked;//スタック中
+	enum STUCK_MOVE{STUCK_NONE = 0,STUCK_RANDOM,STUCK_BACKWORD,STUCK_FORWORD,STUCK_CAMERA};
+	enum STUCK_MOVE mIsStucked;//スタック中
+	unsigned int mCurStuckMoveCount;//スタック行動中用のカウンタ
 	struct timespec mLastStuckMoveUpdateTime;//前回の進行方向変更時刻@スタック
 
 	//GPS座標から計算された過去数回分の位置
@@ -95,7 +97,9 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
-	void stuckMove(const struct timespec& time);//スタック時の移動処理
+	void stuckMoveRandom();//スタック時の移動処理
+	void stuckMoveCamera();//カメラを用いたスタック時の移動処理
+
 	void navigationMove(double distance) const; //通常時の移動処理
 	bool isStuck() const;//スタック判定
 

@@ -30,7 +30,6 @@ bool Testing::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
-	gStereoCamera.setRunMode(true);
 
 	gMotorDrive.setRunMode(true);
 
@@ -58,8 +57,6 @@ bool Testing::onCommand(const std::vector<std::string> args)
 			if(gGyroSensor.isActive())Debug::print(LOG_SUMMARY, " Gyro vel (%f %f %f) dps\r\n",vec.x,vec.y,vec.z);
 
 			if(gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n",gLightSensor.get() ? "High" : "Low");
-
-			gStereoCamera.capture();
 			return true;
 		}
 	}
@@ -305,7 +302,6 @@ bool Navigating::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	gStereoCamera.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -326,12 +322,9 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	//スタックしている場合はスタック時の動作を実行
-	if(mIsStucked)stuckMove(time);
-
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得できなければ処理を返す
-	if(!gGPSSensor.get(currentPos))return;
+	//if(!gGPSSensor.get(currentPos))return;
 
 	//最初の座標を取得したら移動を開始する
 	if(mLastPos.empty())
@@ -361,9 +354,6 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
-	//ステレオカメラの画像を保存する
-	gStereoCamera.capture();
-
 	//スタック判定
 	if(isStuck())
 	{
@@ -371,17 +361,43 @@ void Navigating::onUpdate(const struct timespec& time)
 		gBuzzer.start(10);
 		mLastStuckMoveUpdateTime.tv_sec = 0;
 		mLastStuckMoveUpdateTime.tv_nsec = 0;
-		mIsStucked = true;
+
+		if(mIsStucked == STUCK_NONE)mIsStucked = STUCK_BACKWORD;
+
+		//スタックしている場合はスタック時の動作を実行
+		switch(mIsStucked)
+		{
+		case STUCK_RANDOM:
+			stuckMoveRandom();
+			Debug::print(LOG_SUMMARY, "Random kaihi\r\n");
+			break;
+		case STUCK_CAMERA:
+			stuckMoveCamera();
+			Debug::print(LOG_SUMMARY, "Camera kaihi\r\n");
+			break;
+		case STUCK_BACKWORD:
+			gMotorDrive.drive(-100,-100);
+			mIsStucked = STUCK_FORWORD;
+			Debug::print(LOG_SUMMARY, "kaihi junbi 1\r\n");
+			break;
+		case STUCK_FORWORD:
+			gMotorDrive.drive(30,30);
+			mIsStucked = STUCK_CAMERA;
+			Debug::print(LOG_SUMMARY, "kaihi junbi 2\r\n");
+			break;
+		default:
+			break;
+		};
 	}else
 	{
-		if(mIsStucked)
+		if(mIsStucked != STUCK_NONE)
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-			mIsStucked = false;
+			mIsStucked = STUCK_NONE;
 		}else
 		{
-			//方向転換処理
+			//通常のナビゲーション
 			if(mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 			navigationMove(distance);//過去の座標から進行方向を変更する
 		}
@@ -436,13 +452,88 @@ void Navigating::navigationMove(double distance) const
 	//方向と速度を変更
 	gMotorDrive.drivePID(deltaDirection ,speed);
 }
-void Navigating::stuckMove(const struct timespec& time)
+void Navigating::stuckMoveRandom()
 {
 	//進行方向をランダムで変更
-	if(Time::dt(time,mLastStuckMoveUpdateTime) < 2)return;
-	mLastStuckMoveUpdateTime = time;
-
 	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
+}
+void Navigating::stuckMoveCamera()
+{
+	gMotorDrive.drive(30,30);
+	const static int DIV_NUM = 3,WIDTH = 320,HEIGHT = 240;
+	CvSize size = cvSize(WIDTH,HEIGHT);
+	CvCapture *pCapture = cvCreateCameraCapture(0);
+	IplImage *src_img, *gray_img, *dst_img1, *tmp_img;
+	double risk[DIV_NUM];
+
+	if(pCapture == NULL)
+	{
+		mIsStucked = STUCK_RANDOM;
+		return;
+	}
+	cvSetCaptureProperty(pCapture, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //撮影サイズを指定
+	cvSetCaptureProperty(pCapture, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
+
+	src_img = cvQueryFrame(pCapture);
+	gray_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
+	cvCvtColor(src_img, gray_img, CV_BGR2GRAY);
+	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(WIDTH, HEIGHT / 3),cvScalar(0), CV_FILLED, CV_AA);
+
+	// Medianフィルタ
+	cvSmooth (gray_img, gray_img, CV_MEDIAN, 5, 0, 0, 0);
+		
+	tmp_img = cvCreateImage(size, IPL_DEPTH_16S, 1);
+	dst_img1 = cvCreateImage(size, IPL_DEPTH_8U, 1);
+		
+	// SobelフィルタX方向
+	cvSobel(gray_img, tmp_img, 1, 0, 3);
+	cvConvertScaleAbs (tmp_img, dst_img1);
+	cvThreshold (dst_img1, dst_img1, 50, 255, CV_THRESH_BINARY);
+
+	//Sum
+	int width = src_img->width / DIV_NUM;
+	double risksum = 0;
+	int i;
+	for(i = 0;i < DIV_NUM;++i)
+	{
+		cvSetImageROI(dst_img1, cvRect(width * i,0,width,src_img->height));//Set image part
+		risksum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
+		cvResetImageROI(dst_img1);//Reset image part (normal)
+	}
+
+	//Draw graph
+	for(i = 0;i < DIV_NUM;++i){
+		cvRectangle(dst_img1, cvPoint(width * i,src_img->height - risk[i] / risksum * src_img->height),cvPoint(width * (i + 1),src_img->height),cvScalar(255), 2, CV_AA);
+	}
+
+	int min_id = 0;
+	for(int i=1; i<3; ++i){
+		if(risk[min_id] > risk[i]){
+			min_id = i;
+		}
+	}
+
+	switch(min_id){
+		case 0:
+			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
+			gMotorDrive.drive(60, 100);
+			break;
+		case 1:
+			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
+			gMotorDrive.drive(100, 100);
+			break;
+		case 2:
+			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
+			gMotorDrive.drive(100, 60);
+			break;
+		default:
+			break;
+	}
+	cvReleaseImage (&dst_img1);
+	cvReleaseImage (&tmp_img);
+	cvReleaseCapture(&pCapture);
+
+	mIsStucked = STUCK_RANDOM;
 }
 bool Navigating::onCommand(const std::vector<std::string> args)
 {
@@ -486,7 +577,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false),mIsStucked(false), mLastPos()
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false),mIsStucked(STUCK_NONE), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
