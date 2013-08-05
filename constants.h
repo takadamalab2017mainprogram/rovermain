@@ -25,6 +25,7 @@ const static int PIN_BUZZER = 12;			//ブザー
 const static int PIN_XBEE_SLEEP = 13;		//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;		//Cdsセンサピン
 const static int PIN_SERVO = 1;				//サーボピン
+const static int PIN_DISTANCE = 6;	//距離センサー
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
@@ -51,7 +52,7 @@ const static unsigned int FALLING_GYRO_COUNT = 1000;//角速度の値が閾値以下のサン
 const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
-const static unsigned int SEPARATING_SERVO_COUNT = 6;//サーボの向きを変える回数
+const static unsigned int SEPARATING_SERVO_COUNT = 12;//サーボの向きを変える回数
 
 const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)

@@ -15,6 +15,7 @@ GPSSensor gGPSSensor;
 GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 WebCamera gWebCamera;
+DistanceSensor gDistanceSensor;
 
 unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
@@ -511,5 +512,111 @@ WebCamera::WebCamera()
 	setPriority(UINT_MAX,UINT_MAX);
 }
 WebCamera::~WebCamera()
+{
+}
+
+void* DistanceSensor::waitingThread(void* arg)
+{
+	DistanceSensor& parent = *reinterpret_cast<DistanceSensor*>(arg);
+	struct timespec newTime;
+
+	//Send Ping
+	pinMode(PIN_DISTANCE, OUTPUT);
+	digitalWrite(PIN_DISTANCE, HIGH);
+	clock_gettime(CLOCK_MONOTONIC_RAW,&parent.mLastSampleTime);
+	do
+	{
+		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+	}while(Time::dt(newTime,parent.mLastSampleTime) < 0.000001);
+	digitalWrite(PIN_DISTANCE, LOW);
+
+	//Wait For Result
+	pinMode(PIN_DISTANCE, INPUT);
+	do
+	{
+		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+		if(Time::dt(newTime,parent.mLastSampleTime) > 0.03)
+		{
+			//Timeout
+			parent.mIsCalculating = false;
+			parent.mLastDistance = -1;
+			return NULL;
+		}	
+	}while(digitalRead(PIN_DISTANCE) == LOW);
+	parent.mLastSampleTime = newTime;
+	while(digitalRead(PIN_DISTANCE) == HIGH)
+	{
+		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+		if(Time::dt(newTime,parent.mLastSampleTime) > 0.03)
+		{
+			//Timeout
+			parent.mIsCalculating = false;
+			parent.mLastDistance = -1;
+			return NULL;
+		}
+	}
+	clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+
+	double delay = Time::dt(newTime,parent.mLastSampleTime);
+	parent.mLastDistance = delay * 100 * 3 / 2;
+	if(delay > 0.022)parent.mLastDistance = -1;
+	parent.mIsNewData = true;
+	parent.mIsCalculating = false;
+
+	return NULL;
+}
+bool DistanceSensor::onInit(const struct timespec& time)
+{
+	return true;
+}
+void DistanceSensor::onClean()
+{
+	if(mIsCalculating)pthread_cancel(mPthread);
+	mLastDistance = -1;
+	mIsCalculating = false;
+	mIsNewData = false;
+}
+
+void DistanceSensor::onUpdate(const struct timespec& time)
+{
+
+}
+bool DistanceSensor::onCommand(const std::vector<std::string> args)
+{
+	if(!isActive())return false;
+	if(args.size() == 1)
+	{
+		Debug::print(LOG_SUMMARY, "Distance: %f cm\r\n",mLastDistance);
+		if(ping())Debug::print(LOG_SUMMARY, "Calculating New Distance!\n",mLastDistance);
+		return true;
+	}
+	return false;
+}
+
+bool DistanceSensor::ping()
+{
+	if(mIsCalculating)return false;//‚·‚Å‚ÉŒv‘ª‚ðŠJŽn‚µ‚Ä‚¢‚é
+	if(pthread_create(&mPthread, NULL, waitingThread, this) != 0)
+	{
+		Debug::print(LOG_SUMMARY, "DistanceSensor: Unable to create thread!\r\n");
+		return false;
+	}
+	mIsCalculating = true;
+	return true;
+}
+bool DistanceSensor::getDistance(double& distance)
+{
+	bool ret = mIsNewData;
+	mIsNewData = false;
+	distance = mLastDistance;
+	return ret;
+}
+
+DistanceSensor::DistanceSensor() : mLastDistance(-1), mIsCalculating(false), mIsNewData(false)
+{
+	setName("distance");
+	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
+}
+DistanceSensor::~DistanceSensor()
 {
 }

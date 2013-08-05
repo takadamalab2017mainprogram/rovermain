@@ -30,6 +30,7 @@ bool Testing::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
+	gDistanceSensor.setRunMode(true);
 
 	gMotorDrive.setRunMode(true);
 
@@ -324,7 +325,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得できなければ処理を返す
-	//if(!gGPSSensor.get(currentPos))return;
+	if(!gGPSSensor.get(currentPos))return;
 
 	//最初の座標を取得したら移動を開始する
 	if(mLastPos.empty())

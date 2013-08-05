@@ -7,6 +7,7 @@
 #pragma once
 #include "task.h"
 #include "utils.h"
+#include <pthread.h>
 #include <list>
 
 //MPL115A2からデータを取得するクラス
@@ -159,12 +160,39 @@ public:
 	~WebCamera();
 };
 
+//距離センサーを操作するクラス
+class DistanceSensor : public TaskBase
+{
+	double mLastDistance;
+	struct timespec mLastSampleTime;
+	pthread_t mPthread;
+	bool mIsCalculating;
+	bool mIsNewData;
+
+	static void* waitingThread(void* arg);
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+public:
+	bool ping();//距離センサーに計測を指示する
+
+	//計測された距離を返す(新しいデータであればtrueを返す)
+	//計測不能であれば-1を返す
+	bool getDistance(double& distance);
+
+	DistanceSensor();
+	~DistanceSensor();
+};
+
 
 extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
 extern WebCamera gWebCamera;
+extern DistanceSensor gDistanceSensor;
 
 
 
