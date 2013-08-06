@@ -535,7 +535,7 @@ void* DistanceSensor::waitingThread(void* arg)
 	do
 	{
 		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
-		if(Time::dt(newTime,parent.mLastSampleTime) > 0.03)
+		if(Time::dt(newTime,parent.mLastSampleTime) > 0.001)
 		{
 			//Timeout
 			parent.mIsCalculating = false;
@@ -544,22 +544,22 @@ void* DistanceSensor::waitingThread(void* arg)
 		}	
 	}while(digitalRead(PIN_DISTANCE) == LOW);
 	parent.mLastSampleTime = newTime;
-	while(digitalRead(PIN_DISTANCE) == HIGH)
+	do
 	{
 		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
-		if(Time::dt(newTime,parent.mLastSampleTime) > 0.03)
+		if(Time::dt(newTime,parent.mLastSampleTime) > 0.02)
 		{
 			//Timeout
 			parent.mIsCalculating = false;
 			parent.mLastDistance = -1;
 			return NULL;
 		}
-	}
+	}while(digitalRead(PIN_DISTANCE) == HIGH);
 	clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
 
 	double delay = Time::dt(newTime,parent.mLastSampleTime);
 	parent.mLastDistance = delay * 100 * 3 / 2;
-	if(delay > 0.022)parent.mLastDistance = -1;
+	if(delay > 0.019)parent.mLastDistance = -1;
 	parent.mIsNewData = true;
 	parent.mIsCalculating = false;
 
@@ -586,7 +586,7 @@ bool DistanceSensor::onCommand(const std::vector<std::string> args)
 	if(!isActive())return false;
 	if(args.size() == 1)
 	{
-		Debug::print(LOG_SUMMARY, "Distance: %f cm\r\n",mLastDistance);
+		Debug::print(LOG_SUMMARY, "Distance: %f m\r\n",mLastDistance);
 		if(ping())Debug::print(LOG_SUMMARY, "Calculating New Distance!\n",mLastDistance);
 		return true;
 	}
