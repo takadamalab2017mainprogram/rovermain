@@ -66,7 +66,7 @@ private:
 	struct timespec mLastUpdateTime;//前回サーボの向きを更新した時間
 	bool mCurServoState;			//現在のサーボの向き(true = 1,false = 0)
 	unsigned int mServoCount;		//サーボの向きを変更した回数
-	enum STEP{STEP_SEPARATE = 0, STEP_PARA_JUDGE,STEP_PARA_DODGE};
+	enum STEP{STEP_SEPARATE = 0, STEP_PRE_PARA_JUDGE,STEP_PARA_JUDGE,STEP_PARA_DODGE};
 	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);
@@ -116,7 +116,7 @@ class Escaping : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
 
-	enum STEP{STEP_BACKWORD = 0, STEP_CAMERA, STEP_CAMERA_WAIT, STEP_RANDOM};
+	enum STEP{STEP_BACKWORD = 0, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_WAIT, STEP_RANDOM};
 	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);

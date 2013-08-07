@@ -278,21 +278,25 @@ void Separating::onUpdate(const struct timespec& time)
 
 		if(mServoCount >= SEPARATING_SERVO_COUNT)
 		{
-			mCurStep = STEP_PARA_JUDGE;
-			gMotorDrive.drive(100,100);
+			mCurStep = STEP_PRE_PARA_JUDGE;
+			gMotorDrive.drive(50,50);
 		}
+		break;
+	case STEP_PRE_PARA_JUDGE:
+		if(Time::dt(time,mLastUpdateTime) < ROVER_WAKING_DRIVE_TIME)return;
+		gMotorDrive.drive(0,0);
+		mCurStep = STEP_PARA_JUDGE;
 		break;
 	case STEP_PARA_JUDGE:
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
-		if(Time::dt(time,mLastUpdateTime) < ROVER_WAKING_DRIVE_TIME)return;
-		gMotorDrive.drive(0,0);
+		if(Time::dt(time,mLastUpdateTime) < 1)return;
 		{
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(isParaExist(pImage))
 			{
 				mCurStep = STEP_PARA_DODGE;
 				gGyroSensor.setZero();
-				gMotorDrive.drive(100,0);
+				gMotorDrive.drive(30,0);
 				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
 			}else
 			{
@@ -328,19 +332,19 @@ bool Separating::isParaExist(IplImage* src)
 	IplImage* tmp = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
     
 	//HSVに変換
-	cvCvtColor(src, tmp, CV_RGB2HSV);
+	cvCvtColor(src, tmp, CV_BGR2HSV);
     
 	CV_INIT_PIXEL_POS(pos_src, (unsigned char*) tmp->imageData,
                       tmp->widthStep,cvGetSize(tmp), x, y, tmp->origin);
     
-	minH = 100;	maxH = 115;
-	minS = 80;	maxS = 255;
-	minV = 120;	maxV = 255;
+	minH = 0;	maxH = 25;
+	minS = 128;	maxS = 255;
+	minV = 128;	maxV = 255;
 	for(y = 0; y < tmp->height; y++) {
 		for(x = 0; x < tmp->width; x++) {
 			p_src = CV_MOVE_TO(pos_src, x, y, 3);
             
-			H = p_src[0];	//0から180
+			H = p_src[0];
 			S = p_src[1];
 			V = p_src[2];
             
@@ -352,7 +356,9 @@ bool Separating::isParaExist(IplImage* src)
 			}
 		}
 	}
-	return (double)pixelCount / tmp->height / tmp->width > SEPARATING_PARA_DETECT_THRESHOLD;
+	double ratio = (double)pixelCount / tmp->height / tmp->width;
+	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
+	return ratio > SEPARATING_PARA_DETECT_THRESHOLD;
 }
 void Separating::nextState()
 {
@@ -408,7 +414,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得できなければ処理を返す
-	//if(!gGPSSensor.get(currentPos))return;
+	if(!gGPSSensor.get(currentPos))return;
 
 	//最初の座標を取得したら移動を開始する
 	if(mLastPos.empty())
@@ -577,13 +583,21 @@ void Escaping::onUpdate(const struct timespec& time)
 		gMotorDrive.drive(-100,-100);
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
+			mCurStep = STEP_PRE_CAMERA;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(50,50);
+		}
+		break;
+	case STEP_PRE_CAMERA:
+		if(Time::dt(time,mLastUpdateTime) >= ROVER_WAKING_DRIVE_TIME)
+		{
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
+			gMotorDrive.drive(0,0);
 		}
 		break;
 	case STEP_CAMERA:
-		gMotorDrive.drive(100,100);
-		if(Time::dt(time,mLastUpdateTime) >= ROVER_WAKING_DRIVE_TIME)
+		if(Time::dt(time,mLastUpdateTime) >= 1)
 		{
 			mCurStep = STEP_CAMERA_WAIT;
 			mLastUpdateTime = time;

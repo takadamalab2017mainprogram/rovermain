@@ -29,7 +29,7 @@ const static int PIN_DISTANCE = 6;	//距離センサー
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
-const static double MOTOR_MAX_POWER_CHANGE = MOTOR_MAX_POWER / 10;//モータ出力の1秒あたりの最大変化量
+const static double MOTOR_MAX_POWER_CHANGE =(double)1;//モータ出力の1秒あたりの最大変化量
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
@@ -39,7 +39,7 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
 
-const static double ROVER_WAKING_DRIVE_TIME = 1;//ローバーの姿勢を戻したいときに前進する時間
+const static double ROVER_WAKING_DRIVE_TIME = 0.2;//ローバーの姿勢を戻したいときに前進する時間
 
 //////////////////////////////////////////////
 // シーケンス系設定
@@ -55,7 +55,7 @@ const static unsigned int FALLING_ABORT_TIME = 1800;//落下状態を強制終了する時間
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
 const static unsigned int SEPARATING_SERVO_COUNT = 12;//サーボの向きを変える回数
-const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.1;//この割合以上パラシュート色が検出されたらパラが存在するものとする
+const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.001;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
 const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
