@@ -186,6 +186,25 @@ public:
 	~DistanceSensor();
 };
 
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
+class CameraCapture : public TaskBase
+{
+	CvCapture* mpCapture;
+	unsigned int mCapturedCount;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string> args);
+public:
+	void save(const std::string* name = NULL,IplImage* pImage = NULL);
+	IplImage* getFrame();
+	void generateFilename(std::string& name);
+
+	CameraCapture();
+	~CameraCapture();
+};
 
 extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
@@ -193,6 +212,6 @@ extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
 extern WebCamera gWebCamera;
 extern DistanceSensor gDistanceSensor;
-
+extern CameraCapture gCameraCapture;
 
 

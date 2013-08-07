@@ -31,6 +31,7 @@ bool Testing::onInit(const struct timespec& time)
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
 	gDistanceSensor.setRunMode(true);
+	gCameraCapture.setRunMode(true);
 
 	gMotorDrive.setRunMode(true);
 
@@ -303,6 +304,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
+	gCameraCapture.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -355,6 +357,9 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
+	IplImage* pImage = gCameraCapture.getFrame();
+	gCameraCapture.save(NULL,pImage);
+
 	//スタック判定
 	if(isStuck())
 	{
@@ -373,7 +378,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Random kaihi\r\n");
 			break;
 		case STUCK_CAMERA:
-			stuckMoveCamera();
+			stuckMoveCamera(pImage);
 			Debug::print(LOG_SUMMARY, "Camera kaihi\r\n");
 			break;
 		case STUCK_BACKWORD:
@@ -458,27 +463,23 @@ void Navigating::stuckMoveRandom()
 	//進行方向をランダムで変更
 	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
 }
-void Navigating::stuckMoveCamera()
+void Navigating::stuckMoveCamera(IplImage* pImage)
 {
-	gMotorDrive.drive(30,30);
-	const static int DIV_NUM = 3,WIDTH = 320,HEIGHT = 240;
-	CvSize size = cvSize(WIDTH,HEIGHT);
-	CvCapture *pCapture = cvCreateCameraCapture(0);
-	IplImage *src_img, *gray_img, *dst_img1, *tmp_img;
+	IplImage* src_img = pImage;
+	const static int DIV_NUM = 3;
+	IplImage *gray_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM];
 
-	if(pCapture == NULL)
+	if(src_img == NULL)
 	{
 		mIsStucked = STUCK_RANDOM;
 		return;
 	}
-	cvSetCaptureProperty(pCapture, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //撮影サイズを指定
-	cvSetCaptureProperty(pCapture, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
+	CvSize size = cvSize(src_img->width,src_img->height);
 
-	src_img = cvQueryFrame(pCapture);
 	gray_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
 	cvCvtColor(src_img, gray_img, CV_BGR2GRAY);
-	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(WIDTH, HEIGHT / 3),cvScalar(0), CV_FILLED, CV_AA);
+	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(src_img->width, src_img->height / 3),cvScalar(0), CV_FILLED, CV_AA);
 
 	// Medianフィルタ
 	cvSmooth (gray_img, gray_img, CV_MEDIAN, 5, 0, 0, 0);
@@ -532,7 +533,6 @@ void Navigating::stuckMoveCamera()
 	}
 	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
-	cvReleaseCapture(&pCapture);
 
 	mIsStucked = STUCK_RANDOM;
 }

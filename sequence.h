@@ -98,7 +98,7 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 
 	void stuckMoveRandom();//スタック時の移動処理
-	void stuckMoveCamera();//カメラを用いたスタック時の移動処理
+	void stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
 
 	void navigationMove(double distance) const; //通常時の移動処理
 	bool isStuck() const;//スタック判定

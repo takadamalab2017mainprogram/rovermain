@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <sys/stat.h>
 #include "sensor.h"
 #include "utils.h"
 
@@ -16,6 +17,7 @@ GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 WebCamera gWebCamera;
 DistanceSensor gDistanceSensor;
+CameraCapture gCameraCapture;
 
 unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
@@ -618,5 +620,78 @@ DistanceSensor::DistanceSensor() : mLastDistance(-1), mIsCalculating(false), mIs
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
 }
 DistanceSensor::~DistanceSensor()
+{
+}
+
+bool CameraCapture::onInit(const struct timespec& time)
+{
+	const static int WIDTH = 320,HEIGHT = 240;
+	mpCapture = cvCreateCameraCapture(0);
+
+	if(mpCapture == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Unable to initialize camera\r\n");
+		return false;
+	}
+	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //撮影サイズを指定
+	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
+
+	//撮影インデックスを既存のファイルに上書きしないように変更
+	std::string filename;
+	struct stat st;
+	do
+	{
+		generateFilename(filename);
+	}while(stat(filename.c_str(), &st) == 0);
+	--mCapturedCount;
+	return true;
+}
+void CameraCapture::onClean()
+{
+	cvReleaseCapture(&mpCapture);
+	mpCapture = NULL;
+}
+bool CameraCapture::onCommand(const std::vector<std::string> args)
+{
+	if(!isActive())return false;
+	if(args.size() == 1)
+	{
+		save();
+		return true;
+	}else if(args.size() == 2)
+	{
+		save(&args[1]);
+		return true;
+	}
+	return false;
+}
+void CameraCapture::save(const std::string* name,IplImage* pImage)
+{
+	if(!isActive())return;
+	std::string filename;
+	if(name != NULL)filename.assign(*name);
+	else generateFilename(filename);
+	if(pImage == NULL)pImage = getFrame();
+	cvSaveImage(filename.c_str(), pImage);
+
+	Debug::print(LOG_SUMMARY, "Captured image was saved as %s\r\n", filename.c_str());
+}
+void CameraCapture::generateFilename(std::string& name)
+{
+	std::stringstream filename;
+	filename << "capture" << ++mCapturedCount << ".jpg";
+	name.assign(filename.str());
+}
+IplImage* CameraCapture::getFrame()
+{
+	if(!isActive())return NULL;
+	return cvQueryFrame(mpCapture);
+}
+CameraCapture::CameraCapture() : mpCapture(NULL), mCapturedCount(0)
+{
+	setName("camera");
+	setPriority(UINT_MAX,UINT_MAX);
+}
+CameraCapture::~CameraCapture()
 {
 }
