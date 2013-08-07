@@ -1,6 +1,9 @@
 #pragma once
 #include <time.h>
 #include <list>
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include "task.h"
 #include "utils.h"
 
@@ -63,9 +66,13 @@ private:
 	struct timespec mLastUpdateTime;//前回サーボの向きを更新した時間
 	bool mCurServoState;			//現在のサーボの向き(true = 1,false = 0)
 	unsigned int mServoCount;		//サーボの向きを変更した回数
+	enum STEP{STEP_SEPARATE = 0, STEP_PARA_JUDGE,STEP_PARA_DODGE};
+	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+
+	bool isParaExist(IplImage* pImage);//画像内にパラシュートが存在するか確認する
 
 	//次の状態に移行
 	void nextState();
@@ -84,21 +91,12 @@ private:
 	VECTOR3 mGoalPos;
 	bool mIsGoalPos;
 
-	//スタック判定関連
-	enum STUCK_MOVE{STUCK_NONE = 0,STUCK_RANDOM,STUCK_BACKWORD,STUCK_FORWORD,STUCK_CAMERA};
-	enum STUCK_MOVE mIsStucked;//スタック中
-	unsigned int mCurStuckMoveCount;//スタック行動中用のカウンタ
-	struct timespec mLastStuckMoveUpdateTime;//前回の進行方向変更時刻@スタック
-
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
-
-	void stuckMoveRandom();//スタック時の移動処理
-	void stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
 
 	void navigationMove(double distance) const; //通常時の移動処理
 	bool isStuck() const;//スタック判定
@@ -112,8 +110,28 @@ public:
 	~Navigating();
 };
 
+//轍脱出動作
+//このタスクが有効の間はナビゲーションしません
+class Escaping : public TaskBase
+{
+	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+
+	enum STEP{STEP_BACKWORD = 0, STEP_CAMERA, STEP_CAMERA_WAIT, STEP_RANDOM};
+	enum STEP mCurStep;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+
+	void stuckMoveRandom();//スタック時の移動処理
+	void stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
+public:
+	Escaping();
+	~Escaping();
+};
+
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
 extern Separating gSeparatingState;
 extern Navigating gNavigatingState;
+extern Escaping gEscapingState;

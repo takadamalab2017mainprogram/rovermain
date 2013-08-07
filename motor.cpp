@@ -39,7 +39,7 @@ void Motor::update(double elapsedSeconds)
 		//なめらかにモータ出力を変化させる
 		double curFrameTarget = mTargetPower;//この呼び出しで設定するモーター出力
 
-		double maxMotorPowerChange = MOTOR_MAX_POWER_CHANGE * mCoeff * elapsedSeconds;
+		double maxMotorPowerChange = MOTOR_MAX_POWER_CHANGE * mCoeff;
 
 		//モータ出力変化量を制限
 		if(fabs(mTargetPower - mCurPower) > maxMotorPowerChange)

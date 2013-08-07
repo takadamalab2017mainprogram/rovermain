@@ -16,6 +16,7 @@ Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
+Escaping gEscapingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -250,29 +251,109 @@ bool Separating::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
+	gCameraCapture.setRunMode(true);
+	gMotorDrive.setRunMode(true);
+	gGyroSensor.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gServo.start(0);
 	mCurServoState = false;
 	mServoCount = 0;
+	mCurStep = STEP_SEPARATE;
 
 	return true;
 }
 void Separating::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
-	mLastUpdateTime = time;
-
-	mCurServoState = !mCurServoState;
-	gServo.start(mCurServoState);
-	++mServoCount;
-
-	if(mServoCount >= SEPARATING_SERVO_COUNT)
+	switch(mCurStep)
 	{
-		nextState();
-	}
-}
+	case STEP_SEPARATE:
+		//パラシュートを切り離す
+		if(Time::dt(time,mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
+		mLastUpdateTime = time;
 
+		mCurServoState = !mCurServoState;
+		gServo.start(mCurServoState);
+		++mServoCount;
+
+		if(mServoCount >= SEPARATING_SERVO_COUNT)
+		{
+			mCurStep = STEP_PARA_JUDGE;
+			gMotorDrive.drive(100,100);
+		}
+		break;
+	case STEP_PARA_JUDGE:
+		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
+		if(Time::dt(time,mLastUpdateTime) < ROVER_WAKING_DRIVE_TIME)return;
+		gMotorDrive.drive(0,0);
+		{
+			IplImage* pImage = gCameraCapture.getFrame();
+			if(isParaExist(pImage))
+			{
+				mCurStep = STEP_PARA_DODGE;
+				gGyroSensor.setZero();
+				gMotorDrive.drive(100,0);
+				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
+			}else
+			{
+				Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
+				nextState();
+			}
+			gCameraCapture.save(NULL, pImage);
+		}
+		break;
+	case STEP_PARA_DODGE:
+		if(abs(gGyroSensor.getRz()) >= 90)
+		{
+			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
+			gMotorDrive.drive(0,0);
+			nextState();
+		}
+	};
+}
+bool Separating::isParaExist(IplImage* src)
+{
+	if(src == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Para detection: Unable to get Image\r\n");
+		return true;
+	}
+	unsigned long pixelCount = 0;
+	int x = 0, y = 0;
+	uchar H, S, V;
+	uchar minH, minS, minV, maxH, maxS, maxV;
+    
+	CvPixelPosition8u pos_src;
+	uchar* p_src;
+	IplImage* tmp = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
+    
+	//HSVに変換
+	cvCvtColor(src, tmp, CV_RGB2HSV);
+    
+	CV_INIT_PIXEL_POS(pos_src, (unsigned char*) tmp->imageData,
+                      tmp->widthStep,cvGetSize(tmp), x, y, tmp->origin);
+    
+	minH = 100;	maxH = 115;
+	minS = 80;	maxS = 255;
+	minV = 120;	maxV = 255;
+	for(y = 0; y < tmp->height; y++) {
+		for(x = 0; x < tmp->width; x++) {
+			p_src = CV_MOVE_TO(pos_src, x, y, 3);
+            
+			H = p_src[0];	//0から180
+			S = p_src[1];
+			V = p_src[2];
+            
+			if( minH <= H && H <= maxH &&
+               minS <= S && S <= maxS &&
+               minV <= V && V <= maxV
+               ) {
+				++pixelCount;
+			}
+		}
+	}
+	return (double)pixelCount / tmp->height / tmp->width > SEPARATING_PARA_DETECT_THRESHOLD;
+}
 void Separating::nextState()
 {
 	gBuzzer.start(100);
@@ -327,7 +408,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得できなければ処理を返す
-	if(!gGPSSensor.get(currentPos))return;
+	//if(!gGPSSensor.get(currentPos))return;
 
 	//最初の座標を取得したら移動を開始する
 	if(mLastPos.empty())
@@ -365,42 +446,15 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
 		gBuzzer.start(10);
-		mLastStuckMoveUpdateTime.tv_sec = 0;
-		mLastStuckMoveUpdateTime.tv_nsec = 0;
 
-		if(mIsStucked == STUCK_NONE)mIsStucked = STUCK_BACKWORD;
-
-		//スタックしている場合はスタック時の動作を実行
-		switch(mIsStucked)
-		{
-		case STUCK_RANDOM:
-			stuckMoveRandom();
-			Debug::print(LOG_SUMMARY, "Random kaihi\r\n");
-			break;
-		case STUCK_CAMERA:
-			stuckMoveCamera(pImage);
-			Debug::print(LOG_SUMMARY, "Camera kaihi\r\n");
-			break;
-		case STUCK_BACKWORD:
-			gMotorDrive.drive(-100,-100);
-			mIsStucked = STUCK_FORWORD;
-			Debug::print(LOG_SUMMARY, "kaihi junbi 1\r\n");
-			break;
-		case STUCK_FORWORD:
-			gMotorDrive.drive(30,30);
-			mIsStucked = STUCK_CAMERA;
-			Debug::print(LOG_SUMMARY, "kaihi junbi 2\r\n");
-			break;
-		default:
-			break;
-		};
+		gEscapingState.setRunMode(true);
 	}else
 	{
-		if(mIsStucked != STUCK_NONE)
+		if(gEscapingState.isActive())
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-			mIsStucked = STUCK_NONE;
+			gEscapingState.setRunMode(false);
 		}else
 		{
 			//通常のナビゲーション
@@ -458,12 +512,106 @@ void Navigating::navigationMove(double distance) const
 	//方向と速度を変更
 	gMotorDrive.drivePID(deltaDirection ,speed);
 }
-void Navigating::stuckMoveRandom()
+bool Navigating::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 1)
+	{
+		VECTOR3 pos;
+		if(!gGPSSensor.get(pos))
+		{
+			Debug::print(LOG_SUMMARY, "Unable to get current position!\r\n");
+			return true;
+		}
+
+		setGoal(pos);
+		return true;
+	}
+	if(args.size() == 3)
+	{
+		VECTOR3 pos;
+		pos.x = atof(args[1].c_str());
+		pos.y = atof(args[2].c_str());
+
+		setGoal(pos);
+		return true;
+	}
+	Debug::print(LOG_PRINT, "navigating [pos x] [pos y]\r\n");
+	return true;
+}
+//次の状態に移行
+void Navigating::nextState()
+{
+	gBuzzer.start(1000);
+
+	//次の状態を設定
+	gTestingState.setRunMode(true);
+	
+	Debug::print(LOG_SUMMARY, "Goal!\r\n");
+}
+void Navigating::setGoal(const VECTOR3& pos)
+{
+	mIsGoalPos = true;
+	mGoalPos = pos;
+	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
+}
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
+{
+	setName("navigating");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+Navigating::~Navigating()
+{
+}
+
+bool Escaping::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	mCurStep = STEP_BACKWORD;
+	return true;
+}
+void Escaping::onUpdate(const struct timespec& time)
+{
+	switch(mCurStep)
+	{
+	case STEP_BACKWORD:
+		gMotorDrive.drive(-100,-100);
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_CAMERA;
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_CAMERA:
+		gMotorDrive.drive(100,100);
+		if(Time::dt(time,mLastUpdateTime) >= ROVER_WAKING_DRIVE_TIME)
+		{
+			mCurStep = STEP_CAMERA_WAIT;
+			mLastUpdateTime = time;
+			stuckMoveCamera(gCameraCapture.getFrame());
+		}
+		break;
+	case STEP_CAMERA_WAIT:
+		if(Time::dt(time,mLastUpdateTime) >= 1)
+		{
+			mCurStep = STEP_RANDOM;
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_RANDOM:
+		if(Time::dt(time,mLastUpdateTime) >= 2)
+		{
+			stuckMoveRandom();
+			mLastUpdateTime = time;
+		}
+		break;
+	}
+}
+void Escaping::stuckMoveRandom()
 {
 	//進行方向をランダムで変更
 	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
 }
-void Navigating::stuckMoveCamera(IplImage* pImage)
+void Escaping::stuckMoveCamera(IplImage* pImage)
 {
 	IplImage* src_img = pImage;
 	const static int DIV_NUM = 3;
@@ -472,7 +620,7 @@ void Navigating::stuckMoveCamera(IplImage* pImage)
 
 	if(src_img == NULL)
 	{
-		mIsStucked = STUCK_RANDOM;
+		Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
 		return;
 	}
 	CvSize size = cvSize(src_img->width,src_img->height);
@@ -533,56 +681,12 @@ void Navigating::stuckMoveCamera(IplImage* pImage)
 	}
 	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
-
-	mIsStucked = STUCK_RANDOM;
 }
-bool Navigating::onCommand(const std::vector<std::string> args)
+Escaping::Escaping()
 {
-	if(args.size() == 1)
-	{
-		VECTOR3 pos;
-		if(!gGPSSensor.get(pos))
-		{
-			Debug::print(LOG_SUMMARY, "Unable to get current position!\r\n");
-			return true;
-		}
-
-		setGoal(pos);
-		return true;
-	}
-	if(args.size() == 3)
-	{
-		VECTOR3 pos;
-		pos.x = atof(args[1].c_str());
-		pos.y = atof(args[2].c_str());
-
-		setGoal(pos);
-		return true;
-	}
-	Debug::print(LOG_PRINT, "navigating [pos x] [pos y]\r\n");
-	return true;
-}
-//次の状態に移行
-void Navigating::nextState()
-{
-	gBuzzer.start(1000);
-
-	//次の状態を設定
-	gTestingState.setRunMode(true);
-	
-	Debug::print(LOG_SUMMARY, "Goal!\r\n");
-}
-void Navigating::setGoal(const VECTOR3& pos)
-{
-	mIsGoalPos = true;
-	mGoalPos = pos;
-	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
-}
-Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false),mIsStucked(STUCK_NONE), mLastPos()
-{
-	setName("navigating");
+	setName("escaping");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
-Navigating::~Navigating()
+Escaping::~Escaping()
 {
 }
