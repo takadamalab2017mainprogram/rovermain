@@ -289,14 +289,14 @@ void Separating::onUpdate(const struct timespec& time)
 		break;
 	case STEP_PARA_JUDGE:
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
-		if(Time::dt(time,mLastUpdateTime) < 1)return;
+		if(Time::dt(time,mLastUpdateTime) < 2)return;
 		{
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(isParaExist(pImage))
 			{
 				mCurStep = STEP_PARA_DODGE;
 				gGyroSensor.setZero();
-				gMotorDrive.drive(30,0);
+				gMotorDrive.drive(50,0);
 				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
 			}else
 			{
@@ -601,18 +601,18 @@ void Escaping::onUpdate(const struct timespec& time)
 		{
 			mCurStep = STEP_CAMERA_WAIT;
 			mLastUpdateTime = time;
-			stuckMoveCamera(gCameraCapture.getFrame());
+			mWaitTime = stuckMoveCamera(gCameraCapture.getFrame());
 		}
 		break;
 	case STEP_CAMERA_WAIT:
-		if(Time::dt(time,mLastUpdateTime) >= 1)
+		if(Time::dt(time,mLastUpdateTime) >= mWaitTime)
 		{
 			mCurStep = STEP_RANDOM;
 			mLastUpdateTime = time;
 		}
 		break;
 	case STEP_RANDOM:
-		if(Time::dt(time,mLastUpdateTime) >= 2)
+		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			stuckMoveRandom();
 			mLastUpdateTime = time;
@@ -625,7 +625,7 @@ void Escaping::stuckMoveRandom()
 	//進行方向をランダムで変更
 	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
 }
-void Escaping::stuckMoveCamera(IplImage* pImage)
+double Escaping::stuckMoveCamera(IplImage* pImage)
 {
 	IplImage* src_img = pImage;
 	const static int DIV_NUM = 3;
@@ -635,7 +635,8 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 	if(src_img == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
-		return;
+		mCurStep = STEP_RANDOM;
+		return 0;
 	}
 	CvSize size = cvSize(src_img->width,src_img->height);
 
@@ -677,24 +678,30 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 		}
 	}
 
+	double waitTime = 0;
 	switch(min_id){
 		case 0:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
 			gMotorDrive.drive(60, 100);
+			waitTime = 1;
 			break;
 		case 1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
 			gMotorDrive.drive(100, 100);
+			waitTime = 5;
 			break;
 		case 2:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
 			gMotorDrive.drive(100, 60);
+			waitTime = 1;
 			break;
 		default:
 			break;
 	}
 	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
+
+	return waitTime;
 }
 Escaping::Escaping()
 {

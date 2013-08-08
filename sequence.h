@@ -115,6 +115,7 @@ public:
 class Escaping : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+	double mWaitTime;
 
 	enum STEP{STEP_BACKWORD = 0, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_WAIT, STEP_RANDOM};
 	enum STEP mCurStep;
@@ -123,7 +124,7 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 
 	void stuckMoveRandom();//スタック時の移動処理
-	void stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
+	double stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
 public:
 	Escaping();
 	~Escaping();

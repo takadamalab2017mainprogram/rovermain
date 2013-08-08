@@ -26,7 +26,7 @@ bool Motor::init(int powPin, int revPin)
 		return false;
 	}
     pinMode(mReversePin, OUTPUT);
-    digitalWrite(mReversePin, LOW);
+    digitalWrite(mReversePin, HIGH);
 
 	//Œ»Ý‚Ìo—Í‚ð•ÛŽ
     mCurPower = 0;
@@ -50,8 +50,8 @@ void Motor::update(double elapsedSeconds)
 		}
 
 		//V‚µ‚¢power‚ð‚à‚Æ‚Épin‚Ìó‘Ô‚ðÝ’è‚·‚é
-		if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, HIGH);
-		else if(curFrameTarget < 0 && mCurPower >= 0)digitalWrite(mReversePin, LOW);
+		if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, LOW);
+		else if(curFrameTarget < 0 && mCurPower >= 0)digitalWrite(mReversePin, HIGH);
 		mCurPower = curFrameTarget;
 		softPwmWrite(mPowerPin, fabs(mCurPower));
 	}
@@ -59,7 +59,7 @@ void Motor::update(double elapsedSeconds)
 void Motor::clean()
 {
 	if(mPowerPin >= 0)softPwmWrite(mPowerPin, 0);
-	if(mReversePin >= 0)digitalWrite(mReversePin, LOW);
+	if(mReversePin >= 0)digitalWrite(mReversePin, HIGH);
 	mCurPower = 0;
 }
 void Motor::set(int power)

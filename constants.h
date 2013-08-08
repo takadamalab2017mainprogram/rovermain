@@ -15,12 +15,12 @@
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A = 4;		//モータPWM Right
-const static int PIN_PWM_B = 5;
-const static int PIN_PULSE_A = 0;	//モータエンコーダ Right
-const static int PIN_PULSE_B = 7;
-const static int PIN_INVERT_MOTOR_A = 2;	//モータ反転ピン Right
-const static int PIN_INVERT_MOTOR_B = 3;
+const static int PIN_PWM_A = 5;		//モータPWM Right
+const static int PIN_PWM_B = 4;
+const static int PIN_PULSE_A = 7;	//モータエンコーダ Right
+const static int PIN_PULSE_B = 0;
+const static int PIN_INVERT_MOTOR_A = 3;	//モータ反転ピン Right
+const static int PIN_INVERT_MOTOR_B = 2;
 const static int PIN_BUZZER = 12;			//ブザー
 const static int PIN_XBEE_SLEEP = 13;		//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;		//Cdsセンサピン
