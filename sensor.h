@@ -125,6 +125,28 @@ public:
 	~GyroSensor();
 };
 
+////MMA8451Qからデータを取得するクラス
+//class AccelerationSensor : public TaskBase
+//{
+//private:
+//	int mFileHandle;//winringPi i2c　のファイルハンドラ
+//	VECTOR3 mAccel;//加速度
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onClean();
+//	virtual void onUpdate(const struct timespec& time);
+//	virtual bool onCommand(const std::vector<std::string> args);
+//public:
+//	//最後にアップデートされたデータを返す
+//	bool getAccel(VECTOR3& acc);
+//	double getAx();
+//	double getAy();
+//	double getAz();
+//
+//	AccelerationSensor();
+//	~AccelerationSensor();
+//};
+
 //Cdsからデータを取得するクラス
 class LightSensor : public TaskBase
 {
@@ -166,8 +188,8 @@ class DistanceSensor : public TaskBase
 	double mLastDistance;
 	struct timespec mLastSampleTime;
 	pthread_t mPthread;
-	bool mIsCalculating;
-	bool mIsNewData;
+	volatile bool mIsCalculating;
+	volatile bool mIsNewData;
 
 	static void* waitingThread(void* arg);
 protected:
@@ -213,5 +235,5 @@ extern LightSensor gLightSensor;
 extern WebCamera gWebCamera;
 extern DistanceSensor gDistanceSensor;
 extern CameraCapture gCameraCapture;
-
+//extern AccelerationSensor gAccelerationSensor;
 

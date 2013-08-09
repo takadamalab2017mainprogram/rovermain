@@ -17,6 +17,7 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
+Waking gWakingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -29,6 +30,7 @@ bool Testing::onInit(const struct timespec& time)
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
+	//gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
 	gDistanceSensor.setRunMode(true);
@@ -61,6 +63,9 @@ bool Testing::onCommand(const std::vector<std::string> args)
 
 			if(gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n",gLightSensor.get() ? "High" : "Low");
 			return true;
+		}else if(args[1].compare("waking") == 0)
+		{
+			gWakingState.setRunMode(true);
 		}
 	}
 	if(args.size() == 3)
@@ -278,18 +283,22 @@ void Separating::onUpdate(const struct timespec& time)
 
 		if(mServoCount >= SEPARATING_SERVO_COUNT)
 		{
+			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
-			gMotorDrive.drive(50,50);
+			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_PARA_JUDGE:
-		if(Time::dt(time,mLastUpdateTime) < ROVER_WAKING_DRIVE_TIME)return;
-		gMotorDrive.drive(0,0);
-		mCurStep = STEP_PARA_JUDGE;
+		if(gWakingState.isActive())mLastUpdateTime = time;
+		if(Time::dt(time,mLastUpdateTime) > 1)
+		{
+			mLastUpdateTime = time;
+			mCurStep = STEP_PARA_JUDGE;
+		}
 		break;
 	case STEP_PARA_JUDGE:
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
-		if(Time::dt(time,mLastUpdateTime) < 2)return;
+		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(isParaExist(pImage))
@@ -416,17 +425,17 @@ void Navigating::onUpdate(const struct timespec& time)
 	//新しい位置を取得できなければ処理を返す
 	if(!gGPSSensor.get(currentPos))return;
 
-	//最初の座標を取得したら移動を開始する
-	if(mLastPos.empty())
-	{
-		Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
-		gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-		mLastCheckTime = time;
-	}
 
 	//新しい座標であればバッファに追加
 	if(isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
 	{
+		//最初の座標を取得したら移動を開始する
+		if(mLastPos.empty())
+		{
+			Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
+			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+			mLastCheckTime = time;
+		}
 		mLastPos.push_back(currentPos);
 	}	
 
@@ -585,11 +594,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		{
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(50,50);
+			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
-		if(Time::dt(time,mLastUpdateTime) >= ROVER_WAKING_DRIVE_TIME)
+		if(gWakingState.isActive())mLastUpdateTime = time;
+		if(Time::dt(time,mLastUpdateTime) > 1)
 		{
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
@@ -709,5 +719,59 @@ Escaping::Escaping()
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 Escaping::~Escaping()
+{
+}
+
+bool Waking::onInit(const struct timespec& time)
+{
+	mStartTime = time;
+	mIsWakingStarted = false;
+	gMotorDrive.setRunMode(true);
+	gMotorDrive.drive(50,50);
+	gGyroSensor.setRunMode(true);
+	mAngleOnBegin = gGyroSensor.getRvx();
+	return true;
+}
+void Waking::onClean()
+{
+	gMotorDrive.drive(0,0);
+}
+void Waking::onUpdate(const struct timespec& time)
+{
+	if(mIsWakingStarted)
+	{
+		if(Time::dt(time,mStartTime) > 2)
+		{
+			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
+			setRunMode(false);
+		}
+		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)
+		{
+			Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
+			setRunMode(false);
+		}
+		double power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
+		gMotorDrive.drive(power,power);
+	}else
+	{
+		if(Time::dt(time,mStartTime) > 0.5)
+		{
+			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
+			setRunMode(false);
+		}
+		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)
+		{
+			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
+			mIsWakingStarted = true;
+		}
+	}
+}
+
+Waking::Waking()
+{
+	setName("waking");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+Waking::~Waking()
 {
 }

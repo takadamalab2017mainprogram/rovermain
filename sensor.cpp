@@ -8,6 +8,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include "sensor.h"
 #include "utils.h"
 
@@ -18,6 +20,57 @@ LightSensor gLightSensor;
 WebCamera gWebCamera;
 DistanceSensor gDistanceSensor;
 CameraCapture gCameraCapture;
+//AccelerationSensor gAccelerationSensor;
+//
+//// I2C definitions
+//
+//#define I2C_SLAVE       0x0703
+//#define I2C_SMBUS       0x0720  /* SMBus-level access */
+//
+//#define I2C_SMBUS_READ  1
+//#define I2C_SMBUS_WRITE 0
+//
+//// SMBus transaction types
+//
+//#define I2C_SMBUS_QUICK             0
+//#define I2C_SMBUS_BYTE              1
+//#define I2C_SMBUS_BYTE_DATA         2
+//#define I2C_SMBUS_WORD_DATA         3
+//#define I2C_SMBUS_PROC_CALL         4
+//#define I2C_SMBUS_BLOCK_DATA        5
+//#define I2C_SMBUS_I2C_BLOCK_BROKEN  6
+//#define I2C_SMBUS_BLOCK_PROC_CALL   7           /* SMBus 2.0 */
+//#define I2C_SMBUS_I2C_BLOCK_DATA    8
+//
+//#define I2C_SMBUS_BLOCK_MAX     32      /* As specified in SMBus standard */
+//#define I2C_SMBUS_I2C_BLOCK_MAX 32      /* Not specified but we use same structure */
+//
+//union i2c_smbus_data
+//{
+//  uint8_t  byte ;
+//  uint16_t word ;
+//  uint8_t  block [I2C_SMBUS_BLOCK_MAX + 2] ;    // block [0] is used for length + one more for PEC
+//};
+//
+//struct i2c_smbus_ioctl_data
+//{
+//  char read_write ;
+//  uint8_t command ;
+//  int size ;
+//  union i2c_smbus_data *data ;
+//};
+//
+//static inline int i2c_smbus_access (int fd, char rw, uint8_t command, int size,
+//union i2c_smbus_data *data)
+//{
+//  struct i2c_smbus_ioctl_data args ;
+//
+//  args.read_write = rw ;
+//  args.command    = command ;
+//  args.size       = size ;
+//  args.data       = data ;
+//  return ioctl (fd, I2C_SMBUS, &args) ;
+//}
 
 unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
@@ -419,6 +472,75 @@ GyroSensor::~GyroSensor()
 {
 }
 
+////////////////////////////////////////////////
+//// Accel Sensor
+////////////////////////////////////////////////
+//
+//bool AccelerationSensor::onInit(const struct timespec& time)
+//{
+//	mAccel.x = mAccel.y = mAccel.z = 0;
+//	
+//	if((mFileHandle = wiringPiI2CSetup(0x1c)) == -1)
+//	{
+//		Debug::print(LOG_SUMMARY,"Failed to setup Acceleration Sensor\r\n");
+//		return false;
+//	}
+//
+//	//データサンプリング有効化
+//	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x1b);
+//	return true;
+//}
+//
+//void AccelerationSensor::onClean()
+//{
+//	//データサンプリング無効化
+//	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x00);
+//
+//	close(mFileHandle);
+//}
+//
+//void AccelerationSensor::onUpdate(const struct timespec& time)
+//{
+//	union i2c_smbus_data data;
+//	i2c_smbus_access(mFileHandle, I2C_SMBUS_READ, 0x01, I2C_SMBUS_I2C_BLOCK_DATA, &data);
+//	mAccel.x = ((signed char)data.block[1]);
+//	mAccel.y = ((signed char)data.block[2]);
+//	mAccel.z = ((signed char)data.block[3]);
+//}
+//bool AccelerationSensor::onCommand(const std::vector<std::string> args)
+//{
+//	Debug::print(LOG_SUMMARY, "Acceleration: %f %f %f\r\n",getAx(),getAy(),getAz());
+//	return true;
+//}
+//bool AccelerationSensor::getAccel(VECTOR3& acc)
+//{
+//	if(isActive())
+//	{
+//		acc = mAccel;
+//		return true;
+//	}
+//	return false;
+//}
+//double AccelerationSensor::getAx()
+//{
+//	return mAccel.x;
+//}
+//double AccelerationSensor::getAy()
+//{
+//	return mAccel.y;
+//}
+//double AccelerationSensor::getAz()
+//{
+//	return mAccel.z;
+//}
+//AccelerationSensor::AccelerationSensor() : mFileHandle(-1),mAccel()
+//{
+//	setName("accel");
+//	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
+//}
+//AccelerationSensor::~AccelerationSensor()
+//{
+//}
 
 ///////////////////////////////////////////////
 // CdS Sensor
@@ -522,53 +644,63 @@ void* DistanceSensor::waitingThread(void* arg)
 	DistanceSensor& parent = *reinterpret_cast<DistanceSensor*>(arg);
 	struct timespec newTime;
 
-	//Send Ping
-	pinMode(PIN_DISTANCE, OUTPUT);
-	digitalWrite(PIN_DISTANCE, HIGH);
-	clock_gettime(CLOCK_MONOTONIC_RAW,&parent.mLastSampleTime);
-	do
+	while(1)
 	{
-		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
-	}while(Time::dt(newTime,parent.mLastSampleTime) < 0.000001);
-	digitalWrite(PIN_DISTANCE, LOW);
+		while(!parent.mIsCalculating)usleep(1000);
 
-	//Wait For Result
-	pinMode(PIN_DISTANCE, INPUT);
-	do
-	{
-		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
-		if(Time::dt(newTime,parent.mLastSampleTime) > 0.001)
+		//Send Ping
+		pinMode(PIN_DISTANCE, OUTPUT);
+		digitalWrite(PIN_DISTANCE, HIGH);
+		clock_gettime(CLOCK_MONOTONIC_RAW,&parent.mLastSampleTime);
+		do
 		{
-			//Timeout
-			parent.mIsCalculating = false;
-			parent.mLastDistance = -1;
-			return NULL;
-		}	
-	}while(digitalRead(PIN_DISTANCE) == LOW);
-	parent.mLastSampleTime = newTime;
-	do
-	{
-		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
-		if(Time::dt(newTime,parent.mLastSampleTime) > 0.02)
+			clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+		}while(Time::dt(newTime,parent.mLastSampleTime) < 0.000001);
+		digitalWrite(PIN_DISTANCE, LOW);
+
+		//Wait For Result
+		pinMode(PIN_DISTANCE, INPUT);
+		do
 		{
-			//Timeout
-			parent.mIsCalculating = false;
-			parent.mLastDistance = -1;
-			return NULL;
-		}
-	}while(digitalRead(PIN_DISTANCE) == HIGH);
-	clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+			clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+			if(Time::dt(newTime,parent.mLastSampleTime) > 0.001)
+			{
+				//Timeout
+				parent.mIsCalculating = false;
+				parent.mLastDistance = -1;
+				break;
+			}	
+		}while(digitalRead(PIN_DISTANCE) == LOW);
+		parent.mLastSampleTime = newTime;
+		do
+		{
+			clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
+			if(Time::dt(newTime,parent.mLastSampleTime) > 0.02)
+			{
+				//Timeout
+				parent.mIsCalculating = false;
+				parent.mLastDistance = -1;
+				break;
+			}
+		}while(digitalRead(PIN_DISTANCE) == HIGH);
+		clock_gettime(CLOCK_MONOTONIC_RAW,&newTime);
 
-	double delay = Time::dt(newTime,parent.mLastSampleTime);
-	parent.mLastDistance = delay * 100 * 3 / 2;
-	if(delay > 0.019)parent.mLastDistance = -1;
-	parent.mIsNewData = true;
-	parent.mIsCalculating = false;
-
+		double delay = Time::dt(newTime,parent.mLastSampleTime);
+		parent.mLastDistance = delay * 100 * 3 / 2;
+		if(delay > 0.019)parent.mLastDistance = -1;
+		parent.mIsNewData = true;
+		parent.mIsCalculating = false;
+	}
 	return NULL;
 }
 bool DistanceSensor::onInit(const struct timespec& time)
 {
+	mLastDistance = -1;
+	if(pthread_create(&mPthread, NULL, waitingThread, this) != 0)
+	{
+		Debug::print(LOG_SUMMARY, "DistanceSensor: Unable to create thread!\r\n");
+		return false;
+	}
 	return true;
 }
 void DistanceSensor::onClean()
@@ -588,7 +720,7 @@ bool DistanceSensor::onCommand(const std::vector<std::string> args)
 	if(!isActive())return false;
 	if(args.size() == 1)
 	{
-		Debug::print(LOG_SUMMARY, "Distance: %f m\r\n",mLastDistance);
+		Debug::print(LOG_SUMMARY, "Last Distance: %f m\r\n",mLastDistance);
 		if(ping())Debug::print(LOG_SUMMARY, "Calculating New Distance!\n",mLastDistance);
 		return true;
 	}
@@ -598,11 +730,6 @@ bool DistanceSensor::onCommand(const std::vector<std::string> args)
 bool DistanceSensor::ping()
 {
 	if(mIsCalculating)return false;//すでに計測を開始している
-	if(pthread_create(&mPthread, NULL, waitingThread, this) != 0)
-	{
-		Debug::print(LOG_SUMMARY, "DistanceSensor: Unable to create thread!\r\n");
-		return false;
-	}
 	mIsCalculating = true;
 	return true;
 }

@@ -130,9 +130,26 @@ public:
 	~Escaping();
 };
 
+//ローバーの姿勢制御
+//姿勢制御が完了するとタスクが終了します
+class Waking : public TaskBase
+{
+	struct timespec mStartTime;//行動開始時刻
+	bool mIsWakingStarted;//姿勢制御によって
+	double mAngleOnBegin;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual void onClean();
+public:
+	Waking();
+	~Waking();
+};
+
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
 extern Separating gSeparatingState;
 extern Navigating gNavigatingState;
 extern Escaping gEscapingState;
+extern Waking gWakingState;
