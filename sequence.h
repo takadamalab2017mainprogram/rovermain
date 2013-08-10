@@ -117,7 +117,7 @@ class Escaping : public TaskBase
 	struct timespec mLastUpdateTime;//ëOâÒÇÃçsìÆÇ©ÇÁÇÃïœâªéûä‘
 	double mWaitTime;
 
-	enum STEP{STEP_BACKWORD = 0, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_WAIT, STEP_RANDOM};
+	enum STEP{STEP_BACKWORD = 0, STEP_AFTER_BACKWORD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_WAIT, STEP_RANDOM};
 	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);

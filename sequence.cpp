@@ -256,7 +256,6 @@ bool Separating::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
-	gCameraCapture.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 
@@ -294,6 +293,7 @@ void Separating::onUpdate(const struct timespec& time)
 		{
 			mLastUpdateTime = time;
 			mCurStep = STEP_PARA_JUDGE;
+			gCameraCapture.setRunMode(true);
 		}
 		break;
 	case STEP_PARA_JUDGE:
@@ -313,6 +313,7 @@ void Separating::onUpdate(const struct timespec& time)
 				nextState();
 			}
 			gCameraCapture.save(NULL, pImage);
+			gCameraCapture.setRunMode(false);
 		}
 		break;
 	case STEP_PARA_DODGE:
@@ -400,7 +401,6 @@ bool Navigating::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	gCameraCapture.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -592,6 +592,13 @@ void Escaping::onUpdate(const struct timespec& time)
 		gMotorDrive.drive(-100,-100);
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
+			mCurStep = STEP_AFTER_BACKWORD;
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_AFTER_BACKWORD:
+		if(Time::dt(time,mLastUpdateTime) >= 1)
+		{
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
 			gWakingState.setRunMode(true);
@@ -599,11 +606,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		break;
 	case STEP_PRE_CAMERA:
 		if(gWakingState.isActive())mLastUpdateTime = time;
-		if(Time::dt(time,mLastUpdateTime) > 1)
+		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
+			gCameraCapture.setRunMode(true);
 		}
 		break;
 	case STEP_CAMERA:
@@ -611,7 +619,10 @@ void Escaping::onUpdate(const struct timespec& time)
 		{
 			mCurStep = STEP_CAMERA_WAIT;
 			mLastUpdateTime = time;
-			mWaitTime = stuckMoveCamera(gCameraCapture.getFrame());
+			IplImage* pImage = gCameraCapture.getFrame();
+			mWaitTime = stuckMoveCamera(pImage);
+			gCameraCapture.save(NULL,gCameraCapture.getFrame());
+			gCameraCapture.setRunMode(false);
 		}
 		break;
 	case STEP_CAMERA_WAIT:

@@ -792,6 +792,10 @@ bool CameraCapture::onCommand(const std::vector<std::string> args)
 	}
 	return false;
 }
+void CameraCapture::onUpdate(const struct timespec& time)
+{
+	getFrame();
+}
 void CameraCapture::save(const std::string* name,IplImage* pImage)
 {
 	if(!isActive())return;
@@ -817,7 +821,7 @@ IplImage* CameraCapture::getFrame()
 CameraCapture::CameraCapture() : mpCapture(NULL), mCapturedCount(0)
 {
 	setName("camera");
-	setPriority(UINT_MAX,UINT_MAX);
+	setPriority(UINT_MAX,100);
 }
 CameraCapture::~CameraCapture()
 {

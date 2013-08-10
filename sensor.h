@@ -215,10 +215,13 @@ class CameraCapture : public TaskBase
 {
 	CvCapture* mpCapture;
 	unsigned int mCapturedCount;
+
+	const static int WIDTH = 320,HEIGHT = 240;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
+	virtual void onUpdate(const struct timespec& time);
 public:
 	void save(const std::string* name = NULL,IplImage* pImage = NULL);
 	IplImage* getFrame();
