@@ -342,14 +342,14 @@ bool Separating::isParaExist(IplImage* src)
 	IplImage* tmp = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
     
 	//HSV‚É•ÏŠ·
-	cvCvtColor(src, tmp, CV_BGR2HSV);
+	cvCvtColor(src, tmp, CV_RGB2HSV);
     
 	CV_INIT_PIXEL_POS(pos_src, (unsigned char*) tmp->imageData,
                       tmp->widthStep,cvGetSize(tmp), x, y, tmp->origin);
     
-	minH = 0;	maxH = 25;
-	minS = 128;	maxS = 255;
-	minV = 128;	maxV = 255;
+	minH = 113;	maxH = 120;
+	minS = 100;	maxS = 255;
+	minV = 120;	maxV = 255;
 	for(y = 0; y < tmp->height; y++) {
 		for(x = 0; x < tmp->width; x++) {
 			p_src = CV_MOVE_TO(pos_src, x, y, 3);
@@ -369,6 +369,15 @@ bool Separating::isParaExist(IplImage* src)
 	double ratio = (double)pixelCount / tmp->height / tmp->width;
 	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
 	return ratio > SEPARATING_PARA_DETECT_THRESHOLD;
+}
+bool Separating::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 1)
+	{
+		Debug::print(LOG_SUMMARY, "Para %s\r\n", isParaExist(gCameraCapture.getFrame()) ? "found" : "not found");
+		return true;
+	}
+	return false:
 }
 void Separating::nextState()
 {
@@ -582,6 +591,7 @@ bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWORD;
+	gMotorDrive.drive(-100,-100);
 	return true;
 }
 void Escaping::onUpdate(const struct timespec& time)
@@ -589,11 +599,11 @@ void Escaping::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWORD:
-		gMotorDrive.drive(-100,-100);
-		if(Time::dt(time,mLastUpdateTime) >= 3)
+		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			mCurStep = STEP_AFTER_BACKWORD;
 			mLastUpdateTime = time;
+			gMotorDrive.drive(0,0);
 		}
 		break;
 	case STEP_AFTER_BACKWORD:
@@ -628,7 +638,7 @@ void Escaping::onUpdate(const struct timespec& time)
 	case STEP_CAMERA_WAIT:
 		if(Time::dt(time,mLastUpdateTime) >= mWaitTime)
 		{
-			mCurStep = STEP_RANDOM;
+			mCurStep = STEP_BACKWORD;
 			mLastUpdateTime = time;
 		}
 		break;
@@ -704,7 +714,7 @@ double Escaping::stuckMoveCamera(IplImage* pImage)
 		case 0:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
 			gMotorDrive.drive(60, 100);
-			waitTime = 1;
+			waitTime = 5;
 			break;
 		case 1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
@@ -714,7 +724,7 @@ double Escaping::stuckMoveCamera(IplImage* pImage)
 		case 2:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
 			gMotorDrive.drive(100, 60);
-			waitTime = 1;
+			waitTime = 5;
 			break;
 		default:
 			break;
