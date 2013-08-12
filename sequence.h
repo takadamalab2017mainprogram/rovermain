@@ -111,6 +111,18 @@ public:
 	~Navigating();
 };
 
+//轍事前検知動作
+class WadachiPredicting : public TaskBase
+{
+	struct timespec mLastUpdateTime;//前回のチェック時刻
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	WadachiPredicting();
+	~WadachiPredicting();
+};
+
 //轍脱出動作
 //このタスクが有効の間はナビゲーションしません
 class Escaping : public TaskBase
@@ -154,3 +166,4 @@ extern Separating gSeparatingState;
 extern Navigating gNavigatingState;
 extern Escaping gEscapingState;
 extern Waking gWakingState;
+extern WadachiPredicting gPredictingState;

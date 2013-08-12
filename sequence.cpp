@@ -18,6 +18,7 @@ Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
 Waking gWakingState;
+WadachiPredicting gPredictingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -411,6 +412,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
+	gPredictingState.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -585,6 +587,27 @@ Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 Navigating::~Navigating()
+{
+}
+
+bool WadachiPredicting::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	gCameraCapture.startWarming();
+}
+void WadachiPredicting::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) < 1)return;
+	mLastUpdateTime = time;
+	gCameraCapture.save();
+	gCameraCapture.startWarming();
+}
+WadachiPredicting::WadachiPredicting()
+{
+	setName("predicting");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+WadachiPredicting::~WadachiPredicting()
 {
 }
 
