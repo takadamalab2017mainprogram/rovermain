@@ -763,6 +763,8 @@ bool CameraCapture::onInit(const struct timespec& time)
 	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //撮影サイズを指定
 	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
 
+	mIsWarming = false;
+
 	//撮影インデックスを既存のファイルに上書きしないように変更
 	std::string filename;
 	struct stat st;
@@ -781,20 +783,37 @@ void CameraCapture::onClean()
 bool CameraCapture::onCommand(const std::vector<std::string> args)
 {
 	if(!isActive())return false;
-	if(args.size() == 1)
+	if(args.size() == 2)
 	{
-		save();
+		if(args[1].compare("save") == 0)
+		{
+			save();
+		}else if(args[1].compare("warm") == 0)
+		{
+			startWarming();
+		}
 		return true;
-	}else if(args.size() == 2)
+	}else if(args.size() == 3)
 	{
-		save(&args[1]);
+		if(args[1].compare("save") == 0)
+		{
+			save(&args[2]);
+		}
 		return true;
 	}
+	Debug::print(LOG_SUMMARY, "camera warm  : stand by for capturing\r\n\
+camera save  : take picture\r\n\
+camera save [name] : take picture as name\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
 	return false;
 }
 void CameraCapture::onUpdate(const struct timespec& time)
 {
-	getFrame();
+	if(mIsWarming)cvQueryFrame(mpCapture);
+}
+void CameraCapture::startWarming()
+{
+	Debug::print(LOG_SUMMARY, "Camera: Waiting for new Image...\r\n");
+	mIsWarming = true;
 }
 void CameraCapture::save(const std::string* name,IplImage* pImage)
 {
@@ -816,12 +835,13 @@ void CameraCapture::generateFilename(std::string& name)
 IplImage* CameraCapture::getFrame()
 {
 	if(!isActive())return NULL;
+	mIsWarming = false;
 	return cvQueryFrame(mpCapture);
 }
-CameraCapture::CameraCapture() : mpCapture(NULL), mCapturedCount(0)
+CameraCapture::CameraCapture() : mpCapture(NULL), mCapturedCount(0), mIsWarming(false)
 {
 	setName("camera");
-	setPriority(UINT_MAX,100);
+	setPriority(UINT_MAX,5);
 }
 CameraCapture::~CameraCapture()
 {

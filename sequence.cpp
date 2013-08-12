@@ -258,6 +258,7 @@ bool Separating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
+	gCameraCapture.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gServo.start(0);
@@ -293,7 +294,7 @@ void Separating::onUpdate(const struct timespec& time)
 		{
 			mLastUpdateTime = time;
 			mCurStep = STEP_PARA_JUDGE;
-			gCameraCapture.setRunMode(true);
+			gCameraCapture.startWarming();
 		}
 		break;
 	case STEP_PARA_JUDGE:
@@ -305,7 +306,7 @@ void Separating::onUpdate(const struct timespec& time)
 			{
 				mCurStep = STEP_PARA_DODGE;
 				gGyroSensor.setZero();
-				gMotorDrive.drive(50,0);
+				gMotorDrive.drive(100,0);
 				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
 			}else
 			{
@@ -313,11 +314,10 @@ void Separating::onUpdate(const struct timespec& time)
 				nextState();
 			}
 			gCameraCapture.save(NULL, pImage);
-			gCameraCapture.setRunMode(false);
 		}
 		break;
 	case STEP_PARA_DODGE:
-		if(abs(gGyroSensor.getRz()) >= 90)
+		if(abs(gGyroSensor.getRz()) >= 30)
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
 			gMotorDrive.drive(0,0);
@@ -377,7 +377,7 @@ bool Separating::onCommand(const std::vector<std::string> args)
 		Debug::print(LOG_SUMMARY, "Para %s\r\n", isParaExist(gCameraCapture.getFrame()) ? "found" : "not found");
 		return true;
 	}
-	return false:
+	return false;
 }
 void Separating::nextState()
 {
@@ -410,6 +410,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
+	gCameraCapture.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -592,6 +593,7 @@ bool Escaping::onInit(const struct timespec& time)
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWORD;
 	gMotorDrive.drive(-100,-100);
+	gCameraCapture.setRunMode(true);
 	return true;
 }
 void Escaping::onUpdate(const struct timespec& time)
@@ -621,7 +623,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
-			gCameraCapture.setRunMode(true);
+			gCameraCapture.startWarming();
 		}
 		break;
 	case STEP_CAMERA:
@@ -632,12 +634,12 @@ void Escaping::onUpdate(const struct timespec& time)
 			IplImage* pImage = gCameraCapture.getFrame();
 			mWaitTime = stuckMoveCamera(pImage);
 			gCameraCapture.save(NULL,gCameraCapture.getFrame());
-			gCameraCapture.setRunMode(false);
 		}
 		break;
 	case STEP_CAMERA_WAIT:
 		if(Time::dt(time,mLastUpdateTime) >= mWaitTime)
 		{
+			gMotorDrive.drive(-100,-100);
 			mCurStep = STEP_BACKWORD;
 			mLastUpdateTime = time;
 		}

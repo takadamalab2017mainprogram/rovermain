@@ -215,6 +215,7 @@ class CameraCapture : public TaskBase
 {
 	CvCapture* mpCapture;
 	unsigned int mCapturedCount;
+	bool mIsWarming;
 
 	const static int WIDTH = 320,HEIGHT = 240;
 protected:
@@ -223,8 +224,10 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 	virtual void onUpdate(const struct timespec& time);
 public:
-	void save(const std::string* name = NULL,IplImage* pImage = NULL);
+	void startWarming();//getFrame‚·‚é­‚µ‘O‚ÉŒÄ‚Ño‚·‚±‚Æ.ŒÃ‚¢‰æ‘œ‚ªæ“¾‚³‚ê‚é‚Ì‚ğ–h~‚Å‚«‚é
 	IplImage* getFrame();
+
+	void save(const std::string* name = NULL,IplImage* pImage = NULL);
 	void generateFilename(std::string& name);
 
 	CameraCapture();
