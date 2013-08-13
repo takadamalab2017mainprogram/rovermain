@@ -91,6 +91,7 @@ private:
 
 		//PID用パラメータ
 		double mP,mI,mD;//PIDパラメタ
+		double mPTurn,mITurn,mDTurn;//その場回転用PIDパラメタ
 		double mDiff1,mDiff2,mDiff3;//PID用過去のずれ
 		double mAngle;//目標角度
 		double mControlPower;//前回の操作量
@@ -108,9 +109,8 @@ protected:
 		//コマンド受付
 		virtual bool onCommand(const std::vector<std::string> args);
 
-		void updatePIDState();
+		void updatePIDState(double p,double i,double d);
 		void updatePIDMove();
-		void updatePIDTurn();
 public:
 		//モータの左右比を設定
 		void setRatio(int ratioL,int ratioR);
@@ -128,9 +128,6 @@ public:
 		//PID制御の制御目標角度を変更する
 		//制御目標角度は、現在の制御目標角度+angle
 		void drivePID(double angle,int power);
-
-		//PID制御によって指定角度にその場回転する
-		void turnPID(double angle,int power);
 
         MotorDrive();
         ~MotorDrive();

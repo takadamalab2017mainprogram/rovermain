@@ -753,8 +753,8 @@ DistanceSensor::~DistanceSensor()
 bool CameraCapture::onInit(const struct timespec& time)
 {
 	const static int WIDTH = 320,HEIGHT = 240;
-	mpCapture = cvCreateCameraCapture(0);
 
+	mpCapture = cvCreateCameraCapture(-1);
 	if(mpCapture == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Unable to initialize camera\r\n");
@@ -803,7 +803,7 @@ bool CameraCapture::onCommand(const std::vector<std::string> args)
 	}
 	Debug::print(LOG_SUMMARY, "camera warm  : stand by for capturing\r\n\
 camera save  : take picture\r\n\
-camera save [name] : take picture as name\r\n",getRx(),getRy(),getRz(),getRvx(),getRvy(),getRvz());
+camera save [name] : take picture as name\r\n");
 	return false;
 }
 void CameraCapture::onUpdate(const struct timespec& time)
@@ -815,7 +815,7 @@ void CameraCapture::startWarming()
 	Debug::print(LOG_SUMMARY, "Camera: Waiting for new Image...\r\n");
 	mIsWarming = true;
 }
-void CameraCapture::save(const std::string* name,IplImage* pImage)
+void CameraCapture::save(const std::string* name,IplImage* pImage,bool nolog)
 {
 	if(!isActive())return;
 	std::string filename;
@@ -824,7 +824,7 @@ void CameraCapture::save(const std::string* name,IplImage* pImage)
 	if(pImage == NULL)pImage = getFrame();
 	cvSaveImage(filename.c_str(), pImage);
 
-	Debug::print(LOG_SUMMARY, "Captured image was saved as %s\r\n", filename.c_str());
+	if(!nolog)Debug::print(LOG_SUMMARY, "Captured image was saved as %s\r\n", filename.c_str());
 }
 void CameraCapture::generateFilename(std::string& name)
 {
@@ -836,7 +836,15 @@ IplImage* CameraCapture::getFrame()
 {
 	if(!isActive())return NULL;
 	mIsWarming = false;
-	return cvQueryFrame(mpCapture);
+
+	IplImage* pImage = cvQueryFrame(mpCapture);
+	if(pImage == NULL)
+	{
+		cvReleaseCapture(&mpCapture);
+		mpCapture = cvCreateCameraCapture(-1);
+		pImage = cvQueryFrame(mpCapture);
+	}
+	return pImage;
 }
 CameraCapture::CameraCapture() : mpCapture(NULL), mCapturedCount(0), mIsWarming(false)
 {

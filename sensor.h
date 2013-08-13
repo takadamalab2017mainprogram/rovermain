@@ -227,7 +227,7 @@ public:
 	void startWarming();//getFrame‚·‚é­‚µ‘O‚ÉŒÄ‚Ño‚·‚±‚Æ.ŒÃ‚¢‰æ‘œ‚ªæ“¾‚³‚ê‚é‚Ì‚ğ–h~‚Å‚«‚é
 	IplImage* getFrame();
 
-	void save(const std::string* name = NULL,IplImage* pImage = NULL);
+	void save(const std::string* name = NULL,IplImage* pImage = NULL, bool nolog = false);
 	void generateFilename(std::string& name);
 
 	CameraCapture();

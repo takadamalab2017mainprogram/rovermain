@@ -594,12 +594,14 @@ bool WadachiPredicting::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
+
+	return true;
 }
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
 	if(Time::dt(time,mLastUpdateTime) < 1)return;
 	mLastUpdateTime = time;
-	gCameraCapture.save();
+	gCameraCapture.save(NULL,NULL,true);
 	gCameraCapture.startWarming();
 }
 WadachiPredicting::WadachiPredicting()
@@ -617,6 +619,7 @@ bool Escaping::onInit(const struct timespec& time)
 	mCurStep = STEP_BACKWORD;
 	gMotorDrive.drive(-100,-100);
 	gCameraCapture.setRunMode(true);
+	gGyroSensor.setRunMode(true);
 	return true;
 }
 void Escaping::onUpdate(const struct timespec& time)
@@ -652,15 +655,23 @@ void Escaping::onUpdate(const struct timespec& time)
 	case STEP_CAMERA:
 		if(Time::dt(time,mLastUpdateTime) >= 1)
 		{
-			mCurStep = STEP_CAMERA_WAIT;
 			mLastUpdateTime = time;
 			IplImage* pImage = gCameraCapture.getFrame();
-			mWaitTime = stuckMoveCamera(pImage);
+			stuckMoveCamera(pImage);
 			gCameraCapture.save(NULL,gCameraCapture.getFrame());
+			gGyroSensor.setZero();
 		}
 		break;
-	case STEP_CAMERA_WAIT:
-		if(Time::dt(time,mLastUpdateTime) >= mWaitTime)
+	case STEP_CAMERA_TURN:
+		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 70)
+		{
+			gMotorDrive.drive(100,100);
+			mCurStep = STEP_CAMERA_FORWORD;
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_CAMERA_FORWORD:
+		if(Time::dt(time,mLastUpdateTime) >= 5)
 		{
 			gMotorDrive.drive(-100,-100);
 			mCurStep = STEP_BACKWORD;
@@ -681,7 +692,7 @@ void Escaping::stuckMoveRandom()
 	//進行方向をランダムで変更
 	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
 }
-double Escaping::stuckMoveCamera(IplImage* pImage)
+void Escaping::stuckMoveCamera(IplImage* pImage)
 {
 	IplImage* src_img = pImage;
 	const static int DIV_NUM = 3;
@@ -692,7 +703,7 @@ double Escaping::stuckMoveCamera(IplImage* pImage)
 	{
 		Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
 		mCurStep = STEP_RANDOM;
-		return 0;
+		return;
 	}
 	CvSize size = cvSize(src_img->width,src_img->height);
 
@@ -734,30 +745,28 @@ double Escaping::stuckMoveCamera(IplImage* pImage)
 		}
 	}
 
-	double waitTime = 0;
+	cvReleaseImage (&dst_img1);
+	cvReleaseImage (&tmp_img);
+
 	switch(min_id){
 		case 0:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-			gMotorDrive.drive(60, 100);
-			waitTime = 5;
+			gMotorDrive.drive(-50, 100);
+			mCurStep = STEP_CAMERA_TURN;
 			break;
 		case 1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
 			gMotorDrive.drive(100, 100);
-			waitTime = 5;
+			mCurStep = STEP_CAMERA_FORWORD;
 			break;
 		case 2:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-			gMotorDrive.drive(100, 60);
-			waitTime = 5;
+			gMotorDrive.drive(100, -50);
+			mCurStep = STEP_CAMERA_TURN;
 			break;
 		default:
 			break;
 	}
-	cvReleaseImage (&dst_img1);
-	cvReleaseImage (&tmp_img);
-
-	return waitTime;
 }
 Escaping::Escaping()
 {

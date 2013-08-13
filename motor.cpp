@@ -173,18 +173,18 @@ void MotorDrive::onClean()
 	mMotorR.clean();
 }
 
-void MotorDrive::updatePIDState()
+void MotorDrive::updatePIDState(double p,double i,double d)
 {
 	//ずれ情報を更新
 	mDiff3 = mDiff2;mDiff2 = mDiff1;mDiff1 = gGyroSensor.normalize(gGyroSensor.getRz() - mAngle);
 
 	//ずれ情報を元に新しいモーター出力を設定(PID)
-	double powerDiff = mP * (mDiff1 - mDiff2) + mI * mDiff1 + mD * ((mDiff1 - mDiff2) - (mDiff2 - mDiff3));
+	double powerDiff = p * (mDiff1 - mDiff2) + i * mDiff1 + d * ((mDiff1 - mDiff2) - (mDiff2 - mDiff3));
 	mControlPower += powerDiff;
 }
 void MotorDrive::updatePIDMove()
 {
-	updatePIDState();
+	updatePIDState(mP,mI,mD);
 
 	//モータ速度係数を用意
 	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//モータ出力の割合
@@ -207,31 +207,6 @@ void MotorDrive::updatePIDMove()
 	}
 }
 
-void MotorDrive::updatePIDTurn()
-{
-	updatePIDState();
-
-	//モータ速度係数を用意
-	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//モータ出力の割合
-
-	//モータの逆回転をせずに方向転換する
-	double controlRatio = 1 - fabs(mControlPower);
-	if(controlRatio <= 0)controlRatio = 0;
-
-	//モータ出力を適用
-	if(mControlPower > 0)
-	{
-		//左に回る
-		mMotorL.set(mRatioL * (-controlRatio) * drivePowerRatio);
-		mMotorR.set(-mRatioR * controlRatio * drivePowerRatio);
-	}else
-	{
-		//右に回る
-		mMotorL.set(mRatioL * controlRatio * drivePowerRatio);
-		mMotorR.set(-mRatioR * (-controlRatio) * drivePowerRatio);
-	}
-}
-
 void MotorDrive::onUpdate(const struct timespec& time)
 {
 	//最後の出力更新からの経過時間を取得
@@ -242,9 +217,6 @@ void MotorDrive::onUpdate(const struct timespec& time)
 	{
 	case DRIVE_PID:
 		updatePIDMove();
-		break;
-	case DRIVE_PID_TURN:
-		updatePIDTurn();
 		break;
 	default:
 		break;
@@ -277,11 +249,11 @@ void MotorDrive::set(double p,double i,double d)
 	mI = i;
 	mD = d;
 }
-
 void MotorDrive::startPID(double angle,int power)
 {
 	gGyroSensor.setZero();
 	drivePID(angle,power);
+	mAngle = 0;
 	mDiff1 = mDiff2 = mDiff3 = 0;
 	mControlPower = 0;
 }
@@ -291,17 +263,6 @@ void MotorDrive::drivePID(double angle,int power)
 	mDrivePower = std::max(std::min(power,MOTOR_MAX_POWER),0);
 	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
 	mDriveMode = DRIVE_PID;
-}
-void MotorDrive::turnPID(double angle,int power)
-{
-	gGyroSensor.setZero();
-	mDiff1 = mDiff2 = mDiff3 = 0;
-	mControlPower = 0;
-
-	mAngle = GyroSensor::normalize(angle + mAngle);
-	mDrivePower = std::max(std::min(power,MOTOR_MAX_POWER),0);
-	Debug::print(LOG_SUMMARY, "PID Turn is Started (%f, %d)\r\n",mAngle,mDrivePower);
-	mDriveMode = DRIVE_PID_TURN;
 }
 bool MotorDrive::onCommand(const std::vector<std::string> args)
 {
@@ -356,20 +317,6 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 				set(atof(args[2].c_str()),atof(args[3].c_str()),atof(args[4].c_str()));
 				return true;
 			}
-		}else if(args[1].compare("t") == 0)
-		{
-			//PID制御関連
-			if(size == 3)
-			{
-				//PID(相対角度指定)
-				turnPID(atoi(args[2].c_str()),MOTOR_MAX_POWER);
-				return true;
-			}else if(size == 4)
-			{
-				//PID(相対角度指定)
-				turnPID(atoi(args[2].c_str()),atoi(args[3].c_str()));
-				return true;
-			}
 		}else if(args[1].compare("r") == 0)
 		{
 			//レシオ設定
@@ -388,7 +335,6 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 motor p            : pid start\r\n\
 motor p [angle]    : pid start with angle to move\r\n\
 motor p [P] [I] [D]: set pid params\r\n\
-motor t [angle]    : turn by pid\r\n\
 motor r [l] [r]    : set motor ratio\r\n\
 motor [l] [r]      : drive motor by specified ratio\r\n");
 	return true;
