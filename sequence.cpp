@@ -599,7 +599,7 @@ bool WadachiPredicting::onInit(const struct timespec& time)
 }
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) < 1)return;
+	if(Time::dt(time,mLastUpdateTime) < 5)return;
 	mLastUpdateTime = time;
 	gCameraCapture.save(NULL,NULL,true);
 	gCameraCapture.startWarming();
@@ -635,7 +635,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_AFTER_BACKWORD:
-		if(Time::dt(time,mLastUpdateTime) >= 1)
+		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
@@ -653,7 +653,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA:
-		if(Time::dt(time,mLastUpdateTime) >= 1)
+		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mLastUpdateTime = time;
 			IplImage* pImage = gCameraCapture.getFrame();
@@ -663,15 +663,16 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 70)
+		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 20)
 		{
-			gMotorDrive.drive(100,100);
-			mCurStep = STEP_CAMERA_FORWORD;
+			gMotorDrive.drive(0,0);
+			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
+            
 		}
 		break;
 	case STEP_CAMERA_FORWORD:
-		if(Time::dt(time,mLastUpdateTime) >= 5)
+		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100,-100);
 			mCurStep = STEP_BACKWORD;
@@ -695,7 +696,7 @@ void Escaping::stuckMoveRandom()
 void Escaping::stuckMoveCamera(IplImage* pImage)
 {
 	IplImage* src_img = pImage;
-	const static int DIV_NUM = 3;
+	const static int DIV_NUM = 5;
 	IplImage *gray_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM];
 
@@ -709,7 +710,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 
 	gray_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
 	cvCvtColor(src_img, gray_img, CV_BGR2GRAY);
-	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(src_img->width, src_img->height / 3),cvScalar(0), CV_FILLED, CV_AA);
+	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(src_img->width, src_img->height * 2 / 5),cvScalar(0), CV_FILLED, CV_AA);
 
 	// MedianƒtƒBƒ‹ƒ^
 	cvSmooth (gray_img, gray_img, CV_MEDIAN, 5, 0, 0, 0);
@@ -726,6 +727,8 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 	int width = src_img->width / DIV_NUM;
 	double risksum = 0;
 	int i;
+
+    
 	for(i = 0;i < DIV_NUM;++i)
 	{
 		cvSetImageROI(dst_img1, cvRect(width * i,0,width,src_img->height));//Set image part
@@ -738,12 +741,38 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 		cvRectangle(dst_img1, cvPoint(width * i,src_img->height - risk[i] / risksum * src_img->height),cvPoint(width * (i + 1),src_img->height),cvScalar(255), 2, CV_AA);
 	}
 
+    
 	int min_id = 0;
-	for(int i=1; i<3; ++i){
-		if(risk[min_id] > risk[i]){
-			min_id = i;
-		}
-	}
+    int shikiiMin = 70000;
+    int shikiiMax = 150000;
+    int shikiiMinCount = 0;
+    int shikiiMaxCount = 0;
+    
+    for(int i=0; i<DIV_NUM; ++i){
+        if(risk[i] < shikiiMin)
+            shikiiMinCount++;
+        if(risk[i] > shikiiMax)
+            shikiiMaxCount++;
+    }
+    
+    if(shikiiMinCount >= 3){
+        min_id = 5;
+    }else if(shikiiMaxCount >= 3){
+        min_id = (risk[0] > risk[DIV_NUM - 1]) ? DIV_NUM - 1 : 0;
+    }else{
+        for(int i=1; i<DIV_NUM; ++i){
+            if(risk[min_id] > risk[i]){
+                min_id = i;
+            }
+        }
+    }
+    
+    for(i=0; i<DIV_NUM; i++){
+        Debug::print(LOG_SUMMARY, "%f\n" ,risk[i]);
+    }
+    
+    Debug::print(LOG_SUMMARY, "%d\n",min_id);
+    
 
 	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
@@ -751,20 +780,18 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 	switch(min_id){
 		case 0:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-			gMotorDrive.drive(-50, 100);
+			gMotorDrive.drive(-50, 50);
 			mCurStep = STEP_CAMERA_TURN;
 			break;
-		case 1:
-			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
-			gMotorDrive.drive(100, 100);
-			mCurStep = STEP_CAMERA_FORWORD;
-			break;
-		case 2:
+		case DIV_NUM - 1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-			gMotorDrive.drive(100, -50);
+			gMotorDrive.drive(50, -50);
 			mCurStep = STEP_CAMERA_TURN;
 			break;
 		default:
+            Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
+			gMotorDrive.drive(100, 100);
+			mCurStep = STEP_CAMERA_FORWORD;
 			break;
 	}
 }
