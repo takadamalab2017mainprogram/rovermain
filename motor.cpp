@@ -319,9 +319,12 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 			}
 		}else if(args[1].compare("r") == 0)
 		{
-			//レシオ設定
-			setRatio(atoi(args[2].c_str()),atoi(args[3].c_str()));
-			return true;
+			if(size == 4)
+			{
+				//レシオ設定
+				setRatio(atoi(args[2].c_str()),atoi(args[3].c_str()));
+				return true;
+			}
 		}else
 		{
 			if(size == 3)

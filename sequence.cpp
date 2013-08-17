@@ -509,18 +509,24 @@ void Navigating::onUpdate(const struct timespec& time)
 bool Navigating::isStuck() const
 {
 	//スタック判定
-	double sumDiffPos = 0;
-	VECTOR3 lastPos = mLastPos.front();
+	VECTOR3 averagePos1,averagePos2;
+	unsigned int i,border;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
-	while(it != mLastPos.end())
+	for(i = 0;i < mLastPos.size() / 2;++i)
 	{
-		//変位の合計量を計算
-		sumDiffPos += VECTOR3::calcDistanceXY(*it,lastPos);
-		lastPos = *it;
-		++it;
+		averagePos1 += *it;
+		it++;
 	}
+	averagePos1 /= border = i;
 
-	return sumDiffPos < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
+	for(;i < mLastPos.size();++i)
+	{
+		averagePos2 += *it;
+		it++;
+	}
+	averagePos2 /= i - border;
+
+	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
 void Navigating::navigationMove(double distance) const
 {
