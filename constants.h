@@ -43,9 +43,9 @@ const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ht
 // V[P“XnÝ’่
 //////////////////////////////////////////////
 const static unsigned int WAITING_LIGHT_COUNT = 3000;//ฝ๑A‘ฑล๕มฤข้ฦ”ป’่ณ๊ฝฦซษ•๚o”ป’่ฦท้ฉ
-const static unsigned int WAITING_ABORT_TIME = 3600;//ญง“Iษ•๚o”ป’่ฦท้ิi•bj
+const static unsigned int WAITING_ABORT_TIME =7200;//ญง“Iษ•๚o”ป’่ฦท้ิi•bj
 
-const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 4;//‘O๑ฦฬCณฬทชฑ๊ศ“เศ็’โ~’ฦJE“g(1•bิuลT“v“O)
+const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 1;//‘O๑ฦฬCณฬทชฑ๊ศ“เศ็’โ~’ฦJE“g(1•bิuลT“v“O)
 const static unsigned int FALLING_PRESSURE_COUNT = 5;//Cณ•ฯป—สช่’lศบฬ๓‘ิชฑ๊พฏ‘ฑขฝ็’…’nฦ”ป’่
 const static double FALLING_GYRO_THRESHOLD = 10;//p‘ฌ“xชฑฬ’lศบศ็’โ~’ฦJE“g
 const static unsigned int FALLING_GYRO_COUNT = 1000;//p‘ฌ“xฬ’lช่’lศบฬT“vชฑ๊พฏA‘ฑตฝ็’…’nฦ”ป’่
@@ -61,7 +61,6 @@ const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//S[ฺ฿ฬ‘ฌ
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//is•๛ü๐•ฯXท้ิu(•b)
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//๊๑ฬ‘€์ล•๛ü“]ทท้ล‘ๅฬp“x
 const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.5 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALฬิษฺ“ฎตฝ——ฃชฑฬ่’lศบศ็X^bN”ป’่ฦท้
-//const static unsigned int NAVIGATING_NUMBER_OF_POSITION_HISTORIES = 5;//Vตขis•๛ü๐vZท้ฝ฿ษ—pข้ล‘ๅฬ฿ฬภ•W”
 
 const static double WAKING_THRESHOLD = 200;
 
