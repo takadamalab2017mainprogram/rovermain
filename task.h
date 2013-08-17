@@ -34,6 +34,7 @@ private:
 	unsigned int mSlept;//実行がスキップされた回数
 	bool mIsRunning;//実行中
 	bool mNewRunningState;//新しい実行状態
+	unsigned int mInitializeRetryCount;//初期化失敗回数
 protected:
 	//このタスクに名前を設定することでコマンドを受け付けるようにする
 	void setName(const char* name);
@@ -100,6 +101,7 @@ private:
 	};
 	TaskManager();
 public:
+	const static unsigned int TASK_MAX_INITIALIZE_RETRY_COUNT = 5;
 	//インスタンスを取得
 	static TaskManager* getInstance();
 

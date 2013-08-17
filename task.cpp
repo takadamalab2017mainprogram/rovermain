@@ -3,7 +3,7 @@
 #include "task.h"
 
 
-TaskBase::TaskBase() : mName(""),mPriority(UINT_MAX),mInterval(UINT_MAX),mSlept(0),mIsRunning(false),mNewRunningState(false)
+TaskBase::TaskBase() : mName(""),mPriority(UINT_MAX),mInterval(UINT_MAX),mSlept(0),mIsRunning(false),mNewRunningState(false),mInitializeRetryCount(0)
 {
 	getManager()->add(this);
 }
@@ -16,6 +16,7 @@ void TaskBase::setRunMode(bool running)
 {
 	//新しい状態を設定する(TaskManagerのupdate時に実際に変更される)
 	mNewRunningState = running;
+	mInitializeRetryCount = 0;
 }
 void TaskBase::setName(const char* name)
 {
@@ -52,8 +53,7 @@ void TaskBase::onClean()
 
 bool TaskBase::onCommand(const std::vector<std::string> args)
 {
-	Debug::print(LOG_DETAIL,"Command Not Available!\r\n");
-	return true;
+	return false;
 }
 
 void TaskBase::onUpdate(const struct timespec& time)
@@ -160,14 +160,15 @@ void TaskManager::update()
 		TaskBase* pTask = *it;
 		if(pTask != NULL)
 		{
-			if(pTask->mIsRunning != pTask->mNewRunningState)
+			if(pTask->mIsRunning != pTask->mNewRunningState && pTask->mInitializeRetryCount < TASK_MAX_INITIALIZE_RETRY_COUNT)
 			{
+				++pTask->mInitializeRetryCount;
 				//実行状態を変更する必要がある場合変更する
 				if(pTask->mIsRunning == false)
 				{
 					//実行開始する場合：onInitを呼び出し、成功した場合は実行中状態に設定
 					if(pTask->onInit(newTime))pTask->mIsRunning = pTask->mNewRunningState;
-					else Debug::print(LOG_SUMMARY, "FAILED to initialize task %s!!\r\n", pTask->mName.c_str());//失敗した場合はログ出力
+					else Debug::print(LOG_SUMMARY, "FAILED to initialize task %s (%d/%d)\r\n", pTask->mName.c_str(),pTask->mInitializeRetryCount,TASK_MAX_INITIALIZE_RETRY_COUNT);//失敗した場合はログ出力
 				}else
 				{
 					//実行停止する場合：onCleanを呼び出し
