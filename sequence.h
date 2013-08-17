@@ -68,6 +68,7 @@ private:
 	unsigned int mServoCount;		//サーボの向きを変更した回数
 	enum STEP{STEP_SEPARATE = 0, STEP_PRE_PARA_JUDGE,STEP_PARA_JUDGE,STEP_PARA_DODGE};
 	enum STEP mCurStep;
+
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

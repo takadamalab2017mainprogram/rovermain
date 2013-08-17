@@ -192,6 +192,7 @@ bool Falling::onInit(const struct timespec& time)
 }
 void Falling::onUpdate(const struct timespec& time)
 {
+	//初回のみ気圧を取得
 	if(mLastPressure == 0)mLastPressure = gPressureSensor.get();
 
 	//角速度が閾値以下ならカウント
@@ -209,7 +210,7 @@ void Falling::onUpdate(const struct timespec& time)
 	if(abs((int)(newPressure - mLastPressure)) < FALLING_DELTA_PRESSURE_THRESHOLD)
 	{
 		if(mContinuousPressureCount < FALLING_PRESSURE_COUNT)++mContinuousPressureCount;
-		Debug::print(LOG_SUMMARY, "Pressure Count %d / %d\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT);
+		Debug::print(LOG_SUMMARY, "Pressure Count %d / %d (%d hPa)\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT,newPressure);
 	}else mContinuousPressureCount = 0;
 
 	//ジャイロの判定状態を表示
@@ -281,18 +282,22 @@ void Separating::onUpdate(const struct timespec& time)
 		mCurServoState = !mCurServoState;
 		gServo.start(mCurServoState);
 		++mServoCount;
+		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
 
-		if(mServoCount >= SEPARATING_SERVO_COUNT)
+		if(mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
+			//次状態に遷移
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_PARA_JUDGE:
-		if(gWakingState.isActive())mLastUpdateTime = time;
-		if(Time::dt(time,mLastUpdateTime) > 1)
+		//起き上がり動作を実行し、画像処理を行う前に1秒待機して画像のブレを防止する
+		if(gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
+		if(Time::dt(time,mLastUpdateTime) > 1)//起き上がり動作後1秒待機する
 		{
+			//次状態に遷移
 			mLastUpdateTime = time;
 			mCurStep = STEP_PARA_JUDGE;
 			gCameraCapture.startWarming();
@@ -302,23 +307,28 @@ void Separating::onUpdate(const struct timespec& time)
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
 		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
+			//パラシュートの存在チェックを行う
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(isParaExist(pImage))
 			{
+				//回避動作に遷移
 				mCurStep = STEP_PARA_DODGE;
+				mLastUpdateTime = time;
 				gGyroSensor.setZero();
 				gMotorDrive.drive(100,0);
 				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
 			}else
 			{
+				//次状態(ナビ)に遷移
 				Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
 				nextState();
 			}
+			//パラ検知に用いた画像を保存する
 			gCameraCapture.save(NULL, pImage);
 		}
 		break;
 	case STEP_PARA_DODGE:
-		if(abs(gGyroSensor.getRz()) >= 30)
+		if(abs(gGyroSensor.getRz()) >= 30 || Time::dt(time,mLastUpdateTime) > 10)//30度以上回転するか、10秒間回ることができなければ終了する
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
 			gMotorDrive.drive(0,0);
@@ -363,7 +373,7 @@ bool Separating::isParaExist(IplImage* src)
                minS <= S && S <= maxS &&
                minV <= V && V <= maxV
                ) {
-				++pixelCount;
+				++pixelCount;//閾値範囲内のピクセル数をカウント
 			}
 		}
 	}
@@ -382,6 +392,7 @@ bool Separating::onCommand(const std::vector<std::string> args)
 }
 void Separating::nextState()
 {
+	//ブザー鳴らしとく
 	gBuzzer.start(100);
 
 	//次の状態を設定
@@ -497,17 +508,19 @@ void Navigating::onUpdate(const struct timespec& time)
 }
 bool Navigating::isStuck() const
 {
-	double averageVel = 0;
+	//スタック判定
+	double sumDiffPos = 0;
 	VECTOR3 lastPos = mLastPos.front();
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
 	while(it != mLastPos.end())
 	{
-		averageVel += VECTOR3::calcDistanceXY(*it,lastPos);
+		//変位の合計量を計算
+		sumDiffPos += VECTOR3::calcDistanceXY(*it,lastPos);
 		lastPos = *it;
 		++it;
 	}
 
-	return averageVel < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;
+	return sumDiffPos < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
 void Navigating::navigationMove(double distance) const
 {
@@ -627,6 +640,7 @@ void Escaping::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWORD:
+		//バックを行う
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			mCurStep = STEP_AFTER_BACKWORD;
@@ -635,17 +649,21 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_AFTER_BACKWORD:
+		//再起動防止のため待機
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
+			//起き上がり動作を行う
 			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
-		if(gWakingState.isActive())mLastUpdateTime = time;
-		if(Time::dt(time,mLastUpdateTime) > 2)
+		//画像撮影用に起き上がり動作を行い、数秒待機する
+		if(gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
+		if(Time::dt(time,mLastUpdateTime) > 2)//起き上がり完了後、一定時間が経過していたら
 		{
+			//画像撮影動作を行う
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
@@ -653,6 +671,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA:
+		//画像処理を行い、今後の行動を決定する
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mLastUpdateTime = time;
@@ -663,6 +682,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
+		//画像処理の結果、回転する必要があった場合
 		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 20)
 		{
 			gMotorDrive.drive(0,0);
@@ -672,6 +692,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_FORWORD:
+		//画像処理の結果、直進する必要があった場合
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100,-100);
@@ -680,6 +701,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_RANDOM:
+		//ランダム動作
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			stuckMoveRandom();
@@ -691,7 +713,9 @@ void Escaping::onUpdate(const struct timespec& time)
 void Escaping::stuckMoveRandom()
 {
 	//進行方向をランダムで変更
-	gMotorDrive.drive(100 * (rand() % 2 ? 1 : -1), 100 * (rand() % 2 ? 1 : -1));
+	unsigned int left = MOTOR_MAX_POWER * (rand() % 2 ? 1 : -1),right = MOTOR_MAX_POWER * (rand() % 2 ? 1 : -1);
+	gMotorDrive.drive(left, right);
+	Debug::print(LOG_SUMMARY, "Wadachi kaihi(random) : ratio(%d,%d)\r\n",left,right);
 }
 void Escaping::stuckMoveCamera(IplImage* pImage)
 {
@@ -820,28 +844,30 @@ void Waking::onClean()
 }
 void Waking::onUpdate(const struct timespec& time)
 {
-	if(mIsWakingStarted)
+	if(mIsWakingStarted)//起き上がり開始が検知された場合
 	{
-		if(Time::dt(time,mStartTime) > 2)
+		if(Time::dt(time,mStartTime) > 2)//2秒まわしても着地が検知されない場合はあきらめる
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 			setRunMode(false);
 		}
-		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)
+		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)//角速度が一定以下になったら着地と判定
 		{
 			Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
 			setRunMode(false);
 		}
+
+		//回転した角度に応じてモータの出力を変化させる
 		double power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
 		gMotorDrive.drive(power,power);
 	}else
 	{
-		if(Time::dt(time,mStartTime) > 0.5)
+		if(Time::dt(time,mStartTime) > 0.5)//一定時間回転が検知されない場合→回転不可能と判断
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
 			setRunMode(false);
 		}
-		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)
+		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			mIsWakingStarted = true;

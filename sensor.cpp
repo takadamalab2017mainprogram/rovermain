@@ -812,7 +812,6 @@ void CameraCapture::onUpdate(const struct timespec& time)
 }
 void CameraCapture::startWarming()
 {
-	Debug::print(LOG_SUMMARY, "Camera: Waiting for new Image...\r\n");
 	mIsWarming = true;
 }
 void CameraCapture::save(const std::string* name,IplImage* pImage,bool nolog)
