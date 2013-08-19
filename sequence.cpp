@@ -651,6 +651,7 @@ bool Escaping::onInit(const struct timespec& time)
 	gMotorDrive.drive(-100,-100);
 	gCameraCapture.setRunMode(true);
 	gGyroSensor.setRunMode(true);
+	mCameraEscapingTriedCount = 0;
 	return true;
 }
 void Escaping::onUpdate(const struct timespec& time)
@@ -703,6 +704,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			stuckMoveCamera(pImage);
 			gCameraCapture.save(NULL,gCameraCapture.getFrame());
 			gGyroSensor.setZero();
+			++mCameraEscapingTriedCount;
 		}
 		break;
 	case STEP_CAMERA_TURN:
