@@ -215,15 +215,15 @@ void GPSSensor::onUpdate(const struct timespec& time)
 
 		//経度
 		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07);
-		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = (int)read / 10000000.0;
+		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = read / 10000000.0;
 
 		//緯度
 		read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B);
-		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = (int)read / 10000000.0;
+		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
 
 		//高度
-		read = wiringPiI2CReadReg16LE(mFileHandle, 0x21);
-		if(read == wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
+		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21);
+		if(read == (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
 
 		//新しいデータが届いたことを記録する
 		if(status & 0x01)mIsNewData = true;
@@ -808,7 +808,11 @@ camera save [name] : take picture as name\r\n");
 }
 void CameraCapture::onUpdate(const struct timespec& time)
 {
-	if(mIsWarming)cvQueryFrame(mpCapture);
+	if(mIsWarming)
+	{
+		getFrame();
+		mIsWarming = true;
+	}
 }
 void CameraCapture::startWarming()
 {

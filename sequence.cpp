@@ -655,6 +655,7 @@ bool Escaping::onInit(const struct timespec& time)
 }
 void Escaping::onUpdate(const struct timespec& time)
 {
+	const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 10;
 	switch(mCurStep)
 	{
 	case STEP_BACKWORD:
@@ -670,6 +671,11 @@ void Escaping::onUpdate(const struct timespec& time)
 		//Ä‹N“®–hŽ~‚Ì‚½‚ß‘Ò‹@
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
+			if(mCameraEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
+			{
+				mCurStep = STEP_RANDOM;
+				break;
+			}
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
 			//‹N‚«ã‚ª‚è“®ì‚ðs‚¤
@@ -704,7 +710,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 20)
 		{
 			gMotorDrive.drive(0,0);
-			mCurStep = STEP_CAMERA;
+			mCurStep = STEP_AFTER_BACKWORD;
 			mLastUpdateTime = time;
             
 		}

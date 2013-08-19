@@ -134,6 +134,7 @@ class Escaping : public TaskBase
 
 	enum STEP{STEP_BACKWORD = 0, STEP_AFTER_BACKWORD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWORD, STEP_RANDOM};
 	enum STEP mCurStep;
+	unsigned int mCameraEscapingTriedCount;//ƒJƒƒ‰’Eo‚ğs‚µ‚½‰ñ”
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

@@ -29,7 +29,7 @@ const static int PIN_DISTANCE = 6;	//距離センサー
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
-const static double MOTOR_MAX_POWER_CHANGE =(double)1;//モータ出力の1秒あたりの最大変化量
+const static double MOTOR_MAX_POWER_CHANGE =(double)5;//モータ出力の最大変化量
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
