@@ -54,7 +54,7 @@ class MotorEncoder
 {
 private:
 	int mEncoderPinL, mEncoderPinR;//エンコーダのピン番号
-	long long mPulseCountL, mPulseCountR;//パルス数
+	unsigned long long mPulseCountL, mPulseCountR;//パルス数
 
 	MotorEncoder();
 
@@ -68,8 +68,8 @@ public:
 	void clean();
 
 	//モータのパルス数を返す
-	long long getL();
-	long long getR();
+	unsigned long long getL();
+	unsigned long long getR();
 	
 	~MotorEncoder();
 };
@@ -128,6 +128,10 @@ public:
 		//PID制御の制御目標角度を変更する
 		//制御目標角度は、現在の制御目標角度+angle
 		void drivePID(double angle,int power);
+
+		//エンコーダの値を返す
+		unsigned long long getR();
+		unsigned long long getL();
 
         MotorDrive();
         ~MotorDrive();

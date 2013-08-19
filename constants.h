@@ -45,11 +45,13 @@ const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ht
 const static unsigned int WAITING_LIGHT_COUNT = 3000;//ฝ๑A‘ฑล๕มฤข้ฦ”ป’่ณ๊ฝฦซษ•๚o”ป’่ฦท้ฉ
 const static unsigned int WAITING_ABORT_TIME =7200;//ญง“Iษ•๚o”ป’่ฦท้ิi•bj
 
-const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 1;//‘O๑ฦฬCณฬทชฑ๊ศ“เศ็’โ~’ฦJE“g(1•bิuลT“v“O)
+const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//‘O๑ฦฬCณฬทชฑ๊ศ“เศ็’โ~’ฦJE“g(1•bิuลT“v“O)
 const static unsigned int FALLING_PRESSURE_COUNT = 5;//Cณ•ฯป—สช่’lศบฬ๓‘ิชฑ๊พฏ‘ฑขฝ็’…’nฦ”ป’่
 const static double FALLING_GYRO_THRESHOLD = 10;//p‘ฌ“xชฑฬ’lศบศ็’โ~’ฦJE“g
 const static unsigned int FALLING_GYRO_COUNT = 1000;//p‘ฌ“xฬ’lช่’lศบฬT“vชฑ๊พฏA‘ฑตฝ็’…’nฦ”ป’่
 const static unsigned int FALLING_ABORT_TIME = 1800;//—บ๓‘ิ๐ญงI—นท้ิ
+const static unsigned int FALLING_MOTOR_PULSE_THRESHOLD = 1000;//P•b•ำ่ฬpX•ฯป—สชฑ๊ศใศ็^C๑“]’ฦJE“g
+const static unsigned int FALLING_MOTOR_PULSE_COUNT = 5;//[^pXฬ’lช่’lศบฬT“vชฑ๊พฏA‘ฑตฝ็’…’nฦ”ป’่
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//T[{ฬüซ๐•ฯฆ้ิu(•b)
 const static unsigned int SEPARATING_SERVO_COUNT = 12;//T[{ฬüซ๐•ฯฆ้๑”

@@ -187,6 +187,7 @@ bool Falling::onInit(const struct timespec& time)
 	gPressureSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
+	gMotorDrive.setRunMode(true);
 
 	return true;
 }
@@ -210,14 +211,25 @@ void Falling::onUpdate(const struct timespec& time)
 	if(abs((int)(newPressure - mLastPressure)) < FALLING_DELTA_PRESSURE_THRESHOLD)
 	{
 		if(mContinuousPressureCount < FALLING_PRESSURE_COUNT)++mContinuousPressureCount;
-		Debug::print(LOG_SUMMARY, "Pressure Count %d / %d (%d hPa)\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT,newPressure);
 	}else mContinuousPressureCount = 0;
+	mLastPressure = newPressure;
 
-	//ジャイロの判定状態を表示
-	Debug::print(LOG_SUMMARY, "Gyro Count     %d / %d\r\n",mCoutinuousGyroCount,FALLING_GYRO_COUNT);
+	//エンコーダの値の差が一定以上ならカウント
+	unsigned long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();
+	if(newMotorPulseL - mLastMotorPulseL > FALLING_MOTOR_PULSE_THRESHOLD || newMotorPulseR - mLastMotorPulseR > FALLING_MOTOR_PULSE_THRESHOLD)
+	{
+		if(mContinuousMotorPulseCount < FALLING_MOTOR_PULSE_COUNT)++mContinuousMotorPulseCount;
+	}else mContinuousMotorPulseCount = 0;
+	mLastMotorPulseL = newMotorPulseL;
+	mLastMotorPulseR = newMotorPulseR;
+
+	//判定状態を表示
+	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT,newPressure);
+	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n",mCoutinuousGyroCount,FALLING_GYRO_COUNT);
+	Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d\r\n",mContinuousMotorPulseCount,FALLING_MOTOR_PULSE_COUNT);
 
 	//カウント回数が一定以上なら次の状態に移行
-	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT && mCoutinuousGyroCount >= FALLING_GYRO_COUNT)
+	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT && (mCoutinuousGyroCount >= FALLING_GYRO_COUNT || mContinuousMotorPulseCount >= FALLING_MOTOR_PULSE_COUNT))
 	{
 		nextState();
 		return;
@@ -239,7 +251,7 @@ void Falling::nextState()
 	
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
 }
-Falling::Falling() : mLastPressure(0),mContinuousPressureCount(0),mCoutinuousGyroCount(0)
+Falling::Falling() : mLastPressure(0),mLastMotorPulseL(0),mLastMotorPulseR(0),mContinuousPressureCount(0),mCoutinuousGyroCount(0),mContinuousMotorPulseCount(0)
 {
 	setName("falling");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -678,7 +690,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		break;
 	case STEP_CAMERA:
 		//画像処理を行い、今後の行動を決定する
-		if(Time::dt(time,mLastUpdateTime) >= 3)
+		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			mLastUpdateTime = time;
 			IplImage* pImage = gCameraCapture.getFrame();
@@ -850,6 +862,7 @@ void Waking::onClean()
 }
 void Waking::onUpdate(const struct timespec& time)
 {
+	const static double WAKING_THRESHOLD = 200;
 	if(mIsWakingStarted)//起き上がり開始が検知された場合
 	{
 		if(Time::dt(time,mStartTime) > 2)//2秒まわしても着地が検知されない場合はあきらめる

@@ -122,11 +122,11 @@ void MotorEncoder::clean()
 	//ƒXƒŒƒbƒh‚ª•¡”Žc‚é‚±‚Æ‚ð–hŽ~‚·‚é‚½‚ßsleep
 	delay(100);
 }
-long long MotorEncoder::getL()
+unsigned long long MotorEncoder::getL()
 {
 	return mPulseCountL;
 }
-long long MotorEncoder::getR()
+unsigned long long MotorEncoder::getR()
 {
 	return mPulseCountR;
 }
@@ -341,6 +341,14 @@ motor p [P] [I] [D]: set pid params\r\n\
 motor r [l] [r]    : set motor ratio\r\n\
 motor [l] [r]      : drive motor by specified ratio\r\n");
 	return true;
+}
+unsigned long long MotorDrive::getL()
+{
+	return mpMotorEncoder->getL();
+}
+unsigned long long MotorDrive::getR()
+{
+	return mpMotorEncoder->getR();
 }
 MotorDrive::MotorDrive() : mMotorL(),mMotorR(),mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
 {

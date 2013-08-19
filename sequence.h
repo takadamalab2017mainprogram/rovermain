@@ -46,8 +46,10 @@ private:
 	struct timespec mStartTime;//状態開始時刻
 	struct timespec mLastCheckTime;//前回のチェック時刻
 	int mLastPressure;//前回の気圧
+	unsigned long long mLastMotorPulseL,mLastMotorPulseR;//前回チェック時のモーター回転数
 	unsigned int mContinuousPressureCount;//気圧が閾値以下の状態が続いた回数
 	unsigned int mCoutinuousGyroCount;//角速度が閾値以下の状態が続いた回数
+	unsigned int mContinuousMotorPulseCount;//モータ回転数が閾値以上の状態が続いた回数
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
