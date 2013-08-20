@@ -150,14 +150,18 @@ public:
 //姿勢制御が完了するとタスクが終了します
 class Waking : public TaskBase
 {
-	struct timespec mStartTime;//行動開始時刻
-	bool mIsWakingStarted;//姿勢制御によって
+	struct timespec mLastUpdateTime;//行動開始時刻
+	enum STEP{STEP_START,STEP_STOP,STEP_VERIFY};
+	enum STEP mCurStep;
 	double mAngleOnBegin;
+	unsigned int mWakeRetryCount;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual void onClean();
 public:
+	bool isSky(IplImage* pImage);//空の割合が一定以上なら真
+
 	Waking();
 	~Waking();
 };

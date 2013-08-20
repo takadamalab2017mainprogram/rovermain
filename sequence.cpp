@@ -739,8 +739,25 @@ void Escaping::onUpdate(const struct timespec& time)
 void Escaping::stuckMoveRandom()
 {
 	//進行方向をランダムで変更
-	unsigned int left = MOTOR_MAX_POWER * (rand() % 2 ? 1 : -1),right = MOTOR_MAX_POWER * (rand() % 2 ? 1 : -1);
-	gMotorDrive.drive(left, right);
+	unsigned int direction = rand() % 3;//0-forword, 1-backword, 2-turn
+	int left = 0,right = 0;
+	switch(direction)
+	{
+	case 0:
+		left = right = MOTOR_MAX_POWER;
+		break;
+	case 1:
+		left = right = -MOTOR_MAX_POWER;
+		break;
+	case 2:
+		{
+			bool invert = rand() % 2;
+			left = MOTOR_MAX_POWER * (invert ? 1 : -1);
+			right = -left;
+			break;
+		}
+	}
+	gMotorDrive.drive(left,right);
 	Debug::print(LOG_SUMMARY, "Wadachi kaihi(random) : ratio(%d,%d)\r\n",left,right);
 }
 void Escaping::stuckMoveCamera(IplImage* pImage)
@@ -818,10 +835,10 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
     }
     
     for(i=0; i<DIV_NUM; i++){
-        Debug::print(LOG_SUMMARY, "%f\n" ,risk[i]);
+        Debug::print(LOG_SUMMARY, " area %d : %f\n" ,i,risk[i]);
     }
     
-    Debug::print(LOG_SUMMARY, "%d\n",min_id);
+    Debug::print(LOG_SUMMARY, " min id : %d\n",min_id);
     
 
 	cvReleaseImage (&dst_img1);
@@ -856,12 +873,13 @@ Escaping::~Escaping()
 
 bool Waking::onInit(const struct timespec& time)
 {
-	mStartTime = time;
-	mIsWakingStarted = false;
+	mLastUpdateTime = time;
+	mCurStep = STEP_START;
 	gMotorDrive.setRunMode(true);
 	gMotorDrive.drive(50,50);
 	gGyroSensor.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRvx();
+	mWakeRetryCount = 0;
 	return true;
 }
 void Waking::onClean()
@@ -870,39 +888,143 @@ void Waking::onClean()
 }
 void Waking::onUpdate(const struct timespec& time)
 {
+	double power;
 	const static double WAKING_THRESHOLD = 200;
-	if(mIsWakingStarted)//起き上がり開始が検知された場合
+	switch(mCurStep)//起き上がり開始が検知された場合
 	{
-		if(Time::dt(time,mStartTime) > 2)//2秒まわしても着地が検知されない場合はあきらめる
+	case STEP_STOP:
+		if(Time::dt(time,mLastUpdateTime) > 2)//2秒まわしても着地が検知されない場合はあきらめる
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 			setRunMode(false);
 		}
 		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)//角速度が一定以下になったら着地と判定
 		{
-			Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
-			setRunMode(false);
+			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
+			mLastUpdateTime = time;
+			mCurStep = STEP_VERIFY;
+			gMotorDrive.drive(0,0);
+			gCameraCapture.startWarming();
 		}
 
 		//回転した角度に応じてモータの出力を変化させる
-		double power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
+		power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
 		gMotorDrive.drive(power,power);
-	}else
-	{
-		if(Time::dt(time,mStartTime) > 0.5)//一定時間回転が検知されない場合→回転不可能と判断
+		break;
+
+	case STEP_START:
+		if(Time::dt(time,mLastUpdateTime) > 0.5)//一定時間回転が検知されない場合→回転不可能と判断
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
-			setRunMode(false);
+			mLastUpdateTime = time;
+			mCurStep = STEP_VERIFY;
+			gMotorDrive.drive(0,0);
+			gCameraCapture.startWarming();
 		}
 		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
-			mIsWakingStarted = true;
+			mLastUpdateTime = time;
+			mCurStep = STEP_STOP;
 		}
+		break;
+
+	case STEP_VERIFY:
+		//起き上がりが成功したか否かをカメラ画像で検証
+		if(Time::dt(time,mLastUpdateTime) > 1)
+		{
+			IplImage* pCaptureFrame = gCameraCapture.getFrame();
+			gCameraCapture.save(NULL,pCaptureFrame);
+			if(isSky(pCaptureFrame))
+			{
+				mLastUpdateTime = time;
+				mCurStep = STEP_START;
+				mAngleOnBegin = gGyroSensor.getRvx();
+				gMotorDrive.drive(50,50);
+
+				if(++mWakeRetryCount > WAKING_RETRY_COUNT)
+				{
+					Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+					setRunMode(false);
+					return;
+				}
+				Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d)\r\n",mWakeRetryCount,WAKING_RETRY_COUNT);
+			}else
+			{
+				Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
+				setRunMode(false);
+			}
+		}
+		break;
 	}
 }
 
-Waking::Waking()
+bool Waking::isSky(IplImage* pImage)
+{
+	const static int PIC_SIZE_W = 320;
+	const static int PIC_SIZE_H = 240;
+	const static int SKY_THRESHOLD = 200;		// 閾値以上ではあれば空だと判定
+	const static int DIV_NUM_HSV = 120;			// HSVのサンプリングの間隔
+	const static double COVER_RATE = 0.6;		// 画像が占めている空の割合がこの値以上だと空だと判定
+	const static int SKY_DETECT_COUNT = 3;
+
+	//Temporary Images
+	IplImage* pHsvImage = cvCreateImage(cvSize(PIC_SIZE_W,PIC_SIZE_H),IPL_DEPTH_8U, 3);//HSV(8bits*3channels)	
+
+	//Temporary Matrixes (for mixChannels)
+	cv::Mat hsv_mat = cv::cvarrToMat(pHsvImage);
+	
+	//BGR->HSV
+	cvCvtColor(pImage,pHsvImage,CV_BGR2HSV);
+
+	int newValue_h = 0, newValue_s = 0, newValue_v = 0, newValue_sum = 0, sky = 0;
+	int detect_count = 0;
+
+	for(int i = 0;i < PIC_SIZE_H - 1;++i)
+	{
+		for(int j = 0; j < DIV_NUM_HSV;++j){
+			int div_width = PIC_SIZE_W / DIV_NUM_HSV;
+			newValue_h += (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * i + j * div_width * 3];        // H
+			newValue_s += (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * i + j * div_width* 3 + 1];    // S
+			newValue_v += (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * i + j * div_width* 3 + 2];    // V
+		}
+
+		newValue_h /= DIV_NUM_HSV;
+		newValue_s /= DIV_NUM_HSV;
+		newValue_v /= DIV_NUM_HSV;
+	
+		if(newValue_h < 80 || newValue_h > 320){
+			newValue_h = 0;
+		}
+
+		newValue_sum = newValue_h + newValue_v;
+
+		if(newValue_sum > SKY_THRESHOLD){
+			detect_count++;
+			if(detect_count > SKY_DETECT_COUNT){
+				sky = i;
+			}
+		}
+		else{
+			detect_count = 0;
+		}
+
+		newValue_h = 0;
+		newValue_s = 0;
+		newValue_v = 0;
+		newValue_sum = 0;
+	}
+	
+	bool isSky = sky > PIC_SIZE_H * COVER_RATE;
+	Debug::print(LOG_SUMMARY, "%d / %f (%s)\r\n", sky, PIC_SIZE_H * COVER_RATE,isSky ? "found sky" : "sky not found");
+	
+
+	//Release resources
+	cvReleaseImage(&pHsvImage);
+
+	return isSky;
+}
+Waking::Waking() : mWakeRetryCount(0)
 {
 	setName("waking");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
