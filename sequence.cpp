@@ -628,11 +628,86 @@ bool WadachiPredicting::onInit(const struct timespec& time)
 
 	return true;
 }
+bool WadachiPredicting::isWadachiFound(IplImage* pImage)
+{
+	const static int DIV_NUM = 20;
+	const static int PIC_SIZE_W = 320;
+	const static int PIC_SIZE_H = 240;
+	const static int DELETE_H_THRESHOLD = 80;
+	const static int MEDIAN = 5;
+	const static double RATE = 2.5;
+
+	IplImage *src_img, *dst_img1, *tmp_img;
+	double risk[DIV_NUM], risk_rate[DIV_NUM];
+	CvSize pic_size = cvSize(PIC_SIZE_W, PIC_SIZE_H);
+
+	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
+	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
+	
+	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * 1 / 5) ,cvScalar(0), CV_FILLED, CV_AA);
+
+	// Medianフィルタ
+	cvSmooth (src_img, src_img, CV_MEDIAN, 0, MEDIAN, 0, 0);
+
+	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
+	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
+		
+	// SobelフィルタX方向
+	cvSobel (src_img, tmp_img, 1, 0, 3);
+	cvConvertScaleAbs (tmp_img, dst_img1);
+
+	// 2値化
+	cvThreshold (dst_img1, dst_img1, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
+
+	// 水平方向のエッジSum
+	int height = src_img->height / DIV_NUM;
+	double risksum = 0;
+	bool wadachi_find = false;
+	for(int i = 0;i < DIV_NUM;++i)
+	{
+		cvSetImageROI(dst_img1, cvRect(0, height * i, src_img->width, height));//Set image part
+		risksum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
+		cvResetImageROI(dst_img1);//Reset image part (normal)
+	}
+
+	//Draw graph
+	for(int i = 0;i < DIV_NUM;++i){
+		risk_rate[i] = risk[i] / risksum;
+
+		if(i>0){
+			if(risk_rate[i - 1] / risk_rate[i] > RATE){
+				wadachi_find = true;
+			}
+		}
+	}
+
+	if(wadachi_find){
+		Debug::print(LOG_SUMMARY, "Wadachi Found\r\n");
+		gBuzzer.start(10);
+	}
+	else{
+		Debug::print(LOG_SUMMARY, "Wadachi Not Found\r\n");
+	}
+
+	cvReleaseImage (&src_img);
+	cvReleaseImage (&dst_img1);
+	cvReleaseImage (&tmp_img);
+
+	return wadachi_find;
+}
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
 	if(Time::dt(time,mLastUpdateTime) < 5)return;
 	mLastUpdateTime = time;
-	gCameraCapture.save(NULL,NULL,true);
+
+	//新しい画像を取得して処理
+	IplImage* pImage = gCameraCapture.getFrame();
+	gCameraCapture.save(NULL,pImage,true);
+	if(isWadachiFound(pImage))
+	{
+		//轍を事前検知した
+		//なにするよ？
+	}
 	gCameraCapture.startWarming();
 }
 WadachiPredicting::WadachiPredicting()
@@ -714,7 +789,6 @@ void Escaping::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_AFTER_BACKWORD;
 			mLastUpdateTime = time;
-            
 		}
 		break;
 	case STEP_CAMERA_FORWORD:

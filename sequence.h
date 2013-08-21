@@ -122,6 +122,7 @@ protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 public:
+	bool isWadachiFound(IplImage* pImage);
 	WadachiPredicting();
 	~WadachiPredicting();
 };
