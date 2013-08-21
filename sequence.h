@@ -74,9 +74,6 @@ private:
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
-
-	bool isParaExist(IplImage* pImage);//画像内にパラシュートが存在するか確認する
 
 	//次の状態に移行
 	void nextState();
@@ -122,7 +119,6 @@ protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 public:
-	bool isWadachiFound(IplImage* pImage);
 	WadachiPredicting();
 	~WadachiPredicting();
 };
@@ -161,8 +157,6 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual void onClean();
 public:
-	bool isSky(IplImage* pImage);//空の割合が一定以上なら真
-
 	Waking();
 	~Waking();
 };
