@@ -171,7 +171,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	if(wadachi_find){
 		Debug::print(LOG_SUMMARY, "Wadachi Found\r\n");
-		gBuzzer.start(10);
+		gBuzzer.start(100);
 	}
 	else{
 		Debug::print(LOG_SUMMARY, "Wadachi Not Found\r\n");

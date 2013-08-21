@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "utils.h"
 
 const static unsigned int MAX_STRING_LENGTH = 1024;//Print用のバッファサイズ
@@ -29,6 +31,23 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 		std::ofstream of("log.txt",std::ios::out | std::ios::app);
 		of << buf;
 	}
+}
+void Filename::get(std::string& name)
+{
+	std::stringstream filename;
+	filename << mPrefix << ++mIndex << mSuffix;
+	name.assign(filename.str());
+}
+Filename::Filename(const std::string& prefix,const std::string& suffix) : mPrefix(prefix),mSuffix(suffix),mIndex(0)
+{
+	//撮影インデックスを既存のファイルに上書きしないように変更
+	std::string filename;
+	struct stat st;
+	do
+	{
+		get(filename);
+	}while(stat(filename.c_str(), &st) == 0);
+	--mIndex;
 }
 double Time::dt(const struct timespec& now,const struct timespec& last)
 {

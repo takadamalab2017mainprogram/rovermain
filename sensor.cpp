@@ -765,14 +765,6 @@ bool CameraCapture::onInit(const struct timespec& time)
 
 	mIsWarming = false;
 
-	//撮影インデックスを既存のファイルに上書きしないように変更
-	std::string filename;
-	struct stat st;
-	do
-	{
-		generateFilename(filename);
-	}while(stat(filename.c_str(), &st) == 0);
-	--mCapturedCount;
 	return true;
 }
 void CameraCapture::onClean()
@@ -823,17 +815,11 @@ void CameraCapture::save(const std::string* name,IplImage* pImage,bool nolog)
 	if(!isActive())return;
 	std::string filename;
 	if(name != NULL)filename.assign(*name);
-	else generateFilename(filename);
+	else mFilename.get(filename);
 	if(pImage == NULL)pImage = getFrame();
 	cvSaveImage(filename.c_str(), pImage);
 
 	if(!nolog)Debug::print(LOG_SUMMARY, "Captured image was saved as %s\r\n", filename.c_str());
-}
-void CameraCapture::generateFilename(std::string& name)
-{
-	std::stringstream filename;
-	filename << "capture" << ++mCapturedCount << ".jpg";
-	name.assign(filename.str());
 }
 IplImage* CameraCapture::getFrame()
 {
@@ -849,7 +835,7 @@ IplImage* CameraCapture::getFrame()
 	}
 	return pImage;
 }
-CameraCapture::CameraCapture() : mpCapture(NULL), mCapturedCount(0), mIsWarming(false)
+CameraCapture::CameraCapture() : mpCapture(NULL), mIsWarming(false), mFilename("capture",".jpg")
 {
 	setName("camera");
 	setPriority(UINT_MAX,5);

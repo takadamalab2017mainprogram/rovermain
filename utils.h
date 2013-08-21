@@ -51,6 +51,15 @@ public:
 	static void split(const std::string& input,std::vector<std::string>& outputs);
 };
 
+class Filename
+{
+	std::string mPrefix,mSuffix;
+	unsigned int mIndex;
+public:
+	void get(std::string& name);
+	Filename(const std::string& prefix,const std::string& suffix);
+};
+
 class VECTOR3
 {
 public:

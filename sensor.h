@@ -214,8 +214,8 @@ public:
 class CameraCapture : public TaskBase
 {
 	CvCapture* mpCapture;
-	unsigned int mCapturedCount;
 	bool mIsWarming;
+	Filename mFilename;
 
 	const static int WIDTH = 320,HEIGHT = 240;
 protected:
@@ -228,7 +228,6 @@ public:
 	IplImage* getFrame();
 
 	void save(const std::string* name = NULL,IplImage* pImage = NULL, bool nolog = false);
-	void generateFilename(std::string& name);
 
 	CameraCapture();
 	~CameraCapture();
