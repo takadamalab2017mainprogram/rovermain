@@ -122,8 +122,8 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
 	const static int DELETE_H_THRESHOLD = 80;
-	const static int MEDIAN = 5;
 	const static double RATE = 2.5;
+	const static double PIC_CUT_RATE = 0.65;
 
 	IplImage *src_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM], risk_rate[DIV_NUM];
@@ -132,10 +132,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 	
-	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * 1 / 5) ,cvScalar(0), CV_FILLED, CV_AA);
-
-	// Medianフィルタ
-	cvSmooth (src_img, src_img, CV_MEDIAN, 0, MEDIAN, 0, 0);
+	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
 
 	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
@@ -149,21 +146,24 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	// 水平方向のエッジSum
 	int height = src_img->height / DIV_NUM;
-	double risksum = 0;
+	double risk_sum = 0, risk_ave = 0;
 	bool wadachi_find = false;
 	for(int i = 0;i < DIV_NUM;++i)
 	{
 		cvSetImageROI(dst_img1, cvRect(0, height * i, src_img->width, height));//Set image part
-		risksum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
+		risk_sum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
 		cvResetImageROI(dst_img1);//Reset image part (normal)
 	}
 
-	//Draw graph
-	for(int i = 0;i < DIV_NUM;++i){
-		risk_rate[i] = risk[i] / risksum;
+	// 平均
+	risk_ave = risk_sum / DIV_NUM;
 
-		if(i>0){
-			if(risk_rate[i - 1] / risk_rate[i] > RATE){
+	//Draw graph
+	for(int i= DIV_NUM-1; i>=0; --i){
+		risk_rate[i] = risk[i] / risk_sum;
+
+		if(i<DIV_NUM - 1){
+			if(risk_rate[i] / risk_rate[i-1] > RATE && risk_rate[i] > risk_ave){
 				wadachi_find = true;
 			}
 		}

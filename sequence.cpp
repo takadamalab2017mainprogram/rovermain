@@ -636,7 +636,9 @@ void Escaping::onUpdate(const struct timespec& time)
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
 			//‹N‚«ã‚ª‚è“®ì‚ğs‚¤
-			gWakingState.setRunMode(true);
+			IplImage* pImage = gCameraCapture.getFrame();
+			gCameraCapture.save(NULL,pImage);
+			if(gImageProc.isSky(pImage))gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
@@ -658,7 +660,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			IplImage* pImage = gCameraCapture.getFrame();
 			stuckMoveCamera(pImage);
-			gCameraCapture.save(NULL,gCameraCapture.getFrame());
+			gCameraCapture.save(NULL,pImage);
 			gGyroSensor.setZero();
 			++mCameraEscapingTriedCount;
 		}

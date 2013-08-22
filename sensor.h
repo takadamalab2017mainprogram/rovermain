@@ -216,6 +216,7 @@ class CameraCapture : public TaskBase
 	CvCapture* mpCapture;
 	bool mIsWarming;
 	Filename mFilename;
+	unsigned int mCurVideoDeviceID;//現在使用しているカメラのデバイス番号(/dev/video*)
 
 	const static int WIDTH = 320,HEIGHT = 240;
 protected:
@@ -223,6 +224,8 @@ protected:
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
 	virtual void onUpdate(const struct timespec& time);
+
+	void verifyCamera(bool reinitialize = true);
 public:
 	void startWarming();//getFrameする少し前に呼び出すこと.古い画像が取得されるのを防止できる
 	IplImage* getFrame();

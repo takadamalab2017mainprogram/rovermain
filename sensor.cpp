@@ -764,6 +764,7 @@ bool CameraCapture::onInit(const struct timespec& time)
 	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
 
 	mIsWarming = false;
+	verifyCamera(false);
 
 	return true;
 }
@@ -780,6 +781,7 @@ bool CameraCapture::onCommand(const std::vector<std::string> args)
 		if(args[1].compare("save") == 0)
 		{
 			save();
+			startWarming();
 		}else if(args[1].compare("warm") == 0)
 		{
 			startWarming();
@@ -790,6 +792,7 @@ bool CameraCapture::onCommand(const std::vector<std::string> args)
 		if(args[1].compare("save") == 0)
 		{
 			save(&args[2]);
+			startWarming();
 		}
 		return true;
 	}
@@ -805,6 +808,29 @@ void CameraCapture::onUpdate(const struct timespec& time)
 		getFrame();
 		mIsWarming = true;
 	}
+}
+void CameraCapture::verifyCamera(bool reinitialize)
+{
+	//Ç§Ç‹Ç≠ìÆÇ©Ç»Ç¢Ç©ÇÁïïàÛ
+	//unsigned int deviceId = 0;
+	//bool exist = false;
+	//struct stat st;
+	//do
+	//{
+	//	std::stringstream filename;
+	//	filename << "/dev/video" << deviceId++;
+	//	exist = stat(filename.str().c_str(), &st) == 0;
+	//	if(deviceId > 32)return;//é∏îs
+	//}while(!exist);
+	//--deviceId;
+
+	//if(deviceId != mCurVideoDeviceID && reinitialize)
+	//{
+	//	Debug::print(LOG_SUMMARY, "Camera: not available, trying to reinitialize\r\n");
+	//	cvReleaseCapture(&mpCapture);
+	//	mpCapture = cvCreateCameraCapture(-1);
+	//}
+	//mCurVideoDeviceID = deviceId;
 }
 void CameraCapture::startWarming()
 {
@@ -826,12 +852,11 @@ IplImage* CameraCapture::getFrame()
 	if(!isActive())return NULL;
 	mIsWarming = false;
 
+	verifyCamera();
 	IplImage* pImage = cvQueryFrame(mpCapture);
 	if(pImage == NULL)
 	{
-		cvReleaseCapture(&mpCapture);
-		mpCapture = cvCreateCameraCapture(-1);
-		pImage = cvQueryFrame(mpCapture);
+		//ÉGÉâÅ[ï‘ÇµÇƒÇ≠ÇÍÇ»Ç¢
 	}
 	return pImage;
 }
