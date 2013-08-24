@@ -221,13 +221,14 @@ void Falling::onUpdate(const struct timespec& time)
 	{
 		if(mContinuousMotorPulseCount < FALLING_MOTOR_PULSE_COUNT)++mContinuousMotorPulseCount;
 	}else mContinuousMotorPulseCount = 0;
-	mLastMotorPulseL = newMotorPulseL;
-	mLastMotorPulseR = newMotorPulseR;
 
 	//判定状態を表示
 	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT,newPressure);
 	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n",mCoutinuousGyroCount,FALLING_GYRO_COUNT);
-	Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d\r\n",mContinuousMotorPulseCount,FALLING_MOTOR_PULSE_COUNT);
+	Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d (%llu,%llu)\r\n",mContinuousMotorPulseCount,FALLING_MOTOR_PULSE_COUNT,newMotorPulseL - mLastMotorPulseL,newMotorPulseR - mLastMotorPulseR);
+
+	mLastMotorPulseL = newMotorPulseL;
+	mLastMotorPulseR = newMotorPulseR;
 
 	//カウント回数が一定以上なら次の状態に移行
 	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT && (mCoutinuousGyroCount >= FALLING_GYRO_COUNT || mContinuousMotorPulseCount >= FALLING_MOTOR_PULSE_COUNT))
@@ -443,7 +444,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(isStuck())
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
-		gBuzzer.start(10);
+		//gBuzzer.start(10);
 
 		gEscapingState.setRunMode(true);
 	}else
@@ -607,12 +608,13 @@ bool Escaping::onInit(const struct timespec& time)
 	gMotorDrive.drive(-100,-100);
 	gCameraCapture.setRunMode(true);
 	gGyroSensor.setRunMode(true);
-	mCameraEscapingTriedCount = 0;
+	mEscapingTriedCount = 0;
 	return true;
 }
 void Escaping::onUpdate(const struct timespec& time)
 {
-	const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 10;
+	const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 20;
+	const static unsigned int ESCAPING_MAX_RANDOM_ESCAPING_COUNT = 20;
 	switch(mCurStep)
 	{
 	case STEP_BACKWORD:
@@ -622,14 +624,17 @@ void Escaping::onUpdate(const struct timespec& time)
 			mCurStep = STEP_AFTER_BACKWORD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
+			gCameraCapture.startWarming();
 		}
 		break;
 	case STEP_AFTER_BACKWORD:
 		//再起動防止のため待機
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
-			if(mCameraEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
+			if(mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
 			{
+				//ランダム移行
+				mEscapingTriedCount = 0;
 				mCurStep = STEP_RANDOM;
 				break;
 			}
@@ -662,7 +667,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			stuckMoveCamera(pImage);
 			gCameraCapture.save(NULL,pImage);
 			gGyroSensor.setZero();
-			++mCameraEscapingTriedCount;
+			++mEscapingTriedCount;
 		}
 		break;
 	case STEP_CAMERA_TURN:
@@ -670,6 +675,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 20)
 		{
 			gMotorDrive.drive(0,0);
+			gCameraCapture.startWarming();
 			mCurStep = STEP_AFTER_BACKWORD;
 			mLastUpdateTime = time;
 		}
@@ -687,8 +693,17 @@ void Escaping::onUpdate(const struct timespec& time)
 		//ランダム動作
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
+			++mEscapingTriedCount;
+			if(mEscapingTriedCount > ESCAPING_MAX_RANDOM_ESCAPING_COUNT)
+			{
+				//ランダム移行
+				mEscapingTriedCount = 0;
+				mCurStep = STEP_BACKWORD;
+				break;
+			}
 			stuckMoveRandom();
 			mLastUpdateTime = time;
+
 		}
 		break;
 	}
@@ -732,7 +747,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 			break;
 		case 0:
             Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
-			gMotorDrive.drive(100, 100);
+			gMotorDrive.startPID(0,100);
 			mCurStep = STEP_CAMERA_FORWORD;
 			break;
 		default://カメラ使えなかった
