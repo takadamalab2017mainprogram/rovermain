@@ -811,26 +811,26 @@ void CameraCapture::onUpdate(const struct timespec& time)
 }
 void CameraCapture::verifyCamera(bool reinitialize)
 {
-	//‚¤‚Ü‚­“®‚©‚È‚¢‚©‚ç••ˆó
-	//unsigned int deviceId = 0;
-	//bool exist = false;
-	//struct stat st;
-	//do
-	//{
-	//	std::stringstream filename;
-	//	filename << "/dev/video" << deviceId++;
-	//	exist = stat(filename.str().c_str(), &st) == 0;
-	//	if(deviceId > 32)return;//Ž¸”s
-	//}while(!exist);
-	//--deviceId;
+	unsigned int deviceId = 0;
+	bool exist = false;
+	struct stat st;
+	do
+	{
+		std::stringstream filename;
+		filename << "/dev/video" << deviceId++;
+		exist = stat(filename.str().c_str(), &st) == 0;
+		if(deviceId > 32)return;//Ž¸”s
+	}while(!exist);
+	--deviceId;
 
-	//if(deviceId != mCurVideoDeviceID && reinitialize)
-	//{
-	//	Debug::print(LOG_SUMMARY, "Camera: not available, trying to reinitialize\r\n");
-	//	cvReleaseCapture(&mpCapture);
-	//	mpCapture = cvCreateCameraCapture(-1);
-	//}
-	//mCurVideoDeviceID = deviceId;
+	if(deviceId != mCurVideoDeviceID && reinitialize)
+	{
+		Debug::print(LOG_SUMMARY, "Camera: not available, trying to reinitialize\r\n");
+		setRunMode(false);
+		//cvReleaseCapture(&mpCapture);
+		//mpCapture = cvCreateCameraCapture(-1);
+	}
+	mCurVideoDeviceID = deviceId;
 }
 void CameraCapture::startWarming()
 {

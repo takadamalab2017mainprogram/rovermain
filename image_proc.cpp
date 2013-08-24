@@ -53,6 +53,11 @@ bool ImageProc::isParaExist(IplImage* src)
 }
 bool ImageProc::isSky(IplImage* pImage)
 {
+	if(pImage == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Sky detection: Unable to get Image\r\n");
+		return false;
+	}
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
 	const static int SKY_THRESHOLD = 200;		// Ëáílà»è„Ç≈ÇÕÇ†ÇÍÇŒãÛÇæÇ∆îªíË
@@ -118,6 +123,11 @@ bool ImageProc::isSky(IplImage* pImage)
 }
 bool ImageProc::isWadachiExist(IplImage* pImage)
 {
+	if(pImage == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Wadachi predicting: Unable to get Image\r\n");
+		return true;
+	}
 	const static int DIV_NUM = 20;
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
