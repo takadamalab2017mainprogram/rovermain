@@ -129,9 +129,9 @@ class Escaping : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
 
-	enum STEP{STEP_BACKWORD = 0, STEP_AFTER_BACKWORD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWORD, STEP_RANDOM};
+	enum STEP{STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_RANDOM};
 	enum STEP mCurStep;
-	unsigned int mCameraEscapingTriedCount;//カメラ脱出を試行した回数
+	unsigned int mEscapingTriedCount;//カメラ脱出を試行した回数
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -141,6 +141,21 @@ protected:
 public:
 	Escaping();
 	~Escaping();
+};
+
+//轍脱出脱出（旧ランダム）
+class EscapingRandom : public TaskBase
+{
+	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+
+	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
+	enum STEP mCurStep;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	EscapingRandom();
+	~EscapingRandom();
 };
 
 //ローバーの姿勢制御
@@ -169,3 +184,4 @@ extern Navigating gNavigatingState;
 extern Escaping gEscapingState;
 extern Waking gWakingState;
 extern WadachiPredicting gPredictingState;
+extern EscapingRandom gEscapingRandomState;

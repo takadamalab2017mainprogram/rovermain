@@ -18,6 +18,7 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
+EscapingRandom gEscapingRandomState;
 Waking gWakingState;
 WadachiPredicting gPredictingState;
 
@@ -88,7 +89,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 			if(pTask != NULL)
 			{
 				Debug::print(LOG_SUMMARY, "Stop %s\r\n",args[2].c_str());
-				pTask->setRunMode(true);
+				pTask->setRunMode(false);
 				return true;
 			}else Debug::print(LOG_SUMMARY, "%s Not Found\r\n",args[2].c_str());
 			return false;
@@ -604,7 +605,7 @@ WadachiPredicting::~WadachiPredicting()
 bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
-	mCurStep = STEP_BACKWORD;
+	mCurStep = STEP_BACKWARD;
 	gMotorDrive.drive(-100,-100);
 	gCameraCapture.setRunMode(true);
 	gGyroSensor.setRunMode(true);
@@ -617,17 +618,17 @@ void Escaping::onUpdate(const struct timespec& time)
 	const static unsigned int ESCAPING_MAX_RANDOM_ESCAPING_COUNT = 20;
 	switch(mCurStep)
 	{
-	case STEP_BACKWORD:
+	case STEP_BACKWARD:
 		//バックを行う
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
-			mCurStep = STEP_AFTER_BACKWORD;
+			mCurStep = STEP_AFTER_BACKWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
 			gCameraCapture.startWarming();
 		}
 		break;
-	case STEP_AFTER_BACKWORD:
+	case STEP_AFTER_BACKWARD:
 		//再起動防止のため待機
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
@@ -676,16 +677,16 @@ void Escaping::onUpdate(const struct timespec& time)
 		{
 			gMotorDrive.drive(0,0);
 			gCameraCapture.startWarming();
-			mCurStep = STEP_AFTER_BACKWORD;
+			mCurStep = STEP_AFTER_BACKWARD;
 			mLastUpdateTime = time;
 		}
 		break;
-	case STEP_CAMERA_FORWORD:
+	case STEP_CAMERA_FORWARD:
 		//画像処理の結果、直進する必要があった場合
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100,-100);
-			mCurStep = STEP_BACKWORD;
+			mCurStep = STEP_BACKWARD;
 			mLastUpdateTime = time;
 		}
 		break;
@@ -698,7 +699,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			{
 				//ランダム移行
 				mEscapingTriedCount = 0;
-				mCurStep = STEP_BACKWORD;
+				mCurStep = STEP_BACKWARD;
 				break;
 			}
 			stuckMoveRandom();
@@ -748,7 +749,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 		case 0:
             Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
 			gMotorDrive.startPID(0,100);
-			mCurStep = STEP_CAMERA_FORWORD;
+			mCurStep = STEP_CAMERA_FORWARD;
 			break;
 		default://カメラ使えなかった
 			mCurStep = STEP_RANDOM;
@@ -764,7 +765,54 @@ Escaping::Escaping()
 Escaping::~Escaping()
 {
 }
-
+bool EscapingRandom::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	mCurStep = STEP_BACKWARD;
+	gMotorDrive.drive(-100,-100);
+	return true;
+}
+void EscapingRandom::onUpdate(const struct timespec& time)
+{
+	switch(mCurStep)
+	{
+	case STEP_BACKWARD:
+		//バックを行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_TURN;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(100,-100);
+		}
+		break;
+	case STEP_TURN:
+		//その場回転を行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_FORWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(100,100);
+		}
+		break;
+	case STEP_FORWARD:
+		//前進を行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_BACKWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(-100,-100);
+		}
+		break;
+	}
+}
+EscapingRandom::EscapingRandom()
+{
+	setName("random");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+EscapingRandom::~EscapingRandom()
+{
+}
 bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
