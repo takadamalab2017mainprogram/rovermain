@@ -13,6 +13,12 @@ const static unsigned int MAX_STRING_LENGTH = 1024;//Print用のバッファサイズ
 
 void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 {
+	static std::string mFilename;
+	if(mFilename.length() == 0)
+	{
+		Filename filename("log",".txt");
+		filename.get(mFilename);
+	}
 #ifndef _LOG_DETAIL
 	if(level == LOG_DETAIL)return; //デバッグモードでなければログ出力しない
 #endif
@@ -28,7 +34,7 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 	//ログファイルに出力
 	if(level != LOG_PRINT)
 	{
-		std::ofstream of("log.txt",std::ios::out | std::ios::app);
+		std::ofstream of(mFilename.c_str(),std::ios::out | std::ios::app);
 		of << buf;
 	}
 }

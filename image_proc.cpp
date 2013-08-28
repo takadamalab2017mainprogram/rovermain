@@ -23,14 +23,21 @@ bool ImageProc::isParaExist(IplImage* src)
 	IplImage* tmp = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
     
 	//HSV‚É•ÏŠ·
-	cvCvtColor(src, tmp, CV_RGB2HSV);
+	cvCvtColor(src, tmp, CV_BGR2HSV);
     
 	CV_INIT_PIXEL_POS(pos_src, (unsigned char*) tmp->imageData,
                       tmp->widthStep,cvGetSize(tmp), x, y, tmp->origin);
     
-	minH = 113;	maxH = 120;
-	minS = 100;	maxS = 255;
-	minV = 120;	maxV = 255;
+	//orange para
+	minH = 0;	maxH = 33;
+	minS = 170;	maxS = 255;
+	minV = 100;	maxV = 255;
+
+	//yellow para
+	/*minH = 20;	maxH = 33;
+	minS = 70;	maxS = 255;
+	minV = 100;	maxV = 255;*/
+
 	for(y = 0; y < tmp->height; y++) {
 		for(x = 0; x < tmp->width; x++) {
 			p_src = CV_MOVE_TO(pos_src, x, y, 3);

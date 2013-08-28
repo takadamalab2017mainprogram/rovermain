@@ -524,15 +524,24 @@ bool Navigating::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() == 1)
 	{
-		VECTOR3 pos;
-		if(!gGPSSensor.get(pos))
+		if(mIsGoalPos)Debug::print(LOG_SUMMARY ,"Current Goal (%f %f)\r\n",mGoalPos.x,mGoalPos.y);
+		else Debug::print(LOG_SUMMARY ,"NO Goal\r\n");
+		return true;
+	}
+	if(args.size() == 2)
+	{
+		if(args[1].compare("here") == 0)
 		{
-			Debug::print(LOG_SUMMARY, "Unable to get current position!\r\n");
+			VECTOR3 pos;
+			if(!gGPSSensor.get(pos))
+			{
+				Debug::print(LOG_SUMMARY, "Unable to get current position!\r\n");
+				return true;
+			}
+
+			setGoal(pos);
 			return true;
 		}
-
-		setGoal(pos);
-		return true;
 	}
 	if(args.size() == 3)
 	{
@@ -543,7 +552,9 @@ bool Navigating::onCommand(const std::vector<std::string> args)
 		setGoal(pos);
 		return true;
 	}
-	Debug::print(LOG_PRINT, "navigating [pos x] [pos y]\r\n");
+	Debug::print(LOG_PRINT, "navigating                 : get goal\r\n\
+							navigating [pos x] [pos y] : set goal at specified position\r\n\
+							navigating here            : set goal at current position\r\n");
 	return true;
 }
 //éüÇÃèÛë‘Ç…à⁄çs
