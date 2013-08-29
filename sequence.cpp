@@ -21,6 +21,7 @@ Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 Waking gWakingState;
 WadachiPredicting gPredictingState;
+PictureTaking gPictureTakingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -526,7 +527,6 @@ bool Navigating::onCommand(const std::vector<std::string> args)
 	{
 		if(mIsGoalPos)Debug::print(LOG_SUMMARY ,"Current Goal (%f %f)\r\n",mGoalPos.x,mGoalPos.y);
 		else Debug::print(LOG_SUMMARY ,"NO Goal\r\n");
-		return true;
 	}
 	if(args.size() == 2)
 	{
@@ -553,8 +553,8 @@ bool Navigating::onCommand(const std::vector<std::string> args)
 		return true;
 	}
 	Debug::print(LOG_PRINT, "navigating                 : get goal\r\n\
-							navigating [pos x] [pos y] : set goal at specified position\r\n\
-							navigating here            : set goal at current position\r\n");
+navigating [pos x] [pos y] : set goal at specified position\r\n\
+navigating here            : set goal at current position\r\n");
 	return true;
 }
 //ŽŸ‚Ìó‘Ô‚ÉˆÚs
@@ -564,6 +564,7 @@ void Navigating::nextState()
 
 	//ŽŸ‚Ìó‘Ô‚ðÝ’è
 	gTestingState.setRunMode(true);
+	gPictureTakingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
@@ -918,5 +919,45 @@ Waking::Waking() : mWakeRetryCount(0)
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 Waking::~Waking()
+{
+}
+
+bool PictureTaking::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	gCameraCapture.setRunMode(true);
+	gBuzzer.setRunMode(true);
+	gWakingState.setRunMode(true);
+	mStepCount = 0;
+	return true;
+}
+void PictureTaking::onUpdate(const struct timespec& time)
+{
+	if(gWakingState.isActive())return;
+	if(Time::dt(time,mLastUpdateTime) > 1)
+	{
+		mLastUpdateTime = time;
+		++mStepCount;
+		gBuzzer.start(mStepCount > 25 ? 30 : 10);
+
+		if(mStepCount == 25)
+		{
+			gCameraCapture.startWarming();
+		}
+		if(mStepCount >= 30)
+		{
+			setRunMode(false);
+			gBuzzer.start(300);
+			gCameraCapture.save();
+		}
+	}
+}
+
+PictureTaking::PictureTaking() : mStepCount(0)
+{
+	setName("kinen");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+PictureTaking::~PictureTaking()
 {
 }

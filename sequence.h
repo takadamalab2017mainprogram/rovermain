@@ -176,6 +176,19 @@ public:
 	~Waking();
 };
 
+//‹L”OŽB‰e
+class PictureTaking : public TaskBase
+{
+	struct timespec mLastUpdateTime;
+	unsigned int mStepCount;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	PictureTaking();
+	~PictureTaking();
+};
+
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
@@ -185,3 +198,4 @@ extern Escaping gEscapingState;
 extern Waking gWakingState;
 extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
+extern PictureTaking gPictureTakingState;
