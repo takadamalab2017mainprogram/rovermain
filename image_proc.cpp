@@ -140,7 +140,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	const static int PIC_SIZE_H = 240;
 	const static int DELETE_H_THRESHOLD = 80;
 	const static double RATE = 2.5;
-	const static double PIC_CUT_RATE = 0.65;
 
 	IplImage *src_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM], risk_rate[DIV_NUM];
@@ -149,7 +148,8 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 	
-	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
+	//cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
+	cutSky(pImage,src_img);
 
 	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
@@ -319,6 +319,94 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 	}
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
 	return true;
+}
+void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
+{
+	const static int DIV_VER_NUM = 120;
+	const static int DIV_HOR_NUM = 5;
+	const static int FIND_FLAG = 5;
+	const static int DELETE_H_THRESHOLD_LOW = 150;		// 空のH（色相）の範囲下限
+	const static int DELETE_H_THRESHOLD_HIGH = 270;		// 空のH（色相）の範囲上限
+	const static int DELETE_V_THRESHOLD_LOW = 100;
+	const static int DELETE_V_THRESHOLD_HIGH = 200;
+	CvSize capSize = {320,240};
+
+	//Temporary Images
+	IplImage* pHsvImage = cvCreateImage(capSize,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
+	
+	//BGR->HSV
+	cvCvtColor(pSrc,pHsvImage,CV_BGR2HSV);
+
+	//Draw graph on pKidoImage & find gake
+	int value_h = 0, value_v = 0, find_count = 0, flag;
+	int div_width  = capSize.width  / DIV_HOR_NUM;
+	int div_height = capSize.height / DIV_VER_NUM;
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1];	pt[0] = cvPoint(0,0);
+	CvPoint pts[4];
+	int npts[1] = {4};
+
+	for(int i = 0; i <= DIV_HOR_NUM; ++i)
+	{
+		for(int j = DIV_VER_NUM-1; j >= 0; --j){
+			int x = i * div_width;
+			if(x == 0) x = 1;
+			int y = j * div_height;
+
+			value_h = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3    ] * 2;   // H
+			value_v = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3 + 2];     // V
+
+			flag = 1;
+			if(value_h < DELETE_H_THRESHOLD_LOW || DELETE_H_THRESHOLD_HIGH < value_h) //しきい値外
+				flag = 0;
+			if(value_v < DELETE_V_THRESHOLD_LOW) //暗い時
+				flag = 0;
+			if(value_h == 0 && value_v > DELETE_V_THRESHOLD_HIGH) //白くて明るい
+				flag = 1;
+
+			//if(flag == 0)
+			//	cvLine(pImage,cvPoint(x-1, y),cvPoint(x-1, (j-1)*div_height),CV_RGB(255,255,255),2,CV_AA ,0);
+			//else
+			//	cvLine(pImage,cvPoint(x-1, y),cvPoint(x-1, (j-1)*div_height),CV_RGB(0,0,0),2,CV_AA ,0);
+
+			//printf("h=%3d v=%3d %d \n", value_h, value_v, flag);
+
+			if(flag == 1){ //空ゾーン判定後、pt配列に座標を格納
+				find_count++;
+				if(find_count > FIND_FLAG){
+					pt[2*i+1] = cvPoint(x, y+FIND_FLAG*div_height);
+					pt[2*i+2] = cvPoint((i+1)*div_width, 0);
+					//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
+					//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
+					break;
+				}
+			}
+			else{
+				find_count = 0;
+			}
+
+		}
+		if(find_count == 0){
+			pt[2*i+1] = cvPoint(i*div_width, 0);
+			pt[2*i+2] = cvPoint((i+1)*div_width, 0);
+			//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
+			//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
+		}
+
+		find_count = 0;
+
+		//cvShowImage( "origin", pImage );
+		//cvWaitKey(0);
+	}
+
+	for(int i=0; i<DIV_HOR_NUM; ++i){
+		pts[0] = pt[2*i];
+		pts[1] = pt[2*i+1];
+		pts[2] = pt[2*(i+1)+1];
+		pts[3] = pt[2*(i+1)];
+		CvPoint *ptss[1] = {&pts[0]};
+		cvFillPoly(pDest, ptss, npts, 1, cvScalar(0), CV_AA, 0);
+	}
+	cvReleaseImage(&pHsvImage);
 }
 ImageProc::ImageProc()
 {

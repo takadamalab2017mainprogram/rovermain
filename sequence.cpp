@@ -20,6 +20,7 @@ Navigating gNavigatingState;
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 Waking gWakingState;
+Turning gTurningState;
 WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
 
@@ -330,8 +331,7 @@ void Separating::onUpdate(const struct timespec& time)
 				//‰ñ”ð“®ì‚É‘JˆÚ
 				mCurStep = STEP_PARA_DODGE;
 				mLastUpdateTime = time;
-				gGyroSensor.setZero();
-				gMotorDrive.drive(100,0);
+				gTurningState.setRunMode(true);
 				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
 			}else
 			{
@@ -344,10 +344,9 @@ void Separating::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_PARA_DODGE:
-		if(abs(gGyroSensor.getRz()) >= 30 || Time::dt(time,mLastUpdateTime) > 10)//30“xˆÈã‰ñ“]‚·‚é‚©A10•bŠÔ‰ñ‚é‚±‚Æ‚ª‚Å‚«‚È‚¯‚ê‚ÎI—¹‚·‚é
+		if(!gTurningState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
-			gMotorDrive.drive(0,0);
 			nextState();
 		}
 	};
@@ -624,6 +623,11 @@ bool Escaping::onInit(const struct timespec& time)
 	mEscapingTriedCount = 0;
 	return true;
 }
+void Escaping::onClean()
+{
+	gWakingState.setRunMode(false);
+	gTurningState.setRunMode(false);
+}
 void Escaping::onUpdate(const struct timespec& time)
 {
 	const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 20;
@@ -685,9 +689,8 @@ void Escaping::onUpdate(const struct timespec& time)
 		break;
 	case STEP_CAMERA_TURN:
 		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
-		if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 20)
+		if(!gTurningState.isActive())
 		{
-			gMotorDrive.drive(0,0);
 			gCameraCapture.startWarming();
 			mCurStep = STEP_AFTER_BACKWARD;
 			mLastUpdateTime = time;
@@ -750,12 +753,14 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 	switch(gImageProc.wadachiExiting(pImage)){
 		case -1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-			gMotorDrive.drive(-50, 50);
+			gTurningState.setRunMode(true);
+			gTurningState.setDirection(true);
 			mCurStep = STEP_CAMERA_TURN;
 			break;
 		case 1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-			gMotorDrive.drive(50, -50);
+			gTurningState.setRunMode(true);
+			gTurningState.setDirection(false);
 			mCurStep = STEP_CAMERA_TURN;
 			break;
 		case 0:
@@ -922,6 +927,42 @@ Waking::~Waking()
 {
 }
 
+bool Turning::onInit(const struct timespec& time)
+{
+	mIsTurningLeft = false;
+	mTurnPower = 0;
+	gGyroSensor.setRunMode(true);
+	gGyroSensor.setZero();
+	mLastUpdateTime = time;
+	return true;
+}
+
+void Turning::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 10)
+	{
+		gMotorDrive.drive(0,0);
+		setRunMode(false);
+	}else
+	{
+		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
+		else gMotorDrive.drive(mTurnPower,-mTurnPower);
+		mTurnPower += 0.1;
+	}
+}
+
+void Turning::setDirection(bool left)
+{
+	mIsTurningLeft = left;
+}
+Turning::Turning()
+{
+	setName("turning");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+Turning::~Turning()
+{
+}
 bool PictureTaking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -946,6 +987,7 @@ void PictureTaking::onUpdate(const struct timespec& time)
 		}
 		if(mStepCount >= 30)
 		{
+			Debug::print(LOG_SUMMARY, "Say cheese!");
 			setRunMode(false);
 			gBuzzer.start(300);
 			gCameraCapture.save();

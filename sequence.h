@@ -134,6 +134,7 @@ class Escaping : public TaskBase
 	unsigned int mEscapingTriedCount;//カメラ脱出を試行した回数
 protected:
 	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
 	virtual void onUpdate(const struct timespec& time);
 
 	void stuckMoveRandom();//スタック時の移動処理
@@ -176,6 +177,23 @@ public:
 	~Waking();
 };
 
+//ローバーのその場回転
+//完了するとタスクが終了します
+class Turning : public TaskBase
+{
+	bool mIsTurningLeft;
+	double mTurnPower;
+	struct timespec mLastUpdateTime;//行動開始時刻
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	void setDirection(bool left);
+
+	Turning();
+	~Turning();
+};
+
 //記念撮影
 class PictureTaking : public TaskBase
 {
@@ -196,6 +214,7 @@ extern Separating gSeparatingState;
 extern Navigating gNavigatingState;
 extern Escaping gEscapingState;
 extern Waking gWakingState;
+extern Turning gTurningState;
 extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern PictureTaking gPictureTakingState;
