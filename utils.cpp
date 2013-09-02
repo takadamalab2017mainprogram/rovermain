@@ -1,10 +1,12 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <fstream>
 #include <iterator>
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <float.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "utils.h"
@@ -65,6 +67,99 @@ void String::split(const std::string& input,std::vector<std::string>& outputs)
 	outputs.clear();
 	std::istringstream iss(input);
 	std::copy(std::istream_iterator<std::string>(iss),  std::istream_iterator<std::string>(), std::back_inserter(outputs));
+}
+void ConstantManager::add(unsigned int index,const char* name,double value)
+{
+	if(mData.count(index) != 0)
+	{
+		Debug::print(LOG_SUMMARY, "Constant %d  is already exist!\r\n",index);
+		return;
+	}
+	struct CONSTANT constant = {name,value};
+	mData[index] = constant;
+}
+double& ConstantManager::operator[](int index)
+{
+	static double error = DBL_MIN;
+	if(mData.count(index) == 0)
+	{
+		Debug::print(LOG_SUMMARY, "Constant %d not found!\r\n",index);
+		return error;
+	}
+	std::map<unsigned int,struct CONSTANT>::iterator it = mData.find(index);
+	return it->second.value;
+}
+double& ConstantManager::operator[](const char* name)
+{
+	static double error = DBL_MIN;
+	std::map<unsigned int,struct CONSTANT>::iterator it = mData.begin();
+	while(it != mData.end())
+	{
+		if(it->second.name.compare(name) == 0)
+		{
+			return it->second.value;
+		}
+		++it;
+	}
+	Debug::print(LOG_SUMMARY, "Constant %s not found!\r\n",name);
+	return error;
+}
+
+void ConstantManager::save(const char* filename)
+{
+	if(filename == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Constant: null po\r\n");
+		return;
+	}
+	std::ofstream of(filename,std::ios::out);
+	std::map<unsigned int,struct CONSTANT>::iterator it = mData.begin();
+	while(it != mData.end())
+	{
+		of << it->first << " " << it->second.name << " " << it->second.value << std::endl;
+		++it;
+	}
+}
+void ConstantManager::load(const char* filename)
+{
+	if(filename == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Constant: null po\r\n");
+		return;
+	}
+	std::ifstream ifs(filename,std::ios::in);
+	std::string str;
+	if(ifs.good())
+	{
+		Debug::print(LOG_SUMMARY, "Reading %s\r\n",filename);
+		
+		//s‚²‚Æ‚É“Ç‚Ýž‚ñ‚ÅÝ’è‚ð“Ç‚Ýž‚Þ
+		while(!ifs.eof() && !ifs.fail() && !ifs.bad())
+		{
+			std::getline(ifs,str);
+			std::vector<std::string> str_constant;
+			String::split(str,str_constant);
+
+			if(str_constant.size() != 3)
+			{
+				Debug::print(LOG_SUMMARY, "Constant: parse error\r\n");
+				continue;
+			}
+
+			add(atoi(str_constant[0].c_str()),str_constant[1].c_str(), atof(str_constant[2].c_str()));
+		}
+	}
+}
+ConstantManager& ConstantManager::get()
+{
+	static ConstantManager instance;
+	return instance;
+}
+ConstantManager::ConstantManager() : mData()
+{
+}
+ConstantManager::~ConstantManager()
+{
 }
 
 double VECTOR3::calcAngleXY(const VECTOR3& current,const VECTOR3& target)

@@ -21,6 +21,7 @@ Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 Waking gWakingState;
 Turning gTurningState;
+Avoiding gAvoidingState;
 WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
 
@@ -441,16 +442,16 @@ void Navigating::onUpdate(const struct timespec& time)
 	IplImage* pImage = gCameraCapture.getFrame();
 	gCameraCapture.save(NULL,pImage);
 
-	//スタック判定
-	if(isStuck())
+	if(gAvoidingState.isActive())
+	{
+		//轍回避中
+	}else if(isStuck())//スタック判定
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
-		//gBuzzer.start(10);
-
 		gEscapingState.setRunMode(true);
 	}else
 	{
-		if(gEscapingState.isActive())
+		if(gEscapingState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
@@ -591,7 +592,7 @@ bool WadachiPredicting::onInit(const struct timespec& time)
 }
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) < 5)return;
+	if(Time::dt(time,mLastUpdateTime) < 5 || gAvoidingState.isActive())return;
 	mLastUpdateTime = time;
 
 	//新しい画像を取得して処理
@@ -600,11 +601,33 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 	if(gImageProc.isWadachiExist(pImage))
 	{
 		//轍を事前検知した
-		//なにするよ？
+		if(mIsAvoidingEnable)
+		{
+			//轍回避が有効
+			gAvoidingState.setRunMode(true);
+		}
 	}
 	gCameraCapture.startWarming();
 }
-WadachiPredicting::WadachiPredicting()
+bool WadachiPredicting::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 2)
+	{
+		if(args[1].compare("enable") == 0)
+		{
+			mIsAvoidingEnable = true;
+			return true;
+		}
+		if(args[1].compare("disable") == 0)
+		{
+			mIsAvoidingEnable = false;
+			return true;
+		}
+	}
+	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	return false;
+}
+WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false)
 {
 	setName("predicting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -638,6 +661,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		//バックを行う
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
+			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
 			mCurStep = STEP_AFTER_BACKWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
@@ -651,8 +675,10 @@ void Escaping::onUpdate(const struct timespec& time)
 			if(mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
 			{
 				//ランダム移行
+				Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_RANDOM;
+				mCurRandomStep = RANDOM_STEP_FORWARD;
 				break;
 			}
 			mCurStep = STEP_PRE_CAMERA;
@@ -668,6 +694,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		if(gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
 		if(Time::dt(time,mLastUpdateTime) > 2)//起き上がり完了後、一定時間が経過していたら
 		{
+			Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
 			//画像撮影動作を行う
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
@@ -679,6 +706,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		//画像処理を行い、今後の行動を決定する
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
+			Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
 			mLastUpdateTime = time;
 			IplImage* pImage = gCameraCapture.getFrame();
 			stuckMoveCamera(pImage);
@@ -707,7 +735,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		break;
 	case STEP_RANDOM:
 		//ランダム動作
-		if(Time::dt(time,mLastUpdateTime) >= 3)
+		if(Time::dt(time,mLastUpdateTime) >= 5)
 		{
 			++mEscapingTriedCount;
 			if(mEscapingTriedCount > ESCAPING_MAX_RANDOM_ESCAPING_COUNT)
@@ -726,27 +754,27 @@ void Escaping::onUpdate(const struct timespec& time)
 }
 void Escaping::stuckMoveRandom()
 {
-	//進行方向をランダムで変更
-	unsigned int direction = rand() % 3;//0-forword, 1-backword, 2-turn
-	int left = 0,right = 0;
-	switch(direction)
+	switch(mCurRandomStep)
 	{
-	case 0:
-		left = right = MOTOR_MAX_POWER;
+	case RANDOM_STEP_BACKWARD:
+		//バックを行う
+		Debug::print(LOG_SUMMARY, "Escaping(random): backward\r\n");
+		mCurRandomStep = RANDOM_STEP_TURN;
+		gMotorDrive.drive(100,-100);
 		break;
-	case 1:
-		left = right = -MOTOR_MAX_POWER;
+	case RANDOM_STEP_TURN:
+		//その場回転を行う
+		Debug::print(LOG_SUMMARY, "Escaping(random): turning\r\n");
+		mCurRandomStep = RANDOM_STEP_FORWARD;
+		gMotorDrive.drive(100,100);
 		break;
-	case 2:
-		{
-			bool invert = rand() % 2;
-			left = MOTOR_MAX_POWER * (invert ? 1 : -1);
-			right = -left;
-			break;
-		}
+	case RANDOM_STEP_FORWARD:
+		//前進を行う
+		Debug::print(LOG_SUMMARY, "Escapingrandom): forward\r\n");
+		mCurRandomStep = RANDOM_STEP_BACKWARD;
+		gMotorDrive.drive(-100,-100);
+		break;
 	}
-	gMotorDrive.drive(left,right);
-	Debug::print(LOG_SUMMARY, "Wadachi kaihi(random) : ratio(%d,%d)\r\n",left,right);
 }
 void Escaping::stuckMoveCamera(IplImage* pImage)
 {
@@ -770,6 +798,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 			break;
 		default://カメラ使えなかった
 			mCurStep = STEP_RANDOM;
+			mCurRandomStep = RANDOM_STEP_FORWARD;
 			break;
 		
 	}
@@ -938,15 +967,16 @@ bool Turning::onInit(const struct timespec& time)
 
 void Turning::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 10)
+	if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 15)
 	{
+		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
 		gMotorDrive.drive(0,0);
 		setRunMode(false);
 	}else
 	{
 		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
 		else gMotorDrive.drive(mTurnPower,-mTurnPower);
-		mTurnPower += 0.1;
+		if(abs(gGyroSensor.getRz()) < 5)mTurnPower += 0.1;
 	}
 }
 
@@ -962,6 +992,49 @@ Turning::Turning()
 Turning::~Turning()
 {
 }
+
+bool Avoiding::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	mIsTurningStarted = false;
+	gMotorDrive.drive(-100,-100);
+	Debug::print(LOG_SUMMARY, "Avoiding: stopping\r\n");
+	return true;
+}
+void Avoiding::onUpdate(const struct timespec& time)
+{
+	if(gEscapingState.isActive())
+	{
+		Debug::print(LOG_SUMMARY, "Avoiding: Escaping is already running. Avoiding Canceled!\r\n");
+		setRunMode(false);
+	}
+	if(Time::dt(time,mLastUpdateTime) > 1)
+	{
+		if(!gTurningState.isActive())
+		{
+			if(mIsTurningStarted)
+			{
+				Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
+				setRunMode(false);
+			}else
+			{
+				Debug::print(LOG_SUMMARY, "Avoiding: turning started\r\n");
+				gTurningState.setRunMode(true);
+				mIsTurningStarted = true;
+				gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+			}
+		}
+	}
+}
+Avoiding::Avoiding()
+{
+	setName("avoiding");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+Avoiding::~Avoiding()
+{
+}
+
 bool PictureTaking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -986,7 +1059,7 @@ void PictureTaking::onUpdate(const struct timespec& time)
 		}
 		if(mStepCount >= 30)
 		{
-			Debug::print(LOG_SUMMARY, "Say cheese!");
+			Debug::print(LOG_SUMMARY, "Say cheese!\r\n");
 			setRunMode(false);
 			gBuzzer.start(300);
 			gCameraCapture.save();

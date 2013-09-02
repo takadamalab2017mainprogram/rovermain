@@ -133,14 +133,14 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	if(pImage == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Wadachi predicting: Unable to get Image\r\n");
-		return true;
+		return false;
 	}
-	const static int DIV_NUM = 20;
+	const static int DIV_NUM = 15;
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
 	const static int DELETE_H_THRESHOLD = 80;
 	const static double RATE = 2;
-	const static double PIC_CUT_RATE = 0.5;
+	const static double PIC_CUT_RATE = 0.6;
 
 	IplImage *src_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM], risk_rate[DIV_NUM];
@@ -167,7 +167,8 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	double risk_sum = 0, risk_ave = 0;
 	bool wadachi_find = false;
 
-	for(int i = 0;i < DIV_NUM;++i)
+	int i;
+	for(i = 0;i < DIV_NUM;++i)
 	{
 		cvSetImageROI(dst_img1, cvRect(0, height * i, src_img->width, height));//Set image part
 		risk_sum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
@@ -176,16 +177,19 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	// •½‹Ï
 	risk_ave = risk_sum / DIV_NUM;
+	Debug::print(LOG_SUMMARY, "%f\n", risk_ave);
 
 	// Š„‡
-	for(int i=DIV_NUM - 1; i>=0; --i){
+	for(i=DIV_NUM - 1; i>=0; --i){
 		risk_rate[i] = risk[i] / risk_sum;
+		Debug::print(LOG_SUMMARY, "%f\n", risk[i]);
 	}
 
+	
 	//Draw graph
-	for(int i= DIV_NUM-1; i>=0; --i){
+	for(i= DIV_NUM - 1; i>0; --i){
 		if(i>0){
-			if(risk_rate[i-1] / risk_rate[i] > RATE && risk_rate[i] > risk_ave){
+			if(risk_rate[i-1] / risk_rate[i] > RATE && risk[i] > risk_ave * 0.5){
 				wadachi_find = true;
 			}
 		}

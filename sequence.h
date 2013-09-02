@@ -115,9 +115,11 @@ public:
 class WadachiPredicting : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回のチェック時刻
+	bool mIsAvoidingEnable;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
 public:
 	WadachiPredicting();
 	~WadachiPredicting();
@@ -131,6 +133,8 @@ class Escaping : public TaskBase
 
 	enum STEP{STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_RANDOM};
 	enum STEP mCurStep;
+	enum RANDOM_STEP{RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD};
+	enum RANDOM_STEP mCurRandomStep;
 	unsigned int mEscapingTriedCount;//カメラ脱出を試行した回数
 protected:
 	virtual bool onInit(const struct timespec& time);
@@ -194,6 +198,21 @@ public:
 	~Turning();
 };
 
+//轍事前検知時の回避動作
+//完了するとタスクが終了します
+class Avoiding : public TaskBase
+{
+	struct timespec mLastUpdateTime;//行動開始時刻
+	bool mIsTurningStarted;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+
+	Avoiding();
+	~Avoiding();
+};
+
 //記念撮影
 class PictureTaking : public TaskBase
 {
@@ -215,6 +234,7 @@ extern Navigating gNavigatingState;
 extern Escaping gEscapingState;
 extern Waking gWakingState;
 extern Turning gTurningState;
+extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern PictureTaking gPictureTakingState;

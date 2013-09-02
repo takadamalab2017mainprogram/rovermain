@@ -65,6 +65,16 @@ bool parseInitializer()
 
 int main(int argc, char** argv)
 {
+//#define TEST_CONSTANT1 1
+//#define TEST_CONSTANT0 0
+//
+//	ConstantManager::get().add(TEST_CONSTANT1,"TEST_CONSTANT1",0);
+//	ConstantManager::get().add(TEST_CONSTANT0,"TEST_CONSTANT0",0);
+//	ConstantManager::get()[TEST_CONSTANT1] = 10;
+//	Debug::print(LOG_SUMMARY, "constant test: %f",ConstantManager::get()[TEST_CONSTANT1_STR]);
+//	ConstantManager::get()[TEST_CONSTANT0] = 20;
+//	Debug::print(LOG_SUMMARY, "constant test: %f",ConstantManager::get()[TEST_CONSTANT0_STR]);
+//
 	time_t timer;
 	timer = time(NULL);
 	Debug::print(LOG_SUMMARY,"%s\r\n2013 Takadama-lab ARLISS\r\n* Rivai Team *\r\n",ctime(&timer));

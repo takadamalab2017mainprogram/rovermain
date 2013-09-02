@@ -10,6 +10,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <map>
 #include "constants.h"
 
 #ifdef _DEBUG
@@ -58,6 +59,26 @@ class Filename
 public:
 	void get(std::string& name);
 	Filename(const std::string& prefix,const std::string& suffix);
+};
+
+//定数マネージャ
+class ConstantManager
+{
+	ConstantManager();
+	struct CONSTANT {std::string name; double value;};
+	std::map<unsigned int,struct CONSTANT> mData;
+public:
+	static ConstantManager& get();
+
+	void add(unsigned int index, const char* name, double value = 0);
+
+	double& operator[](int index);
+	double& operator[](const char* name);
+
+	void save(const char* filename);
+	void load(const char* filename);
+
+	~ConstantManager();
 };
 
 class VECTOR3
