@@ -317,6 +317,11 @@ void GyroSensor::onUpdate(const struct timespec& time)
 	//蓄えられたサンプルの平均値を現時点での速度とする
 	while((status_reg = wiringPiI2CReadReg8(mFileHandle,0x27)) & 0x08)
 	{
+		if(status_reg == -1)
+		{
+			Debug::print(LOG_DETAIL,"Gyro reading error!\r\n");
+			return;
+		}
 		//if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
 
 		//ジャイロのFIFO内のデータをすべて読み込み、和を取る

@@ -929,7 +929,6 @@ Waking::~Waking()
 
 bool Turning::onInit(const struct timespec& time)
 {
-	mIsTurningLeft = false;
 	mTurnPower = 0;
 	gGyroSensor.setRunMode(true);
 	gGyroSensor.setZero();
