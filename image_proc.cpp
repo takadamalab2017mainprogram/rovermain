@@ -421,41 +421,45 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
 	return true;
 }
-void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
+CvPoint[] ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 {
-	const static int DIV_VER_NUM = 80;
-	const static int DIV_HOR_NUM = 5;
-	const static int FIND_FLAG = 5;
+	const static int DIV_VER_NUM = 120;                 // 縦に読むピクセル数
+	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
+	const static int FIND_FLAG = 5;                     // 空の開始判定基準長
+	const static int MEDIAN = 5;						// Medianフィルタのぼかし具合（奇数）
 	const static int DELETE_H_THRESHOLD_LOW = 150;		// 空のH（色相）の範囲下限
 	const static int DELETE_H_THRESHOLD_HIGH = 270;		// 空のH（色相）の範囲上限
-	const static int DELETE_V_THRESHOLD_LOW = 100;
-	const static int DELETE_V_THRESHOLD_HIGH = 200;
+	const static int DELETE_V_THRESHOLD_LOW = 100;      // 空のV（色相）の範囲下限
+	const static int DELETE_V_THRESHOLD_HIGH = 200;     // 空のV（色相）の範囲上限
 	CvSize capSize = {320,240};
-
-	//Temporary Images
-	IplImage* pHsvImage = cvCreateImage(capSize,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
 	
-	//BGR->HSV
-	cvCvtColor(pSrc,pHsvImage,CV_BGR2HSV);
-
-	//Draw graph on pKidoImage & find gake
 	int div_width  = capSize.width  / DIV_HOR_NUM;
 	int div_height = capSize.height / DIV_VER_NUM;
-	CvPoint pt[(DIV_HOR_NUM+1)*2+1];	
-	pt[0] = cvPoint(0,0);
+
+	// Median Filter
+	cvSmooth (pSrc, pSrc, CV_MEDIAN, MEDIAN, 0, 0, 0);
+	
+	//BGR->HSV
+	IplImage* pHsvImage = cvCreateImage(capSize,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
+	cvCvtColor(pSrc,pHsvImage,CV_BGR2HSV);
+	
+	bool flag;                       // 空フラグ
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1]; // 頂点の総数分の座標配列
+	pt[0] = cvPoint(0,0);            //左上端の座標を格納
 
 	for(int i = 0; i <= DIV_HOR_NUM; ++i)
 	{
 		int find_count = 0;	// 空ピクセルの数のカウント用
 		for(int j = DIV_VER_NUM-1; j >= 0; --j){
-			int x = i * div_width;
-			int y = j * div_height;
-			if(x == 0) x = 1;
-
+			int x = i * div_width;  // 取得位置のx座標
+			int y = j * div_height; // 取得位置のy座標
+			if(x == 0) x = 1;       // 画像左端を正常に処理するため
+			
+			// H値＆V値取得
 			int value_h = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3    ] * 2;   // H
 			int value_v = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3 + 2];     // V
 
-			bool flag = true;
+			flag = true;
 			if(value_h < DELETE_H_THRESHOLD_LOW || DELETE_H_THRESHOLD_HIGH < value_h) //しきい値外
 				flag = false;
 			if(value_v < DELETE_V_THRESHOLD_LOW) //暗い時
@@ -468,19 +472,20 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 			if(flag){ //空ゾーン判定後、pt配列に座標を格納
 				find_count++;
 				if(find_count > FIND_FLAG){
-					pt[2*i+1] = cvPoint(x, y+FIND_FLAG*div_height);
-					pt[2*i+2] = cvPoint((i+1)*div_width, 0);
+					pt[2*i+1] = cvPoint(x, y+FIND_FLAG*div_height); // 空の開始座標
+					pt[2*i+2] = cvPoint((i+1)*div_width, 0);        // 次に処理する列の上端座標
 					//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
 					//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
 					break;
 				}
 			}
 			else{
-				find_count = 0;
+				find_count = 0; // 空でないためカウント数リセット
 			}
 
 		}
-
+		
+		// 空が判定されなかった時は上端の座標を格納
 		if(find_count == 0){
 			pt[2*i+1] = cvPoint(i*div_width, 0);
 			pt[2*i+2] = cvPoint((i+1)*div_width, 0);
@@ -491,7 +496,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 		//cvShowImage( "origin", pImage );
 		//cvWaitKey(0);
 	}
-
+	
 	// 空カット
 	int npts[1] = {4};	// 塗りつぶす図形の頂点数
 	CvPoint pts[4];
@@ -504,6 +509,8 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 		cvFillPoly(pDest, ptss, npts, 1, cvScalar(0), CV_AA, 0);
 	}
 	cvReleaseImage(&pHsvImage);
+
+	return pt;
 }
 ImageProc::ImageProc()
 {
