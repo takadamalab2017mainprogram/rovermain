@@ -711,7 +711,6 @@ void Escaping::onUpdate(const struct timespec& time)
 			IplImage* pImage = gCameraCapture.getFrame();
 			stuckMoveCamera(pImage);
 			gCameraCapture.save(NULL,pImage);
-			gGyroSensor.setZero();
 			++mEscapingTriedCount;
 		}
 		break;
@@ -960,14 +959,15 @@ bool Turning::onInit(const struct timespec& time)
 {
 	mTurnPower = 0;
 	gGyroSensor.setRunMode(true);
-	gGyroSensor.setZero();
+	mAngle = gGyroSensor.getRz();
 	mLastUpdateTime = time;
 	return true;
 }
 
 void Turning::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) >= 5 || abs(gGyroSensor.getRz()) > 15)
+	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
+	if(Time::dt(time,mLastUpdateTime) >= 5 || turnedAngle > 15)
 	{
 		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
 		gMotorDrive.drive(0,0);
@@ -976,7 +976,7 @@ void Turning::onUpdate(const struct timespec& time)
 	{
 		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
 		else gMotorDrive.drive(mTurnPower,-mTurnPower);
-		if(abs(gGyroSensor.getRz()) < 5)mTurnPower += 0.1;
+		if(turnedAngle < 5)mTurnPower += 0.1;
 	}
 }
 
@@ -996,8 +996,9 @@ Turning::~Turning()
 bool Avoiding::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
-	mIsTurningStarted = false;
-	gMotorDrive.drive(-100,-100);
+	gMotorDrive.drive(0,100);
+	mAngle = gGyroSensor.getRz();
+	mCurStep = STEP_TURN;
 	Debug::print(LOG_SUMMARY, "Avoiding: stopping\r\n");
 	return true;
 }
@@ -1008,22 +1009,24 @@ void Avoiding::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Avoiding: Escaping is already running. Avoiding Canceled!\r\n");
 		setRunMode(false);
 	}
-	if(Time::dt(time,mLastUpdateTime) > 1)
+	switch(mCurStep)
 	{
-		if(!gTurningState.isActive())
+	case STEP_TURN:
+		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 90)
 		{
-			if(mIsTurningStarted)
-			{
-				Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
-				setRunMode(false);
-			}else
-			{
-				Debug::print(LOG_SUMMARY, "Avoiding: turning started\r\n");
-				gTurningState.setRunMode(true);
-				mIsTurningStarted = true;
-				gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-			}
+			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
+			mLastUpdateTime = time;
+			gMotorDrive.startPID(0,MOTOR_MAX_POWER);
+			mCurStep = STEP_FORWARD;
 		}
+		break;
+	case STEP_FORWARD:
+		if(Time::dt(time,mLastUpdateTime) > 5)
+		{
+			Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
+			setRunMode(false);
+		}
+		break;
 	}
 }
 Avoiding::Avoiding()

@@ -187,6 +187,7 @@ class Turning : public TaskBase
 {
 	bool mIsTurningLeft;
 	double mTurnPower;
+	double mAngle;
 	struct timespec mLastUpdateTime;//行動開始時刻
 protected:
 	virtual bool onInit(const struct timespec& time);
@@ -203,7 +204,9 @@ public:
 class Avoiding : public TaskBase
 {
 	struct timespec mLastUpdateTime;//行動開始時刻
-	bool mIsTurningStarted;
+	double mAngle;
+	enum STEP {STEP_TURN = 0, STEP_FORWARD};
+	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

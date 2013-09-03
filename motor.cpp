@@ -251,9 +251,9 @@ void MotorDrive::set(double p,double i,double d)
 }
 void MotorDrive::startPID(double angle,int power)
 {
-	gGyroSensor.setZero();
+	//gGyroSensor.setZero();
+	mAngle = gGyroSensor.getRz();
 	drivePID(angle,power);
-	mAngle = 0;
 	mDiff1 = mDiff2 = mDiff3 = 0;
 	mControlPower = 0;
 }
