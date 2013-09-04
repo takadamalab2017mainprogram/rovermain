@@ -133,14 +133,15 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	if(pImage == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Wadachi predicting: Unable to get Image\r\n");
-		return false;
+		return true;
 	}
-	const static int DIV_NUM = 15;
+	const static int DIV_NUM = 20;
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
 	const static int DELETE_H_THRESHOLD = 80;
 	const static double RATE = 2;
-	const static double PIC_CUT_RATE = 0.6;
+	const static double PIC_CUT_RATE = 0.5;
+	const static int DIV_HOR_NUM = 5;
 
 	IplImage *src_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM], risk_rate[DIV_NUM];
@@ -149,8 +150,9 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 		
-	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
-	//cutSky(pImage,src_img);
+	//cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
+	cutSky(pImage,src_img,pt);
 
 	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
@@ -167,8 +169,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	double risk_sum = 0, risk_ave = 0;
 	bool wadachi_find = false;
 
-	int i;
-	for(i = 0;i < DIV_NUM;++i)
+	for(int i = 0;i < DIV_NUM;++i)
 	{
 		cvSetImageROI(dst_img1, cvRect(0, height * i, src_img->width, height));//Set image part
 		risk_sum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
@@ -177,19 +178,16 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	// 平均
 	risk_ave = risk_sum / DIV_NUM;
-	Debug::print(LOG_SUMMARY, "%f\n", risk_ave);
 
 	// 割合
-	for(i=DIV_NUM - 1; i>=0; --i){
+	for(int i=DIV_NUM - 1; i>=0; --i){
 		risk_rate[i] = risk[i] / risk_sum;
-		Debug::print(LOG_SUMMARY, "%f\n", risk[i]);
 	}
 
-	
 	//Draw graph
-	for(i= DIV_NUM - 1; i>0; --i){
+	for(int i= DIV_NUM-1; i>=0; --i){
 		if(i>0){
-			if(risk_rate[i-1] / risk_rate[i] > RATE && risk[i] > risk_ave * 0.5){
+			if(risk_rate[i-1] / risk_rate[i] > RATE && risk_rate[i] > risk_ave){
 				wadachi_find = true;
 			}
 		}
@@ -310,94 +308,93 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	// 臼居くん案
 	// 真ん中が開けている場合以外は回転
 	
-	IplImage *src_img, *gray_img, *dst_img1, *tmp_img;
-	const static int DIV_NUM = 5;
+	const static int DIV_HOR_NUM = 5;
 	const static int MEDIAN = 5;
 	const static int DELETE_H_THRESHOLD = 50;
-	const static int SHIKII_MIN = 70000;
-	const static int SHIKII_MIN_COUNT = 3;
-	double risk[DIV_NUM];
-    
+	const static int THRESHOLD_COUNT = 3;               // ノイズ少のブロック数の下限
+	const static double THRESHOLD_MIN = 70000;          // ノイズ数の下限
 
-	src_img = pImage;
-
-	if(src_img == NULL)
+	if(pImage == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
 		return INT_MAX;
 	}
-	CvSize size = cvSize(src_img->width,src_img->height);
 
-	gray_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
-	cvCvtColor(src_img, gray_img, CV_BGR2GRAY);
-	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(src_img->width, src_img->height * 2 / 5),cvScalar(0), CV_FILLED, CV_AA);
+	CvSize size = cvSize(pImage->width,pImage->height);
 
-	// Medianフィルタ
-	cvSmooth (gray_img, gray_img, CV_MEDIAN, MEDIAN, 0, 0, 0);
-		
-	tmp_img = cvCreateImage(size, IPL_DEPTH_16S, 1);
-	dst_img1 = cvCreateImage(size, IPL_DEPTH_8U, 1);
-		
-	// SobelフィルタX方向
-	cvSobel(gray_img, tmp_img, 1, 0, 3);
-	cvConvertScaleAbs (tmp_img, dst_img1);
-	cvThreshold (dst_img1, dst_img1, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
+	IplImage *pCaptureFrame = cvCreateImage(size, IPL_DEPTH_8U, 3);
+	cvResize(pImage, pCaptureFrame, CV_INTER_LINEAR);
+
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
+	cutSky(pCaptureFrame,pCaptureFrame,pt);
+	
+	// binarization
+	cvThreshold(pCaptureFrame, pCaptureFrame, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
 
 	//Sum
-	int width = src_img->width / DIV_NUM;
-	double risksum = 0;
-    
-	for(int i = 0;i < DIV_NUM; ++i)
-	{
-		cvSetImageROI(dst_img1, cvRect(width * i,0,width,src_img->height));//Set image part
-		risksum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
-		cvResetImageROI(dst_img1);//Reset image part (normal)
+	double risk[DIV_HOR_NUM], new_risk[DIV_HOR_NUM];
+	double risk_sum = 0;
+	int div_width  = size.width  / DIV_HOR_NUM;
+	for(int i=0; i<DIV_HOR_NUM; ++i){
+		// set image part
+		cvSetImageROI(pCaptureFrame, cvRect(div_width * i, 0, div_width, size.height));
+		risk_sum += risk[i] = sum(cv::cvarrToMat(pCaptureFrame))[0];
+		// reset image part (normal)
+		cvResetImageROI(pCaptureFrame);
 	}
     
-	int min_id = 0;
-    int count = 0;
-
-    for(int i=0; i<DIV_NUM; ++i){
-        if(risk[i] < SHIKII_MIN){
-            count++;
-		}
-    }
-    
-	for(int i=0; i<DIV_NUM; i++){
-        Debug::print(LOG_SUMMARY, " area %d : %f\n" ,i,risk[i]);
-    }
+	// calculate 5 heights
+	double heights[DIV_HOR_NUM];
+	for(int i=0; i<DIV_HOR_NUM; ++i){
+		heights[i] = size.height - (pt[2*i+1].y + pt[2*(i+1)+1].y) / 2;
+	}
 	
-	cvReleaseImage (&gray_img);
-	cvReleaseImage (&dst_img1);
-	cvReleaseImage (&tmp_img);
+	// normalize risk
+	double ave_heights = 0;
+	for(int i=0; i<DIV_HOR_NUM; ++i){
+		ave_heights += heights[i];
+	}
+	ave_heights /= 5;
+	for(int i=0; i<DIV_HOR_NUM; ++i){
+		new_risk[i] = risk[i] * ave_heights / heights[i];
+	}
+	
+	/*for(int i=0; i<DIV_HOR_NUM; ++i){
+		Debug::print(LOG_SUMMARY, "[%d] risk %.0f : height %.5f -> risk %.0f\r\n", i, risk[i], heights[i], new_risk[i]);
+	}*/
+	
+	int count = 0;
+	for(int i=0; i<DIV_HOR_NUM; ++i){
+		if(risk[i] < THRESHOLD_MIN){
+			count++;
+		}
+	}
+    
+	cvReleaseImage (&pCaptureFrame);
 
 	// 方向決定
-    if(count >= SHIKII_MIN_COUNT){
-            Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
-			return 0;
-    }else{
-		int left = 0, right = 0;
-
-		// 左側と右側の平均
-		for(int i=0; i<DIV_NUM; i++){
-			if(i<DIV_NUM/2){
-				left += risk[i];
+	if(count >= THRESHOLD_COUNT){
+		Debug::print(LOG_SUMMARY, "Go straight\r\n");
+		return 0;
+	}else{
+		int ave_left = 0, ave_right = 0;
+		for(int i=0; i<DIV_HOR_NUM; ++i){
+			if(i < DIV_HOR_NUM/2){
+				ave_left += risk[i];
 			}
-			if(i>DIV_NUM/2){
-				right += risk[i];
+			if(i > DIV_HOR_NUM/2){
+				ave_right += risk[i];
 			}
 		}
-		
-		left /= 2; right /= 2;
-		
-		if(left < right){
-			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
+		ave_left /= 2; ave_right /= 2;
+		if(ave_left < ave_right){
+			Debug::print(LOG_SUMMARY, "Turn left\r\n");
 			return -1;
 		}else{
-			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
+			Debug::print(LOG_SUMMARY, "Turn right\r\n");
 			return 1;
 		}
-    }    	
+	}
 }
 bool ImageProc::onCommand(const std::vector<std::string> args)
 {
@@ -425,41 +422,46 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
 	return true;
 }
-void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
+void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 {
-	const static int DIV_VER_NUM = 80;
-	const static int DIV_HOR_NUM = 5;
-	const static int FIND_FLAG = 5;
+	const static int DIV_VER_NUM = 120;                 // 縦に読むピクセル数
+	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
+	const static int FIND_FLAG = 5;                     // 空の開始判定基準長
+	const static int MEDIAN = 5;						// Medianフィルタのぼかし具合（奇数）
 	const static int DELETE_H_THRESHOLD_LOW = 150;		// 空のH（色相）の範囲下限
 	const static int DELETE_H_THRESHOLD_HIGH = 270;		// 空のH（色相）の範囲上限
-	const static int DELETE_V_THRESHOLD_LOW = 100;
-	const static int DELETE_V_THRESHOLD_HIGH = 200;
+	const static int DELETE_V_THRESHOLD_LOW = 100;      // 空のV（色相）の範囲下限
+	const static int DELETE_V_THRESHOLD_HIGH = 200;     // 空のV（色相）の範囲上限
 	CvSize capSize = {320,240};
-
-	//Temporary Images
-	IplImage* pHsvImage = cvCreateImage(capSize,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
 	
-	//BGR->HSV
-	cvCvtColor(pSrc,pHsvImage,CV_BGR2HSV);
-
-	//Draw graph on pKidoImage & find gake
 	int div_width  = capSize.width  / DIV_HOR_NUM;
 	int div_height = capSize.height / DIV_VER_NUM;
-	CvPoint pt[(DIV_HOR_NUM+1)*2+1];	
-	pt[0] = cvPoint(0,0);
+
+	// Median Filter
+	IplImage* pSrc2 = cvCreateImage(capSize,IPL_DEPTH_8U, 3);
+	cvSmooth (pSrc, pSrc2, CV_MEDIAN, MEDIAN, 0, 0, 0);
+	
+	//BGR->HSV
+	IplImage* pHsvImage = cvCreateImage(capSize,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
+	cvCvtColor(pSrc2, pHsvImage,CV_BGR2HSV);
+	
+	bool flag;                       // 空フラグ
+	pt[0] = cvPoint(0,0);            //左上端の座標を格納
 
 	for(int i = 0; i <= DIV_HOR_NUM; ++i)
 	{
 		int find_count = 0;	// 空ピクセルの数のカウント用
 		for(int j = DIV_VER_NUM-1; j >= 0; --j){
-			int x = i * div_width;
-			int y = j * div_height;
-			if(x == 0) x = 1;
-
+			int x = i * div_width;  // 取得位置のx座標
+			int y = j * div_height; // 取得位置のy座標
+			if(x == 0) x = 1;       // 画像左端を正常に処理するため
+			
+			// H値＆V値取得
 			int value_h = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3    ] * 2;   // H
 			int value_v = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3 + 2];     // V
-
-			bool flag = true;
+			
+			// 空判定
+			flag = true;
 			if(value_h < DELETE_H_THRESHOLD_LOW || DELETE_H_THRESHOLD_HIGH < value_h) //しきい値外
 				flag = false;
 			if(value_v < DELETE_V_THRESHOLD_LOW) //暗い時
@@ -472,19 +474,20 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 			if(flag){ //空ゾーン判定後、pt配列に座標を格納
 				find_count++;
 				if(find_count > FIND_FLAG){
-					pt[2*i+1] = cvPoint(x, y+FIND_FLAG*div_height);
-					pt[2*i+2] = cvPoint((i+1)*div_width, 0);
+					pt[2*i+1] = cvPoint(x, y+FIND_FLAG*div_height); // 空の開始座標
+					pt[2*i+2] = cvPoint((i+1)*div_width, 0);        // 次に処理する列の上端座標
 					//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
 					//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
 					break;
 				}
 			}
 			else{
-				find_count = 0;
+				find_count = 0; // 空でないためカウント数リセット
 			}
 
 		}
-
+		
+		// 空が判定されなかった時は上端の座標を格納
 		if(find_count == 0){
 			pt[2*i+1] = cvPoint(i*div_width, 0);
 			pt[2*i+2] = cvPoint((i+1)*div_width, 0);
@@ -508,6 +511,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 		cvFillPoly(pDest, ptss, npts, 1, cvScalar(0), CV_AA, 0);
 	}
 	cvReleaseImage(&pHsvImage);
+	cvReleaseImage(&pSrc2);
 }
 ImageProc::ImageProc()
 {
