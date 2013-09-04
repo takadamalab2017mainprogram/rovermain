@@ -62,73 +62,54 @@ bool ImageProc::isParaExist(IplImage* src)
 }
 bool ImageProc::isSky(IplImage* pImage)
 {
-	if(pImage == NULL)
+	const static double SKY_DETECT_THRESHOLD = 0.6;
+	if(src == NULL)
 	{
-		Debug::print(LOG_SUMMARY, "Sky detection: Unable to get Image\r\n");
-		return false;
+		Debug::print(LOG_SUMMARY, "Para detection: Unable to get Image\r\n");
+		return true;
 	}
-	const static int PIC_SIZE_W = 320;
-	const static int PIC_SIZE_H = 240;
-	const static int SKY_THRESHOLD = 200;		// 閾値以上ではあれば空だと判定
-	const static int DIV_NUM_HSV = 120;			// HSVのサンプリングの間隔
-	const static double COVER_RATE = 0.6;		// 画像が占めている空の割合がこの値以上だと空だと判定
-	const static int SKY_DETECT_COUNT = 3;
+	unsigned long pixelCount = 0;
+	int x = 0, y = 0;
+	uchar H, S, V;
+	uchar minH, minS, minV, maxH, maxS, maxV;
+    
+	CvPixelPosition8u pos_src;
+	uchar* p_src;
+	IplImage* tmp = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
+    
+	//HSVに変換
+	cvCvtColor(src, tmp, CV_BGR2HSV);
+    
+	CV_INIT_PIXEL_POS(pos_src, (unsigned char*) tmp->imageData,
+                      tmp->widthStep,cvGetSize(tmp), x, y, tmp->origin);
+    
+	//閾値
+	minH = 100;	maxH = 145;
+	minS = 0;	maxS = 255;
+	minV = 50;	maxV = 255;
 
-	//Temporary Images
-	IplImage* pHsvImage = cvCreateImage(cvSize(PIC_SIZE_W,PIC_SIZE_H),IPL_DEPTH_8U, 3);//HSV(8bits*3channels)	
-
-	//Temporary Matrixes (for mixChannels)
-	cv::Mat hsv_mat = cv::cvarrToMat(pHsvImage);
-	
-	//BGR->HSV
-	cvCvtColor(pImage,pHsvImage,CV_BGR2HSV);
-
-	int newValue_h = 0, newValue_s = 0, newValue_v = 0, newValue_sum = 0, sky = 0;
-	int detect_count = 0;
-
-	for(int i = 0;i < PIC_SIZE_H - 1;++i)
-	{
-		for(int j = 0; j < DIV_NUM_HSV;++j){
-			int div_width = PIC_SIZE_W / DIV_NUM_HSV;
-			newValue_h += (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * i + j * div_width * 3];        // H
-			newValue_s += (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * i + j * div_width* 3 + 1];    // S
-			newValue_v += (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * i + j * div_width* 3 + 2];    // V
-		}
-
-		newValue_h /= DIV_NUM_HSV;
-		newValue_s /= DIV_NUM_HSV;
-		newValue_v /= DIV_NUM_HSV;
-	
-		if(newValue_h < 80 || newValue_h > 320){
-			newValue_h = 0;
-		}
-
-		newValue_sum = newValue_h + newValue_v;
-
-		if(newValue_sum > SKY_THRESHOLD){
-			detect_count++;
-			if(detect_count > SKY_DETECT_COUNT){
-				sky = i;
+	for(y = 0; y < tmp->height; y++) {
+		for(x = 0; x < tmp->width; x++) {
+			p_src = CV_MOVE_TO(pos_src, x, y, 3);
+            
+			H = p_src[0];
+			S = p_src[1];
+			V = p_src[2];
+            
+			if( minH <= H && H <= maxH &&
+               minS <= S && S <= maxS &&
+               minV <= V && V <= maxV
+               || (h == 0 & v > 200)
+               ) {
+				++pixelCount;//閾値範囲内のピクセル数をカウント
 			}
 		}
-		else{
-			detect_count = 0;
-		}
-
-		newValue_h = 0;
-		newValue_s = 0;
-		newValue_v = 0;
-		newValue_sum = 0;
 	}
-	
-	bool isSky = sky > PIC_SIZE_H * COVER_RATE;
-	Debug::print(LOG_SUMMARY, "%d / %f (%s)\r\n", sky, PIC_SIZE_H * COVER_RATE,isSky ? "found sky" : "sky not found");
-	
 
-	//Release resources
-	cvReleaseImage(&pHsvImage);
-
-	return isSky;
+	cvReleaseImage(&tmp);
+	double ratio = (double)pixelCount / tmp->height / tmp->width;
+	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
+	return ratio >= SKY_DETECT_THRESHOLD;
 }
 bool ImageProc::isWadachiExist(IplImage* pImage)
 {
