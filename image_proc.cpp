@@ -181,14 +181,16 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	// •½‹Ï
 	risk_ave = risk_sum / DIV_NUM;
 
+	if(risk_sum == 0)risk_sum = 1;
 	// Š„‡
 	for(int i=DIV_NUM - 1; i>=0; --i){
 		risk_rate[i] = risk[i] / risk_sum;
 	}
 
 	//Draw graph
-	for(int i= DIV_NUM-1; i>=0; --i){
+	for(int i= DIV_NUM-1; i>0; --i){
 		if(i>0){
+			if(risk_rate[i] == 0)risk_rate[i] = 1;
 			if(risk_rate[i-1] / risk_rate[i] > RATE && risk_rate[i] > risk_ave){
 				wadachi_find = true;
 			}
