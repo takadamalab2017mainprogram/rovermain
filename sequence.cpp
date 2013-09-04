@@ -996,10 +996,9 @@ Turning::~Turning()
 bool Avoiding::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
-	gMotorDrive.drive(0,100);
+	if(!gEscapingState.isActive())gMotorDrive.drive(0,100);
 	mAngle = gGyroSensor.getRz();
 	mCurStep = STEP_TURN;
-	Debug::print(LOG_SUMMARY, "Avoiding: stopping\r\n");
 	return true;
 }
 void Avoiding::onUpdate(const struct timespec& time)

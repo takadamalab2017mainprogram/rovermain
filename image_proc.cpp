@@ -54,6 +54,8 @@ bool ImageProc::isParaExist(IplImage* src)
 			}
 		}
 	}
+
+	cvReleaseImage(&tmp);
 	double ratio = (double)pixelCount / tmp->height / tmp->width;
 	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
 	return ratio > SEPARATING_PARA_DETECT_THRESHOLD;
@@ -424,7 +426,7 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 }
 void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 {
-	const static int DIV_VER_NUM = 120;                 // 縦に読むピクセル数
+	const static int DIV_VER_NUM = 80;                 // 縦に読むピクセル数
 	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
 	const static int FIND_FLAG = 5;                     // 空の開始判定基準長
 	const static int MEDIAN = 5;						// Medianフィルタのぼかし具合（奇数）
