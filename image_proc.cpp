@@ -141,6 +141,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	const static int DELETE_H_THRESHOLD = 80;
 	const static double RATE = 2;
 	const static double PIC_CUT_RATE = 0.5;
+	const static int DIV_HOR_NUM = 5;
 
 	IplImage *src_img, *dst_img1, *tmp_img;
 	double risk[DIV_NUM], risk_rate[DIV_NUM];
@@ -149,8 +150,9 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 		
-	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
-	//cutSky(pImage,src_img);
+	//cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
+	cutSky(pImage,src_img,pt);
 
 	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
@@ -205,7 +207,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	return wadachi_find;
 }
-int ImageProc::wadachiExiting(IplImage* pImage, cvPoint[]* pt)
+int ImageProc::wadachiExiting(IplImage* pImage)
 {
 	/*
 	IplImage* src_img = pImage;
@@ -320,8 +322,11 @@ int ImageProc::wadachiExiting(IplImage* pImage, cvPoint[]* pt)
 
 	CvSize size = cvSize(pImage->width,pImage->height);
 
-	IplImage *pCaptureFrame = cvCreateImage(size, IPL_DEPTH_8U, 1);
+	IplImage *pCaptureFrame = cvCreateImage(size, IPL_DEPTH_8U, 3);
 	cvResize(pImage, pCaptureFrame, CV_INTER_LINEAR);
+
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
+	cutSky(pCaptureFrame,pCaptureFrame,pt);
 	
 	// binarization
 	cvThreshold(pCaptureFrame, pCaptureFrame, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
@@ -417,7 +422,7 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
 	return true;
 }
-void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, cvPoint[]* pt)
+void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 {
 	const static int DIV_VER_NUM = 120;                 // 縦に読むピクセル数
 	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
@@ -441,8 +446,6 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, cvPoint[]* pt)
 	cvCvtColor(pSrc2, pHsvImage,CV_BGR2HSV);
 	
 	bool flag;                       // 空フラグ
-	CvPoint temp[(DIV_HOR_NUM+1)*2+1]; // 頂点の総数分の座標配列
-	pt = temp;
 	pt[0] = cvPoint(0,0);            //左上端の座標を格納
 
 	for(int i = 0; i <= DIV_HOR_NUM; ++i)
@@ -495,12 +498,6 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, cvPoint[]* pt)
 		//cvShowImage( "origin", pImage );
 		//cvWaitKey(0);
 	}
-	
-	// Sobel Filter
-	IplImage *tmp_img = cvCreateImage(capSize, IPL_DEPTH_16S, 1);
-	cvSobel(pDest, tmp_img, 1, 0, 3);
-	pDest = cvCreateImage(capSize, IPL_DEPTH_8U, 1);
-	cvConvertScaleAbs(tmp_img, pDest);
 
 	// 空カット
 	int npts[1] = {4};	// 塗りつぶす図形の頂点数
@@ -515,7 +512,6 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, cvPoint[]* pt)
 	}
 	cvReleaseImage(&pHsvImage);
 	cvReleaseImage(&pSrc2);
-	cvReleaseImage(&tmp_img);
 }
 ImageProc::ImageProc()
 {

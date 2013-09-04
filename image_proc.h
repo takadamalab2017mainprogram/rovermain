@@ -14,7 +14,7 @@ public:
 	bool isParaExist(IplImage* pImage);//画像内にパラシュートが存在するか確認する
 	bool isWadachiExist(IplImage* pImage);//轍事前検知
 	bool isSky(IplImage* pImage);//空の割合が一定以上なら真
-	void cutSky(IplImage* pSrc,IplImage* pDest);//pDestの空部分を塗りつぶす
+	void cutSky(IplImage* pSrc,IplImage* pDest, CvPoint[] pt);//pDestの空部分を塗りつぶす
 	int wadachiExiting(IplImage* pImage);//-1:左 0:直進 1:右
 
 	ImageProc();
