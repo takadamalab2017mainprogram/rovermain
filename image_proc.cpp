@@ -205,7 +205,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	return wadachi_find;
 }
-int ImageProc::wadachiExiting(IplImage* pImage)
+int ImageProc::wadachiExiting(IplImage* pImage, cvPoint[]* pt)
 {
 	/*
 	IplImage* src_img = pImage;
@@ -369,7 +369,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 
 	// 方向決定
 	if(count >= THRESHOLD_COUNT){
-		//Debug::print(LOG_SUMMARY, "Go straight\r\n");
+		Debug::print(LOG_SUMMARY, "Go straight\r\n");
 		return 0;
 	}else{
 		int ave_left = 0, ave_right = 0;
@@ -383,10 +383,10 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 		}
 		ave_left /= 2; ave_right /= 2;
 		if(ave_left < ave_right){
-			//Debug::print(LOG_SUMMARY, "Turn left\r\n");
+			Debug::print(LOG_SUMMARY, "Turn left\r\n");
 			return -1;
 		}else{
-			//Debug::print(LOG_SUMMARY, "Turn right\r\n");
+			Debug::print(LOG_SUMMARY, "Turn right\r\n");
 			return 1;
 		}
 	}
@@ -417,7 +417,7 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
 	return true;
 }
-CvPoint[] ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
+void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, cvPoint[]* pt)
 {
 	const static int DIV_VER_NUM = 120;                 // 縦に読むピクセル数
 	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
@@ -441,7 +441,8 @@ CvPoint[] ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 	cvCvtColor(pSrc2, pHsvImage,CV_BGR2HSV);
 	
 	bool flag;                       // 空フラグ
-	CvPoint pt[(DIV_HOR_NUM+1)*2+1]; // 頂点の総数分の座標配列
+	CvPoint temp[(DIV_HOR_NUM+1)*2+1]; // 頂点の総数分の座標配列
+	pt = temp;
 	pt[0] = cvPoint(0,0);            //左上端の座標を格納
 
 	for(int i = 0; i <= DIV_HOR_NUM; ++i)
@@ -515,8 +516,6 @@ CvPoint[] ImageProc::cutSky(IplImage* pSrc,IplImage* pDest)
 	cvReleaseImage(&pHsvImage);
 	cvReleaseImage(&pSrc2);
 	cvReleaseImage(&tmp_img);
-
-	return pt;
 }
 ImageProc::ImageProc()
 {
