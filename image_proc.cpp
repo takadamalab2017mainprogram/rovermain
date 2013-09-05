@@ -55,8 +55,8 @@ bool ImageProc::isParaExist(IplImage* src)
 		}
 	}
 
-	cvReleaseImage(&tmp);
 	double ratio = (double)pixelCount / tmp->height / tmp->width;
+	cvReleaseImage(&tmp);
 	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
 	return ratio > SEPARATING_PARA_DETECT_THRESHOLD;
 }
@@ -106,8 +106,8 @@ bool ImageProc::isSky(IplImage* src)
 		}
 	}
 
-	cvReleaseImage(&tmp);
 	double ratio = (double)pixelCount / tmp->height / tmp->width;
+	cvReleaseImage(&tmp);
 	Debug::print(LOG_SUMMARY, "Sky ratio: %f\r\n",ratio);
 	return ratio >= SKY_DETECT_THRESHOLD;
 }
