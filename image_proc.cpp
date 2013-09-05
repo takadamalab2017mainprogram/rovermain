@@ -161,6 +161,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	// 平均
 	risk_ave = risk_sum / DIV_NUM;
+	if(risk_ave == 0)risk_ave = 1;
 
 	if(risk_sum == 0)risk_sum = 1;
 	// 割合
@@ -436,6 +437,11 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 	for(int i = 0; i <= DIV_HOR_NUM; ++i)
 	{
 		int find_count = 0;	// 空ピクセルの数のカウント用
+
+		// 空が判定されなかった時は上端の座標を格納
+		pt[2*i+1] = cvPoint(i*div_width, 0);
+		pt[2*i+2] = cvPoint((i+1)*div_width, 0);
+
 		for(int j = DIV_VER_NUM-1; j >= 0; --j){
 			int x = i * div_width;  // 取得位置のx座標
 			int y = j * div_height; // 取得位置のy座標
@@ -471,15 +477,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 			}
 
 		}
-		
-		// 空が判定されなかった時は上端の座標を格納
-		if(find_count == 0){
-			pt[2*i+1] = cvPoint(i*div_width, 0);
-			pt[2*i+2] = cvPoint((i+1)*div_width, 0);
-			//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
-			//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
-		}
-
+	
 		//cvShowImage( "origin", pImage );
 		//cvWaitKey(0);
 	}
