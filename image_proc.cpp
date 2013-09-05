@@ -60,7 +60,7 @@ bool ImageProc::isParaExist(IplImage* src)
 	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
 	return ratio > SEPARATING_PARA_DETECT_THRESHOLD;
 }
-bool ImageProc::isSky(IplImage* pImage)
+bool ImageProc::isSky(IplImage* src)
 {
 	const static double SKY_DETECT_THRESHOLD = 0.6;
 	if(src == NULL)
@@ -96,10 +96,10 @@ bool ImageProc::isSky(IplImage* pImage)
 			S = p_src[1];
 			V = p_src[2];
             
-			if( minH <= H && H <= maxH &&
+			if( (minH <= H && H <= maxH &&
                minS <= S && S <= maxS &&
-               minV <= V && V <= maxV
-               || (h == 0 & v > 200)
+               minV <= V && V <= maxV)
+               || (H == 0 && V > 200)
                ) {
 				++pixelCount;//閾値範囲内のピクセル数をカウント
 			}
@@ -108,7 +108,7 @@ bool ImageProc::isSky(IplImage* pImage)
 
 	cvReleaseImage(&tmp);
 	double ratio = (double)pixelCount / tmp->height / tmp->width;
-	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
+	Debug::print(LOG_SUMMARY, "Sky ratio: %f\r\n",ratio);
 	return ratio >= SKY_DETECT_THRESHOLD;
 }
 bool ImageProc::isWadachiExist(IplImage* pImage)
