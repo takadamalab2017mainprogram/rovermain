@@ -298,7 +298,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	const static int MEDIAN = 5;
 	const static int DELETE_H_THRESHOLD = 50;
 	const static int THRESHOLD_COUNT = 3;               // ノイズ少のブロック数の下限
-	const static double THRESHOLD_MIN = 70000;          // ノイズ数の下限
+	const static double THRESHOLD_MIN = 700000;          // ノイズ数の下限
 
 	if(pImage == NULL)
 	{
@@ -351,7 +351,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	
 	int count = 0;
 	for(int i=0; i<DIV_HOR_NUM; ++i){
-		if(risk[i] < THRESHOLD_MIN){
+		if(new_risk[i] < THRESHOLD_MIN){
 			count++;
 		}
 	}
@@ -365,14 +365,14 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	}else{
 		int ave_left = 0, ave_right = 0;
 		for(int i=0; i<DIV_HOR_NUM; ++i){
-			if(i < DIV_HOR_NUM/2){
-				ave_left += risk[i];
+			if(i <= DIV_HOR_NUM/2){
+				ave_left += new_risk[i];
 			}
-			if(i > DIV_HOR_NUM/2){
-				ave_right += risk[i];
+			if(i >= DIV_HOR_NUM/2){
+				ave_right += new_risk[i];
 			}
 		}
-		ave_left /= 2; ave_right /= 2;
+		ave_left /= 3; ave_right /= 3;
 		if(ave_left < ave_right){
 			Debug::print(LOG_SUMMARY, "Turn left\r\n");
 			return -1;
