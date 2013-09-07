@@ -122,8 +122,8 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
 	const static int DELETE_H_THRESHOLD = 80;
-	const static double RATE = 2;
-	const static double PIC_CUT_RATE = 0.5;
+	const static double RATE = 1.7;
+	const static double PIC_CUT_RATE = 0.55;
 	const static int DIV_HOR_NUM = 5;
 
 	IplImage *src_img, *dst_img1, *tmp_img;
@@ -133,9 +133,9 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 		
-	//cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
-	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
-	cutSky(pImage,src_img,pt);
+	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
+	//CvPoint pt[(DIV_HOR_NUM+1)*2+1];
+	//cutSky(pImage,src_img,pt);
 
 	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
