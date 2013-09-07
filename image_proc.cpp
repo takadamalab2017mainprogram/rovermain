@@ -62,7 +62,7 @@ bool ImageProc::isParaExist(IplImage* src)
 }
 bool ImageProc::isSky(IplImage* src)
 {
-	const static double SKY_DETECT_THRESHOLD = 0.6;
+	const static double SKY_DETECT_THRESHOLD = 0.9;
 	if(src == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Para detection: Unable to get Image\r\n");
@@ -345,9 +345,9 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 		new_risk[i] = risk[i] * ave_heights / heights[i];
 	}
 	
-	/*for(int i=0; i<DIV_HOR_NUM; ++i){
+	for(int i=0; i<DIV_HOR_NUM; ++i){
 		Debug::print(LOG_SUMMARY, "[%d] risk %.0f : height %.5f -> risk %.0f\r\n", i, risk[i], heights[i], new_risk[i]);
-	}*/
+	}
 	
 	int count = 0;
 	for(int i=0; i<DIV_HOR_NUM; ++i){
