@@ -1,4 +1,4 @@
-#include "image_procS.h"
+#include "image_proc.h"
 #include "constants.h"
 #include "utils.h"
 #include "actuator.h"

@@ -711,12 +711,13 @@ void Escaping::onUpdate(const struct timespec& time)
 			IplImage* pImage = gCameraCapture.getFrame();
 			stuckMoveCamera(pImage);
 			gCameraCapture.save(NULL,pImage);
+			mAngle = gGyroSensor.getRz();
 			++mEscapingTriedCount;
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		//‰æ‘œˆ—‚ÌŒ‹‰Ê‚É‰ž‚¶‚Ä‰ñ“]‚·‚é
-		if(!gTurningState.isActive())
+		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
 			mCurStep = STEP_CAMERA_FORWARD;

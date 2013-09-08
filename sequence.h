@@ -136,6 +136,7 @@ class Escaping : public TaskBase
 	enum RANDOM_STEP{RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD};
 	enum RANDOM_STEP mCurRandomStep;
 	unsigned int mEscapingTriedCount;//ƒJƒƒ‰’Eo‚ğs‚µ‚½‰ñ”
+	double mAngle;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
