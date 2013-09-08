@@ -770,7 +770,7 @@ void Escaping::stuckMoveRandom()
 		break;
 	case RANDOM_STEP_FORWARD:
 		//ëOêiÇçsÇ§
-		Debug::print(LOG_SUMMARY, "Escapingrandom): forward\r\n");
+		Debug::print(LOG_SUMMARY, "Escaping(random): forward\r\n");
 		mCurRandomStep = RANDOM_STEP_BACKWARD;
 		gMotorDrive.drive(-100,-100);
 		break;

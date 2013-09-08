@@ -1,4 +1,4 @@
-#include "image_proc.h"
+#include "image_procS.h"
 #include "constants.h"
 #include "utils.h"
 #include "actuator.h"
@@ -65,8 +65,8 @@ bool ImageProc::isSky(IplImage* src)
 	const static double SKY_DETECT_THRESHOLD = 0.9;
 	if(src == NULL)
 	{
-		Debug::print(LOG_SUMMARY, "Para detection: Unable to get Image\r\n");
-		return true;
+		Debug::print(LOG_SUMMARY, "Sky detection: Unable to get Image\r\n");
+		return false;
 	}
 	unsigned long pixelCount = 0;
 	int x = 0, y = 0;
@@ -116,7 +116,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	if(pImage == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Wadachi predicting: Unable to get Image\r\n");
-		return true;
+		return false;
 	}
 	const static int DIV_NUM = 20;
 	const static int PIC_SIZE_W = 320;
@@ -195,102 +195,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 }
 int ImageProc::wadachiExiting(IplImage* pImage)
 {
-	/*
-	IplImage* src_img = pImage;
-	const static int DIV_NUM = 5;
-	const static int MEDIAN = 5;
-	IplImage *gray_img, *dst_img1, *tmp_img;
-	double risk[DIV_NUM];
-
-	if(src_img == NULL)
-	{
-		Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
-		return INT_MAX;
-	}
-	CvSize size = cvSize(src_img->width,src_img->height);
-
-	gray_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
-	cvCvtColor(src_img, gray_img, CV_BGR2GRAY);
-	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(src_img->width, src_img->height * 2 / 5),cvScalar(0), CV_FILLED, CV_AA);
-
-	// Medianフィルタ
-	cvSmooth (gray_img, gray_img, CV_MEDIAN, MEDIAN, 0, 0, 0);
-		
-	tmp_img = cvCreateImage(size, IPL_DEPTH_16S, 1);
-	dst_img1 = cvCreateImage(size, IPL_DEPTH_8U, 1);
-		
-	// SobelフィルタX方向
-	cvSobel(gray_img, tmp_img, 1, 0, 3);
-	cvConvertScaleAbs (tmp_img, dst_img1);
-	cvThreshold (dst_img1, dst_img1, 50, 255, CV_THRESH_BINARY);
-
-	//Sum
-	int width = src_img->width / DIV_NUM;
-	double risksum = 0;
-    
-	for(int i = 0;i < DIV_NUM;++i)
-	{
-		cvSetImageROI(dst_img1, cvRect(width * i,0,width,src_img->height));//Set image part
-		risksum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
-		cvResetImageROI(dst_img1);//Reset image part (normal)
-	}
-
-	//Draw graph
-	//for(int i = 0;i < DIV_NUM;++i){
-	//	cvRectangle(dst_img1, cvPoint(width * i,src_img->height - risk[i] / risksum * src_img->height),cvPoint(width * (i + 1),src_img->height),cvScalar(255), 2, CV_AA);
-	//}
-
-    
-	int min_id = 0;
-    int shikiiMin = 70000;
-    int shikiiMax = 130000;
-    int shikiiMinCount = 0;
-    int shikiiMaxCount = 0;
-    
-    for(int i=0; i<DIV_NUM; ++i){
-        if(risk[i] < shikiiMin)
-            shikiiMinCount++;
-        if(risk[i] > shikiiMax)
-            shikiiMaxCount++;
-    }
-    
-    if(shikiiMinCount >= 3){
-        min_id = 5;
-    }else if(shikiiMaxCount >= 3){
-		Debug::print(LOG_SUMMARY, "kabe\n");
-        min_id = (risk[0] > risk[DIV_NUM - 1]) ? DIV_NUM - 1 : 0;
-    }else{
-		int i;
-        for(i=1; i<DIV_NUM; ++i){
-            if(risk[min_id] > risk[i]){
-                min_id = i;
-            }
-        }
-    }
-    
-    for(i=0; i<DIV_NUM; i++){
-        Debug::print(LOG_SUMMARY, " area %d : %f\n" ,i,risk[i]);
-    }
-    
-    Debug::print(LOG_SUMMARY, " min id : %d\n",min_id);
-    
-	cvReleaseImage (&dst_img1);
-	cvReleaseImage (&tmp_img);
-
-	switch(min_id){
-		case 0:
-			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-			return -1;
-		case DIV_NUM - 1:
-			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-			return 1;
-		default:
-            Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
-			return 0;
-	}
-	*/
-
-
 	// 臼居くん案
 	// 真ん中が開けている場合以外は回転
 	
@@ -303,7 +207,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	if(pImage == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
-		return INT_MAX;
+		return (rand() % 2 != 0) ? 1 : -1;//ランダムで進行方向を決定
 	}
 
 	CvSize size = cvSize(pImage->width,pImage->height);
