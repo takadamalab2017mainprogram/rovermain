@@ -715,11 +715,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//‰æ‘œˆ—‚ÌŒ‹‰Ê‚É‰‚¶‚Ä‰ñ“]‚·‚é
 		if(!gTurningState.isActive())
 		{
 			gCameraCapture.startWarming();
-			mCurStep = STEP_AFTER_BACKWARD;
+			mCurStep = STEP_CAMERA_FORWARD;
+			gMotorDrive.startPID(0,100);
 			mLastUpdateTime = time;
 		}
 		break;
