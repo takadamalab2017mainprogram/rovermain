@@ -349,19 +349,24 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 		Debug::print(LOG_SUMMARY, "[%d] risk %.0f : height %.5f -> risk %.0f\r\n", i, risk[i], heights[i], new_risk[i]);
 	}
 	
-	int count = 0;
-	for(int i=0; i<DIV_HOR_NUM; ++i){
-		if(new_risk[i] < THRESHOLD_MIN){
-			count++;
+	int minNum = 0;
+	for(int i=1; i<DIV_HOR_NUM; ++i){
+		if(new_risk[i] < new_risk[minNum]){
+			minNum = i;
 		}
 	}
     
 	cvReleaseImage (&pCaptureFrame);
 
 	// •ûŒüŒˆ’è
-	if(count >= THRESHOLD_COUNT){
+	/*if(count >= THRESHOLD_COUNT){
 		Debug::print(LOG_SUMMARY, "Go straight\r\n");
 		return 0;
+	}*/
+	
+/*	if(0 < minNum && minNum < DIV_HOR_NUM-1){
+			Debug::print(LOG_SUMMARY, "Go straight\r\n");
+			return 0;
 	}else{
 		int ave_left = 0, ave_right = 0;
 		for(int i=0; i<DIV_HOR_NUM; ++i){
@@ -380,7 +385,16 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 			Debug::print(LOG_SUMMARY, "Turn right\r\n");
 			return 1;
 		}
+	}*/
+	if(new_risk[0] < new_risk[DIV_HOR_NUM-1]){
+		Debug::print(LOG_SUMMARY, "Turn left\r\n");
+		return -1;
 	}
+	else{
+		Debug::print(LOG_SUMMARY, "Turn right\r\n");
+		return 1;
+	}
+
 }
 bool ImageProc::onCommand(const std::vector<std::string> args)
 {
