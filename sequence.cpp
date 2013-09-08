@@ -920,7 +920,7 @@ void Waking::onUpdate(const struct timespec& time)
 
 	case STEP_VERIFY:
 		//‹N‚«ã‚ª‚è‚ª¬Œ÷‚µ‚½‚©”Û‚©‚ðƒJƒƒ‰‰æ‘œ‚ÅŒŸØ
-		if(Time::dt(time,mLastUpdateTime) > 1)
+		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
 			IplImage* pCaptureFrame = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pCaptureFrame);
