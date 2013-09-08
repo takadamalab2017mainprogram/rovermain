@@ -113,6 +113,7 @@ bool ImageProc::isSky(IplImage* src)
 }
 bool ImageProc::isWadachiExist(IplImage* pImage)
 {
+	/*
 	if(pImage == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Wadachi predicting: Unable to get Image\r\n");
@@ -134,8 +135,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 		
 	cvRectangle(src_img, cvPoint(0, 0),cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE) ,cvScalar(0), CV_FILLED, CV_AA);
-	//CvPoint pt[(DIV_HOR_NUM+1)*2+1];
-	//cutSky(pImage,src_img,pt);
 
 	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
@@ -192,17 +191,100 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	cvReleaseImage (&tmp_img);
 
 	return wadachi_find;
-}
-int ImageProc::wadachiExiting(IplImage* pImage)
-{
-	// 臼居くん案
-	// 真ん中が開けている場合以外は回転
+	*/
 	
+	if(pImage == NULL)
+	{
+		Debug::print(LOG_SUMMARY, "Wadachi predicting: Unable to get Image\r\n");
+		return false;
+	}
+	const static int DIV_NUM = 15;
+	const static int PIC_SIZE_W = 320;
+	const static int PIC_SIZE_H = 240;
+	const static int DELETE_H_THRESHOLD = 80;
+	const static double RATE = 1.6;
+	const static int DIV_HOR_NUM = 5;
+	const static double RISK_AVE_RATE = 0.5;
+
+	IplImage *src_img, *dst_img1, *tmp_img;
+	double risk[DIV_NUM], risk_rate[DIV_NUM];
+	CvSize pic_size = cvSize(PIC_SIZE_W, PIC_SIZE_H);
+
+	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
+	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
+		
+	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
+	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
+		
+	// SobelフィルタX方向
+	cvSobel (src_img, tmp_img, 1, 0, 3);
+	cvConvertScaleAbs (tmp_img, dst_img1);
+
+	// 2値化
+	cvThreshold (dst_img1, dst_img1, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
+	
+	//空カット
+	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
+	cutSky(pImage, dst_img1, pt);
+
+	// 水平方向のエッジSum
+	int height = src_img->height / DIV_NUM;
+	double risk_sum = 0, risk_ave = 0;
+	bool wadachi_find = false;
+
+	for(int i = 0;i < DIV_NUM;++i)
+	{
+		cvSetImageROI(dst_img1, cvRect(0, height * i, src_img->width, height));//Set image part
+		risk_sum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
+		cvResetImageROI(dst_img1);//Reset image part (normal)
+	}
+
+	// 平均
+	risk_ave = risk_sum / DIV_NUM;
+	if(risk_ave == 0)risk_ave = 1;
+
+	if(risk_sum == 0)risk_sum = 1;
+	// 割合
+	for(int i=DIV_NUM - 1; i>=0; --i){
+		risk_rate[i] = risk[i] / risk_sum;
+	}
+
+	//Draw graph
+	for(int i= DIV_NUM-1; i>0; --i){
+		if(i>0){
+			if(risk_rate[i] == 0)risk_rate[i] = 1;
+			if(risk_rate[i-1] / risk_rate[i] > RATE && risk[i] > risk_ave * RISK_AVE_RATE){
+				wadachi_find = true;
+			}
+		}
+	}
+
+	Debug::print(LOG_SUMMARY, "ave : %f\n",risk_ave * RISK_AVE_RATE);
+	Debug::print(LOG_SUMMARY, "risk : \n");
+	for(int i=0; i<DIV_NUM; i++){
+		Debug::print(LOG_SUMMARY, "%f\n",risk[i]);
+	}
+
+	if(wadachi_find){
+		Debug::print(LOG_SUMMARY, "Wadachi Found\r\n");
+		gBuzzer.start(100);
+	}
+	else{
+		Debug::print(LOG_SUMMARY, "Wadachi Not Found\r\n");
+	}
+
+	cvReleaseImage (&src_img);
+	cvReleaseImage (&dst_img1);
+	cvReleaseImage (&tmp_img);
+
+	return wadachi_find;
+}int ImageProc::wadachiExiting(IplImage* pImage)
+{
 	const static int DIV_HOR_NUM = 5;
 	const static int MEDIAN = 5;
 	const static int DELETE_H_THRESHOLD = 50;
-	const static int THRESHOLD_COUNT = 3;               // ノイズ少のブロック数の下限
-	const static double THRESHOLD_MIN = 700000;          // ノイズ数の下限
+	const static int THRESHOLD_COUNT = 3;// ノイズ少のブロック数の下限
+	const static double THRESHOLD_MIN = 700000;// ノイズ数の下限
 
 	if(pImage == NULL)
 	{
@@ -212,14 +294,24 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 
 	CvSize size = cvSize(pImage->width,pImage->height);
 
-	IplImage *pCaptureFrame = cvCreateImage(size, IPL_DEPTH_8U, 3);
-	cvResize(pImage, pCaptureFrame, CV_INTER_LINEAR);
+	IplImage *pResized = cvCreateImage(size, IPL_DEPTH_8U, 3);
+	cvResize(pImage, pResized, CV_INTER_LINEAR);
+
+	// Median Filter
+	IplImage *pMedian = cvCreateImage(size,IPL_DEPTH_8U, 3);
+	cvSmooth (pResized, pMedian, CV_MEDIAN, MEDIAN, 0, 0, 0);
+	// Sobel Filter
+	IplImage *pGray = cvCreateImage(size, IPL_DEPTH_8U, 1);
+	cvCvtColor(pMedian, pGray, CV_RGB2GRAY);
+	IplImage *pSobel = cvCreateImage(size, IPL_DEPTH_16S, 1);
+	cvSobel(pGray, pSobel, 1, 0, 3);
+	// binarization
+	IplImage *pBin = cvCreateImage(size, IPL_DEPTH_8U, 1);
+	cvConvertScaleAbs(pSobel, pBin);
+	cvThreshold(pBin, pBin, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
 
 	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
-	cutSky(pCaptureFrame,pCaptureFrame,pt);
-	
-	// binarization
-	cvThreshold(pCaptureFrame, pCaptureFrame, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
+	cutSky(pResized,pBin,pt);
 
 	//Sum
 	double risk[DIV_HOR_NUM], new_risk[DIV_HOR_NUM];
@@ -227,10 +319,10 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	int div_width  = size.width  / DIV_HOR_NUM;
 	for(int i=0; i<DIV_HOR_NUM; ++i){
 		// set image part
-		cvSetImageROI(pCaptureFrame, cvRect(div_width * i, 0, div_width, size.height));
-		risk_sum += risk[i] = sum(cv::cvarrToMat(pCaptureFrame))[0];
+		cvSetImageROI(pBin, cvRect(div_width * i, 0, div_width, size.height));
+		risk_sum += risk[i] = sum(cv::cvarrToMat(pBin))[0];
 		// reset image part (normal)
-		cvResetImageROI(pCaptureFrame);
+		cvResetImageROI(pBin);
 	}
     
 	// calculate 5 heights
@@ -247,8 +339,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	ave_heights /= 5;
 	for(int i=0; i<DIV_HOR_NUM; ++i){
 		new_risk[i] = risk[i] * ave_heights / heights[i];
-	}
-	
+	}	
 	for(int i=0; i<DIV_HOR_NUM; ++i){
 		Debug::print(LOG_SUMMARY, "[%d] risk %.0f : height %.5f -> risk %.0f\r\n", i, risk[i], heights[i], new_risk[i]);
 	}
@@ -260,7 +351,10 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 		}
 	}
     
-	cvReleaseImage (&pCaptureFrame);
+	cvReleaseImage(&pResized);
+	cvReleaseImage(&pGray);
+	cvReleaseImage(&pSobel);
+	cvReleaseImage(&pBin);
 
 	// 方向決定
 	/*if(count >= THRESHOLD_COUNT){
@@ -331,23 +425,17 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 	const static int DIV_VER_NUM = 80;                 // 縦に読むピクセル数
 	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
 	const static int FIND_FLAG = 5;                     // 空の開始判定基準長
-	const static int MEDIAN = 5;						// Medianフィルタのぼかし具合（奇数）
 	const static int DELETE_H_THRESHOLD_LOW = 150;		// 空のH（色相）の範囲下限
 	const static int DELETE_H_THRESHOLD_HIGH = 270;		// 空のH（色相）の範囲上限
 	const static int DELETE_V_THRESHOLD_LOW = 100;      // 空のV（色相）の範囲下限
 	const static int DELETE_V_THRESHOLD_HIGH = 200;     // 空のV（色相）の範囲上限
-	CvSize capSize = {320,240};
-	
-	int div_width  = capSize.width  / DIV_HOR_NUM;
-	int div_height = capSize.height / DIV_VER_NUM;
-
-	// Median Filter
-	IplImage* pSrc2 = cvCreateImage(capSize,IPL_DEPTH_8U, 3);
-	cvSmooth (pSrc, pSrc2, CV_MEDIAN, MEDIAN, 0, 0, 0);
+	CvSize size = cvSize(pSrc->width,pSrc->height);
+	int div_width  = size.width  / DIV_HOR_NUM;
+	int div_height = size.height / DIV_VER_NUM;
 	
 	//BGR->HSV
-	IplImage* pHsvImage = cvCreateImage(capSize,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
-	cvCvtColor(pSrc2, pHsvImage,CV_BGR2HSV);
+	IplImage* pHsv = cvCreateImage(size,IPL_DEPTH_8U, 3); //HSV(8bits*3channels)
+	cvCvtColor(pSrc, pHsv,CV_BGR2HSV);
 	
 	bool flag;                       // 空フラグ
 	pt[0] = cvPoint(0,0);            //左上端の座標を格納
@@ -366,8 +454,8 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 			if(x == 0) x = 1;       // 画像左端を正常に処理するため
 			
 			// H値＆V値取得
-			int value_h = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3    ] * 2;   // H
-			int value_v = (unsigned char)pHsvImage->imageData[pHsvImage->widthStep * y + (x - 1) * 3 + 2];     // V
+			int value_h = (unsigned char)pHsv->imageData[pHsv->widthStep * y + (x - 1) * 3    ] * 2;   // H
+			int value_v = (unsigned char)pHsv->imageData[pHsv->widthStep * y + (x - 1) * 3 + 2];     // V
 			
 			// 空判定
 			flag = true;
@@ -411,8 +499,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 		CvPoint *ptss[1] = {&pts[0]};
 		cvFillPoly(pDest, ptss, npts, 1, cvScalar(0), CV_AA, 0);
 	}
-	cvReleaseImage(&pHsvImage);
-	cvReleaseImage(&pSrc2);
+	cvReleaseImage(&pHsv);
 }
 ImageProc::ImageProc()
 {
