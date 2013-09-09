@@ -239,7 +239,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
 	cutSky(pResized,pBin,pt);
 	
-	int maxH = 0, int minH = size.height;
+	int maxH = 0, minH = size.height;
 	for(int i=0; i<DIV_HOR_NUM; ++i){
 		if(pt[i].y > maxH)
 			maxH = pt[i].y;
@@ -322,7 +322,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 		}
 	}*/
 	if(new_risk[0] < new_risk[DIV_HOR_NUM-1]){
-		Debug::print(LOG_SUMMARY, "Turn left\r\n");
+		Debug::print (LOG_SUMMARY, "Turn left\r\n");
 		return -1;
 	}
 	else{
@@ -430,58 +430,59 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 		//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
 	}
 	if(shadow_count >= (DIV_HOR_NUM+1)/2){
-	shadow_count = 0;
-	for(int i = 0; i <= DIV_HOR_NUM; ++i)
-	{
-		int find_count = 0;	// 轍ピクセルの数のカウント用
-		
-		// 轍が判定されなかった時は下端の座標を格納
-		pt[2*i+1] = cvPoint(i*div_width, size.height);
-		pt[2*i+2] = cvPoint((i+1)*div_width, 0);
+		shadow_count = 0;
+		for(int i = 0; i <= DIV_HOR_NUM; ++i)
+		{
+			int find_count = 0;	// 轍ピクセルの数のカウント用
+			
+			// 轍が判定されなかった時は下端の座標を格納
+			pt[2*i+1] = cvPoint(i*div_width, size.height);
+			pt[2*i+2] = cvPoint((i+1)*div_width, 0);
 
-		for(int j = 0; j < DIV_VER_NUM; ++j){
-			int x = i * div_width;  // 取得位置のx座標
-			int y = j * div_height; // 取得位置のy座標
-			if(x == 0) x = 1;       // 画像左端を正常に処理するため
-		
-			// H値＆V値取得
-			int value_h = (unsigned char)pHsv->imageData[pHsv->widthStep * y + (x - 1) * 3    ] * 2;   // H
-			int value_v = (unsigned char)pHsv->imageData[pHsv->widthStep * y + (x - 1) * 3 + 2];     // V
-		
-			// 轍判定（空の時true）
-			flag = true;
-			if(value_h < DELETE_H_THRESHOLD_LOW || DELETE_H_THRESHOLD_HIGH < value_h) //しきい値外
-				flag = false;
-			if(value_v < DELETE_V_THRESHOLD_LOW) //暗い時
-				flag = false;
-			if(value_h == 0 && value_v > DELETE_V_THRESHOLD_HIGH) //白くて明るい
+			for(int j = 0; j < DIV_VER_NUM; ++j){
+				int x = i * div_width;  // 取得位置のx座標
+				int y = j * div_height; // 取得位置のy座標
+				if(x == 0) x = 1;       // 画像左端を正常に処理するため
+			
+				// H値＆V値取得
+				int value_h = (unsigned char)pHsv->imageData[pHsv->widthStep * y + (x - 1) * 3    ] * 2;   // H
+				int value_v = (unsigned char)pHsv->imageData[pHsv->widthStep * y + (x - 1) * 3 + 2];     // V
+			
+				// 轍判定（空の時true）
 				flag = true;
-			//printf("h=%3d v=%3d %d \n", value_h, value_v, flag);
+				if(value_h < DELETE_H_THRESHOLD_LOW || DELETE_H_THRESHOLD_HIGH < value_h) //しきい値外
+					flag = false;
+				if(value_v < DELETE_V_THRESHOLD_LOW) //暗い時
+					flag = false;
+				if(value_h == 0 && value_v > DELETE_V_THRESHOLD_HIGH) //白くて明るい
+					flag = true;
+				//printf("h=%3d v=%3d %d \n", value_h, value_v, flag);
 
-			if(!flag){ //轍ゾーン判定後、pt配列に座標を格納
-				find_count++;
-				if(find_count > FIND_FLAG){
-					shadow_count++;
-					printf("no shadow\n");
-					pt[2*i+1] = cvPoint(x, y-FIND_FLAG*div_height); // 轍の開始座標
-					pt[2*i+2] = cvPoint((i+1)*div_width, 0);        // 次に処理する列の上端座標
-					break;
+				if(!flag){ //轍ゾーン判定後、pt配列に座標を格納
+					find_count++;
+					if(find_count > FIND_FLAG){
+						shadow_count++;
+						printf("no shadow\n");
+						pt[2*i+1] = cvPoint(x, y-FIND_FLAG*div_height); // 轍の開始座標
+						pt[2*i+2] = cvPoint((i+1)*div_width, 0);        // 次に処理する列の上端座標
+						break;
+					}
+				}
+				else{
+					find_count = 0; // 空でないためカウント数リセット
 				}
 			}
-			else{
-				find_count = 0; // 空でないためカウント数リセット
+			//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
+			//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
+		}
+		if(shadow_count != DIV_HOR_NUM+1)
+		{
+			for(int i=0; i<=DIV_HOR_NUM; ++i){
+				pt[2*i+1] = cvPoint(i*div_width, 0); // 轍の開始座標
+				pt[2*i+2] = cvPoint((i+1)*div_width, 0);        // 次に処理する列の上端座標
 			}
+			return;
 		}
-		//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
-		//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
-	}
-	if(shadow_count != DIV_HOR_NUM+1)
-	{
-		for(int i=0; i<=DIV_HOR_NUM; ++i){
-			pt[2*i+1] = cvPoint(i*div_width, 0); // 轍の開始座標
-			pt[2*i+2] = cvPoint((i+1)*div_width, 0);        // 次に処理する列の上端座標
-		}
-		return;
 	}
 
 	// 空カット
@@ -497,6 +498,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
 	}
 	cvReleaseImage(&pHsv);
 }
+
 ImageProc::ImageProc()
 {
 	setName("image");

@@ -592,7 +592,7 @@ bool WadachiPredicting::onInit(const struct timespec& time)
 }
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) < 5 || gAvoidingState.isActive())return;
+	if(Time::dt(time,mLastUpdateTime) < 2.5 || gAvoidingState.isActive())return;
 	mLastUpdateTime = time;
 
 	//新しい画像を取得して処理
@@ -734,6 +734,16 @@ void Escaping::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 		}
 		break;
+	case STEP_CAMERA_TURN_HERE:
+		//画像処理の結果、その場回転する必要があった場合
+		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
+		{
+			gCameraCapture.startWarming();
+			mCurStep = STEP_BACKWARD;
+			gMotorDrive.drive(-100,-100);
+			mLastUpdateTime = time;
+		}
+		break;
 	case STEP_RANDOM:
 		//ランダム動作
 		if(Time::dt(time,mLastUpdateTime) >= 5)
@@ -782,20 +792,19 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 	switch(gImageProc.wadachiExiting(pImage)){
 		case -1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-			gTurningState.setRunMode(true);
-			gTurningState.setDirection(true);
+			gMotorDrive.drive(-100,100);
 			mCurStep = STEP_CAMERA_TURN;
 			break;
 		case 1:
 			Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-			gTurningState.setRunMode(true);
-			gTurningState.setDirection(false);
+			gMotorDrive.drive(100,-100);
 			mCurStep = STEP_CAMERA_TURN;
 			break;
 		case 0:
-            Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
-			gMotorDrive.startPID(0,100);
-			mCurStep = STEP_CAMERA_FORWARD;
+            Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn here\r\n");
+			gTurningState.setRunMode(true);
+			gTurningState.setDirection(true);
+			mCurStep = STEP_CAMERA_TURN_HERE;
 			break;
 		default://カメラ使えなかった
 			mCurStep = STEP_RANDOM;
