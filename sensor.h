@@ -62,7 +62,8 @@ protected:
 
 public:
 	//現在の座標を取得する(falseを返した場合は場所が不明)
-	bool get(VECTOR3& pos);
+	//disableNewFlagをfalseにすると座標が新しいという情報を削除
+	bool get(VECTOR3& pos, bool disableNewFlag);
 
 	//前回の座標取得以降にデータが更新された場合は真
 	bool isNewPos();

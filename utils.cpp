@@ -11,8 +11,6 @@
 #include <fcntl.h>
 #include "utils.h"
 
-const static unsigned int MAX_STRING_LENGTH = 1024;//Print用のバッファサイズ
-
 void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 {
 	static std::string mFilename;

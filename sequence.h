@@ -230,6 +230,21 @@ public:
 	~PictureTaking();
 };
 
+//センサーログ
+class SensorLogging : public TaskBase
+{
+	struct timespec& mLastUpdateTime;
+	Filename mFilenameGPS,mFilenameGyro,mFilenamePressure;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+
+	void write(Filename& filename,const char* fmt, ... );
+public:
+	SensorLogging();
+	~SensorLogging();
+};
+
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
@@ -242,3 +257,4 @@ extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern PictureTaking gPictureTakingState;
+extern SensorLogging gSensorLoggingState;

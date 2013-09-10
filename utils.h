@@ -31,6 +31,8 @@ typedef enum
 	LOG_PRINT		//画面にのみ表示するもの
 }LOG_LEVEL;			//ログレベル(Apacheとかと似た感じで)
 
+const static unsigned int MAX_STRING_LENGTH = 1024;//Print用のバッファサイズ
+
 class Debug
 {
 public:

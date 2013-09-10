@@ -24,6 +24,7 @@ Turning gTurningState;
 Avoiding gAvoidingState;
 WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
+SensorLogging gSensorLoggingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -191,6 +192,7 @@ bool Falling::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
+	gGpsSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
@@ -233,6 +235,11 @@ void Falling::onUpdate(const struct timespec& time)
 
 	mLastMotorPulseL = newMotorPulseL;
 	mLastMotorPulseR = newMotorPulseR;
+
+	//GPS情報ログ
+	VECTOR3 pos;
+	if(gGpsSensor.get(pos))Debug::print(LOG_SUMMARY, "GPS Position     (%f %f %f)\r\n",pos.x,pos.y,pos.z);
+	else Debug::print(LOG_SUMMARY, "GPS Position     Unable to get\r\n");
 
 	//カウント回数が一定以上なら次の状態に移行
 	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT && (mCoutinuousGyroCount >= FALLING_GYRO_COUNT || mContinuousMotorPulseCount >= FALLING_MOTOR_PULSE_COUNT))
@@ -1086,5 +1093,55 @@ PictureTaking::PictureTaking() : mStepCount(0)
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 PictureTaking::~PictureTaking()
+{
+}
+
+bool SensorLogging::onInit(const struct timespec& time)
+{
+	gGyroSensor.setRunMode(true);
+	gGPSSensor.setRunMode(true);
+	gPressureSensor.setRunMode(true);
+	mLastUpdateTime = time;
+	return true;
+}
+void SensorLogging::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) >= 1)
+	{
+		mLastUpdateTime = time;
+
+		//ログを保存
+		VECTOR3 vec;
+		gGPSSensor.get(vec);
+		if(gGPSSensor.isActive())write(mFilenameGPS,"%f,%f,%f\r\n",vec.x,vec.y,vec.z);
+		else write(mFilenameGPS,"unavailable\r\n");
+
+		if(gGyroSensor.isActive())write(mFilenameGyro,"%f,%f,%f,%f,%f,%f\r\n",gGyroSensor.getRvx(),gGyroSensor.getRvy(),gGyroSensor.getRvz(),gGyroSensor.getRx(),gGyroSensor.getRy(),gGyroSensor.getRz());
+		else write(mFilenameGyro,"unavailable\r\n");
+
+		if(gPressureSensor.isActive())write(mFilenamePressure,"%d\r\n",gPressureSensor.get());
+		else write(mFilenamePressure,"unavailable\r\n");
+	}
+}
+void SensorLogging::write(Filename& filename, const char* fmt, ... )
+{
+	std::string str;
+	filename.get(str);
+	std::ofstream of(str.c_str(),std::ios::out | std::ios::app);
+
+	char buf[MAX_STRING_LENGTH];
+
+	va_list argp;
+	va_start(argp, fmt);
+	vsprintf(buf, fmt, argp);
+
+	of << buf;
+}
+SensorLogging::SensorLogging() : mFilenameGPS("log_gps",".txt"),mFilenameGyro("log_gyro",".txt"),mFilenamePressure("log_pressure",".txt")
+{
+	setName("logging");
+	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
+}
+SensorLogging::~SensorLogging()
 {
 }
