@@ -233,13 +233,13 @@ public:
 //センサーログ
 class SensorLogging : public TaskBase
 {
-	struct timespec& mLastUpdateTime;
-	Filename mFilenameGPS,mFilenameGyro,mFilenamePressure;
+	struct timespec mLastUpdateTime;
+	std::string mFilenameGPS,mFilenameGyro,mFilenamePressure;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 
-	void write(Filename& filename,const char* fmt, ... );
+	void write(const std::string& filename,const char* fmt, ... );
 public:
 	SensorLogging();
 	~SensorLogging();

@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv/cvaux.h>
 #include <opencv/highgui.h>
+#include <stdarg.h>
 #include "sequence.h"
 #include "utils.h"
 #include "serial_command.h"
@@ -129,6 +130,7 @@ bool Waiting::onInit(const struct timespec& time)
 	gLightSensor.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 	gBuzzer.setRunMode(true);
+	gSensorLoggingState.setRunMode(true);
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -192,7 +194,7 @@ bool Falling::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
-	gGpsSensor.setRunMode(true);
+	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
@@ -238,7 +240,7 @@ void Falling::onUpdate(const struct timespec& time)
 
 	//GPS情報ログ
 	VECTOR3 pos;
-	if(gGpsSensor.get(pos))Debug::print(LOG_SUMMARY, "GPS Position     (%f %f %f)\r\n",pos.x,pos.y,pos.z);
+	if(gGPSSensor.get(pos))Debug::print(LOG_SUMMARY, "GPS Position     (%f %f %f)\r\n",pos.x,pos.y,pos.z);
 	else Debug::print(LOG_SUMMARY, "GPS Position     Unable to get\r\n");
 
 	//カウント回数が一定以上なら次の状態に移行
@@ -1098,6 +1100,12 @@ PictureTaking::~PictureTaking()
 
 bool SensorLogging::onInit(const struct timespec& time)
 {
+	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
+
+	write(mFilenameGPS,"Log started\r\n");
+	write(mFilenameGyro,"Log started\r\n");
+	write(mFilenamePressure,"Log started\r\n");
+
 	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
@@ -1123,11 +1131,9 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		else write(mFilenamePressure,"unavailable\r\n");
 	}
 }
-void SensorLogging::write(Filename& filename, const char* fmt, ... )
+void SensorLogging::write(const std::string& filename, const char* fmt, ... )
 {
-	std::string str;
-	filename.get(str);
-	std::ofstream of(str.c_str(),std::ios::out | std::ios::app);
+	std::ofstream of(filename.c_str(),std::ios::out | std::ios::app);
 
 	char buf[MAX_STRING_LENGTH];
 
@@ -1137,10 +1143,17 @@ void SensorLogging::write(Filename& filename, const char* fmt, ... )
 
 	of << buf;
 }
-SensorLogging::SensorLogging() : mFilenameGPS("log_gps",".txt"),mFilenameGyro("log_gyro",".txt"),mFilenamePressure("log_pressure",".txt")
+SensorLogging::SensorLogging() : mLastUpdateTime()
 {
 	setName("logging");
 	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
+
+	Filename("log_gps",".txt").get(mFilenameGPS);
+	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameGPS.c_str());
+	Filename("log_gyro",".txt").get(mFilenameGyro);
+	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameGyro.c_str());
+	Filename("log_pressure",".txt").get(mFilenamePressure);
+	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenamePressure.c_str());
 }
 SensorLogging::~SensorLogging()
 {

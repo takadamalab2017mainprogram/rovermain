@@ -238,11 +238,11 @@ bool GPSSensor::onCommand(const std::vector<std::string> args)
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
 	return true;
 }
-bool GPSSensor::get(VECTOR3& pos)
+bool GPSSensor::get(VECTOR3& pos, bool disableNewFlag)
 {
 	if(mSatelites >= 4)//3D fix
 	{
-		mIsNewData = false;//データを取得したことを記録
+		if(disableNewFlag)mIsNewData = false;//データを取得したことを記録
 		pos = mPos;//引数のposに代入
 		return true;
 	}
