@@ -334,6 +334,7 @@ void Separating::onUpdate(const struct timespec& time)
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
 		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
+			mLastUpdateTime = time;
 			//パラシュートの存在チェックを行う
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(gImageProc.isParaExist(pImage))
@@ -354,14 +355,14 @@ void Separating::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_PARA_DODGE:
-		if(!gTurningState.isActive())
+		if(!gTurningState.isActive() && Time::dt(time,mLastUpdateTime) > 2)
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
 			nextState();
 		}
 	};
 }
-
+tart 
 void Separating::nextState()
 {
 	//ブザー鳴らしとく
@@ -606,7 +607,7 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 
 	//新しい画像を取得して処理
 	IplImage* pImage = gCameraCapture.getFrame();
-	gCameraCapture.save(NULL,pImage,true);
+	gCameraCapture.save(NULL,pImage,false);
 	if(gImageProc.isWadachiExist(pImage))
 	{
 		//轍を事前検知した
