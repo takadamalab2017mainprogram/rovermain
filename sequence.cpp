@@ -362,7 +362,6 @@ void Separating::onUpdate(const struct timespec& time)
 		}
 	};
 }
-tart 
 void Separating::nextState()
 {
 	//ƒuƒU[–Â‚ç‚µ‚Æ‚­
