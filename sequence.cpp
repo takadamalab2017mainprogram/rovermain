@@ -651,7 +651,7 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_RUNNING:
-		if(Time::dt(time,mLastUpdateTime) > 20)
+		if(Time::dt(time,mLastUpdateTime) > 60)
 		{
 			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
 			mCurStep = STEP_STOPPING;
@@ -1123,16 +1123,13 @@ void Avoiding::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_TURN:
-		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 90)
-		{
-			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
-			mLastUpdateTime = time;
-			gMotorDrive.startPID(0,MOTOR_MAX_POWER);
-			mCurStep = STEP_FORWARD;
-		}
+		Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
+		mLastUpdateTime = time;
+		gMotorDrive.startPID(90,MOTOR_MAX_POWER);
+		mCurStep = STEP_FORWARD;
 		break;
 	case STEP_FORWARD:
-		if(Time::dt(time,mLastUpdateTime) > 5)
+		if(Time::dt(time,mLastUpdateTime) > 4)
 		{
 			Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
 			setRunMode(false);
