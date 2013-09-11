@@ -94,6 +94,8 @@ public:
 	VECTOR3& operator-=(const VECTOR3& v);
 	VECTOR3 operator+(const VECTOR3& u) const;
 	VECTOR3 operator-(const VECTOR3& u) const;
+	VECTOR3 operator+(const double v) const;
+	VECTOR3 operator-(const double v) const;
 	VECTOR3& operator*=(const double v);
 	VECTOR3& operator/=(const double v);
 	VECTOR3 operator*(const double v) const;

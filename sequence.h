@@ -101,6 +101,7 @@ protected:
 
 	void navigationMove(double distance) const; //通常時の移動処理
 	bool isStuck() const;//スタック判定
+	bool removeError();//異常値の除去
 
 	//次の状態に移行
 	void nextState();
@@ -116,11 +117,14 @@ class WadachiPredicting : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	bool mIsAvoidingEnable;
+	enum STEP{STEP_RUNNING, STEP_STOPPING, STEP_WAKING, STEP_CHECKING, STEP_AVOIDING};
+	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
+	bool isWorking(const struct timespec& time);//事前検知動作中か否か
 	WadachiPredicting();
 	~WadachiPredicting();
 };
@@ -234,7 +238,8 @@ public:
 class SensorLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
-	std::string mFilenameGPS,mFilenameGyro,mFilenamePressure;
+	std::string mFilenameGPS,mFilenameGyro,mFilenamePressure,mFilenameEncoder;
+	unsigned long long mLastEncL,mLastEncR;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

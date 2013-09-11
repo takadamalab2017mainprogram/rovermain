@@ -41,7 +41,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
-	gDistanceSensor.setRunMode(true);
+	//gDistanceSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 
 	gMotorDrive.setRunMode(true);
@@ -197,6 +197,7 @@ bool Falling::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
+	gSensorLoggingState.setRunMode(true);
 
 	return true;
 }
@@ -288,6 +289,7 @@ bool Separating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
+	gSensorLoggingState.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gServo.start(0);
@@ -334,7 +336,6 @@ void Separating::onUpdate(const struct timespec& time)
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
 		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
-			mLastUpdateTime = time;
 			//パラシュートの存在チェックを行う
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(gImageProc.isParaExist(pImage))
@@ -355,13 +356,14 @@ void Separating::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_PARA_DODGE:
-		if(!gTurningState.isActive() && Time::dt(time,mLastUpdateTime) > 2)
+		if(!gTurningState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
 			nextState();
 		}
 	};
 }
+
 void Separating::nextState()
 {
 	//ブザー鳴らしとく
@@ -395,7 +397,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
-	gPredictingState.setRunMode(true);
+	gSensorLoggingState.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -418,7 +420,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得できなければ処理を返す
-	if(!gGPSSensor.get(currentPos))return;
+	if(!gGPSSensor.get(currentPos,false))return;
 
 
 	//新しい座標であればバッファに追加
@@ -429,6 +431,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+			gPredictingState.setRunMode(true);
 			mLastCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
@@ -448,10 +451,13 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
-	IplImage* pImage = gCameraCapture.getFrame();
-	gCameraCapture.save(NULL,pImage);
+	//異常値排除
+	if(removeError())
+	{
+		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
+	}
 
-	if(gAvoidingState.isActive())
+	if(gPredictingState.isWorking(time))
 	{
 		//轍回避中
 	}else if(isStuck())//スタック判定
@@ -477,6 +483,32 @@ void Navigating::onUpdate(const struct timespec& time)
 	currentPos = mLastPos.back();
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
+}
+bool Navigating::removeError()
+{
+	if(mLastPos.size() <= 2)return false;//最低2点は残す
+	std::list<VECTOR3>::iterator it = mLastPos.begin();
+	VECTOR3 average,sigma;
+	while(it != mLastPos.end())
+	{
+		average += *it;
+		++it;
+	}
+	average /= mLastPos.size();
+	
+	const static double THRESHOLD = 100 / DEGREE_2_METER;
+	it = mLastPos.begin();
+	while(it != mLastPos.end())
+	{
+		if(VECTOR3::calcDistanceXY(average,*it) > THRESHOLD)
+		{
+			mLastPos.erase(it);
+			removeError();
+			return true;
+		}
+		++it;
+	}
+	return false;
 }
 bool Navigating::isStuck() const
 {
@@ -601,22 +633,78 @@ bool WadachiPredicting::onInit(const struct timespec& time)
 }
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) < 2.5 || gAvoidingState.isActive())return;
-	mLastUpdateTime = time;
-
-	//新しい画像を取得して処理
-	IplImage* pImage = gCameraCapture.getFrame();
-	gCameraCapture.save(NULL,pImage,false);
-	if(gImageProc.isWadachiExist(pImage))
+	if(gAvoidingState.isActive())return;
+	if(!mIsAvoidingEnable)
 	{
-		//轍を事前検知した
-		if(mIsAvoidingEnable)
+		if(Time::dt(time,mLastUpdateTime) >= 2.5)
 		{
-			//轍回避が有効
-			gAvoidingState.setRunMode(true);
+			mLastUpdateTime = time;
+			IplImage* pImage = gCameraCapture.getFrame();
+			gCameraCapture.save(NULL,pImage);
+			if(!gImageProc.isWadachiExist(pImage))return;
+			//轍を事前検知した
+			gCameraCapture.startWarming();
 		}
+		return;
 	}
-	gCameraCapture.startWarming();
+
+	switch(mCurStep)
+	{
+	case STEP_RUNNING:
+		if(Time::dt(time,mLastUpdateTime) > 20)
+		{
+			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
+			mCurStep = STEP_STOPPING;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(0,0);
+		}
+		break;
+	case STEP_STOPPING:
+		if(Time::dt(time,mLastUpdateTime) > 3)
+		{
+			Debug::print(LOG_SUMMARY, "Predicting: Waking started\r\n");
+			mCurStep = STEP_WAKING;
+			mLastUpdateTime = time;
+			gWakingState.setRunMode(true);
+		}
+		break;
+	case STEP_WAKING:
+		if(!gWakingState.isActive())
+		{
+			Debug::print(LOG_SUMMARY, "Predicting: Checking started\r\n");
+			mCurStep = STEP_CHECKING;
+			mLastUpdateTime = time;
+			gCameraCapture.startWarming();
+		}
+		break;
+	case STEP_CHECKING:
+		if(Time::dt(time,mLastUpdateTime) > 3)
+		{
+			Debug::print(LOG_SUMMARY, "Predicting: Avoiding started\r\n");
+			mLastUpdateTime = time;
+			IplImage* pImage = gCameraCapture.getFrame();
+			gCameraCapture.save(NULL,pImage);
+			if(gImageProc.isWadachiExist(pImage))
+			{
+				//轍を事前検知した
+				gAvoidingState.setRunMode(true);
+				mCurStep = STEP_AVOIDING;
+			}else
+			{
+				mCurStep = STEP_RUNNING;
+				gMotorDrive.startPID(0,MOTOR_MAX_POWER);
+			}
+		}
+		break;
+	case STEP_AVOIDING:
+		if(!gAvoidingState.isActive())
+		{
+			Debug::print(LOG_SUMMARY, "Predicting: Avoiding finished\r\n");
+			mCurStep = STEP_RUNNING;
+			mLastUpdateTime = time;
+		}
+		break;
+	}
 }
 bool WadachiPredicting::onCommand(const std::vector<std::string> args)
 {
@@ -636,7 +724,11 @@ bool WadachiPredicting::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
 	return false;
 }
-WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false)
+bool WadachiPredicting::isWorking(const struct timespec& time)
+{
+	return mIsAvoidingEnable && (mCurStep != STEP_RUNNING || (mCurStep == STEP_RUNNING && Time::dt(time,mLastUpdateTime) < 6));
+}
+WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false),mCurStep(STEP_RUNNING)
 {
 	setName("predicting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -1105,11 +1197,15 @@ bool SensorLogging::onInit(const struct timespec& time)
 	write(mFilenameGPS,"Log started\r\n");
 	write(mFilenameGyro,"Log started\r\n");
 	write(mFilenamePressure,"Log started\r\n");
+	write(mFilenameEncoder,"Log started\r\n");
 
 	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
+	gMotorDrive.setRunMode(true);
 	mLastUpdateTime = time;
+	mLastEncL = gMotorDrive.getL();
+	mLastEncR = gMotorDrive.getR();
 	return true;
 }
 void SensorLogging::onUpdate(const struct timespec& time)
@@ -1129,6 +1225,13 @@ void SensorLogging::onUpdate(const struct timespec& time)
 
 		if(gPressureSensor.isActive())write(mFilenamePressure,"%d\r\n",gPressureSensor.get());
 		else write(mFilenamePressure,"unavailable\r\n");
+
+		if(gMotorDrive.isActive())
+		{
+			write(mFilenameEncoder,"%llu,%llu\r\n",gMotorDrive.getL() - mLastEncL,gMotorDrive.getR() - mLastEncR);
+			mLastEncL = gMotorDrive.getL();
+			mLastEncR = gMotorDrive.getR();
+		}else write(mFilenameEncoder,"unavailable\r\n");
 	}
 }
 void SensorLogging::write(const std::string& filename, const char* fmt, ... )
@@ -1154,6 +1257,8 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameGyro.c_str());
 	Filename("log_pressure",".txt").get(mFilenamePressure);
 	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenamePressure.c_str());
+	Filename("log_encoder",".txt").get(mFilenameEncoder);
+	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
 }
 SensorLogging::~SensorLogging()
 {

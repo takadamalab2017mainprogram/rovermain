@@ -242,7 +242,7 @@ bool GPSSensor::get(VECTOR3& pos, bool disableNewFlag)
 {
 	if(mSatelites >= 4)//3D fix
 	{
-		if(disableNewFlag)mIsNewData = false;//データを取得したことを記録
+		if(!disableNewFlag)mIsNewData = false;//データを取得したことを記録
 		pos = mPos;//引数のposに代入
 		return true;
 	}

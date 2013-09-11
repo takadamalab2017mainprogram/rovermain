@@ -200,6 +200,14 @@ VECTOR3 VECTOR3::operator-(const VECTOR3& v) const
 {
 	return VECTOR3(x - v.x,y - v.y,z - v.z);
 }
+VECTOR3 VECTOR3::operator+(const double v) const
+{
+	return VECTOR3(x + v,y + v,z + v);
+}
+VECTOR3 VECTOR3::operator-(const double v) const
+{
+	return VECTOR3(x - v,y - v,z - v);
+}
 VECTOR3& VECTOR3::operator*=(const double v)
 {
 	x *= v;
