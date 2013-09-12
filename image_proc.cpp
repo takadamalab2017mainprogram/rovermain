@@ -96,10 +96,11 @@ bool ImageProc::isSky(IplImage* src)
 			S = p_src[1];
 			V = p_src[2];
             
-			if( (minH <= H && H <= maxH &&
+			if((minH <= H && H <= maxH &&
                minS <= S && S <= maxS &&
                minV <= V && V <= maxV)
                || (H == 0 && V > 200)
+			   || (V > 145 && S < 20)
                ) {
 				++pixelCount;//閾値範囲内のピクセル数をカウント
 			}
@@ -121,165 +122,96 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	Debug::print(LOG_SUMMARY, "Start\n");
 
-	const static int DIV_VER_NUM = 15;
-	const static int DIV_HOR_NUM = 3;
+	const static int DIV_NUM = 15;
 	const static int PIC_SIZE_W = 320;
 	const static int PIC_SIZE_H = 240;
 	const static int DELETE_H_THRESHOLD = 50;
-	const static double RATE = 2;
+	const static double RATE = 1.6;
+	const static int DIV_HOR_NUM = 5;
 	const static double RISK_AVE_RATE = 0.7;
-	const static int THRESHOLD = 4;
-	const static int MAX_THRESHOLD = 50;
-	IplImage *src_img, *dst_img, *tmp_img;
-	CvSize size = cvSize(PIC_SIZE_W, PIC_SIZE_H);
 
-	src_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
-	cvCvtColor(pImage, src_img, CV_RGB2GRAY);
-	tmp_img = cvCreateImage (size, IPL_DEPTH_16S, 1);
-	dst_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
+	IplImage *src_img, *dst_img1, *tmp_img;
+	double risk[DIV_NUM], risk_rate[DIV_NUM];
+	CvSize pic_size = cvSize(PIC_SIZE_W, PIC_SIZE_H);
+
+	src_img = cvCreateImage(pic_size, IPL_DEPTH_8U, 1);
+	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
+		
+	tmp_img = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_16S, 1);
+	dst_img1 = cvCreateImage (cvGetSize (src_img), IPL_DEPTH_8U, 1);
 		
 	// SobelフィルタX方向
 	cvSobel (src_img, tmp_img, 1, 0, 3);
-	cvConvertScaleAbs (tmp_img, dst_img);
-	
+	cvConvertScaleAbs (tmp_img, dst_img1);
+
 	// 2値化
-	cvThreshold (dst_img, dst_img, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
-		
+	cvThreshold (dst_img1, dst_img1, DELETE_H_THRESHOLD, 255, CV_THRESH_BINARY);
+	
 	//空カット
 	CvPoint pt[(DIV_HOR_NUM+1)*2+1];
-	cutSky(pImage, dst_img, pt);
-	
-	int risk_point[DIV_HOR_NUM]; // リスクピークのブロック番号
-	int div_width = size.width / DIV_HOR_NUM;
-	double risk[DIV_VER_NUM][DIV_HOR_NUM];
-	double risk_rate[DIV_VER_NUM];
-	int div_height  = size.height  / DIV_VER_NUM;
-	double risk_sum;
-	double risk_ave = 0;
-	int peak_count = 0;
-	
-	Debug::print(LOG_SUMMARY, "  [0]    [1]    [2]  \n");
+	cutSky(pImage, dst_img1, pt);
 
-	for(int j=0; j<DIV_HOR_NUM; ++j){
-		risk_sum = 0;
-		for(int i=0; i<DIV_VER_NUM; ++i){
-			// set image part
-			cvSetImageROI(dst_img, cvRect(div_width*j, div_height*i, div_width, div_height));
-			risk_sum += risk[i][j] = sum(cv::cvarrToMat(dst_img))[0];
-			// reset image part (normal)
-			cvResetImageROI(dst_img);
-			//cvRectangle(dst_img, cvPoint(div_width*i, div_height*j), cvPoint(risk[i]/risk_sum*size.width, div_height*(j+1)), cvScalar(255), 2, CV_AA);
-		}
-		
-		risk_ave = risk_sum / DIV_VER_NUM;
-		for(int i=0; i<DIV_VER_NUM; ++i){
-			risk_rate[i] = risk[i][j] / risk_sum;
-		}
+	// 水平方向のエッジSum
+	int height = src_img->height / DIV_NUM;
+	double risk_sum = 0, risk_ave = 0;
+	bool wadachi_find = false;
 
-		Debug::print(LOG_SUMMARY, "%6.0f ", risk_ave * RISK_AVE_RATE);
+	for(int i = 0;i < DIV_NUM;++i)
+	{
+		cvSetImageROI(dst_img1, cvRect(0, height * i, src_img->width, height));//Set image part
+		risk_sum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
+		cvResetImageROI(dst_img1);//Reset image part (normal)
+	}
 
-		risk_point[j] = -1;
-		/*
-		for(int i=DIV_VER_NUM-1; i>0; --i){
-			if(risk_rate[i] == 0) risk_rate[i] = 0.000001;
-			if(risk_rate[i-1]/risk_rate[i] > RATE && risk[i][j] > risk_ave * RISK_AVE_RATE){
-				risk_point[j] = i-1;
-				peak_count++;
-			}
-		}
-		*/
-		for(int i=0; i<DIV_VER_NUM-1; ++i){
-			if(risk_rate[i] == 0) risk_rate[i] = 0.000001;
-			if(risk_rate[i+1]/risk_rate[i] > RATE && risk_rate[i + 1] / risk_rate[i] < MAX_THRESHOLD){
-				risk_point[j] = i+1;
-				peak_count++;
-				break;
+	// 平均
+	risk_ave = risk_sum / DIV_NUM;
+	if(risk_ave == 0)risk_ave = 1;
+
+	if(risk_sum == 0)risk_sum = 1;
+	// 割合
+	for(int i=DIV_NUM - 1; i>=0; --i){
+		risk_rate[i] = risk[i] / risk_sum;
+	}
+
+	//Draw graph
+	for(int i= DIV_NUM-1; i>0; --i){
+		if(i>0){
+			if(risk_rate[i] == 0)risk_rate[i] = 1;
+			if(risk_rate[i-1] / risk_rate[i] > RATE && risk[i] > risk_ave * RISK_AVE_RATE){
+				wadachi_find = true;
 			}
 		}
 	}
-	Debug::print(LOG_SUMMARY, "\n--------------------\n");
-	
-	for(int i=0; i<DIV_HOR_NUM; ++i){
 
-		Debug::print(LOG_SUMMARY, " [%3d] ", risk_point[i]);
+	Debug::print(LOG_SUMMARY, "ave : %f\n",risk_ave * RISK_AVE_RATE);
+	Debug::print(LOG_SUMMARY, "risk : \n");
+	for(int i=0; i<DIV_NUM; i++){
+		Debug::print(LOG_SUMMARY, "%f\n",risk[i]);
 	}
-	Debug::print(LOG_SUMMARY, "\n--------------------\n");
 
-	for(int i=0; i<DIV_VER_NUM; ++i){
-		Debug::print(LOG_SUMMARY, "%6.0f %6.0f %6.0f\n", risk[i][0], risk[i][1], risk[i][2]);
+	if(wadachi_find){
+		Debug::print(LOG_SUMMARY, "Wadachi Found\r\n");
+		gBuzzer.start(100);
+	}
+	else{
+		Debug::print(LOG_SUMMARY, "Wadachi Not Found\r\n");
 	}
 
 	cvReleaseImage (&src_img);
-	cvReleaseImage (&dst_img);
+	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
 
-	//取得したピークの高さから行動を決定
-	//0:直進，1:回避
+	Debug::print(LOG_SUMMARY, "Finish\n");
 
-	//一個以下だよ
-	if(peak_count <= 1){
-		Debug::print(LOG_SUMMARY, "Not Found Wadachi\n");
-		return false;
-	}
-	//二個見つかったよ
-	else if(peak_count == 2){
-		Debug::print(LOG_SUMMARY, "Find 2 Found Peak\n");
-		if(risk_point[0] == -1){
-			if(risk_point[2] - risk_point[1] > THRESHOLD){
-				Debug::print(LOG_SUMMARY, "Right Down -> Go Strainght\n");
-				return false;
-			}else if(risk_point[1] - risk_point[2] > THRESHOLD){
-				Debug::print(LOG_SUMMARY, "Left Down -> Go Strainght\n");
-				return false;
-			}else{
-				Debug::print(LOG_SUMMARY, "Horizontal -> Escape!!\n");
-				return true;
-			}
-		}else if(risk_point[1] == -1){
-			if(risk_point[2] - risk_point[0] > THRESHOLD){
-				Debug::print(LOG_SUMMARY, "Right Down -> Go Strainght\n");
-				return false;
-			}else if(risk_point[0] - risk_point[2] > THRESHOLD){
-				Debug::print(LOG_SUMMARY, "Left Down -> Go Strainght\n");
-				return false;
-			}else{
-				Debug::print(LOG_SUMMARY, "Horizontal -> Escape!!\n");
-				return true;
-			}
-		}else{
-			if(risk_point[1] - risk_point[0] > THRESHOLD){
-				Debug::print(LOG_SUMMARY, "Right Down -> Go Strainght\n");
-				return false;
-			}else if(risk_point[0] - risk_point[1] > THRESHOLD){
-				Debug::print(LOG_SUMMARY, "Left Down -> Go Strainght\n");
-				return false;
-			}else{
-				Debug::print(LOG_SUMMARY, "Horizontal -> Escape!!\n");
-				return true;
-			}
-		}
-	//三個もあるよ
-	}else{
-		Debug::print(LOG_SUMMARY, "Found 3 Peak\n");
-		if(risk_point[2] - risk_point[0] > THRESHOLD){
-			Debug::print(LOG_SUMMARY, "Right Down -> Go Strainght\n");
-			return false;
-		}else if(risk_point[0] - risk_point[2] > THRESHOLD){
-			Debug::print(LOG_SUMMARY, "Left Down -> Go Strainght\n");
-			return false;
-		}else{
-			Debug::print(LOG_SUMMARY, "Horizontal -> Escape!!\n");
-			return true;
-		}
-	}
+	return wadachi_find;
 }
 int ImageProc::wadachiExiting(IplImage* pImage)
 {
-	const static int DIV_HOR_NUM = 5;			// 判定に用いる列数
-	const static int MEDIAN = 5;				// メディアンフィルタ用
-	const static int DELETE_H_THRESHOLD = 50;	// 二値化用
-	const static int THRESHOLD_COUNT = 3;		// ノイズ少のブロック数の下限
-	const static double THRESHOLD_MIN = 700000;	// ノイズ数の下限
+	const static int DIV_HOR_NUM = 5;
+	const static int MEDIAN = 5;
+	const static int DELETE_H_THRESHOLD = 50;
+	const static int THRESHOLD_COUNT = 3;// ノイズ少のブロック数の下限
+	const static double THRESHOLD_MIN = 700000;// ノイズ数の下限
 
 	if(pImage == NULL)
 	{
@@ -362,6 +294,34 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 	cvReleaseImage(&pSobel);
 	cvReleaseImage(&pBin);
 
+	// 方向決定
+	/*if(count >= THRESHOLD_COUNT){
+		Debug::print(LOG_SUMMARY, "Go straight\r\n");
+		return 0;
+	}*/
+	
+/*	if(0 < minNum && minNum < DIV_HOR_NUM-1){
+			Debug::print(LOG_SUMMARY, "Go straight\r\n");
+			return 0;
+	}else{
+		int ave_left = 0, ave_right = 0;
+		for(int i=0; i<DIV_HOR_NUM; ++i){
+			if(i <= DIV_HOR_NUM/2){
+				ave_left += new_risk[i];
+			}
+			if(i >= DIV_HOR_NUM/2){
+				ave_right += new_risk[i];
+			}
+		}
+		ave_left /= 3; ave_right /= 3;
+		if(ave_left < ave_right){
+			Debug::print(LOG_SUMMARY, "Turn left\r\n");
+			return -1;
+		}else{
+			Debug::print(LOG_SUMMARY, "Turn right\r\n");
+			return 1;
+		}
+	}*/
 	if(new_risk[0] < new_risk[DIV_HOR_NUM-1]){
 		Debug::print (LOG_SUMMARY, "Turn left\r\n");
 		return -1;
