@@ -975,7 +975,7 @@ bool Waking::onInit(const struct timespec& time)
 	mLastUpdateTime = time;
 	mCurStep = STEP_START;
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(50,50);
+	gMotorDrive.drive(18,18);
 	gGyroSensor.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRvx();
 	mWakeRetryCount = 0;
@@ -1108,7 +1108,7 @@ Turning::~Turning()
 bool Avoiding::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
-	if(!gEscapingState.isActive())gMotorDrive.drive(0,100);
+	if(!gEscapingState.isActive())gMotorDrive.drive(0,50);
 	mAngle = gGyroSensor.getRz();
 	mCurStep = STEP_TURN;
 	return true;
@@ -1123,10 +1123,13 @@ void Avoiding::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_TURN:
-		Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
-		mLastUpdateTime = time;
-		gMotorDrive.startPID(90,MOTOR_MAX_POWER);
-		mCurStep = STEP_FORWARD;
+		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 45)
+		{
+			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
+			mLastUpdateTime = time;
+			gMotorDrive.startPID(10,MOTOR_MAX_POWER);
+			mCurStep = STEP_FORWARD;
+		}
 		break;
 	case STEP_FORWARD:
 		if(Time::dt(time,mLastUpdateTime) > 4)

@@ -62,7 +62,7 @@ bool ImageProc::isParaExist(IplImage* src)
 }
 bool ImageProc::isSky(IplImage* src)
 {
-	const static double SKY_DETECT_THRESHOLD = 0.9;
+	const static double SKY_DETECT_THRESHOLD = 0.8;
 	if(src == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Sky detection: Unable to get Image\r\n");
