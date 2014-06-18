@@ -1,8 +1,8 @@
 /*
-	ƒVƒŠƒAƒ‹‚©‚ç“ü—Í‚³‚ê‚½ƒRƒ}ƒ“ƒh‚ğˆ—‚·‚éƒNƒ‰ƒX
+	ã‚·ãƒªã‚¢ãƒ«ã‹ã‚‰å…¥åŠ›ã•ã‚ŒãŸã‚³ãƒãƒ³ãƒ‰ã‚’å‡¦ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
 
-	‚±‚ÌƒNƒ‰ƒX‚ªTaskManager‚Ìcommandƒƒ\ƒbƒh‚ğŒÄ‚Ño‚µ‚Ü‚·
-	task.h‚àQÆ
+	ã“ã®ã‚¯ãƒ©ã‚¹ãŒTaskManagerã®commandãƒ¡ã‚½ãƒƒãƒ‰ã‚’å‘¼ã³å‡ºã—ã¾ã™
+	task.hã‚‚å‚ç…§
 */
 #pragma once
 #include <string>
@@ -18,10 +18,10 @@ private:
 	std::list<std::string> mHistory;
 	std::list<std::string>::iterator mHistoryIterator;
 	int mCursorPos;
-	int mEscapeBeginPos;//ƒGƒXƒP[ƒvƒV[ƒPƒ“ƒX‚ÌŠJnˆÊ’u(-1FƒGƒXƒP[ƒv‚È‚µ@-2FƒGƒXƒP[ƒvŠ®—¹)
+	int mEscapeBeginPos;//ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã®é–‹å§‹ä½ç½®(-1ï¼šã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ãªã—ã€€-2ï¼šã‚¨ã‚¹ã‚±ãƒ¼ãƒ—å®Œäº†)
 	struct termios mOldTermios,mNewTermios;
 public:
-	virtual void onUpdate(const struct timespec& time);//ƒVƒŠƒAƒ‹ƒ|[ƒg‚É“’…‚µ‚½ƒRƒ}ƒ“ƒh‚ğŠm”F‚·‚é
+	virtual void onUpdate(const struct timespec& time);//ã‚·ãƒªã‚¢ãƒ«ãƒãƒ¼ãƒˆã«åˆ°ç€ã—ãŸã‚³ãƒãƒ³ãƒ‰ã‚’ç¢ºèªã™ã‚‹
 
 	SerialCommand();
 	~SerialCommand();

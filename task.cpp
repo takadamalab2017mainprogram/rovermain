@@ -1,3 +1,4 @@
+//ttb
 #include <algorithm>
 #include "utils.h"
 #include "task.h"
@@ -14,7 +15,7 @@ TaskBase::~TaskBase()
 
 void TaskBase::setRunMode(bool running)
 {
-	//V‚µ‚¢ó‘Ô‚ğİ’è‚·‚é(TaskManager‚Ìupdate‚ÉÀÛ‚É•ÏX‚³‚ê‚é)
+	//æ–°ã—ã„çŠ¶æ…‹ã‚’è¨­å®šã™ã‚‹(TaskManagerã®updateæ™‚ã«å®Ÿéš›ã«å¤‰æ›´ã•ã‚Œã‚‹)
 	mNewRunningState = running;
 	mInitializeRetryCount = 0;
 }
@@ -103,7 +104,7 @@ bool TaskManager::command(std::string arg)
 		TaskBase* pTask = get(args[0]);
 		if(pTask != NULL)
 		{
-			//ƒRƒ}ƒ“ƒhÀs‘ÎÛ‚Ìƒ^ƒXƒN‚ªŒ©‚Â‚©‚Á‚½‚çƒRƒ}ƒ“ƒh‚ğÀs
+			//ã‚³ãƒãƒ³ãƒ‰å®Ÿè¡Œå¯¾è±¡ã®ã‚¿ã‚¹ã‚¯ãŒè¦‹ã¤ã‹ã£ãŸã‚‰ã‚³ãƒãƒ³ãƒ‰ã‚’å®Ÿè¡Œ
 			if(pTask->mName.compare(args[0]) == 0)
 			{
 				if(pTask->onCommand(args))return true;
@@ -114,7 +115,7 @@ bool TaskManager::command(std::string arg)
 	{
 		Debug::print(LOG_SUMMARY, " Active Priority Interval Name\r\n");
 
-		//‚·‚×‚Ä‚Ìƒ^ƒXƒN‚Æ‚»‚Ìó‘Ô‚ğ—ñ‹“‚µ‚Ä•\¦
+		//ã™ã¹ã¦ã®ã‚¿ã‚¹ã‚¯ã¨ãã®çŠ¶æ…‹ã‚’åˆ—æŒ™ã—ã¦è¡¨ç¤º
 		std::vector<TaskBase*>::iterator it = mTasks.begin();
 		while(it != mTasks.end())
 		{
@@ -136,7 +137,7 @@ void TaskManager::update()
 		Debug::print(LOG_DETAIL, "FAILED to get time!\r\n");
 	}
 
-	//ƒ^ƒXƒN‚Ìupdateˆ—‚ğÀs
+	//ã‚¿ã‚¹ã‚¯ã®updateå‡¦ç†ã‚’å®Ÿè¡Œ
 	std::vector<TaskBase*>::iterator it = mTasks.begin();
 	while(it != mTasks.end())
 	{
@@ -145,7 +146,7 @@ void TaskManager::update()
 		{
 			if(pTask->mInterval != UINT_MAX && pTask->mIsRunning && (pTask->mInterval <= pTask->mSlept++))
 			{
-				//Às‚·‚éƒ^ƒCƒ~ƒ“ƒO‚Å‚ ‚ê‚Îˆ—‚ğs‚¤(mInterval‚ªUINT_MAX‚È‚çupdate•s—v‚Èƒ^ƒXƒN)
+				//å®Ÿè¡Œã™ã‚‹ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§ã‚ã‚Œã°å‡¦ç†ã‚’è¡Œã†(mIntervalãŒUINT_MAXãªã‚‰updateä¸è¦ãªã‚¿ã‚¹ã‚¯)
 				pTask->onUpdate(newTime);
 				pTask->mSlept = 0;
 			}
@@ -153,7 +154,7 @@ void TaskManager::update()
 		++it;
 	}
 
-	//ƒ^ƒXƒN‚ÌÀsó‘Ô‚ğØ‚è‘Ö‚¦
+	//ã‚¿ã‚¹ã‚¯ã®å®Ÿè¡ŒçŠ¶æ…‹ã‚’åˆ‡ã‚Šæ›¿ãˆ
 	it = mTasks.begin();
 	while(it != mTasks.end())
 	{
@@ -163,15 +164,15 @@ void TaskManager::update()
 			if(pTask->mIsRunning != pTask->mNewRunningState && pTask->mInitializeRetryCount < TASK_MAX_INITIALIZE_RETRY_COUNT)
 			{
 				++pTask->mInitializeRetryCount;
-				//Àsó‘Ô‚ğ•ÏX‚·‚é•K—v‚ª‚ ‚éê‡•ÏX‚·‚é
+				//å®Ÿè¡ŒçŠ¶æ…‹ã‚’å¤‰æ›´ã™ã‚‹å¿…è¦ãŒã‚ã‚‹å ´åˆå¤‰æ›´ã™ã‚‹
 				if(pTask->mIsRunning == false)
 				{
-					//ÀsŠJn‚·‚éê‡FonInit‚ğŒÄ‚Ño‚µA¬Œ÷‚µ‚½ê‡‚ÍÀs’†ó‘Ô‚Éİ’è
+					//å®Ÿè¡Œé–‹å§‹ã™ã‚‹å ´åˆï¼šonInitã‚’å‘¼ã³å‡ºã—ã€æˆåŠŸã—ãŸå ´åˆã¯å®Ÿè¡Œä¸­çŠ¶æ…‹ã«è¨­å®š
 					if(pTask->onInit(newTime))pTask->mIsRunning = pTask->mNewRunningState;
-					else Debug::print(LOG_SUMMARY, "FAILED to initialize task %s (%d/%d)\r\n", pTask->mName.c_str(),pTask->mInitializeRetryCount,TASK_MAX_INITIALIZE_RETRY_COUNT);//¸”s‚µ‚½ê‡‚ÍƒƒOo—Í
+					else Debug::print(LOG_SUMMARY, "FAILED to initialize task %s (%d/%d)\r\n", pTask->mName.c_str(),pTask->mInitializeRetryCount,TASK_MAX_INITIALIZE_RETRY_COUNT);//å¤±æ•—ã—ãŸå ´åˆã¯ãƒ­ã‚°å‡ºåŠ›
 				}else
 				{
-					//Às’â~‚·‚éê‡FonClean‚ğŒÄ‚Ño‚µ
+					//å®Ÿè¡Œåœæ­¢ã™ã‚‹å ´åˆï¼šonCleanã‚’å‘¼ã³å‡ºã—
 					pTask->onClean();
 					pTask->mIsRunning = pTask->mNewRunningState;
 				}
@@ -221,7 +222,7 @@ void TaskManager::add(TaskBase* pTask)
 	}
 	if(find(mTasks.begin(),mTasks.end(), pTask) == mTasks.end())
 	{
-		//‚·‚Å‚É’Ç‰Á‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Îƒ^ƒXƒN‚ğ’Ç‰Á‚·‚é
+		//ã™ã§ã«è¿½åŠ ã•ã‚Œã¦ã„ãªã‘ã‚Œã°ã‚¿ã‚¹ã‚¯ã‚’è¿½åŠ ã™ã‚‹
 		mTasks.push_back(pTask);
 		sortByPriority();
 	}

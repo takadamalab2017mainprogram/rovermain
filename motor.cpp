@@ -13,10 +13,10 @@ MotorDrive gMotorDrive;
 
 bool Motor::init(int powPin, int revPin)
 {
-	//ƒsƒ“”Ô†‚ğŠm”F
+	//ãƒ”ãƒ³ç•ªå·ã‚’ç¢ºèª
     VERIFY(powPin < 0 || revPin < 0);
 
-	//ƒsƒ“‚ğ‰Šú‰»
+	//ãƒ”ãƒ³ã‚’åˆæœŸåŒ–
     mPowerPin = powPin;
     mReversePin = revPin;
     pinMode(mPowerPin, OUTPUT);
@@ -28,20 +28,20 @@ bool Motor::init(int powPin, int revPin)
     pinMode(mReversePin, OUTPUT);
     digitalWrite(mReversePin, LOW);
 
-	//Œ»İ‚Ìo—Í‚ğ•Û
+	//ç¾åœ¨ã®å‡ºåŠ›ã‚’ä¿æŒ
     mCurPower = 0;
     return true;
 }
 void Motor::update(double elapsedSeconds)
 {
-	if(fabs(mCurPower - mTargetPower) != 0)//–Ú•Wo—Í‚ÆŒ»İo—Í‚É·‚ª‚ ‚éê‡
+	if(fabs(mCurPower - mTargetPower) != 0)//ç›®æ¨™å‡ºåŠ›ã¨ç¾åœ¨å‡ºåŠ›ã«å·®ãŒã‚ã‚‹å ´åˆ
 	{
-		//‚È‚ß‚ç‚©‚Éƒ‚[ƒ^o—Í‚ğ•Ï‰»‚³‚¹‚é
-		double curFrameTarget = mTargetPower;//‚±‚ÌŒÄ‚Ño‚µ‚Åİ’è‚·‚éƒ‚[ƒ^[o—Í
+		//ãªã‚ã‚‰ã‹ã«ãƒ¢ãƒ¼ã‚¿å‡ºåŠ›ã‚’å¤‰åŒ–ã•ã›ã‚‹
+		double curFrameTarget = mTargetPower;//ã“ã®å‘¼ã³å‡ºã—ã§è¨­å®šã™ã‚‹ãƒ¢ãƒ¼ã‚¿ãƒ¼å‡ºåŠ›
 
 		double maxMotorPowerChange = MOTOR_MAX_POWER_CHANGE * mCoeff;
 
-		//ƒ‚[ƒ^o—Í•Ï‰»—Ê‚ğ§ŒÀ
+		//ãƒ¢ãƒ¼ã‚¿å‡ºåŠ›å¤‰åŒ–é‡ã‚’åˆ¶é™
 		if(fabs(mTargetPower - mCurPower) > maxMotorPowerChange)
 		{
 			curFrameTarget = mCurPower;
@@ -49,7 +49,7 @@ void Motor::update(double elapsedSeconds)
 			Debug::print(LOG_DETAIL,"MOTOR power Limitation %f %f(%d) \r\n",mCurPower,curFrameTarget,mTargetPower);
 		}
 
-		//V‚µ‚¢power‚ğ‚à‚Æ‚Épin‚Ìó‘Ô‚ğİ’è‚·‚é
+		//æ–°ã—ã„powerã‚’ã‚‚ã¨ã«pinã®çŠ¶æ…‹ã‚’è¨­å®šã™ã‚‹
 		if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, HIGH);
 		else if(curFrameTarget < 0 && mCurPower >= 0)digitalWrite(mReversePin, LOW);
 		mCurPower = curFrameTarget;
@@ -64,11 +64,11 @@ void Motor::clean()
 }
 void Motor::set(int power)
 {
-	//’l‚Ì”ÍˆÍ‚ğƒ`ƒFƒbƒN‚µA³‚µ‚¢”ÍˆÍ‚ÉŠÛ‚ß‚é
+	//å€¤ã®ç¯„å›²ã‚’ãƒã‚§ãƒƒã‚¯ã—ã€æ­£ã—ã„ç¯„å›²ã«ä¸¸ã‚ã‚‹
 	if(power > MOTOR_MAX_POWER)power = MOTOR_MAX_POWER;
 	else if(power < -MOTOR_MAX_POWER)power = -MOTOR_MAX_POWER;
 	
-	//–Ú•Wo—Í‚ğİ’è
+	//ç›®æ¨™å‡ºåŠ›ã‚’è¨­å®š
 	mTargetPower = power;
 }
 int Motor::getPower()
@@ -102,7 +102,7 @@ bool MotorEncoder::init()
 {
 	mPulseCountL = mPulseCountR = 0;
 
-	//ƒsƒ“‚Ìƒpƒ‹ƒX‚ğŠÄ‹‚·‚é
+	//ãƒ”ãƒ³ã®ãƒ‘ãƒ«ã‚¹ã‚’ç›£è¦–ã™ã‚‹
 	if(wiringPiISR(mEncoderPinL, INT_EDGE_RISING, pulseLCallback) == -1 || wiringPiISR(mEncoderPinR, INT_EDGE_RISING, pulseRCallback) == -1)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to onInitialize Motor encoder\r\n");
@@ -112,14 +112,14 @@ bool MotorEncoder::init()
 }
 void MotorEncoder::clean()
 {
-	//—¼•û‚Ìƒsƒ“‚ÌŠ„‚è‚İ‚ğ–³Œø‚É‚·‚é
+	//ä¸¡æ–¹ã®ãƒ”ãƒ³ã®å‰²ã‚Šè¾¼ã¿ã‚’ç„¡åŠ¹ã«ã™ã‚‹
 	char command [64];
 	sprintf (command, "/usr/local/bin/gpio edge %d none", mEncoderPinL) ;
     system (command) ;
 	sprintf (command, "/usr/local/bin/gpio edge %d none", mEncoderPinR) ;
     system (command) ;
 
-	//ƒXƒŒƒbƒh‚ª•¡”c‚é‚±‚Æ‚ğ–h~‚·‚é‚½‚ßsleep
+	//ã‚¹ãƒ¬ãƒƒãƒ‰ãŒè¤‡æ•°æ®‹ã‚‹ã“ã¨ã‚’é˜²æ­¢ã™ã‚‹ãŸã‚sleep
 	delay(100);
 }
 unsigned long long MotorEncoder::getL()
@@ -141,10 +141,10 @@ MotorEncoder::~MotorEncoder()
 
 bool MotorDrive::onInit(const struct timespec& time)
 {
-	//ƒWƒƒƒCƒ‚ğg‚¤‚æ‚¤‚Éİ’è
+	//ã‚¸ãƒ£ã‚¤ãƒ­ã‚’ä½¿ã†ã‚ˆã†ã«è¨­å®š
 	gGyroSensor.setRunMode(true);
 
-	//‰Šú‰»
+	//åˆæœŸåŒ–
     if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
 	{
 		Debug::print(LOG_SUMMARY,"Failed to initialize Motors\r\n");
@@ -175,10 +175,10 @@ void MotorDrive::onClean()
 
 void MotorDrive::updatePIDState(double p,double i,double d)
 {
-	//‚¸‚êî•ñ‚ğXV
+	//ãšã‚Œæƒ…å ±ã‚’æ›´æ–°
 	mDiff3 = mDiff2;mDiff2 = mDiff1;mDiff1 = gGyroSensor.normalize(gGyroSensor.getRz() - mAngle);
 
-	//‚¸‚êî•ñ‚ğŒ³‚ÉV‚µ‚¢ƒ‚[ƒ^[o—Í‚ğİ’è(PID)
+	//ãšã‚Œæƒ…å ±ã‚’å…ƒã«æ–°ã—ã„ãƒ¢ãƒ¼ã‚¿ãƒ¼å‡ºåŠ›ã‚’è¨­å®š(PID)
 	double powerDiff = p * (mDiff1 - mDiff2) + i * mDiff1 + d * ((mDiff1 - mDiff2) - (mDiff2 - mDiff3));
 	mControlPower += powerDiff;
 }
@@ -186,22 +186,22 @@ void MotorDrive::updatePIDMove()
 {
 	updatePIDState(mP,mI,mD);
 
-	//ƒ‚[ƒ^‘¬“xŒW”‚ğ—pˆÓ
-	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//ƒ‚[ƒ^o—Í‚ÌŠ„‡
+	//ãƒ¢ãƒ¼ã‚¿é€Ÿåº¦ä¿‚æ•°ã‚’ç”¨æ„
+	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//ãƒ¢ãƒ¼ã‚¿å‡ºåŠ›ã®å‰²åˆ
 
-	//ƒ‚[ƒ^‚Ì‹t‰ñ“]‚ğ‚¹‚¸‚É•ûŒü“]Š·‚·‚é
+	//ãƒ¢ãƒ¼ã‚¿ã®é€†å›è»¢ã‚’ã›ãšã«æ–¹å‘è»¢æ›ã™ã‚‹
 	double controlRatio = 1 - fabs(mControlPower);
 	if(controlRatio <= 0)controlRatio = 0;
 
-	//ƒ‚[ƒ^o—Í‚ğ“K—p
+	//ãƒ¢ãƒ¼ã‚¿å‡ºåŠ›ã‚’é©ç”¨
 	if(mControlPower > 0)
 	{
-		//¶‚É‹È‚ª‚é
+		//å·¦ã«æ›²ãŒã‚‹
 		mMotorL.set(mRatioL * drivePowerRatio);
 		mMotorR.set(-mRatioR * controlRatio * drivePowerRatio);
 	}else
 	{
-		//‰E‚É‹È‚ª‚é
+		//å³ã«æ›²ãŒã‚‹
 		mMotorL.set(mRatioL * controlRatio * drivePowerRatio);
 		mMotorR.set(-mRatioR * drivePowerRatio);
 	}
@@ -209,7 +209,7 @@ void MotorDrive::updatePIDMove()
 
 void MotorDrive::onUpdate(const struct timespec& time)
 {
-	//ÅŒã‚Ìo—ÍXV‚©‚ç‚ÌŒo‰ßŠÔ‚ğæ“¾
+	//æœ€å¾Œã®å‡ºåŠ›æ›´æ–°ã‹ã‚‰ã®çµŒéæ™‚é–“ã‚’å–å¾—
 	double dt = Time::dt(time,mLastUpdateTime);
 	mLastUpdateTime = time;
 
@@ -222,7 +222,7 @@ void MotorDrive::onUpdate(const struct timespec& time)
 		break;
 	}
 	
-	//ƒ‚[ƒ^o—Í‚ğXV
+	//ãƒ¢ãƒ¼ã‚¿å‡ºåŠ›ã‚’æ›´æ–°
 	mMotorL.update(dt);
 	mMotorR.update(dt);
 }
@@ -275,45 +275,45 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 	{
 		if(args[1].compare("w") == 0)
 		{
-			//‘Oi
+			//å‰é€²
 			drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
 			return true;
 		}else if(args[1].compare("s") == 0)
 		{
-			//Œã‘Ş
+			//å¾Œé€€
 			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
 			return true;
 		}else if(args[1].compare("a") == 0)
 		{
-			//¶Ü
+			//å·¦æŠ˜
 			drive(0,MOTOR_MAX_POWER * 0.7);
 			return true;
 		}else if(args[1].compare("d") == 0)
 		{
-			//‰EÜ
+			//å³æŠ˜
 			drive(MOTOR_MAX_POWER * 0.7,0);
 			return true;
 		}else if(args[1].compare("h") == 0)
 		{
-			//’â~
+			//åœæ­¢
 			drive(0,0);
 			return true;
 		}else if(args[1].compare("p") == 0)
 		{
-			//PID§ŒäŠÖ˜A
+			//PIDåˆ¶å¾¡é–¢é€£
 			if(size == 2)
 			{
-				//PID§ŒäŠJn(Œ»İ‚ÌŒü‚«)
+				//PIDåˆ¶å¾¡é–‹å§‹(ç¾åœ¨ã®å‘ã)
 				startPID(0,MOTOR_MAX_POWER);
 				return true;
 			}else if(size == 3)
 			{
-				//PID(‘Š‘ÎŠp“xw’è)
+				//PID(ç›¸å¯¾è§’åº¦æŒ‡å®š)
 				startPID(atoi(args[2].c_str()),MOTOR_MAX_POWER);
 				return true;
 			}else if(size == 5)
 			{
-				//PIDƒpƒ‰ƒ[ƒ^İ’è
+				//PIDãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š
 				set(atof(args[2].c_str()),atof(args[3].c_str()),atof(args[4].c_str()));
 				return true;
 			}
@@ -321,7 +321,7 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 		{
 			if(size == 4)
 			{
-				//ƒŒƒVƒIİ’è
+				//ãƒ¬ã‚·ã‚ªè¨­å®š
 				setRatio(atoi(args[2].c_str()),atoi(args[3].c_str()));
 				return true;
 			}
@@ -329,7 +329,7 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 		{
 			if(size == 3)
 			{
-				drive(atoi(args[1].c_str()),atoi(args[2].c_str()));//o—Í’¼Úw’è
+				drive(atoi(args[1].c_str()),atoi(args[2].c_str()));//å‡ºåŠ›ç›´æ¥æŒ‡å®š
 				return true;
 			}
 		}

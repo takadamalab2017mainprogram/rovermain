@@ -21,10 +21,10 @@ void SerialCommand::onUpdate(const struct timespec& time)
 		if(mCommandBuffer[mCursorPos] == '\033')mEscapeBeginPos = mCursorPos;
 		if(mCursorPos - mEscapeBeginPos >= 2 && mEscapeBeginPos >= 0)
 		{
-			//ƒRƒ}ƒ“ƒh—š—ğˆ—
+			//ã‚³ãƒãƒ³ãƒ‰å±¥æ­´å‡¦ç†
 			if(mCommandBuffer[mCursorPos - 1] == '[' && mCommandBuffer[mCursorPos - 0] == 'A' && !mHistory.empty())
 			{
-				//–îˆóãƒL[
+				//çŸ¢å°ä¸Šã‚­ãƒ¼
 				mCommandBuffer = *mHistoryIterator;
 
 				std::list<std::string>::iterator lastIterator = mHistoryIterator++;
@@ -36,7 +36,7 @@ void SerialCommand::onUpdate(const struct timespec& time)
 				--mCursorPos;
 			}else if(mCommandBuffer[mCursorPos - 1] == '[' && mCommandBuffer[mCursorPos - 0] == 'B' && !mHistory.empty())
 			{
-				//–îˆó‰ºƒL[
+				//çŸ¢å°ä¸‹ã‚­ãƒ¼
 				if(mHistoryIterator != mHistory.begin())
 				{
 					--mHistoryIterator;
@@ -49,13 +49,13 @@ void SerialCommand::onUpdate(const struct timespec& time)
 				--mCursorPos;
 			}else if(mCommandBuffer[mCursorPos - 1] == '[' && mCommandBuffer[mCursorPos - 0] == 'D')
 			{
-				//–îˆó¶ƒL[
+				//çŸ¢å°å·¦ã‚­ãƒ¼
 				mCommandBuffer.erase(mCursorPos - 2,3);
 				mCursorPos = std::max(mCursorPos - 2 - 1,0) - 1;
 				Debug::print(LOG_PRINT, "\033[D");
 			}else if(mCommandBuffer[mCursorPos - 1] == '[' && mCommandBuffer[mCursorPos - 0] == 'C')
 			{
-				//–îˆó‰EƒL[
+				//çŸ¢å°å³ã‚­ãƒ¼
 				mCommandBuffer.erase(mCursorPos - 2,3);
 				if((unsigned int)mCursorPos < mCommandBuffer.size() + 2)Debug::print(LOG_PRINT, "\033[C");
 				mCursorPos = std::min(mCursorPos - 2 + 1,(int)mCommandBuffer.size()) - 1;
@@ -64,7 +64,7 @@ void SerialCommand::onUpdate(const struct timespec& time)
 		}
 		if(mCommandBuffer[mCursorPos] == '\b' && mCursorPos >= 1)
 		{
-			//ƒoƒbƒNƒXƒy[ƒX
+			//ãƒãƒƒã‚¯ã‚¹ãƒšãƒ¼ã‚¹
 			mCommandBuffer.erase(mCursorPos - 1,2);
 			mCursorPos -= 2;
 		}
@@ -73,20 +73,20 @@ void SerialCommand::onUpdate(const struct timespec& time)
 		{
 			if((unsigned int)mCursorPos != mCommandBuffer.size() || need2update)
 			{
-				//ƒJ[ƒ\ƒ‹‚ªs‚Ì“r’†‚Ìê‡‚ÍÄ•`‰æ
+				//ã‚«ãƒ¼ã‚½ãƒ«ãŒè¡Œã®é€”ä¸­ã®å ´åˆã¯å†æç”»
 				Debug::print(LOG_PRINT, "\r\033[2K%s",mCommandBuffer.c_str());
 				Debug::print(LOG_PRINT, "\033[%dD",mCommandBuffer.size() - mCursorPos);
 			}else
 			{
-				Debug::print(LOG_PRINT, "%c", c);//•¶š‚ğ•\¦
+				Debug::print(LOG_PRINT, "%c", c);//æ–‡å­—ã‚’è¡¨ç¤º
 			}
 		}else if(mEscapeBeginPos == -2)mEscapeBeginPos = -1;
 		if(c == '\n')
 		{
-			if(mCommandBuffer[mCursorPos - 1] == '\n')mCommandBuffer.erase(mCursorPos - 1,1);//‰üs•¶š‚ğíœ
+			if(mCommandBuffer[mCursorPos - 1] == '\n')mCommandBuffer.erase(mCursorPos - 1,1);//æ”¹è¡Œæ–‡å­—ã‚’å‰Šé™¤
 			Debug::print(LOG_PRINT, "\r");
 
-			//ƒRƒ}ƒ“ƒh‚ğÀs
+			//ã‚³ãƒãƒ³ãƒ‰ã‚’å®Ÿè¡Œ
 			TaskManager::getInstance()->command(mCommandBuffer);
 
 			if(mCommandBuffer.length() != 0)mHistory.push_front(mCommandBuffer);
@@ -100,20 +100,20 @@ void SerialCommand::onUpdate(const struct timespec& time)
 }
 SerialCommand::SerialCommand() : mCursorPos(0),mEscapeBeginPos(-1)
 {
-	//Œ»İ‚Ìƒ^[ƒ~ƒiƒ‹İ’è‚ğ•Û‘¶‚µA•ÏX‚·‚é
+	//ç¾åœ¨ã®ã‚¿ãƒ¼ãƒŸãƒŠãƒ«è¨­å®šã‚’ä¿å­˜ã—ã€å¤‰æ›´ã™ã‚‹
 	tcgetattr( STDIN_FILENO, &mOldTermios );
 	mNewTermios = mOldTermios;
 	mNewTermios.c_lflag &= ~( ICANON | ECHO );
 	tcsetattr( STDIN_FILENO, TCSANOW, &mNewTermios );
 	fcntl(STDIN_FILENO ,F_SETFL,O_NONBLOCK);
 
-	//ƒ^ƒXƒNİ’è
+	//ã‚¿ã‚¹ã‚¯è¨­å®š
 	setName("serial");
 	setPriority(TASK_PRIORITY_COMMUNICATION,TASK_INTERVAL_COMMUNICATION);
 }
 SerialCommand::~SerialCommand()
 {
-	//ƒ^[ƒ~ƒiƒ‹İ’è‚ğŒ³‚É–ß‚·
+	//ã‚¿ãƒ¼ãƒŸãƒŠãƒ«è¨­å®šã‚’å…ƒã«æˆ»ã™
 	Debug::print(LOG_DETAIL,"Restoreing Terminal Settings\r\n");
 	tcsetattr( STDIN_FILENO, TCSANOW, &mOldTermios );
 }

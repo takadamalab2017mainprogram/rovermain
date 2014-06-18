@@ -13,12 +13,12 @@
 void sigHandler(int p_signame);
 bool setSighandle(int p_signame);
 
-//Às’†ƒtƒ‰ƒO(false‚ÅI—¹)
+//å®Ÿè¡Œä¸­ãƒ•ãƒ©ã‚°(falseã§çµ‚äº†)
 static bool gIsRunning = true;
 
-//initialize.txt‚ğ“Ç‚İ‚ñ‚Å‰Šúİ’è‚ğs‚¤ŠÖ”
-// 1s–Ú@@Fg—p‚·‚éƒ^ƒXƒN‚ğƒXƒy[ƒX‚Å‹æØ‚Á‚Ä—ñ‹“
-// 2s–ÚˆÈ~FÀs‚·‚éƒRƒ}ƒ“ƒh‚ğs‚²‚Æ‚É—ñ‹“
+//initialize.txtã‚’èª­ã¿è¾¼ã‚“ã§åˆæœŸè¨­å®šã‚’è¡Œã†é–¢æ•°
+// 1è¡Œç›®ã€€ã€€ï¼šä½¿ç”¨ã™ã‚‹ã‚¿ã‚¹ã‚¯ã‚’ã‚¹ãƒšãƒ¼ã‚¹ã§åŒºåˆ‡ã£ã¦åˆ—æŒ™
+// 2è¡Œç›®ä»¥é™ï¼šå®Ÿè¡Œã™ã‚‹ã‚³ãƒãƒ³ãƒ‰ã‚’è¡Œã”ã¨ã«åˆ—æŒ™
 bool parseInitializer()
 {
 	TaskManager* pTaskMan = TaskManager::getInstance();
@@ -27,9 +27,9 @@ bool parseInitializer()
 	std::string str;
 	if(ifs.good())
 	{
-		//initialize.txt‚ª‘¶İ‚·‚éê‡
+		//initialize.txtãŒå­˜åœ¨ã™ã‚‹å ´åˆ
 		
-		//æ“ªs‚É—ñ‹“‚³‚ê‚½ƒ^ƒXƒN‚ğg—p‚·‚é‚æ‚¤‚Éİ’è‚·‚é
+		//å…ˆé ­è¡Œã«åˆ—æŒ™ã•ã‚ŒãŸã‚¿ã‚¹ã‚¯ã‚’ä½¿ç”¨ã™ã‚‹ã‚ˆã†ã«è¨­å®šã™ã‚‹
 		std::getline(ifs,str);
 		Debug::print(LOG_SUMMARY, "OK!\r\n");
 
@@ -48,11 +48,11 @@ bool parseInitializer()
 			++it;
 		}
 
-		//g—p‚·‚éƒ^ƒXƒN‚ğ‰Šú‰»‚·‚é
+		//ä½¿ç”¨ã™ã‚‹ã‚¿ã‚¹ã‚¯ã‚’åˆæœŸåŒ–ã™ã‚‹
 		pTaskMan->update();
 
 		Debug::print(LOG_SUMMARY, "Executing Initializing Commands...\r\n");
-		//2s–ÚˆÈ~‚ÌƒRƒ}ƒ“ƒh‚ğ‚·‚×‚ÄÀs‚·‚é
+		//2è¡Œç›®ä»¥é™ã®ã‚³ãƒãƒ³ãƒ‰ã‚’ã™ã¹ã¦å®Ÿè¡Œã™ã‚‹
 		while(!ifs.eof() && !ifs.fail() && !ifs.bad())
 		{
 			std::getline(ifs,str);
@@ -79,27 +79,27 @@ int main(int argc, char** argv)
 	timer = time(NULL);
 	Debug::print(LOG_SUMMARY,"%s\r\n2013 Takadama-lab ARLISS\r\n* Rivai Team *\r\n",ctime(&timer));
 
-	//ƒL[ƒ{[ƒh‚É‚æ‚éI—¹‚ğ‘j~
+	//ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã«ã‚ˆã‚‹çµ‚äº†ã‚’é˜»æ­¢
 	if(!(setSighandle(SIGINT) && setSighandle(SIGQUIT)))
 	{
 		Debug::print(LOG_SUMMARY,"Failed to set signal!\r\n");
 	}
 
-	//wiring pi‰Šú‰»
+	//wiring piåˆæœŸåŒ–
     if(wiringPiSetup() != 0)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to setup wiringPi!\r\n");
 		return -1;
 	}
 
-	//ƒ^ƒXƒNİ’è
+	//ã‚¿ã‚¹ã‚¯è¨­å®š
 	TaskManager* pTaskMan = TaskManager::getInstance();
 
 	///////////////////////////////////////////
-	// ƒ^ƒXƒN‚ğg—p‚·‚é‚æ‚¤‚Éİ’è
+	// ã‚¿ã‚¹ã‚¯ã‚’ä½¿ç”¨ã™ã‚‹ã‚ˆã†ã«è¨­å®š
 	if(!parseInitializer())
 	{
-		//initialize.txt‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚½‚ßA•W€ó‘Ô‚Å‹N“®‚·‚é
+		//initialize.txtãŒèª­ã¿è¾¼ã‚ãªã‹ã£ãŸãŸã‚ã€æ¨™æº–çŠ¶æ…‹ã§èµ·å‹•ã™ã‚‹
 		Debug::print(LOG_SUMMARY, "Not Found.\r\nLoading Default Task...\r\n");
 		gTestingState.setRunMode(true);
 	}
@@ -107,30 +107,30 @@ int main(int argc, char** argv)
 
 	
 	////////////////////////////////////////////
-	//ƒƒCƒ“ƒ‹[ƒv(ƒuƒƒbƒN‚È‚Ç‚¹‚¸‚É’ZŠÔ‚Åˆ—‚ğ•Ô‚·‚±‚Æ)
+	//ãƒ¡ã‚¤ãƒ³ãƒ«ãƒ¼ãƒ—(ãƒ–ãƒ­ãƒƒã‚¯ãªã©ã›ãšã«çŸ­æ™‚é–“ã§å‡¦ç†ã‚’è¿”ã™ã“ã¨)
 	while(gIsRunning)
 	{
-		//ƒ^ƒXƒNˆ—(‚±‚ÌŠÖ”‚Ğ‚Æ‚Â‚Åƒ^ƒXƒN‚ªÀs‚³‚ê‚é)
+		//ã‚¿ã‚¹ã‚¯å‡¦ç†(ã“ã®é–¢æ•°ã²ã¨ã¤ã§ã‚¿ã‚¹ã‚¯ãŒå®Ÿè¡Œã•ã‚Œã‚‹)
 		pTaskMan->update();
 		
-		//CPUˆ—‚ğè—L‚µ‚È‚¢‚æ‚¤‚ÉWait‚ğ‚Í‚³‚Ş
+		//CPUå‡¦ç†ã‚’å æœ‰ã—ãªã„ã‚ˆã†ã«Waitã‚’ã¯ã•ã‚€
 		delay(1);
 	}
 
 	pTaskMan->clean();
 
-	//‘‚«‚Ü‚ê‚Ä‚¢‚È‚¢ƒtƒ@ƒCƒ‹‚ğ‹­§“I‚ÉSD‚É‘‚«‚İ
+	//æ›¸ãè¾¼ã¾ã‚Œã¦ã„ãªã„ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å¼·åˆ¶çš„ã«SDã«æ›¸ãè¾¼ã¿
 	system("sync");
 	return 0;
 }
 
-//ƒVƒOƒiƒ‹ˆ—ƒnƒ“ƒhƒ‰İ’è
+//ã‚·ã‚°ãƒŠãƒ«å‡¦ç†ãƒãƒ³ãƒ‰ãƒ©è¨­å®š
 bool setSighandle(int p_signame)
 {
 	return signal(p_signame, sigHandler) != SIG_ERR;
 }
 
-//ƒVƒOƒiƒ‹ˆ—(Ctrl-C‚É‘Î‚·‚éˆÀ‘S«Šm•Û)
+//ã‚·ã‚°ãƒŠãƒ«å‡¦ç†(Ctrl-Cã«å¯¾ã™ã‚‹å®‰å…¨æ€§ç¢ºä¿)
 void sigHandler(int p_signame)
 {
 	

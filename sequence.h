@@ -7,14 +7,14 @@
 #include "task.h"
 #include "utils.h"
 
-//ƒeƒXƒg—pó‘Ô
+//ãƒ†ã‚¹ãƒˆç”¨çŠ¶æ…‹
 class Testing : public TaskBase
 {
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
-	//Ÿ‚Ìó‘Ô‚ÉˆÚs
+	//æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 	void nextState();
 
 public:
@@ -22,16 +22,16 @@ public:
 	~Testing();
 };
 
-//“›‚Ì’†‚É“ü‚Á‚Ä‚¢‚éó‘Ô
+//ç­’ã®ä¸­ã«å…¥ã£ã¦ã„ã‚‹çŠ¶æ…‹
 class Waiting : public TaskBase
 {
-	struct timespec mStartTime;//ó‘ÔŠJn
-	unsigned int mContinuousLightCount;//Œõ‚Á‚Ä‚¢‚é‚±‚Æ‚ªŒŸ’m‚³‚ê‚½‰ñ”
+	struct timespec mStartTime;//çŠ¶æ…‹é–‹å§‹æ™‚åˆ»
+	unsigned int mContinuousLightCount;//å…‰ã£ã¦ã„ã‚‹ã“ã¨ãŒæ¤œçŸ¥ã•ã‚ŒãŸå›æ•°
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 
-	//Ÿ‚Ìó‘Ô‚ÉˆÚs
+	//æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 	void nextState();
 
 public:
@@ -39,35 +39,35 @@ public:
 	~Waiting();
 };
 
-//—‰º‚µ‚Ä‚¢‚éó‘Ô
+//è½ä¸‹ã—ã¦ã„ã‚‹çŠ¶æ…‹
 class Falling : public TaskBase
 {
 private:
-	struct timespec mStartTime;//ó‘ÔŠJn
-	struct timespec mLastCheckTime;//‘O‰ñ‚Ìƒ`ƒFƒbƒN
-	int mLastPressure;//‘O‰ñ‚Ì‹Cˆ³
-	unsigned long long mLastMotorPulseL,mLastMotorPulseR;//‘O‰ñƒ`ƒFƒbƒN‚Ìƒ‚[ƒ^[‰ñ“]”
-	unsigned int mContinuousPressureCount;//‹Cˆ³‚ªè‡’lˆÈ‰º‚Ìó‘Ô‚ª‘±‚¢‚½‰ñ”
-	unsigned int mCoutinuousGyroCount;//Šp‘¬“x‚ªè‡’lˆÈ‰º‚Ìó‘Ô‚ª‘±‚¢‚½‰ñ”
-	unsigned int mContinuousMotorPulseCount;//ƒ‚[ƒ^‰ñ“]”‚ªè‡’lˆÈã‚Ìó‘Ô‚ª‘±‚¢‚½‰ñ”
+	struct timespec mStartTime;//çŠ¶æ…‹é–‹å§‹æ™‚åˆ»
+	struct timespec mLastCheckTime;//å‰å›ã®ãƒã‚§ãƒƒã‚¯æ™‚åˆ»
+	int mLastPressure;//å‰å›ã®æ°—åœ§
+	unsigned long long mLastMotorPulseL,mLastMotorPulseR;//å‰å›ãƒã‚§ãƒƒã‚¯æ™‚ã®ãƒ¢ãƒ¼ã‚¿ãƒ¼å›è»¢æ•°
+	unsigned int mContinuousPressureCount;//æ°—åœ§ãŒé–¾å€¤ä»¥ä¸‹ã®çŠ¶æ…‹ãŒç¶šã„ãŸå›æ•°
+	unsigned int mCoutinuousGyroCount;//è§’é€Ÿåº¦ãŒé–¾å€¤ä»¥ä¸‹ã®çŠ¶æ…‹ãŒç¶šã„ãŸå›æ•°
+	unsigned int mContinuousMotorPulseCount;//ãƒ¢ãƒ¼ã‚¿å›è»¢æ•°ãŒé–¾å€¤ä»¥ä¸Šã®çŠ¶æ…‹ãŒç¶šã„ãŸå›æ•°
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 
-	//Ÿ‚Ìó‘Ô‚ÉˆÚs
+	//æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 	void nextState();
 public:
 	Falling();
 	~Falling();
 };
 
-//ƒpƒ‰•ª—£ó‘Ô(ƒT[ƒ{‚ğ“®‚©‚µ‚Äƒpƒ‰‚ğØ‚è—£‚·)
+//ãƒ‘ãƒ©åˆ†é›¢çŠ¶æ…‹(ã‚µãƒ¼ãƒœã‚’å‹•ã‹ã—ã¦ãƒ‘ãƒ©ã‚’åˆ‡ã‚Šé›¢ã™)
 class Separating : public TaskBase
 {
 private:
-	struct timespec mLastUpdateTime;//‘O‰ñƒT[ƒ{‚ÌŒü‚«‚ğXV‚µ‚½ŠÔ
-	bool mCurServoState;			//Œ»İ‚ÌƒT[ƒ{‚ÌŒü‚«(true = 1,false = 0)
-	unsigned int mServoCount;		//ƒT[ƒ{‚ÌŒü‚«‚ğ•ÏX‚µ‚½‰ñ”
+	struct timespec mLastUpdateTime;//å‰å›ã‚µãƒ¼ãƒœã®å‘ãã‚’æ›´æ–°ã—ãŸæ™‚é–“
+	bool mCurServoState;			//ç¾åœ¨ã®ã‚µãƒ¼ãƒœã®å‘ã(true = 1,false = 0)
+	unsigned int mServoCount;		//ã‚µãƒ¼ãƒœã®å‘ãã‚’å¤‰æ›´ã—ãŸå›æ•°
 	enum STEP{STEP_SEPARATE = 0, STEP_PRE_PARA_JUDGE,STEP_PARA_JUDGE,STEP_PARA_DODGE};
 	enum STEP mCurStep;
 
@@ -75,35 +75,35 @@ protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 
-	//Ÿ‚Ìó‘Ô‚ÉˆÚs
+	//æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 	void nextState();
 public:
 	Separating();
 	~Separating();
 };
 
-//ƒS[ƒ‹‚Ö‚ÌˆÚ“®’†
+//ã‚´ãƒ¼ãƒ«ã¸ã®ç§»å‹•ä¸­
 class Navigating : public TaskBase
 {
 private:
-	struct timespec mLastCheckTime;//‘O‰ñ‚Ìƒ`ƒFƒbƒN
+	struct timespec mLastCheckTime;//å‰å›ã®ãƒã‚§ãƒƒã‚¯æ™‚åˆ»
 
-	//ƒS[ƒ‹ˆÊ’u
+	//ã‚´ãƒ¼ãƒ«ä½ç½®
 	VECTOR3 mGoalPos;
 	bool mIsGoalPos;
 
-	//GPSÀ•W‚©‚çŒvZ‚³‚ê‚½‰ß‹”‰ñ•ª‚ÌˆÊ’u
+	//GPSåº§æ¨™ã‹ã‚‰è¨ˆç®—ã•ã‚ŒãŸéå»æ•°å›åˆ†ã®ä½ç½®
 	std::list<VECTOR3> mLastPos;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
-	void navigationMove(double distance) const; //’Êí‚ÌˆÚ“®ˆ—
-	bool isStuck() const;//ƒXƒ^ƒbƒN”»’è
-	bool removeError();//ˆÙí’l‚Ìœ‹
+	void navigationMove(double distance) const; //é€šå¸¸æ™‚ã®ç§»å‹•å‡¦ç†
+	bool isStuck() const;//ã‚¹ã‚¿ãƒƒã‚¯åˆ¤å®š
+	bool removeError();//ç•°å¸¸å€¤ã®é™¤å»
 
-	//Ÿ‚Ìó‘Ô‚ÉˆÚs
+	//æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 	void nextState();
 public:
 	void setGoal(const VECTOR3& pos);
@@ -112,10 +112,10 @@ public:
 	~Navigating();
 };
 
-//“Q–‘OŒŸ’m“®ì
+//è½äº‹å‰æ¤œçŸ¥å‹•ä½œ
 class WadachiPredicting : public TaskBase
 {
-	struct timespec mLastUpdateTime;//‘O‰ñ‚Ìƒ`ƒFƒbƒN
+	struct timespec mLastUpdateTime;//å‰å›ã®ãƒã‚§ãƒƒã‚¯æ™‚åˆ»
 	bool mIsAvoidingEnable;
 	enum STEP{STEP_RUNNING, STEP_STOPPING, STEP_WAKING, STEP_CHECKING, STEP_AVOIDING};
 	enum STEP mCurStep;
@@ -124,39 +124,39 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	bool isWorking(const struct timespec& time);//–‘OŒŸ’m“®ì’†‚©”Û‚©
+	bool isWorking(const struct timespec& time);//äº‹å‰æ¤œçŸ¥å‹•ä½œä¸­ã‹å¦ã‹
 	WadachiPredicting();
 	~WadachiPredicting();
 };
 
-//“Q’Eo“®ì
-//‚±‚Ìƒ^ƒXƒN‚ª—LŒø‚ÌŠÔ‚ÍƒiƒrƒQ[ƒVƒ‡ƒ“‚µ‚Ü‚¹‚ñ
+//è½è„±å‡ºå‹•ä½œ
+//ã“ã®ã‚¿ã‚¹ã‚¯ãŒæœ‰åŠ¹ã®é–“ã¯ãƒŠãƒ“ã‚²ãƒ¼ã‚·ãƒ§ãƒ³ã—ã¾ã›ã‚“
 class Escaping : public TaskBase
 {
-	struct timespec mLastUpdateTime;//‘O‰ñ‚Ìs“®‚©‚ç‚Ì•Ï‰»ŠÔ
+	struct timespec mLastUpdateTime;//å‰å›ã®è¡Œå‹•ã‹ã‚‰ã®å¤‰åŒ–æ™‚é–“
 
 	enum STEP{STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_CAMERA_TURN_HERE, STEP_RANDOM};
 	enum STEP mCurStep;
 	enum RANDOM_STEP{RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD};
 	enum RANDOM_STEP mCurRandomStep;
-	unsigned int mEscapingTriedCount;//ƒJƒƒ‰’Eo‚ğs‚µ‚½‰ñ”
+	unsigned int mEscapingTriedCount;//ã‚«ãƒ¡ãƒ©è„±å‡ºã‚’è©¦è¡Œã—ãŸå›æ•°
 	double mAngle;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual void onUpdate(const struct timespec& time);
 
-	void stuckMoveRandom();//ƒXƒ^ƒbƒN‚ÌˆÚ“®ˆ—
-	void stuckMoveCamera(IplImage* pImage);//ƒJƒƒ‰‚ğ—p‚¢‚½ƒXƒ^ƒbƒN‚ÌˆÚ“®ˆ—
+	void stuckMoveRandom();//ã‚¹ã‚¿ãƒƒã‚¯æ™‚ã®ç§»å‹•å‡¦ç†
+	void stuckMoveCamera(IplImage* pImage);//ã‚«ãƒ¡ãƒ©ã‚’ç”¨ã„ãŸã‚¹ã‚¿ãƒƒã‚¯æ™‚ã®ç§»å‹•å‡¦ç†
 public:
 	Escaping();
 	~Escaping();
 };
 
-//“Q’Eo’Eoi‹Œƒ‰ƒ“ƒ_ƒ€j
+//è½è„±å‡ºè„±å‡ºï¼ˆæ—§ãƒ©ãƒ³ãƒ€ãƒ ï¼‰
 class EscapingRandom : public TaskBase
 {
-	struct timespec mLastUpdateTime;//‘O‰ñ‚Ìs“®‚©‚ç‚Ì•Ï‰»ŠÔ
+	struct timespec mLastUpdateTime;//å‰å›ã®è¡Œå‹•ã‹ã‚‰ã®å¤‰åŒ–æ™‚é–“
 
 	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
 	enum STEP mCurStep;
@@ -168,11 +168,11 @@ public:
 	~EscapingRandom();
 };
 
-//ƒ[ƒo[‚Ìp¨§Œä
-//p¨§Œä‚ªŠ®—¹‚·‚é‚Æƒ^ƒXƒN‚ªI—¹‚µ‚Ü‚·
+//ãƒ­ãƒ¼ãƒãƒ¼ã®å§¿å‹¢åˆ¶å¾¡
+//å§¿å‹¢åˆ¶å¾¡ãŒå®Œäº†ã™ã‚‹ã¨ã‚¿ã‚¹ã‚¯ãŒçµ‚äº†ã—ã¾ã™
 class Waking : public TaskBase
 {
-	struct timespec mLastUpdateTime;//s“®ŠJn
+	struct timespec mLastUpdateTime;//è¡Œå‹•é–‹å§‹æ™‚åˆ»
 	enum STEP{STEP_START,STEP_STOP,STEP_VERIFY};
 	enum STEP mCurStep;
 	double mAngleOnBegin;
@@ -186,14 +186,14 @@ public:
 	~Waking();
 };
 
-//ƒ[ƒo[‚Ì‚»‚Ìê‰ñ“]
-//Š®—¹‚·‚é‚Æƒ^ƒXƒN‚ªI—¹‚µ‚Ü‚·
+//ãƒ­ãƒ¼ãƒãƒ¼ã®ãã®å ´å›è»¢
+//å®Œäº†ã™ã‚‹ã¨ã‚¿ã‚¹ã‚¯ãŒçµ‚äº†ã—ã¾ã™
 class Turning : public TaskBase
 {
 	bool mIsTurningLeft;
 	double mTurnPower;
 	double mAngle;
-	struct timespec mLastUpdateTime;//s“®ŠJn
+	struct timespec mLastUpdateTime;//è¡Œå‹•é–‹å§‹æ™‚åˆ»
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -204,11 +204,11 @@ public:
 	~Turning();
 };
 
-//“Q–‘OŒŸ’m‚Ì‰ñ”ğ“®ì
-//Š®—¹‚·‚é‚Æƒ^ƒXƒN‚ªI—¹‚µ‚Ü‚·
+//è½äº‹å‰æ¤œçŸ¥æ™‚ã®å›é¿å‹•ä½œ
+//å®Œäº†ã™ã‚‹ã¨ã‚¿ã‚¹ã‚¯ãŒçµ‚äº†ã—ã¾ã™
 class Avoiding : public TaskBase
 {
-	struct timespec mLastUpdateTime;//s“®ŠJn
+	struct timespec mLastUpdateTime;//è¡Œå‹•é–‹å§‹æ™‚åˆ»
 	double mAngle;
 	enum STEP {STEP_TURN = 0, STEP_FORWARD};
 	enum STEP mCurStep;
@@ -221,7 +221,26 @@ public:
 	~Avoiding();
 };
 
-//‹L”OB‰e
+/* ã“ã“ã‹ã‚‰ã€€2014å¹´6æœˆã‚ªãƒ¼ãƒ—ãƒ³ãƒ©ãƒœå‰ã«å®Ÿè£… */
+class ColorAccessing : public TaskBase
+{
+	struct timespec mLastUpdateTime;//å‰å›ã®ãƒã‚§ãƒƒã‚¯æ™‚åˆ»
+	bool mIsAvoidingEnable;
+	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING};
+	enum STEP mCurStep;
+    double mAngleOnBegin;
+    bool mIsLastActionStraight;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+public:
+	ColorAccessing();
+	~ColorAccessing();
+};
+/* ã“ã“ã¾ã§ã€€2014å¹´6æœˆã‚ªãƒ¼ãƒ—ãƒ³ãƒ©ãƒœå‰ã«å®Ÿè£… */
+
+//è¨˜å¿µæ’®å½±
 class PictureTaking : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -234,7 +253,7 @@ public:
 	~PictureTaking();
 };
 
-//ƒZƒ“ƒT[ƒƒO
+//ã‚»ãƒ³ã‚µãƒ¼ãƒ­ã‚°
 class SensorLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -263,3 +282,4 @@ extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
+extern ColorAccessing gColorAccessing;

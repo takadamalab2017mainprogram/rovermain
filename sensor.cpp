@@ -1,3 +1,4 @@
+//ttb
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
 #include <time.h>
@@ -20,7 +21,7 @@ LightSensor gLightSensor;
 WebCamera gWebCamera;
 DistanceSensor gDistanceSensor;
 CameraCapture gCameraCapture;
-//AccelerationSensor gAccelerationSensor;
+AccelerationSensor gAccelerationSensor;
 //
 //// I2C definitions
 //
@@ -91,7 +92,7 @@ unsigned short wiringPiI2CReadReg16BE(int fd, int address)
 //////////////////////////////////////////////
 float PressureSensor::val2float(unsigned int val, int total_bits, int fractional_bits, int zero_pad)
 {
-	//‹Cˆ³ƒZƒ“ƒT‚ÌŒW”‚ğ“Ç‚İ‚ñ‚Å³‚µ‚¢’l‚ğ•Ô‚·
+	//æ°—åœ§ã‚»ãƒ³ã‚µã®ä¿‚æ•°ã‚’èª­ã¿è¾¼ã‚“ã§æ­£ã—ã„å€¤ã‚’è¿”ã™
 	return static_cast<float>((short int)val) / ((unsigned int)1 << (16 - total_bits + fractional_bits + zero_pad));
 }
 
@@ -103,7 +104,7 @@ bool PressureSensor::onInit(const struct timespec& time)
 		return false;
 	}
 
-	//‹Cˆ³ƒZƒ“ƒT[‚Ì“®ì‚ğŠm”F(0xc - 0xf‚É0‚ª“ü‚Á‚Ä‚¢‚é‚©Šm‚©‚ß‚é)
+	//æ°—åœ§ã‚»ãƒ³ã‚µãƒ¼ã®å‹•ä½œã‚’ç¢ºèª(0xc - 0xfã«0ãŒå…¥ã£ã¦ã„ã‚‹ã‹ç¢ºã‹ã‚ã‚‹)
 	if(wiringPiI2CReadReg32LE(mFileHandle,0x0c) != 0)
 	{
 		//close(mFileHandle);
@@ -111,16 +112,16 @@ bool PressureSensor::onInit(const struct timespec& time)
 		//return false;
 	}
 
-	//‹Cˆ³ŒvZ—p‚ÌŒW”‚ğæ“¾
+	//æ°—åœ§è¨ˆç®—ç”¨ã®ä¿‚æ•°ã‚’å–å¾—
 	mA0 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x04),16,3,0);
 	mB1 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x06),16,13,0);
 	mB2 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x08),16,14,0);
 	mC12 = val2float(wiringPiI2CReadReg16BE(mFileHandle,0x0A),14,13,9);
 
-	//‹Cˆ³æ“¾—v‹
+	//æ°—åœ§å–å¾—è¦æ±‚
 	requestSample();
 
-	//‹Cˆ³XVƒŠƒNƒGƒXƒg
+	//æ°—åœ§æ›´æ–°ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 	mLastUpdateRequest = time;
 	requestSample();
 
@@ -134,24 +135,24 @@ void PressureSensor::onClean()
 }
 void PressureSensor::requestSample()
 {
-	//V‚µ‚¢‹Cˆ³æ“¾—v‹(3msŒã‚É’l‚ª“Ç‚İ‚Ü‚ê‚ÄƒŒƒWƒXƒ^‚ÉŠi”[‚³‚ê‚é)
+	//æ–°ã—ã„æ°—åœ§å–å¾—è¦æ±‚(3mså¾Œã«å€¤ãŒèª­ã¿è¾¼ã¾ã‚Œã¦ãƒ¬ã‚¸ã‚¹ã‚¿ã«æ ¼ç´ã•ã‚Œã‚‹)
 	wiringPiI2CWriteReg8(mFileHandle,0x12,0x01);
 }
 void PressureSensor::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateRequest) > 0.003)//‘O‰ñ‚Ìƒf[ƒ^—v¿‚©‚ç3msˆÈãŒo‰ß‚µ‚Ä‚¢‚éê‡’l‚ğ“Ç‚İæ‚Á‚ÄXV‚·‚é
+	if(Time::dt(time,mLastUpdateRequest) > 0.003)//å‰å›ã®ãƒ‡ãƒ¼ã‚¿è¦è«‹ã‹ã‚‰3msä»¥ä¸ŠçµŒéã—ã¦ã„ã‚‹å ´åˆå€¤ã‚’èª­ã¿å–ã£ã¦æ›´æ–°ã™ã‚‹
 	{
-		//‹Cˆ³’lŒvZ
+		//æ°—åœ§å€¤è¨ˆç®—
 		unsigned int Padc = wiringPiI2CReadReg8(mFileHandle,0x00) << 2 | wiringPiI2CReadReg8(mFileHandle,0x01) >> 6;
 		unsigned int Tadc = wiringPiI2CReadReg8(mFileHandle,0x02) << 2 | wiringPiI2CReadReg8(mFileHandle,0x03) >> 6;
 
 		float Pcomp = mA0 + (mB1 + mC12 * Tadc) * Padc + mB2 * Tadc;
 		mPressure = (Pcomp * (115 - 50) / 1023.0 + 50) * 10;
 
-		//‹Cˆ³XV—v¿
+		//æ°—åœ§æ›´æ–°è¦è«‹
 		requestSample();
 
-		//‹Cˆ³XV—v¿‚ğ‹L˜^
+		//æ°—åœ§æ›´æ–°è¦è«‹æ™‚åˆ»ã‚’è¨˜éŒ²
 		mLastUpdateRequest = time;
 	}
 }
@@ -187,11 +188,11 @@ bool GPSSensor::onInit(const struct timespec& time)
 		return false;
 	}
 
-	//À•W‚ğXV‚·‚é‚æ‚¤‚Éİ’è(ˆê‰2‰ñ‘‚«‚İ)
+	//åº§æ¨™ã‚’æ›´æ–°ã™ã‚‹ã‚ˆã†ã«è¨­å®š(ä¸€å¿œ2å›æ›¸ãè¾¼ã¿)
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05); 
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 
-	//ƒo[ƒWƒ‡ƒ“î•ñ‚ğ•\¦
+	//ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã‚’è¡¨ç¤º
 	Debug::print(LOG_SUMMARY,"GPS Firmware Version:%d\r\n",wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
@@ -201,7 +202,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 }
 void GPSSensor::onClean()
 {
-	//“®ì‚ğ’â~‚·‚éƒRƒ}ƒ“ƒh‚ğ”­s
+	//å‹•ä½œã‚’åœæ­¢ã™ã‚‹ã‚³ãƒãƒ³ãƒ‰ã‚’ç™ºè¡Œ
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x06); 
 
 	close(mFileHandle);
@@ -211,24 +212,24 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
 	if(status & 0x06)// Found Position
 	{
-		//À•W‚ğXV(“Ç‚İæ‚è‚Ìƒf[ƒ^—‚ê–h~—p‚É2‰ñ“Ç‚İæ‚Á‚Ä“™‚µ‚¢’l‚ªæ‚ê‚½ê‡‚Ì‚İÌ—p‚·‚é)
+		//åº§æ¨™ã‚’æ›´æ–°(èª­ã¿å–ã‚Šæ™‚ã®ãƒ‡ãƒ¼ã‚¿ä¹±ã‚Œé˜²æ­¢ç”¨ã«2å›èª­ã¿å–ã£ã¦ç­‰ã—ã„å€¤ãŒå–ã‚ŒãŸå ´åˆã®ã¿æ¡ç”¨ã™ã‚‹)
 
-		//Œo“x
+		//çµŒåº¦
 		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07);
 		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = read / 10000000.0;
 
-		//ˆÜ“x
+		//ç·¯åº¦
 		read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B);
 		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
 
-		//‚“x
+		//é«˜åº¦
 		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21);
 		if(read == (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
 
-		//V‚µ‚¢ƒf[ƒ^‚ª“Í‚¢‚½‚±‚Æ‚ğ‹L˜^‚·‚é
+		//æ–°ã—ã„ãƒ‡ãƒ¼ã‚¿ãŒå±Šã„ãŸã“ã¨ã‚’è¨˜éŒ²ã™ã‚‹
 		if(status & 0x01)mIsNewData = true;
 	}
-	//‰q¯ŒÂ”‚ğXV(“Ç‚İæ‚è‚Ìƒf[ƒ^—‚ê–h~—p‚É2‰ñ“Ç‚İæ‚Á‚Ä“™‚µ‚¢’l‚ªæ‚ê‚½ê‡‚Ì‚İÌ—p‚·‚é)
+	//è¡›æ˜Ÿå€‹æ•°ã‚’æ›´æ–°(èª­ã¿å–ã‚Šæ™‚ã®ãƒ‡ãƒ¼ã‚¿ä¹±ã‚Œé˜²æ­¢ç”¨ã«2å›èª­ã¿å–ã£ã¦ç­‰ã—ã„å€¤ãŒå–ã‚ŒãŸå ´åˆã®ã¿æ¡ç”¨ã™ã‚‹)
 	if(wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
 }
 bool GPSSensor::onCommand(const std::vector<std::string> args)
@@ -242,8 +243,8 @@ bool GPSSensor::get(VECTOR3& pos, bool disableNewFlag)
 {
 	if(mSatelites >= 4)//3D fix
 	{
-		if(!disableNewFlag)mIsNewData = false;//ƒf[ƒ^‚ğæ“¾‚µ‚½‚±‚Æ‚ğ‹L˜^
-		pos = mPos;//ˆø”‚Ìpos‚É‘ã“ü
+		if(!disableNewFlag)mIsNewData = false;//ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã—ãŸã“ã¨ã‚’è¨˜éŒ²
+		pos = mPos;//å¼•æ•°ã®posã«ä»£å…¥
 		return true;
 	}
 	return false;//Invalid Position
@@ -277,24 +278,24 @@ bool GyroSensor::onInit(const struct timespec& time)
 		return false;
 	}
 
-	//ƒWƒƒƒCƒƒZƒ“ƒT[‚ª³í“®ì’†‚©Šm”F
+	//ã‚¸ãƒ£ã‚¤ãƒ­ã‚»ãƒ³ã‚µãƒ¼ãŒæ­£å¸¸å‹•ä½œä¸­ã‹ç¢ºèª
 	if(wiringPiI2CReadReg8(mFileHandle,0x0F) != 0xD4)
 	{
 		close(mFileHandle);
 		Debug::print(LOG_SUMMARY,"Failed to verify Gyro Sensor\r\n");
 		return false;
 	}
-	//ƒf[ƒ^ƒTƒ“ƒvƒŠƒ“ƒO–³Œø‰»
+	//ãƒ‡ãƒ¼ã‚¿ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ç„¡åŠ¹åŒ–
 	wiringPiI2CWriteReg8(mFileHandle,0x20,0x00);
 
-	//ƒrƒbƒOƒGƒ“ƒfƒBƒAƒ“‚Å‚Ìƒf[ƒ^o—Í‚Éİ’è&ƒXƒP[ƒ‹‚ğ2000dps‚É•ÏX
+	//ãƒ“ãƒƒã‚°ã‚¨ãƒ³ãƒ‡ã‚£ã‚¢ãƒ³ã§ã®ãƒ‡ãƒ¼ã‚¿å‡ºåŠ›ã«è¨­å®š&ã‚¹ã‚±ãƒ¼ãƒ«ã‚’2000dpsã«å¤‰æ›´
 	wiringPiI2CWriteReg8(mFileHandle,0x23,0x40 | 0x20);
 
-	//FIFO—LŒø‰»(ƒXƒgƒŠ[ƒ€ƒ‚[ƒh)
+	//FIFOæœ‰åŠ¹åŒ–(ã‚¹ãƒˆãƒªãƒ¼ãƒ ãƒ¢ãƒ¼ãƒ‰)
 	wiringPiI2CWriteReg8(mFileHandle,0x24,0x40);
 	wiringPiI2CWriteReg8(mFileHandle,0x2E,0x40);
 
-	//ƒf[ƒ^ƒTƒ“ƒvƒŠƒ“ƒO—LŒø‰»
+	//ãƒ‡ãƒ¼ã‚¿ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°æœ‰åŠ¹åŒ–
 	wiringPiI2CWriteReg8(mFileHandle,0x20,0x0f);
 
 	return true;
@@ -302,7 +303,7 @@ bool GyroSensor::onInit(const struct timespec& time)
 
 void GyroSensor::onClean()
 {
-	//ƒf[ƒ^ƒTƒ“ƒvƒŠƒ“ƒO–³Œø‰»
+	//ãƒ‡ãƒ¼ã‚¿ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ç„¡åŠ¹åŒ–
 	wiringPiI2CWriteReg8(mFileHandle,0x20,0x00);
 
 	close(mFileHandle);
@@ -314,7 +315,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 	int data_samples = 0;
 	VECTOR3 newRv;
 
-	//’~‚¦‚ç‚ê‚½ƒTƒ“ƒvƒ‹‚Ì•½‹Ï’l‚ğŒ»“_‚Å‚Ì‘¬“x‚Æ‚·‚é
+	//è“„ãˆã‚‰ã‚ŒãŸã‚µãƒ³ãƒ—ãƒ«ã®å¹³å‡å€¤ã‚’ç¾æ™‚ç‚¹ã§ã®é€Ÿåº¦ã¨ã™ã‚‹
 	while((status_reg = wiringPiI2CReadReg8(mFileHandle,0x27)) & 0x08)
 	{
 		if(status_reg == -1)
@@ -324,46 +325,46 @@ void GyroSensor::onUpdate(const struct timespec& time)
 		}
 		//if(status_reg & 0x70)Debug::print(LOG_DETAIL,"Gyro Data Overrun!\r\n");
 
-		//ƒWƒƒƒCƒ‚ÌFIFO“à‚Ìƒf[ƒ^‚ğ‚·‚×‚Ä“Ç‚İ‚İA˜a‚ğæ‚é
+		//ã‚¸ãƒ£ã‚¤ãƒ­ã®FIFOå†…ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã™ã¹ã¦èª­ã¿è¾¼ã¿ã€å’Œã‚’å–ã‚‹
 		VECTOR3 sample;
 		sample.x = (short)wiringPiI2CReadReg16BE(mFileHandle,0x28) * 0.070;
 		sample.y = (short)wiringPiI2CReadReg16BE(mFileHandle,0x2A) * 0.070;
 		sample.z = (short)wiringPiI2CReadReg16BE(mFileHandle,0x2C) * 0.070;
 		newRv += sample;
 
-		//ƒhƒŠƒtƒgŒë·ŒvZ’†‚Å‚ ‚ê‚Î”z—ñ‚Éƒf[ƒ^‚ğ“Ë‚Á‚Ş
+		//ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®è¨ˆç®—ä¸­ã§ã‚ã‚Œã°é…åˆ—ã«ãƒ‡ãƒ¼ã‚¿ã‚’çªã£è¾¼ã‚€
 		if(mIsCalculatingOffset)
 		{
 			mRVelHistory.push_back(sample);
-			if(mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//•K—v‚ÈƒTƒ“ƒvƒ‹”‚ª‚»‚ë‚Á‚½
+			if(mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//å¿…è¦ãªã‚µãƒ³ãƒ—ãƒ«æ•°ãŒãã‚ã£ãŸ
 			{
-				//•½‹Ï’l‚ğæ‚Á‚Ä‚İ‚é
+				//å¹³å‡å€¤ã‚’å–ã£ã¦ã¿ã‚‹
 				std::list<VECTOR3>::iterator it = mRVelHistory.begin();
 				while(it != mRVelHistory.end())
 				{
 					mRVelOffset += *it;
 					++it;
 				}
-				mRVelOffset /= mRVelHistory.size();//ƒhƒŠƒtƒgŒë·•â³—Ê‚ğ“K—p
+				mRVelOffset /= mRVelHistory.size();//ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®è£œæ­£é‡ã‚’é©ç”¨
 				mRVelHistory.clear();
 				mIsCalculatingOffset = false;
 				Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n",mRVelOffset.x,mRVelOffset.y,mRVelOffset.z);
 			}
 		}
 
-		//ƒhƒŠƒtƒgŒë·‚ğ•â³
+		//ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®ã‚’è£œæ­£
 		newRv -= mRVelOffset;
 
 		++data_samples;
 	}
 	
-	//ƒf[ƒ^‚ª—ˆ‚Ä‚¢‚½‚çŒ»İ‚ÌŠp‘¬“x‚ÆŠp“x‚ğXV
+	//ãƒ‡ãƒ¼ã‚¿ãŒæ¥ã¦ã„ãŸã‚‰ç¾åœ¨ã®è§’é€Ÿåº¦ã¨è§’åº¦ã‚’æ›´æ–°
 	if(data_samples != 0)
 	{
-		//•½‹Ï
+		//å¹³å‡
 		newRv /= data_samples;
 
-		//Ï•ª
+		//ç©åˆ†
 		if(mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0 )
 		{
 			double dt = Time::dt(time,mLastSampleTime);
@@ -481,71 +482,74 @@ GyroSensor::~GyroSensor()
 //// Accel Sensor
 ////////////////////////////////////////////////
 //
-//bool AccelerationSensor::onInit(const struct timespec& time)
-//{
-//	mAccel.x = mAccel.y = mAccel.z = 0;
-//	
-//	if((mFileHandle = wiringPiI2CSetup(0x1c)) == -1)
-//	{
-//		Debug::print(LOG_SUMMARY,"Failed to setup Acceleration Sensor\r\n");
-//		return false;
-//	}
-//
-//	//ƒf[ƒ^ƒTƒ“ƒvƒŠƒ“ƒO—LŒø‰»
-//	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x1b);
-//	return true;
-//}
-//
-//void AccelerationSensor::onClean()
-//{
-//	//ƒf[ƒ^ƒTƒ“ƒvƒŠƒ“ƒO–³Œø‰»
-//	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x00);
-//
-//	close(mFileHandle);
-//}
-//
-//void AccelerationSensor::onUpdate(const struct timespec& time)
-//{
-//	union i2c_smbus_data data;
-//	i2c_smbus_access(mFileHandle, I2C_SMBUS_READ, 0x01, I2C_SMBUS_I2C_BLOCK_DATA, &data);
-//	mAccel.x = ((signed char)data.block[1]);
-//	mAccel.y = ((signed char)data.block[2]);
-//	mAccel.z = ((signed char)data.block[3]);
-//}
-//bool AccelerationSensor::onCommand(const std::vector<std::string> args)
-//{
-//	Debug::print(LOG_SUMMARY, "Acceleration: %f %f %f\r\n",getAx(),getAy(),getAz());
-//	return true;
-//}
-//bool AccelerationSensor::getAccel(VECTOR3& acc)
-//{
-//	if(isActive())
-//	{
-//		acc = mAccel;
-//		return true;
-//	}
-//	return false;
-//}
-//double AccelerationSensor::getAx()
-//{
-//	return mAccel.x;
-//}
-//double AccelerationSensor::getAy()
-//{
-//	return mAccel.y;
-//}
-//double AccelerationSensor::getAz()
-//{
-//	return mAccel.z;
-//}
-//AccelerationSensor::AccelerationSensor() : mFileHandle(-1),mAccel()
-//{
-//	setName("accel");
-//	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
-//}
-//AccelerationSensor::~AccelerationSensor()
-//{
-//}
+bool AccelerationSensor::onInit(const struct timespec& time)
+{
+	mAccel.x = mAccel.y = mAccel.z = 0;
+	
+	if((mFileHandle = wiringPiI2CSetup(0x1c)) == -1)
+	{
+		Debug::print(LOG_SUMMARY,"Failed to setup Acceleration Sensor\r\n");
+		return false;
+	}
+
+	//ãƒ‡ãƒ¼ã‚¿ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°æœ‰åŠ¹åŒ–
+	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x1b);
+	return true;
+}
+
+void AccelerationSensor::onClean()
+{
+	//ãƒ‡ãƒ¼ã‚¿ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ç„¡åŠ¹åŒ–
+	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x00);
+
+	close(mFileHandle);
+}
+
+void AccelerationSensor::onUpdate(const struct timespec& time)
+{
+  //union i2c_smbus_data data;
+	//i2c_smbus_access(mFileHandle, I2C_SMBUS_READ, 0x01, I2C_SMBUS_I2C_BLOCK_DATA, &data);
+	//mAccel.x = ((signed char)data.block[1]);
+	//mAccel.y = ((signed char)data.block[2]);
+	//mAccel.z = ((signed char)data.block[3]);
+	mAccel.x = wiringPiI2CReadReg16BE(mFileHandle, 0x01);
+	mAccel.y = wiringPiI2CReadReg16BE(mFileHandle, 0x03);
+	mAccel.z = wiringPiI2CReadReg16BE(mFileHandle, 0x05);
+}
+bool AccelerationSensor::onCommand(const std::vector<std::string> args)
+{
+	Debug::print(LOG_SUMMARY, "Acceleration: %f %f %f\r\n",getAx(),getAy(),getAz());
+	return true;
+}
+bool AccelerationSensor::getAccel(VECTOR3& acc)
+{
+	if(isActive())
+	{
+		acc = mAccel;
+		return true;
+	}
+	return false;
+}
+double AccelerationSensor::getAx()
+{
+	return mAccel.x;
+}
+double AccelerationSensor::getAy()
+{
+	return mAccel.y;
+}
+double AccelerationSensor::getAz()
+{
+	return mAccel.z;
+}
+AccelerationSensor::AccelerationSensor() : mFileHandle(-1),mAccel()
+{
+	setName("accel");
+	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
+}
+AccelerationSensor::~AccelerationSensor()
+{
+}
 
 ///////////////////////////////////////////////
 // CdS Sensor
@@ -579,7 +583,7 @@ LightSensor::~LightSensor()
 }
 
 ///////////////////////////////////////////////
-// WebƒJƒƒ‰
+// Webã‚«ãƒ¡ãƒ©
 ///////////////////////////////////////////////
 
 bool WebCamera::onCommand(const std::vector<std::string> args)
@@ -630,7 +634,7 @@ void WebCamera::start(const char* filename)
 }
 void WebCamera::stop()
 {
-	//Todo: ––”ö‚ª5•b‚­‚ç‚¢•Û‘¶‚³‚ê‚È‚¢–â‘è
+	//Todo: æœ«å°¾ãŒ5ç§’ãã‚‰ã„ä¿å­˜ã•ã‚Œãªã„å•é¡Œ
 	system("killall -15 mencoder 1> /dev/null 2>&1 ");
 	Debug::print(LOG_DETAIL, "Send kill signal to mencoder\r\n");
 }
@@ -734,7 +738,7 @@ bool DistanceSensor::onCommand(const std::vector<std::string> args)
 
 bool DistanceSensor::ping()
 {
-	if(mIsCalculating)return false;//‚·‚Å‚ÉŒv‘ª‚ğŠJn‚µ‚Ä‚¢‚é
+	if(mIsCalculating)return false;//ã™ã§ã«è¨ˆæ¸¬ã‚’é–‹å§‹ã—ã¦ã„ã‚‹
 	mIsCalculating = true;
 	return true;
 }
@@ -765,7 +769,7 @@ bool CameraCapture::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Unable to initialize camera\r\n");
 		return false;
 	}
-	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //B‰eƒTƒCƒY‚ğw’è
+	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_WIDTH, WIDTH); //æ’®å½±ã‚µã‚¤ã‚ºã‚’æŒ‡å®š
 	cvSetCaptureProperty(mpCapture, CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
 
 	mIsWarming = false;
@@ -824,7 +828,7 @@ void CameraCapture::verifyCamera(bool reinitialize)
 		std::stringstream filename;
 		filename << "/dev/video" << deviceId++;
 		exist = stat(filename.str().c_str(), &st) == 0;
-		if(deviceId > 32)return;//¸”s
+		if(deviceId > 32)return;//å¤±æ•—
 	}while(!exist);
 	--deviceId;
 
@@ -861,7 +865,7 @@ IplImage* CameraCapture::getFrame()
 	IplImage* pImage = cvQueryFrame(mpCapture);
 	if(pImage == NULL)
 	{
-		//ƒGƒ‰[•Ô‚µ‚Ä‚­‚ê‚È‚¢
+		//ã‚¨ãƒ©ãƒ¼è¿”ã—ã¦ãã‚Œãªã„
 	}
 	return pImage;
 }

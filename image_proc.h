@@ -11,11 +11,12 @@ class ImageProc : public TaskBase
 protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	bool isParaExist(IplImage* pImage);//‰æ‘œ“à‚Éƒpƒ‰ƒVƒ…[ƒg‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
-	bool isWadachiExist(IplImage* pImage);//“Q–‘OŒŸ’m
-	bool isSky(IplImage* pImage);//‹ó‚ÌŠ„‡‚ªˆê’èˆÈã‚È‚ç^
-	void cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt);//pDest‚Ì‹ó•”•ª‚ğ“h‚è‚Â‚Ô‚·
-	int wadachiExiting(IplImage* pImage);//-1:¶ 0:’¼i 1:‰E
+	int howColorGap(IplImage* pImage);//ç”»åƒä¸­å¿ƒã‹ã‚‰ç‰¹å®šã®è‰²é‡å¿ƒãŒã©ã‚Œã ã‘ãšã‚Œã¦ã„ã‚‹ã‹
+	bool isParaExist(IplImage* pImage);//ç”»åƒå†…ã«ãƒ‘ãƒ©ã‚·ãƒ¥ãƒ¼ãƒˆãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
+	bool isWadachiExist(IplImage* pImage);//è½äº‹å‰æ¤œçŸ¥
+	bool isSky(IplImage* pImage);//ç©ºã®å‰²åˆãŒä¸€å®šä»¥ä¸Šãªã‚‰çœŸ
+	void cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt);//pDestã®ç©ºéƒ¨åˆ†ã‚’å¡—ã‚Šã¤ã¶ã™
+	int wadachiExiting(IplImage* pImage);//-1:å·¦ 0:ç›´é€² 1:å³
 
 	ImageProc();
 	~ImageProc();

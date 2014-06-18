@@ -1,82 +1,82 @@
 /*
-	ЉeЋн’иђ”
+	еђ„зЁ®е®љж•°
 */
 #pragma once
 
-//–{”Ф‚НѓRѓЃѓ“ѓgѓAѓEѓg‚·‚й‚±‚ЖЃIЃIЃiCtrl-C‚Й‚ж‚йѓvѓЌѓOѓ‰ѓЂЏI—№‚Є–іЊш‚Й‚И‚и‚Ь‚·Ѓj
+//жњ¬з•ЄгЃЇг‚ігѓЎгѓігѓ€г‚ўг‚¦гѓ€гЃ™г‚‹гЃ“гЃЁпјЃпјЃпј€Ctrl-CгЃ«г‚€г‚‹гѓ—гѓ­г‚°гѓ©гѓ зµ‚дє†гЃЊз„ЎеЉ№гЃ«гЃЄг‚ЉгЃѕгЃ™пј‰
 #define _DEBUG 1
 
-//ЏЪЌЧ‚ИѓЌѓO•\Ћ¦‚Є•K—v‚ИЏкЌ‡‚Н‚В‚©‚Б‚Д‚­‚ѕ‚і‚ў
+//и©ізґ°гЃЄгѓ­г‚°иЎЁз¤єгЃЊеї…и¦ЃгЃЄе ґеђ€гЃЇгЃ¤гЃ‹гЃЈгЃ¦гЃЏгЃ гЃ•гЃ„
 //#define _LOG_DETAIL 1
 
 
 
 //////////////////////////////////////////////
-// ѓnЃ[ѓhѓEѓFѓAЊnђЭ’и
+// гѓЏгѓјгѓ‰г‚¦г‚§г‚ўзі»иЁ­е®љ
 //////////////////////////////////////////////
-//ѓsѓ“”ФЌ†(WiringPi‚Мѓsѓ“”ФЌ†ЃAGPIO‚Ж‚Н€б‚ў‚Ь‚·)
-const static int PIN_PWM_A = 5;		//ѓ‚Ѓ[ѓ^PWM Right
+//гѓ”гѓіз•ЄеЏ·(WiringPiгЃ®гѓ”гѓіз•ЄеЏ·гЂЃGPIOгЃЁгЃЇйЃ•гЃ„гЃѕгЃ™)
+const static int PIN_PWM_A = 5;		//гѓўгѓјг‚їPWM Right
 const static int PIN_PWM_B = 4;
-const static int PIN_PULSE_A = 7;	//ѓ‚Ѓ[ѓ^ѓGѓ“ѓRЃ[ѓ_ Right
+const static int PIN_PULSE_A = 7;	//гѓўгѓјг‚їг‚Ёгѓіг‚ігѓјгѓЂ Right
 const static int PIN_PULSE_B = 0;
-const static int PIN_INVERT_MOTOR_A = 3;	//ѓ‚Ѓ[ѓ^”Ѕ“]ѓsѓ“ Right
+const static int PIN_INVERT_MOTOR_A = 3;	//гѓўгѓјг‚їеЏЌи»ўгѓ”гѓі Right
 const static int PIN_INVERT_MOTOR_B = 2;
-const static int PIN_BUZZER = 12;			//ѓuѓUЃ[
-const static int PIN_XBEE_SLEEP = 13;		//XBeeѓXѓЉЃ[ѓvѓsѓ“
-const static int PIN_LIGHT_SENSOR = 14;		//CdsѓZѓ“ѓTѓsѓ“
-const static int PIN_SERVO = 1;				//ѓTЃ[ѓ{ѓsѓ“
-const static int PIN_DISTANCE = 6;	//‹——ЈѓZѓ“ѓTЃ[
+const static int PIN_BUZZER = 12;			//гѓ–г‚¶гѓј
+const static int PIN_XBEE_SLEEP = 13;		//XBeeг‚№гѓЄгѓјгѓ—гѓ”гѓі
+const static int PIN_LIGHT_SENSOR = 14;		//Cdsг‚»гѓіг‚µгѓ”гѓі
+const static int PIN_SERVO = 1;				//г‚µгѓјгѓњгѓ”гѓі
+const static int PIN_DISTANCE = 6;	//и·ќй›ўг‚»гѓіг‚µгѓј
 
-//ѓ‚Ѓ[ѓ^ђЭ’и
+//гѓўгѓјг‚їиЁ­е®љ
 const static int MOTOR_MAX_POWER = 100;
-const static double MOTOR_MAX_POWER_CHANGE =(double)5;//ѓ‚Ѓ[ѓ^Џo—Н‚МЌЕ‘е•П‰»—К
+const static double MOTOR_MAX_POWER_CHANGE =(double)5;//гѓўгѓјг‚їе‡єеЉ›гЃ®жњЂе¤§е¤‰еЊ–й‡Џ
 
-//ѓTЃ[ѓ{ђЭ’и
-const static int SERVO_RANGE = 9000;//ѓpѓ‹ѓXЉФЉu
-const static int SERVO_MOVABLE_RANGE = 1200;//ѓpѓ‹ѓX•ќ•ПЌX”Н€Н
-const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//ЌЕЏ¬ѓpѓ‹ѓX•ќ
+//г‚µгѓјгѓњиЁ­е®љ
+const static int SERVO_RANGE = 9000;//гѓ‘гѓ«г‚№й–“йљ”
+const static int SERVO_MOVABLE_RANGE = 1200;//гѓ‘гѓ«г‚№е№…е¤‰ж›ґзЇ„е›І
+const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//жњЂе°Џгѓ‘гѓ«г‚№е№…
 
-//ѓWѓѓѓCѓЌђЭ’и
-const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ѓhѓЉѓtѓgЊлЌ·•вђіЋћ‚Й—p‚ў‚йѓTѓ“ѓvѓ‹ђ”
+//г‚ёгѓЈг‚¤гѓ­иЁ­е®љ
+const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//гѓ‰гѓЄгѓ•гѓ€иЄ¤е·®иЈњж­Јж™‚гЃ«з”ЁгЃ„г‚‹г‚µгѓігѓ—гѓ«ж•°
 
 //////////////////////////////////////////////
-// ѓVЃ[ѓPѓ“ѓXЊnђЭ’и
+// г‚·гѓјг‚±гѓіг‚№зі»иЁ­е®љ
 //////////////////////////////////////////////
-const static unsigned int WAITING_LIGHT_COUNT = 3000;//‰Ѕ‰сA‘±‚ЕЊх‚Б‚Д‚ў‚й‚Ж”»’и‚і‚к‚Ѕ‚Ж‚«‚Й•ъЏo”»’и‚Ж‚·‚й‚©
-const static unsigned int WAITING_ABORT_TIME =7200;//‹­ђ§“I‚Й•ъЏo”»’и‚Ж‚·‚йЋћЉФЃi•bЃj
+const static unsigned int WAITING_LIGHT_COUNT = 3000;//дЅ•е›ћйЂЈз¶љгЃ§е…‰гЃЈгЃ¦гЃ„г‚‹гЃЁе€¤е®љгЃ•г‚ЊгЃџгЃЁгЃЌгЃ«ж”ѕе‡єе€¤е®љгЃЁгЃ™г‚‹гЃ‹
+const static unsigned int WAITING_ABORT_TIME =7200;//еј·е€¶зљ„гЃ«ж”ѕе‡єе€¤е®љгЃЁгЃ™г‚‹ж™‚й–“пј€з§’пј‰
 
-const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//‘O‰с‚Ж‚М‹C€і‚МЌ·‚Є‚±‚к€И“а‚И‚з’вЋ~’†‚ЖѓJѓEѓ“ѓg(1•bЉФЉu‚ЕѓTѓ“ѓvѓЉѓ“ѓO)
-const static unsigned int FALLING_PRESSURE_COUNT = 5;//‹C€і•П‰»—К‚Єи‡’l€И‰є‚МЏу‘Ф‚Є‚±‚к‚ѕ‚Ї‘±‚ў‚Ѕ‚з’…’n‚Ж”»’и
-const static double FALLING_GYRO_THRESHOLD = 10;//Љp‘¬“x‚Є‚±‚М’l€И‰є‚И‚з’вЋ~’†‚ЖѓJѓEѓ“ѓg
-const static unsigned int FALLING_GYRO_COUNT = 1000;//Љp‘¬“x‚М’l‚Єи‡’l€И‰є‚МѓTѓ“ѓvѓ‹‚Є‚±‚к‚ѕ‚ЇA‘±‚µ‚Ѕ‚з’…’n‚Ж”»’и
-const static unsigned int FALLING_ABORT_TIME = 1800;//—Ћ‰єЏу‘Ф‚р‹­ђ§ЏI—№‚·‚йЋћЉФ
-const static unsigned int FALLING_MOTOR_PULSE_THRESHOLD = 1000;//‚P•b•У‚и‚Мѓpѓ‹ѓX•П‰»—К‚Є‚±‚к€ИЏг‚И‚зѓ^ѓCѓ„‰с“]’†‚ЖѓJѓEѓ“ѓg
-const static unsigned int FALLING_MOTOR_PULSE_COUNT = 5;//ѓ‚Ѓ[ѓ^ѓpѓ‹ѓX‚М’l‚Єи‡’l€И‰є‚МѓTѓ“ѓvѓ‹‚Є‚±‚к‚ѕ‚ЇA‘±‚µ‚Ѕ‚з’…’n‚Ж”»’и
+const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//е‰Ќе›ћгЃЁгЃ®ж°—ењ§гЃ®е·®гЃЊгЃ“г‚Њд»Ґе†…гЃЄг‚‰еЃњж­ўдё­гЃЁг‚«г‚¦гѓігѓ€(1з§’й–“йљ”гЃ§г‚µгѓігѓ—гѓЄгѓіг‚°)
+const static unsigned int FALLING_PRESSURE_COUNT = 5;//ж°—ењ§е¤‰еЊ–й‡ЏгЃЊй–ѕеЂ¤д»Ґдё‹гЃ®зЉ¶ж…‹гЃЊгЃ“г‚ЊгЃ гЃ‘з¶љгЃ„гЃџг‚‰зќЂењ°гЃЁе€¤е®љ
+const static double FALLING_GYRO_THRESHOLD = 10;//и§’йЂџеє¦гЃЊгЃ“гЃ®еЂ¤д»Ґдё‹гЃЄг‚‰еЃњж­ўдё­гЃЁг‚«г‚¦гѓігѓ€
+const static unsigned int FALLING_GYRO_COUNT = 1000;//и§’йЂџеє¦гЃ®еЂ¤гЃЊй–ѕеЂ¤д»Ґдё‹гЃ®г‚µгѓігѓ—гѓ«гЃЊгЃ“г‚ЊгЃ гЃ‘йЂЈз¶љгЃ—гЃџг‚‰зќЂењ°гЃЁе€¤е®љ
+const static unsigned int FALLING_ABORT_TIME = 1800;//иђЅдё‹зЉ¶ж…‹г‚’еј·е€¶зµ‚дє†гЃ™г‚‹ж™‚й–“
+const static unsigned int FALLING_MOTOR_PULSE_THRESHOLD = 1000;//пј‘з§’иѕєг‚ЉгЃ®гѓ‘гѓ«г‚№е¤‰еЊ–й‡ЏгЃЊгЃ“г‚Њд»ҐдёЉгЃЄг‚‰г‚їг‚¤гѓ¤е›ћи»ўдё­гЃЁг‚«г‚¦гѓігѓ€
+const static unsigned int FALLING_MOTOR_PULSE_COUNT = 5;//гѓўгѓјг‚їгѓ‘гѓ«г‚№гЃ®еЂ¤гЃЊй–ѕеЂ¤д»Ґдё‹гЃ®г‚µгѓігѓ—гѓ«гЃЊгЃ“г‚ЊгЃ гЃ‘йЂЈз¶љгЃ—гЃџг‚‰зќЂењ°гЃЁе€¤е®љ
 
-const static double SEPARATING_SERVO_INTERVAL = 0.8;//ѓTЃ[ѓ{‚МЊь‚«‚р•П‚¦‚йЉФЉu(•b)
-const static unsigned int SEPARATING_SERVO_COUNT = 12;//ѓTЃ[ѓ{‚МЊь‚«‚р•П‚¦‚й‰сђ”
-const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//‚±‚МЉ„Ќ‡€ИЏгѓpѓ‰ѓVѓ…Ѓ[ѓgђF‚ЄЊџЏo‚і‚к‚Ѕ‚зѓpѓ‰‚Є‘¶ЌЭ‚·‚й‚а‚М‚Ж‚·‚й
+const static double SEPARATING_SERVO_INTERVAL = 0.8;//г‚µгѓјгѓњгЃ®еђ‘гЃЌг‚’е¤‰гЃ€г‚‹й–“йљ”(з§’)
+const static unsigned int SEPARATING_SERVO_COUNT = 12;//г‚µгѓјгѓњгЃ®еђ‘гЃЌг‚’е¤‰гЃ€г‚‹е›ћж•°
+const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//гЃ“гЃ®е‰Іеђ€д»ҐдёЉгѓ‘гѓ©г‚·гѓҐгѓјгѓ€и‰ІгЃЊж¤ње‡єгЃ•г‚ЊгЃџг‚‰гѓ‘гѓ©гЃЊе­ењЁгЃ™г‚‹г‚‚гЃ®гЃЁгЃ™г‚‹
 
-const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ѓSЃ[ѓ‹”»’и‚Ж‚·‚йѓSЃ[ѓ‹‚©‚з‚М‹——Ј(“x)
-const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//€Ъ“®‘¬“x‚рЊё‘¬‚·‚йѓSЃ[ѓ‹‚©‚з‚М‹——Ј(‹Я‚Г‚ў‚ЅЏкЌ‡ЃAЌs‚«‰Я‚¬–hЋ~‚М‚Ѕ‚ЯЊё‘¬‚·‚й)
-const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ѓSЃ[ѓ‹ђЪ‹ЯЋћ‚М‘¬“x(ЌЕ‘е”д)
-const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//ђiЌs•ыЊь‚р•ПЌX‚·‚йЉФЉu(•b)
-const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//€к‰с‚М‘ЂЌм‚Е•ыЊь“]Љ·‚·‚йЌЕ‘е‚МЉp“x
-const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.0 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVAL‚МЉФ‚Й€Ъ“®‚µ‚Ѕ‹——Ј‚Є‚±‚Ми‡’l€И‰є‚И‚зѓXѓ^ѓbѓN”»’и‚Ж‚·‚й
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//г‚ґгѓјгѓ«е€¤е®љгЃЁгЃ™г‚‹г‚ґгѓјгѓ«гЃ‹г‚‰гЃ®и·ќй›ў(еє¦)
+const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//з§»е‹•йЂџеє¦г‚’жё›йЂџгЃ™г‚‹г‚ґгѓјгѓ«гЃ‹г‚‰гЃ®и·ќй›ў(иї‘гЃҐгЃ„гЃџе ґеђ€гЂЃиЎЊгЃЌйЃЋгЃЋйІж­ўгЃ®гЃџг‚Ѓжё›йЂџгЃ™г‚‹)
+const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//г‚ґгѓјгѓ«жЋҐиї‘ж™‚гЃ®йЂџеє¦(жњЂе¤§жЇ”)
+const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//йЂІиЎЊж–№еђ‘г‚’е¤‰ж›ґгЃ™г‚‹й–“йљ”(з§’)
+const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//дёЂе›ћгЃ®ж“ЌдЅњгЃ§ж–№еђ‘и»ўжЏ›гЃ™г‚‹жњЂе¤§гЃ®и§’еє¦
+const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.0 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALгЃ®й–“гЃ«з§»е‹•гЃ—гЃџи·ќй›ўгЃЊгЃ“гЃ®й–ѕеЂ¤д»Ґдё‹гЃЄг‚‰г‚№г‚їгѓѓг‚Їе€¤е®љгЃЁгЃ™г‚‹
 
 const static double WAKING_THRESHOLD = 200;
 const static unsigned int WAKING_RETRY_COUNT = 5;
 
 //////////////////////////////////////////////
-//ѓ^ѓXѓNЊnђЭ’и
+//г‚їг‚№г‚Їзі»иЁ­е®љ
 //////////////////////////////////////////////
-//ѓ^ѓXѓN—DђжЏ‡€К(’б‚ў‚Щ‚Зђж‚ЙЋАЌs‚і‚к‚й)
+//г‚їг‚№г‚Їе„Єе…€й †дЅЌ(дЅЋгЃ„гЃ»гЃ©е…€гЃ«е®џиЎЊгЃ•г‚Њг‚‹)
 const static unsigned int TASK_PRIORITY_SENSOR = 10;
 const static unsigned int TASK_PRIORITY_MOTOR = 100;
 const static unsigned int TASK_PRIORITY_COMMUNICATION = 0;
 const static unsigned int TASK_PRIORITY_ACTUATOR = 10000;
 const static unsigned int TASK_PRIORITY_SEQUENCE = 1000;
-//ѓ^ѓXѓNЋАЌsЉФЉu(’б‚ў‚Щ‚З‘Ѕ‚­ЋАЌs‚і‚к‚й)
+//г‚їг‚№г‚Їе®џиЎЊй–“йљ”(дЅЋгЃ„гЃ»гЃ©е¤љгЃЏе®џиЎЊгЃ•г‚Њг‚‹)
 const static unsigned int TASK_INTERVAL_GYRO = 0;
 const static unsigned int TASK_INTERVAL_SENSOR = 10;
 const static unsigned int TASK_INTERVAL_MOTOR = 0;
@@ -85,7 +85,7 @@ const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
 
 //////////////////////////////////////////////
-//‚»‚М‘ј
+//гЃќгЃ®д»–
 //////////////////////////////////////////////
-const static double DEGREE_2_METER = 111111.111111;//‚±‚к‚р“x‚ЙЉ|‚Ї‚й‚ЖѓЃЃ[ѓgѓ‹‚Й•ПЉ·‚Е‚«‚й
+const static double DEGREE_2_METER = 111111.111111;//гЃ“г‚Њг‚’еє¦гЃ«жЋ›гЃ‘г‚‹гЃЁгѓЎгѓјгѓ€гѓ«гЃ«е¤‰жЏ›гЃ§гЃЌг‚‹
 const static char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt";

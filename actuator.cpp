@@ -95,7 +95,7 @@ bool Servo::onCommand(const std::vector<std::string> args)
 			return true;
 		}else
 		{
-			//Šp“xŽw’è
+			//è§’åº¦æŒ‡å®š
 			float period = 0;
 			if(args.size() == 2)
 			{

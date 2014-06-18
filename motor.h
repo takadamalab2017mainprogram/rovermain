@@ -1,12 +1,12 @@
 /*
-	���[�^���R���g���[�����邽�߂̃N���X
+	モータをコントロールするためのクラス
 */
 
 #pragma once
 #include "task.h"
 
 
-//���[�^1���R���g���[������N���X
+//モータ1個をコントロールするクラス
 class Motor
 {
 private:
@@ -17,10 +17,10 @@ private:
         // Current Power
         double mCurPower;
 
-		//�o�͕ω��p
-		// �ڕW�o��
+		//出力変化用
+		// 目標出力
 		int mTargetPower;
-		//�o�͕ω��ʌW��
+		//出力変化量係数
 		double mCoeff;
 public:
         // Initialize Motor by 2 pins
@@ -28,15 +28,15 @@ public:
 
 		void clean();
 
-		// ���[�^�o�͂��X�V(ratio�͂ق��̃��[�^�Ƃ̌̍��z���p)
+		// モータ出力を更新(ratioはほかのモータとの個体差吸収用)
 		void update(double elapsedSeconds);
 
         // Controle motor power. Negative value means reverse
 		// range: [-MOTOR_MAX_POWER MOTOR_MAX_POWER]
         void set(int pow);
 
-		//���[�^�̏o�͂�ω��������(MOTOR_MAX_POWER_CHANGE)�Ɋ|������W����ݒ�
-		//����ɂ���č��E�̃��[�^�Ԃ̌̍����z�����āA�܂������ɉ���/�������ł���
+		//モータの出力を変化させる量(MOTOR_MAX_POWER_CHANGE)に掛けられる係数を設定
+		//これによって左右のモータ間の個体差を吸収して、まっすぐに加速/減速ができる
 		void setCoeff(double coeff);
 
         // Get Current power
@@ -46,90 +46,90 @@ public:
         ~Motor();
 };
 
-//�G���R�[�_2���Ǘ�����N���X(�V���O���g��)
-//wiringPi�̎����̓s����A�����̃C���X�^���X���쐬����Ɛ��������삵�܂���B
+//エンコーダ2個を管理するクラス(シングルトン)
+//wiringPiの実装の都合上、複数のインスタンスを作成すると正しく動作しません。
 
-/////�Ď��X���b�h�̊Ǘ���������������A�R�[���o�b�N�֐��Ɉ��������Ȃ�����WiringPi�̎���������
+/////監視スレッドの管理が微妙だったり、コールバック関数に引数を取れないしでWiringPiの実装が微妙
 class MotorEncoder
 {
 private:
-	int mEncoderPinL, mEncoderPinR;//�G���R�[�_�̃s���ԍ�
-	unsigned long long mPulseCountL, mPulseCountR;//�p���X��
+	int mEncoderPinL, mEncoderPinR;//エンコーダのピン番号
+	unsigned long long mPulseCountL, mPulseCountR;//パルス数
 
 	MotorEncoder();
 
-	static void pulseLCallback();//�G���R�[�_�[�p���X�����������Ƃ��ɌĂ΂�銄�荞�݊֐�
+	static void pulseLCallback();//エンコーダーパルスが到着したときに呼ばれる割り込み関数
 	static void pulseRCallback();
 public:
 	static MotorEncoder* getInstance();
-	//�p���X�`�F�b�N�J�n
+	//パルスチェック開始
 	bool init();
-	//�p���X�`�F�b�N�I��
+	//パルスチェック終了
 	void clean();
 
-	//���[�^�̃p���X����Ԃ�
+	//モータのパルス数を返す
 	unsigned long long getL();
 	unsigned long long getR();
 	
 	~MotorEncoder();
 };
 
-//���[�^2�ƃZ���T�[��g�ݍ��킹�đ��s����N���X
+//モータ2個とセンサーを組み合わせて走行するクラス
 class MotorDrive : public TaskBase
 {
 private:
         Motor mMotorL,mMotorR;
 		MotorEncoder* mpMotorEncoder;
 
-		typedef enum{//���䃂�[�h
-			DRIVE_RATIO, //���V�I�w��Ő��䂷��
-			DRIVE_PID,//PID����ɂ��p�x�w��Ő��䂷��
+		typedef enum{//制御モード
+			DRIVE_RATIO, //レシオ指定で制御する
+			DRIVE_PID,//PID制御による角度指定で制御する
 			DRIVE_PID_TURN,
 		}DRIVE_MODE;
 		DRIVE_MODE mDriveMode;
-		int mRatioL,mRatioR;//���V�I��
+		int mRatioL,mRatioR;//レシオ比
 
-		//PID�p�p�����[�^
-		double mP,mI,mD;//PID�p�����^
-		double mPTurn,mITurn,mDTurn;//���̏��]�pPID�p�����^
-		double mDiff1,mDiff2,mDiff3;//PID�p�ߋ��̂���
-		double mAngle;//�ڕW�p�x
-		double mControlPower;//�O��̑����
-		int mDrivePower;//���s���x
+		//PID用パラメータ
+		double mP,mI,mD;//PIDパラメタ
+		double mPTurn,mITurn,mDTurn;//その場回転用PIDパラメタ
+		double mDiff1,mDiff2,mDiff3;//PID用過去のずれ
+		double mAngle;//目標角度
+		double mControlPower;//前回の操作量
+		int mDrivePower;//走行速度
 
-		//�Ō�Ƀ��[�^�o�͂��X�V��������
+		//最後にモータ出力を更新した時刻
 		struct timespec mLastUpdateTime;
 protected:
-		//������
+		//初期化
         virtual bool onInit(const struct timespec& time);
 		virtual void onClean();
-		//���t���[���̏���
+		//毎フレームの処理
 		virtual void onUpdate(const struct timespec& time);
 
-		//�R�}���h��t
+		//コマンド受付
 		virtual bool onCommand(const std::vector<std::string> args);
 
 		void updatePIDState(double p,double i,double d);
 		void updatePIDMove();
 public:
-		//���[�^�̍��E���ݒ�
+		//モータの左右比を設定
 		void setRatio(int ratioL,int ratioR);
 
-		//�w�肳�ꂽ�o�͂Ń��[�^����]������((100,100)�̏ꍇ�A���ۂ�pwm�o�͂�setRatio�ɐݒ肵���l�ɂȂ�)
+		//指定された出力でモータを回転させる((100,100)の場合、実際のpwm出力はsetRatioに設定した値になる)
         void drive(int powerL,int powerR);
 
-		//PID����p�p�����[�^��ݒ�
+		//PID制御用パラメータを設定
 		void set(double p,double i,double d);
 
-		//PID������J�n����(�W���C����Z��]���̊p�x�����ɂȂ�悤�ɐ��䂷��)
-		//����ڕW�p�x�́A���݂̌���+angle
+		//PID制御を開始する(ジャイロのZ回転軸の角度が一定になるように制御する)
+		//制御目標角度は、現在の向き+angle
 		void startPID(double angle,int power);
 
-		//PID����̐���ڕW�p�x��ύX����
-		//����ڕW�p�x�́A���݂̐���ڕW�p�x+angle
+		//PID制御の制御目標角度を変更する
+		//制御目標角度は、現在の制御目標角度+angle
 		void drivePID(double angle,int power);
 
-		//�G���R�[�_�̒l��Ԃ�
+		//エンコーダの値を返す
 		unsigned long long getR();
 		unsigned long long getL();
 

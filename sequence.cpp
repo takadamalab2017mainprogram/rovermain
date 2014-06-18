@@ -26,6 +26,7 @@ Avoiding gAvoidingState;
 WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
+ColorAccessing ColorAccessing;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -121,10 +122,10 @@ bool Waiting::onInit(const struct timespec& time)
 
 	mContinuousLightCount = 0;
 
-	//Œ»İ‚Ì‚ğ•Û‘¶
+	//ç¾åœ¨ã®æ™‚åˆ»ã‚’ä¿å­˜
 	mStartTime = time;
 
-	//•K—v‚Èƒ^ƒXƒN‚ğg—p‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	//å¿…è¦ãªã‚¿ã‚¹ã‚¯ã‚’ä½¿ç”¨ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gLightSensor.setRunMode(true);
@@ -140,32 +141,32 @@ void Waiting::nextState()
 {
 	gBuzzer.start(100);
 
-	//ƒXƒŠ[ƒv‚ğ‰ğœ
+	//ã‚¹ãƒªãƒ¼ãƒ—ã‚’è§£é™¤
 	gXbeeSleep.setState(false);
-	//Ÿ‚Ìó‘Ô‚ğİ’è
+	//æ¬¡ã®çŠ¶æ…‹ã‚’è¨­å®š
 	gFallingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Waiting Finished!\r\n");
 }
 void Waiting::onUpdate(const struct timespec& time)
 {
-	//XBee‚ğƒXƒŠ[ƒvƒ‚[ƒh‚Éİ’è(ƒƒPƒbƒg“à“d”g‹K§)
+	//XBeeã‚’ã‚¹ãƒªãƒ¼ãƒ—ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š(ãƒ­ã‚±ãƒƒãƒˆå†…é›»æ³¢è¦åˆ¶)
 	gXbeeSleep.setState(true);
 
-	//–¾‚é‚¢ê‡ƒJƒEƒ“ƒg
+	//æ˜ã‚‹ã„å ´åˆã‚«ã‚¦ãƒ³ãƒˆ
 	if(gLightSensor.get())
 	{
 		++mContinuousLightCount;
 		gBuzzer.start(2);
 	}else mContinuousLightCount = 0;
 
-	if(mContinuousLightCount >= WAITING_LIGHT_COUNT)//–¾‚é‚¢ê‡•úo”»’è
+	if(mContinuousLightCount >= WAITING_LIGHT_COUNT)//æ˜ã‚‹ã„å ´åˆæ”¾å‡ºåˆ¤å®š
 	{
 		nextState();
 		return;
 	}
 
-	if(Time::dt(time,mStartTime) > WAITING_ABORT_TIME)//ˆê’èŠÔ‚ªŒo‰ß‚µ‚½‚çŸ‚Ìó‘Ô‚É‹­§•ÏX
+	if(Time::dt(time,mStartTime) > WAITING_ABORT_TIME)//ä¸€å®šæ™‚é–“ãŒçµŒéã—ãŸã‚‰æ¬¡ã®çŠ¶æ…‹ã«å¼·åˆ¶å¤‰æ›´
 	{
 		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
 		nextState();
@@ -188,7 +189,7 @@ bool Falling::onInit(const struct timespec& time)
 	mContinuousPressureCount = 0;
 	mCoutinuousGyroCount = 0;
 
-	//•K—v‚Èƒ^ƒXƒN‚ğg—p‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	//å¿…è¦ãªã‚¿ã‚¹ã‚¯ã‚’ä½¿ç”¨ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
@@ -203,20 +204,20 @@ bool Falling::onInit(const struct timespec& time)
 }
 void Falling::onUpdate(const struct timespec& time)
 {
-	//‰‰ñ‚Ì‚İ‹Cˆ³‚ğæ“¾
+	//åˆå›ã®ã¿æ°—åœ§ã‚’å–å¾—
 	if(mLastPressure == 0)mLastPressure = gPressureSensor.get();
 
-	//Šp‘¬“x‚ªè‡’lˆÈ‰º‚È‚çƒJƒEƒ“ƒg
+	//è§’é€Ÿåº¦ãŒé–¾å€¤ä»¥ä¸‹ãªã‚‰ã‚«ã‚¦ãƒ³ãƒˆ
 	if(gGyroSensor.getRvx() < FALLING_GYRO_THRESHOLD && gGyroSensor.getRvy() < FALLING_GYRO_THRESHOLD && gGyroSensor.getRvz() < FALLING_GYRO_THRESHOLD)
 	{
 		if(mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
 	}else mCoutinuousGyroCount = 0;
 
-	//1•b‚²‚Æ‚ÉˆÈ‰º‚Ìˆ—‚ğs‚¤
+	//1ç§’ã”ã¨ã«ä»¥ä¸‹ã®å‡¦ç†ã‚’è¡Œã†
 	if(Time::dt(time,mLastCheckTime) < 1)return;
 	mLastCheckTime = time;
 
-	//‹Cˆ³‚Ì·‚ªˆê’èˆÈ‰º‚È‚çƒJƒEƒ“ƒg
+	//æ°—åœ§ã®å·®ãŒä¸€å®šä»¥ä¸‹ãªã‚‰ã‚«ã‚¦ãƒ³ãƒˆ
 	int newPressure = gPressureSensor.get();
 	if(abs((int)(newPressure - mLastPressure)) < FALLING_DELTA_PRESSURE_THRESHOLD)
 	{
@@ -224,14 +225,14 @@ void Falling::onUpdate(const struct timespec& time)
 	}else mContinuousPressureCount = 0;
 	mLastPressure = newPressure;
 
-	//ƒGƒ“ƒR[ƒ_‚Ì’l‚Ì·‚ªˆê’èˆÈã‚È‚çƒJƒEƒ“ƒg
+	//ã‚¨ãƒ³ã‚³ãƒ¼ãƒ€ã®å€¤ã®å·®ãŒä¸€å®šä»¥ä¸Šãªã‚‰ã‚«ã‚¦ãƒ³ãƒˆ
 	unsigned long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();
 	if(newMotorPulseL - mLastMotorPulseL > FALLING_MOTOR_PULSE_THRESHOLD || newMotorPulseR - mLastMotorPulseR > FALLING_MOTOR_PULSE_THRESHOLD)
 	{
 		if(mContinuousMotorPulseCount < FALLING_MOTOR_PULSE_COUNT)++mContinuousMotorPulseCount;
 	}else mContinuousMotorPulseCount = 0;
 
-	//”»’èó‘Ô‚ğ•\¦
+	//åˆ¤å®šçŠ¶æ…‹ã‚’è¡¨ç¤º
 	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n",mContinuousPressureCount,FALLING_PRESSURE_COUNT,newPressure);
 	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n",mCoutinuousGyroCount,FALLING_GYRO_COUNT);
 	Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d (%llu,%llu)\r\n",mContinuousMotorPulseCount,FALLING_MOTOR_PULSE_COUNT,newMotorPulseL - mLastMotorPulseL,newMotorPulseR - mLastMotorPulseR);
@@ -239,19 +240,19 @@ void Falling::onUpdate(const struct timespec& time)
 	mLastMotorPulseL = newMotorPulseL;
 	mLastMotorPulseR = newMotorPulseR;
 
-	//GPSî•ñƒƒO
+	//GPSæƒ…å ±ãƒ­ã‚°
 	VECTOR3 pos;
 	if(gGPSSensor.get(pos))Debug::print(LOG_SUMMARY, "GPS Position     (%f %f %f)\r\n",pos.x,pos.y,pos.z);
 	else Debug::print(LOG_SUMMARY, "GPS Position     Unable to get\r\n");
 
-	//ƒJƒEƒ“ƒg‰ñ”‚ªˆê’èˆÈã‚È‚çŸ‚Ìó‘Ô‚ÉˆÚs
+	//ã‚«ã‚¦ãƒ³ãƒˆå›æ•°ãŒä¸€å®šä»¥ä¸Šãªã‚‰æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 	if(mContinuousPressureCount >= FALLING_PRESSURE_COUNT && (mCoutinuousGyroCount >= FALLING_GYRO_COUNT || mContinuousMotorPulseCount >= FALLING_MOTOR_PULSE_COUNT))
 	{
 		nextState();
 		return;
 	}
 
-	if(Time::dt(time,mStartTime) > FALLING_ABORT_TIME)//ˆê’èŠÔ‚ªŒo‰ß‚µ‚½‚çŸ‚Ìó‘Ô‚É‹­§•ÏX
+	if(Time::dt(time,mStartTime) > FALLING_ABORT_TIME)//ä¸€å®šæ™‚é–“ãŒçµŒéã—ãŸã‚‰æ¬¡ã®çŠ¶æ…‹ã«å¼·åˆ¶å¤‰æ›´
 	{
 		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
 		nextState();
@@ -262,7 +263,7 @@ void Falling::nextState()
 {
 	gBuzzer.start(100);
 
-	//Ÿ‚Ìó‘Ô‚ğİ’è
+	//æ¬¡ã®çŠ¶æ…‹ã‚’è¨­å®š
 	gSeparatingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
@@ -280,7 +281,7 @@ bool Separating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Separating...\r\n");
 
-	//•K—v‚Èƒ^ƒXƒN‚ğg—p‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	//å¿…è¦ãªã‚¿ã‚¹ã‚¯ã‚’ä½¿ç”¨ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
@@ -304,7 +305,7 @@ void Separating::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_SEPARATE:
-		//ƒpƒ‰ƒVƒ…[ƒg‚ğØ‚è—£‚·
+		//ãƒ‘ãƒ©ã‚·ãƒ¥ãƒ¼ãƒˆã‚’åˆ‡ã‚Šé›¢ã™
 		if(Time::dt(time,mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
 		mLastUpdateTime = time;
 
@@ -313,45 +314,45 @@ void Separating::onUpdate(const struct timespec& time)
 		++mServoCount;
 		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
 
-		if(mServoCount >= SEPARATING_SERVO_COUNT)//ƒT[ƒ{‚ğ‹K’è‰ñ”“®‚©‚µ‚½
+		if(mServoCount >= SEPARATING_SERVO_COUNT)//ã‚µãƒ¼ãƒœã‚’è¦å®šå›æ•°å‹•ã‹ã—ãŸ
 		{
-			//Ÿó‘Ô‚É‘JˆÚ
+			//æ¬¡çŠ¶æ…‹ã«é·ç§»
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_PARA_JUDGE:
-		//‹N‚«ã‚ª‚è“®ì‚ğÀs‚µA‰æ‘œˆ—‚ğs‚¤‘O‚É1•b‘Ò‹@‚µ‚Ä‰æ‘œ‚ÌƒuƒŒ‚ğ–h~‚·‚é
-		if(gWakingState.isActive())mLastUpdateTime = time;//‹N‚«ã‚ª‚è“®ì’†‚Í‘Ò‹@‚·‚é
-		if(Time::dt(time,mLastUpdateTime) > 1)//‹N‚«ã‚ª‚è“®ìŒã1•b‘Ò‹@‚·‚é
+		//èµ·ãä¸ŠãŒã‚Šå‹•ä½œã‚’å®Ÿè¡Œã—ã€ç”»åƒå‡¦ç†ã‚’è¡Œã†å‰ã«1ç§’å¾…æ©Ÿã—ã¦ç”»åƒã®ãƒ–ãƒ¬ã‚’é˜²æ­¢ã™ã‚‹
+		if(gWakingState.isActive())mLastUpdateTime = time;//èµ·ãä¸ŠãŒã‚Šå‹•ä½œä¸­ã¯å¾…æ©Ÿã™ã‚‹
+		if(Time::dt(time,mLastUpdateTime) > 1)//èµ·ãä¸ŠãŒã‚Šå‹•ä½œå¾Œ1ç§’å¾…æ©Ÿã™ã‚‹
 		{
-			//Ÿó‘Ô‚É‘JˆÚ
+			//æ¬¡çŠ¶æ…‹ã«é·ç§»
 			mLastUpdateTime = time;
 			mCurStep = STEP_PARA_JUDGE;
 			gCameraCapture.startWarming();
 		}
 		break;
 	case STEP_PARA_JUDGE:
-		//ƒ[ƒo[‚ğ‹N‚±‚µI‚í‚Á‚½‚çCƒpƒ‰ƒVƒ…[ƒgŒŸ’m‚ğs‚¢C‘¶İ‚·‚éê‡‚Í‰ñ”ğs“®‚É‘JˆÚ‚·‚é
+		//ãƒ­ãƒ¼ãƒãƒ¼ã‚’èµ·ã“ã—çµ‚ã‚ã£ãŸã‚‰ï¼Œãƒ‘ãƒ©ã‚·ãƒ¥ãƒ¼ãƒˆæ¤œçŸ¥ã‚’è¡Œã„ï¼Œå­˜åœ¨ã™ã‚‹å ´åˆã¯å›é¿è¡Œå‹•ã«é·ç§»ã™ã‚‹
 		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
-			//ƒpƒ‰ƒVƒ…[ƒg‚Ì‘¶İƒ`ƒFƒbƒN‚ğs‚¤
+			//ãƒ‘ãƒ©ã‚·ãƒ¥ãƒ¼ãƒˆã®å­˜åœ¨ãƒã‚§ãƒƒã‚¯ã‚’è¡Œã†
 			IplImage* pImage = gCameraCapture.getFrame();
 			if(gImageProc.isParaExist(pImage))
 			{
-				//‰ñ”ğ“®ì‚É‘JˆÚ
+				//å›é¿å‹•ä½œã«é·ç§»
 				mCurStep = STEP_PARA_DODGE;
 				mLastUpdateTime = time;
 				gTurningState.setRunMode(true);
 				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
 			}else
 			{
-				//Ÿó‘Ô(ƒiƒr)‚É‘JˆÚ
+				//æ¬¡çŠ¶æ…‹(ãƒŠãƒ“)ã«é·ç§»
 				Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
 				nextState();
 			}
-			//ƒpƒ‰ŒŸ’m‚É—p‚¢‚½‰æ‘œ‚ğ•Û‘¶‚·‚é
+			//ãƒ‘ãƒ©æ¤œçŸ¥ã«ç”¨ã„ãŸç”»åƒã‚’ä¿å­˜ã™ã‚‹
 			gCameraCapture.save(NULL, pImage);
 		}
 		break;
@@ -366,10 +367,10 @@ void Separating::onUpdate(const struct timespec& time)
 
 void Separating::nextState()
 {
-	//ƒuƒU[–Â‚ç‚µ‚Æ‚­
+	//ãƒ–ã‚¶ãƒ¼é³´ã‚‰ã—ã¨ã
 	gBuzzer.start(100);
 
-	//Ÿ‚Ìó‘Ô‚ğİ’è
+	//æ¬¡ã®çŠ¶æ…‹ã‚’è¨­å®š
 	gNavigatingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Separating Finished!\r\n");
@@ -383,12 +384,12 @@ Separating::Separating() : mCurServoState(false),mServoCount(0)
 Separating::~Separating()
 {
 }
-//ƒS[ƒ‹‚Ö‚ÌˆÚ“®’†
+//ã‚´ãƒ¼ãƒ«ã¸ã®ç§»å‹•ä¸­
 bool Navigating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
 
-	//•K—v‚Èƒ^ƒXƒN‚ğg—p‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	//å¿…è¦ãªã‚¿ã‚¹ã‚¯ã‚’ä½¿ç”¨ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
@@ -408,10 +409,10 @@ void Navigating::onUpdate(const struct timespec& time)
 {
 	VECTOR3 currentPos;
 
-	//ƒS[ƒ‹‚ªİ’è‚³‚ê‚Ä‚¢‚é‚©Šm”F
+	//ã‚´ãƒ¼ãƒ«ãŒè¨­å®šã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèª
 	if(!mIsGoalPos)
 	{
-		//ƒS[ƒ‹‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¢‚½‚ßˆÚ“®‚Å‚«‚È‚¢
+		//ã‚´ãƒ¼ãƒ«ãŒè¨­å®šã•ã‚Œã¦ã„ãªã„ãŸã‚ç§»å‹•ã§ããªã„
 		Debug::print(LOG_SUMMARY, "NAVIGATING : Please set goal!\r\n");
 		gMotorDrive.drive(0,0);
 		nextState();
@@ -419,14 +420,14 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	bool isNewData = gGPSSensor.isNewPos();
-	//V‚µ‚¢ˆÊ’u‚ğæ“¾‚Å‚«‚È‚¯‚ê‚Îˆ—‚ğ•Ô‚·
+	//æ–°ã—ã„ä½ç½®ã‚’å–å¾—ã§ããªã‘ã‚Œã°å‡¦ç†ã‚’è¿”ã™
 	if(!gGPSSensor.get(currentPos,false))return;
 
 
-	//V‚µ‚¢À•W‚Å‚ ‚ê‚Îƒoƒbƒtƒ@‚É’Ç‰Á
+	//æ–°ã—ã„åº§æ¨™ã§ã‚ã‚Œã°ãƒãƒƒãƒ•ã‚¡ã«è¿½åŠ 
 	if(isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
 	{
-		//Å‰‚ÌÀ•W‚ğæ“¾‚µ‚½‚çˆÚ“®‚ğŠJn‚·‚é
+		//æœ€åˆã®åº§æ¨™ã‚’å–å¾—ã—ãŸã‚‰ç§»å‹•ã‚’é–‹å§‹ã™ã‚‹
 		if(mLastPos.empty())
 		{
 			Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
@@ -437,21 +438,21 @@ void Navigating::onUpdate(const struct timespec& time)
 		mLastPos.push_back(currentPos);
 	}	
 
-	//ƒS[ƒ‹‚Æ‚Ì‹——£‚ğŠm”F
+	//ã‚´ãƒ¼ãƒ«ã¨ã®è·é›¢ã‚’ç¢ºèª
 	double distance = VECTOR3::calcDistanceXY(currentPos,mGoalPos);
 	if(distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD)
 	{
-		//ƒS[ƒ‹”»’è
+		//ã‚´ãƒ¼ãƒ«åˆ¤å®š
 		gMotorDrive.drive(0,0);
 		nextState();
 		return;
 	}
 
-	//”•b‚½‚Á‚Ä‚¢‚È‚¯‚ê‚Îˆ—‚ğ•Ô‚·
+	//æ•°ç§’ãŸã£ã¦ã„ãªã‘ã‚Œã°å‡¦ç†ã‚’è¿”ã™
 	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastCheckTime = time;
 
-	//ˆÙí’l”rœ
+	//ç•°å¸¸å€¤æ’é™¤
 	if(removeError())
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
@@ -459,34 +460,34 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	if(gPredictingState.isWorking(time))
 	{
-		//“Q‰ñ”ğ’†
-	}else if(isStuck())//ƒXƒ^ƒbƒN”»’è
+		//è½å›é¿ä¸­
+	}else if(isStuck())//ã‚¹ã‚¿ãƒƒã‚¯åˆ¤å®š
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
 		gEscapingState.setRunMode(true);
 	}else
 	{
-		if(gEscapingState.isActive())//’Eoƒ‚[ƒh‚ªŠ®—¹‚µ‚½
+		if(gEscapingState.isActive())//è„±å‡ºãƒ¢ãƒ¼ãƒ‰ãŒå®Œäº†ã—ãŸæ™‚
 		{
-			//ƒ[ƒo[‚ª‚Ğ‚Á‚­‚è•Ô‚Á‚Ä‚¢‚é‰Â”\«‚ª‚ ‚é‚½‚ßA‚µ‚Î‚ç‚­‘Oi‚·‚é
+			//ãƒ­ãƒ¼ãƒãƒ¼ãŒã²ã£ãã‚Šè¿”ã£ã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹ãŸã‚ã€ã—ã°ã‚‰ãå‰é€²ã™ã‚‹
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gEscapingState.setRunMode(false);
 		}else
 		{
-			//’Êí‚ÌƒiƒrƒQ[ƒVƒ‡ƒ“
-			if(mLastPos.size() < 2)return;//‰ß‹‚ÌÀ•W‚ª1‚ÂˆÈã(Œ»İ‚ÌÀ•W‚ğ‚ ‚í‚¹‚Ä2‚ÂˆÈã)‚È‚¯‚ê‚Îˆ—‚ğ•Ô‚·(is•ûŒüŒˆ’è•s‰Â”\)
-			navigationMove(distance);//‰ß‹‚ÌÀ•W‚©‚çis•ûŒü‚ğ•ÏX‚·‚é
+			//é€šå¸¸ã®ãƒŠãƒ“ã‚²ãƒ¼ã‚·ãƒ§ãƒ³
+			if(mLastPos.size() < 2)return;//éå»ã®åº§æ¨™ãŒ1ã¤ä»¥ä¸Š(ç¾åœ¨ã®åº§æ¨™ã‚’ã‚ã‚ã›ã¦2ã¤ä»¥ä¸Š)ãªã‘ã‚Œã°å‡¦ç†ã‚’è¿”ã™(é€²è¡Œæ–¹å‘æ±ºå®šä¸å¯èƒ½)
+			navigationMove(distance);//éå»ã®åº§æ¨™ã‹ã‚‰é€²è¡Œæ–¹å‘ã‚’å¤‰æ›´ã™ã‚‹
 		}
 	}
 
-	//À•Wƒf[ƒ^‚ğ‚Ğ‚Æ‚Âc‚µ‚Äíœ
+	//åº§æ¨™ãƒ‡ãƒ¼ã‚¿ã‚’ã²ã¨ã¤æ®‹ã—ã¦å‰Šé™¤
 	currentPos = mLastPos.back();
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
 }
 bool Navigating::removeError()
 {
-	if(mLastPos.size() <= 2)return false;//Å’á2“_‚Íc‚·
+	if(mLastPos.size() <= 2)return false;//æœ€ä½2ç‚¹ã¯æ®‹ã™
 	std::list<VECTOR3>::iterator it = mLastPos.begin();
 	VECTOR3 average,sigma;
 	while(it != mLastPos.end())
@@ -512,7 +513,7 @@ bool Navigating::removeError()
 }
 bool Navigating::isStuck() const
 {
-	//ƒXƒ^ƒbƒN”»’è
+	//ã‚¹ã‚¿ãƒƒã‚¯åˆ¤å®š
 	VECTOR3 averagePos1,averagePos2;
 	unsigned int i,border;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
@@ -530,11 +531,11 @@ bool Navigating::isStuck() const
 	}
 	averagePos2 /= i - border;
 
-	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//ˆÚ“®—Ê‚ªè‡’lˆÈ‰º‚È‚çƒXƒ^ƒbƒN‚Æ”»’è
+	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//ç§»å‹•é‡ãŒé–¾å€¤ä»¥ä¸‹ãªã‚‰ã‚¹ã‚¿ãƒƒã‚¯ã¨åˆ¤å®š
 }
 void Navigating::navigationMove(double distance) const
 {
-	//‰ß‹‚ÌÀ•W‚Ì•½‹Ï’l‚ğŒvZ‚·‚é
+	//éå»ã®åº§æ¨™ã®å¹³å‡å€¤ã‚’è¨ˆç®—ã™ã‚‹
 	VECTOR3 averagePos;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
 	while(it != mLastPos.end())
@@ -545,21 +546,21 @@ void Navigating::navigationMove(double distance) const
 	averagePos -= mLastPos.back();
 	averagePos /= mLastPos.size() - 1;
 
-	//V‚µ‚¢Šp“x‚ğŒvZ
+	//æ–°ã—ã„è§’åº¦ã‚’è¨ˆç®—
 	VECTOR3 currentPos = mLastPos.back();
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos,currentPos);
 	double newDirection = -VECTOR3::calcAngleXY(currentPos,mGoalPos);
 	double deltaDirection = GyroSensor::normalize(newDirection - currentDirection);
 	deltaDirection = std::max(std::min(deltaDirection,NAVIGATING_MAX_DELTA_DIRECTION),-1 * NAVIGATING_MAX_DELTA_DIRECTION);
 
-	//V‚µ‚¢‘¬“x‚ğŒvZ
+	//æ–°ã—ã„é€Ÿåº¦ã‚’è¨ˆç®—
 	double speed = MOTOR_MAX_POWER;
-	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;//Ú‹ß‚µ‚½‚ç‘¬“x‚ğ—‚Æ‚·
+	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;//æ¥è¿‘ã—ãŸã‚‰é€Ÿåº¦ã‚’è½ã¨ã™
 
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n",mLastPos.size(),averagePos.x,averagePos.y,currentPos.x,currentPos.y);
 	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n",distance * DEGREE_2_METER,deltaDirection,deltaDirection > 0 ? "LEFT" : "RIGHT");
 
-	//•ûŒü‚Æ‘¬“x‚ğ•ÏX
+	//æ–¹å‘ã¨é€Ÿåº¦ã‚’å¤‰æ›´
 	gMotorDrive.drivePID(deltaDirection ,speed);
 }
 bool Navigating::onCommand(const std::vector<std::string> args)
@@ -598,12 +599,12 @@ navigating [pos x] [pos y] : set goal at specified position\r\n\
 navigating here            : set goal at current position\r\n");
 	return true;
 }
-//Ÿ‚Ìó‘Ô‚ÉˆÚs
+//æ¬¡ã®çŠ¶æ…‹ã«ç§»è¡Œ
 void Navigating::nextState()
 {
 	gBuzzer.start(1000);
 
-	//Ÿ‚Ìó‘Ô‚ğİ’è
+	//æ¬¡ã®çŠ¶æ…‹ã‚’è¨­å®š
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
@@ -642,7 +643,7 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			if(!gImageProc.isWadachiExist(pImage))return;
-			//“Q‚ğ–‘OŒŸ’m‚µ‚½
+			//è½ã‚’äº‹å‰æ¤œçŸ¥ã—ãŸ
 			gCameraCapture.startWarming();
 		}
 		return;
@@ -686,7 +687,7 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 			gCameraCapture.save(NULL,pImage);
 			if(gImageProc.isWadachiExist(pImage))
 			{
-				//“Q‚ğ–‘OŒŸ’m‚µ‚½
+				//è½ã‚’äº‹å‰æ¤œçŸ¥ã—ãŸ
 				gAvoidingState.setRunMode(true);
 				mCurStep = STEP_AVOIDING;
 			}else
@@ -737,6 +738,159 @@ WadachiPredicting::~WadachiPredicting()
 {
 }
 
+/* ã“ã“ã‹ã‚‰ã€€2014å¹´6æœˆã‚ªãƒ¼ãƒ—ãƒ³ãƒ©ãƒœå‰ã«å®Ÿè£… */
+bool ColorAccessing::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	gCameraCapture.startWarming();
+	gMotorDrive.setRunMode(true);
+    mIsLastActionStraight = false;
+	return true;
+}
+void ColorAccessing::onUpdate(const struct timespec& time)
+{
+	if(gAvoidingState.isActive())return;
+
+	switch(mCurStep)
+	{
+	case STEP_STARTING:
+		if(!gWakingState.isActive())
+		{
+			Debug::print(LOG_SUMMARY, "Detecting: Checking started\r\n");
+			mCurStep = STEP_CHECKING;
+			mLastUpdateTime = time;
+			gCameraCapture.startWarming();
+            mAngleOnBegin = gGyroSensor.getRvx();
+		}
+		break;
+	case STEP_CHECKING:
+		if(Time::dt(time,mLastUpdateTime) > 1.0)
+		{
+			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
+			IplImage* pImage = gCameraCapture.getFrame();
+			gCameraCapture.save(NULL,pImage);
+			int x_pos = gImageProc.howColorGap(pImage);
+			
+            //è‰²æ¤œçŸ¥ã—ãŸã‚ˆ
+            if(x_pos != INT_MAX)
+			{
+				mLastUpdateTime = time;
+				if(x_pos < -80){
+					mCurStep = STEP_STOPPING_FAST;
+					gMotorDrive.drive(0,40);
+                    mIsLastActionStraight = false;
+				}
+				else if(80 < x_pos){
+					mCurStep = STEP_STOPPING_FAST;
+					gMotorDrive.drive(40,0);
+                    mIsLastActionStraight = false;
+				}
+				else{
+					mCurStep = STEP_STOPPING_LONG;
+					gMotorDrive.drive(40,40);
+                    mIsLastActionStraight = true;
+                    mAngleOnBegin = gGyroSensor.getRz();
+				}
+			}
+			else//è‰²æ¤œçŸ¥ã—ãªã‹ã£ãŸã‚‰
+			{
+                // ã‚‚ã—å‰å›ã®è¡Œå‹•ãŒç›´é€²ãªã‚‰ï¼
+                if (mIsLastActionStraight)//å‰å›ã®è¡Œå‹•ãŒç›´é€²ãªã‚‰ï¼
+                {
+                	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
+
+                	Debug::print(LOG_SUMMARY, "diff=%f\r\n", diff);
+
+                    if (diff < 0)
+                    {
+                        //å³ã«å‘ã„ãŸæ™‚ã®è¡Œå‹•
+                        mCurStep = STEP_STOPPING_FAST;
+                        gMotorDrive.drive(0,40);
+                    }
+                    else
+                    {
+                        //å·¦ã«å‘ã„ãŸæ™‚ã®è¡Œå‹•
+                        mCurStep = STEP_STOPPING_FAST;
+                        gMotorDrive.drive(40,0);
+                    }
+                }
+                //å‰å›ã®è¡Œå‹•ãŒç›´é€²ä»¥å¤–ãªã‚‰
+				else
+                {
+                	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
+
+                	mCurStep = STEP_TURNING;
+
+                	if ( diff < 0 )
+                	{
+                		//å³ã‚’å‘ã„ã¦ã„ãŸæ™‚ã®å‡¦ç†ï¼
+                		mCurStep = STEP_TURNING;
+	                    gMotorDrive.drive(-30,30);
+
+                	}
+                	else
+                	{
+                		//å·¦ã‚’å‘ã„ã¦ã„ãŸæ™‚ã®å‡¦ç†ï¼
+                		mCurStep = STEP_TURNING;
+	                    gMotorDrive.drive(30,-30);
+                	}
+                }
+                
+                mIsLastActionStraight = false;
+			}
+            
+			//2014/06/13ç§»å‹•
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_TURNING:
+		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
+            gMotorDrive.drive(0,0);
+			mCurStep = STEP_STARTING;
+		}
+		break;
+	case STEP_STOPPING_FAST:
+		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
+			gMotorDrive.drive(0,0);
+			mCurStep = STEP_STARTING;
+		}
+		break;
+	case STEP_STOPPING_LONG:
+		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
+			gMotorDrive.drive(0,0);
+			mCurStep = STEP_STARTING;
+		}
+		break;
+	}
+}
+bool ColorAccessing::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 2)
+	{
+		if(args[1].compare("enable") == 0)
+		{
+			mIsAvoidingEnable = true;
+			return true;
+		}
+		if(args[1].compare("disable") == 0)
+		{
+			mIsAvoidingEnable = false;
+			return true;
+		}
+	}
+	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	return false;
+}
+ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)
+{
+	setName("detecting");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+ColorAccessing::~ColorAccessing()
+{
+}
+/* ã“ã“ã¾ã§ã€€2014å¹´6æœˆã‚ªãƒ¼ãƒ—ãƒ³ãƒ©ãƒœå‰ã«å®Ÿè£… */
+
 bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -759,7 +913,7 @@ void Escaping::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWARD:
-		//ƒoƒbƒN‚ğs‚¤
+		//ãƒãƒƒã‚¯ã‚’è¡Œã†
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
@@ -770,12 +924,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_AFTER_BACKWARD:
-		//Ä‹N“®–h~‚Ì‚½‚ß‘Ò‹@
+		//å†èµ·å‹•é˜²æ­¢ã®ãŸã‚å¾…æ©Ÿ
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			if(mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
 			{
-				//ƒ‰ƒ“ƒ_ƒ€ˆÚs
+				//ãƒ©ãƒ³ãƒ€ãƒ ç§»è¡Œ
 				Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_RANDOM;
@@ -784,19 +938,19 @@ void Escaping::onUpdate(const struct timespec& time)
 			}
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
-			//‹N‚«ã‚ª‚è“®ì‚ğs‚¤
+			//èµ·ãä¸ŠãŒã‚Šå‹•ä½œã‚’è¡Œã†
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			if(gImageProc.isSky(pImage))gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
-		//‰æ‘œB‰e—p‚É‹N‚«ã‚ª‚è“®ì‚ğs‚¢A”•b‘Ò‹@‚·‚é
-		if(gWakingState.isActive())mLastUpdateTime = time;//‹N‚«ã‚ª‚è“®ì’†‚Í‘Ò‹@‚·‚é
-		if(Time::dt(time,mLastUpdateTime) > 2)//‹N‚«ã‚ª‚èŠ®—¹ŒãAˆê’èŠÔ‚ªŒo‰ß‚µ‚Ä‚¢‚½‚ç
+		//ç”»åƒæ’®å½±ç”¨ã«èµ·ãä¸ŠãŒã‚Šå‹•ä½œã‚’è¡Œã„ã€æ•°ç§’å¾…æ©Ÿã™ã‚‹
+		if(gWakingState.isActive())mLastUpdateTime = time;//èµ·ãä¸ŠãŒã‚Šå‹•ä½œä¸­ã¯å¾…æ©Ÿã™ã‚‹
+		if(Time::dt(time,mLastUpdateTime) > 2)//èµ·ãä¸ŠãŒã‚Šå®Œäº†å¾Œã€ä¸€å®šæ™‚é–“ãŒçµŒéã—ã¦ã„ãŸã‚‰
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
-			//‰æ‘œB‰e“®ì‚ğs‚¤
+			//ç”»åƒæ’®å½±å‹•ä½œã‚’è¡Œã†
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0,0);
@@ -804,7 +958,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA:
-		//‰æ‘œˆ—‚ğs‚¢A¡Œã‚Ìs“®‚ğŒˆ’è‚·‚é
+		//ç”»åƒå‡¦ç†ã‚’è¡Œã„ã€ä»Šå¾Œã®è¡Œå‹•ã‚’æ±ºå®šã™ã‚‹
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
@@ -817,7 +971,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//ç”»åƒå‡¦ç†ã®çµæœã€å›è»¢ã™ã‚‹å¿…è¦ãŒã‚ã£ãŸå ´åˆ
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -827,7 +981,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_FORWARD:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA’¼i‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//ç”»åƒå‡¦ç†ã®çµæœã€ç›´é€²ã™ã‚‹å¿…è¦ãŒã‚ã£ãŸå ´åˆ
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100,-100);
@@ -836,7 +990,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN_HERE:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‚»‚Ìê‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//ç”»åƒå‡¦ç†ã®çµæœã€ãã®å ´å›è»¢ã™ã‚‹å¿…è¦ãŒã‚ã£ãŸå ´åˆ
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -846,13 +1000,13 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_RANDOM:
-		//ƒ‰ƒ“ƒ_ƒ€“®ì
+		//ãƒ©ãƒ³ãƒ€ãƒ å‹•ä½œ
 		if(Time::dt(time,mLastUpdateTime) >= 5)
 		{
 			++mEscapingTriedCount;
 			if(mEscapingTriedCount > ESCAPING_MAX_RANDOM_ESCAPING_COUNT)
 			{
-				//ƒ‰ƒ“ƒ_ƒ€ˆÚs
+				//ãƒ©ãƒ³ãƒ€ãƒ ç§»è¡Œ
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_BACKWARD;
 				break;
@@ -869,19 +1023,19 @@ void Escaping::stuckMoveRandom()
 	switch(mCurRandomStep)
 	{
 	case RANDOM_STEP_BACKWARD:
-		//ƒoƒbƒN‚ğs‚¤
+		//ãƒãƒƒã‚¯ã‚’è¡Œã†
 		Debug::print(LOG_SUMMARY, "Escaping(random): backward\r\n");
 		mCurRandomStep = RANDOM_STEP_TURN;
 		gMotorDrive.drive(100,-100);
 		break;
 	case RANDOM_STEP_TURN:
-		//‚»‚Ìê‰ñ“]‚ğs‚¤
+		//ãã®å ´å›è»¢ã‚’è¡Œã†
 		Debug::print(LOG_SUMMARY, "Escaping(random): turning\r\n");
 		mCurRandomStep = RANDOM_STEP_FORWARD;
 		gMotorDrive.drive(100,100);
 		break;
 	case RANDOM_STEP_FORWARD:
-		//‘Oi‚ğs‚¤
+		//å‰é€²ã‚’è¡Œã†
 		Debug::print(LOG_SUMMARY, "Escaping(random): forward\r\n");
 		mCurRandomStep = RANDOM_STEP_BACKWARD;
 		gMotorDrive.drive(-100,-100);
@@ -907,7 +1061,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 			gTurningState.setDirection(true);
 			mCurStep = STEP_CAMERA_TURN_HERE;
 			break;
-		default://ƒJƒƒ‰g‚¦‚È‚©‚Á‚½
+		default://ã‚«ãƒ¡ãƒ©ä½¿ãˆãªã‹ã£ãŸ
 			mCurStep = STEP_RANDOM;
 			mCurRandomStep = RANDOM_STEP_FORWARD;
 			break;
@@ -934,7 +1088,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWARD:
-		//ƒoƒbƒN‚ğs‚¤
+		//ãƒãƒƒã‚¯ã‚’è¡Œã†
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_TURN;
@@ -943,7 +1097,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_TURN:
-		//‚»‚Ìê‰ñ“]‚ğs‚¤
+		//ãã®å ´å›è»¢ã‚’è¡Œã†
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_FORWARD;
@@ -952,7 +1106,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_FORWARD:
-		//‘Oi‚ğs‚¤
+		//å‰é€²ã‚’è¡Œã†
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_BACKWARD;
@@ -977,7 +1131,7 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gMotorDrive.drive(18,18);
 	gGyroSensor.setRunMode(true);
-	mAngleOnBegin = gGyroSensor.getRvx();
+	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
 	return true;
 }
@@ -989,15 +1143,15 @@ void Waking::onUpdate(const struct timespec& time)
 {
 	double power;
 	const static double WAKING_THRESHOLD = 200;
-	switch(mCurStep)//‹N‚«ã‚ª‚èŠJn‚ªŒŸ’m‚³‚ê‚½ê‡
+	switch(mCurStep)//èµ·ãä¸ŠãŒã‚Šé–‹å§‹ãŒæ¤œçŸ¥ã•ã‚ŒãŸå ´åˆ
 	{
 	case STEP_STOP:
-		if(Time::dt(time,mLastUpdateTime) > 2)//2•b‚Ü‚í‚µ‚Ä‚à’…’n‚ªŒŸ’m‚³‚ê‚È‚¢ê‡‚Í‚ ‚«‚ç‚ß‚é
+		if(Time::dt(time,mLastUpdateTime) > 2)//2ç§’ã¾ã‚ã—ã¦ã‚‚ç€åœ°ãŒæ¤œçŸ¥ã•ã‚Œãªã„å ´åˆã¯ã‚ãã‚‰ã‚ã‚‹
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 			setRunMode(false);
 		}
-		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)//Šp‘¬“x‚ªˆê’èˆÈ‰º‚É‚È‚Á‚½‚ç’…’n‚Æ”»’è
+		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)//è§’é€Ÿåº¦ãŒä¸€å®šä»¥ä¸‹ã«ãªã£ãŸã‚‰ç€åœ°ã¨åˆ¤å®š
 		{
 			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
 			mLastUpdateTime = time;
@@ -1006,13 +1160,13 @@ void Waking::onUpdate(const struct timespec& time)
 			gCameraCapture.startWarming();
 		}
 
-		//‰ñ“]‚µ‚½Šp“x‚É‰‚¶‚Äƒ‚[ƒ^‚Ìo—Í‚ğ•Ï‰»‚³‚¹‚é
+		//å›è»¢ã—ãŸè§’åº¦ã«å¿œã˜ã¦ãƒ¢ãƒ¼ã‚¿ã®å‡ºåŠ›ã‚’å¤‰åŒ–ã•ã›ã‚‹
 		power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
 		gMotorDrive.drive(power,power);
 		break;
 
 	case STEP_START:
-		if(Time::dt(time,mLastUpdateTime) > 0.5)//ˆê’èŠÔ‰ñ“]‚ªŒŸ’m‚³‚ê‚È‚¢ê‡¨‰ñ“]•s‰Â”\‚Æ”»’f
+		if(Time::dt(time,mLastUpdateTime) > 0.5)//ä¸€å®šæ™‚é–“å›è»¢ãŒæ¤œçŸ¥ã•ã‚Œãªã„å ´åˆâ†’å›è»¢ä¸å¯èƒ½ã¨åˆ¤æ–­
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
 			mLastUpdateTime = time;
@@ -1020,7 +1174,7 @@ void Waking::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(0,0);
 			gCameraCapture.startWarming();
 		}
-		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//‰ñ“]‚ªŒŸ’m‚³‚ê‚½ê‡¨‹N‚«ã‚ª‚èŠJn‚µ‚½‚Æ”»’f
+		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//å›è»¢ãŒæ¤œçŸ¥ã•ã‚ŒãŸå ´åˆâ†’èµ·ãä¸ŠãŒã‚Šé–‹å§‹ã—ãŸã¨åˆ¤æ–­
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			mLastUpdateTime = time;
@@ -1029,7 +1183,7 @@ void Waking::onUpdate(const struct timespec& time)
 		break;
 
 	case STEP_VERIFY:
-		//‹N‚«ã‚ª‚è‚ª¬Œ÷‚µ‚½‚©”Û‚©‚ğƒJƒƒ‰‰æ‘œ‚ÅŒŸØ
+		//èµ·ãä¸ŠãŒã‚ŠãŒæˆåŠŸã—ãŸã‹å¦ã‹ã‚’ã‚«ãƒ¡ãƒ©ç”»åƒã§æ¤œè¨¼
 		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
 			IplImage* pCaptureFrame = gCameraCapture.getFrame();
@@ -1214,7 +1368,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 	{
 		mLastUpdateTime = time;
 
-		//ƒƒO‚ğ•Û‘¶
+		//ãƒ­ã‚°ã‚’ä¿å­˜
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
 		if(gGPSSensor.isActive())write(mFilenameGPS,"%f,%f,%f\r\n",vec.x,vec.y,vec.z);

@@ -1,10 +1,10 @@
 /*
-	‚»‚Ì‘¼ŠÖ”‚È‚Ç
+	ãã®ä»–é–¢æ•°ãªã©
 
-	ƒfƒoƒbƒO—pƒ}ƒNƒ‚âprintŠÖ”‚ğ—pˆÓ‚µ‚Ä‚ ‚è‚Ü‚·
-	EprintŠÖ”‚Í‰æ–Ê‚Æƒtƒ@ƒCƒ‹—¼•û‚Éo—Í‚µ‚Ü‚·
-	EƒƒOƒŒƒxƒ‹‚Íd—v‚Å‚Í‚È‚¢ƒƒO‚Å‰æ–Ê‚ª–„‚ßs‚­‚³‚ê‚È‚¢‚æ‚¤‚Éİ’è‚µ‚Ü‚·
-	EstaticƒNƒ‰ƒX‚Ì‚½‚ß’Pƒ‚ÉDebug::print()‚Ì‚æ‚¤‚ÉŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢
+	ãƒ‡ãƒãƒƒã‚°ç”¨ãƒã‚¯ãƒ­ã‚„printé–¢æ•°ã‚’ç”¨æ„ã—ã¦ã‚ã‚Šã¾ã™
+	ãƒ»printé–¢æ•°ã¯ç”»é¢ã¨ãƒ•ã‚¡ã‚¤ãƒ«ä¸¡æ–¹ã«å‡ºåŠ›ã—ã¾ã™
+	ãƒ»ãƒ­ã‚°ãƒ¬ãƒ™ãƒ«ã¯é‡è¦ã§ã¯ãªã„ãƒ­ã‚°ã§ç”»é¢ãŒåŸ‹ã‚å°½ãã•ã‚Œãªã„ã‚ˆã†ã«è¨­å®šã—ã¾ã™
+	ãƒ»staticã‚¯ãƒ©ã‚¹ã®ãŸã‚å˜ç´”ã«Debug::print()ã®ã‚ˆã†ã«å‘¼ã³å‡ºã—ã¦ãã ã•ã„
 */
 
 #pragma once
@@ -15,9 +15,9 @@
 
 #ifdef _DEBUG
 	#include <assert.h>
-	//x‚ª0‚È‚çabort
+	//xãŒ0ãªã‚‰abort
 	#define ASSERT(x) assert(x);
-	//x‚ª”ñ0‚È‚çabort
+	//xãŒé0ãªã‚‰abort
 	#define VERIFY(x) assert(!(x));
 #else
 	#define ASSERT(x)
@@ -26,31 +26,31 @@
 
 typedef enum
 {
-	LOG_DETAIL = 0,	//ƒfƒoƒbƒOƒƒO(ƒoƒO‚ªo‚½‚Æ‚«‚Ìó‹µŠm”F—p)
-	LOG_SUMMARY,	//ƒtƒ@ƒCƒ‹•Û‘¶A‰æ–Ê•\¦‹¤‚É‚·‚é‚à‚Ì
-	LOG_PRINT		//‰æ–Ê‚É‚Ì‚İ•\¦‚·‚é‚à‚Ì
-}LOG_LEVEL;			//ƒƒOƒŒƒxƒ‹(Apache‚Æ‚©‚Æ—‚½Š´‚¶‚Å)
+	LOG_DETAIL = 0,	//ãƒ‡ãƒãƒƒã‚°ãƒ­ã‚°(ãƒã‚°ãŒå‡ºãŸã¨ãã®çŠ¶æ³ç¢ºèªç”¨)
+	LOG_SUMMARY,	//ãƒ•ã‚¡ã‚¤ãƒ«ä¿å­˜ã€ç”»é¢è¡¨ç¤ºå…±ã«ã™ã‚‹ã‚‚ã®
+	LOG_PRINT		//ç”»é¢ã«ã®ã¿è¡¨ç¤ºã™ã‚‹ã‚‚ã®
+}LOG_LEVEL;			//ãƒ­ã‚°ãƒ¬ãƒ™ãƒ«(Apacheã¨ã‹ã¨ä¼¼ãŸæ„Ÿã˜ã§)
 
-const static unsigned int MAX_STRING_LENGTH = 1024;//Print—p‚Ìƒoƒbƒtƒ@ƒTƒCƒY
+const static unsigned int MAX_STRING_LENGTH = 1024;//Printç”¨ã®ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚º
 
 class Debug
 {
 public:
-	static void print(LOG_LEVEL level, const char* fmt, ... );//ƒXƒgƒŠ[ƒ€–Ê“|‚¾‚©‚çprintfƒ^ƒCƒv‚Å‚¢‚¢‚æ‚Ë
+	static void print(LOG_LEVEL level, const char* fmt, ... );//ã‚¹ãƒˆãƒªãƒ¼ãƒ é¢å€’ã ã‹ã‚‰printfã‚¿ã‚¤ãƒ—ã§ã„ã„ã‚ˆã­
 	Debug();
 };
 
 class Time
 {
 public:
-	//ŠÔ‚Ì•Ï‰»—Ê‚ğŒvZ(•b)
+	//æ™‚é–“ã®å¤‰åŒ–é‡ã‚’è¨ˆç®—(ç§’)
 	static double dt(const struct timespec& now,const struct timespec& last);
 };
 
 class String
 {
 public:
-	//•¶š—ñ‚ğ‹ó”’‚Å•ªŠ„
+	//æ–‡å­—åˆ—ã‚’ç©ºç™½ã§åˆ†å‰²
 	static void split(const std::string& input,std::vector<std::string>& outputs);
 };
 
@@ -63,7 +63,7 @@ public:
 	Filename(const std::string& prefix,const std::string& suffix);
 };
 
-//’è”ƒ}ƒl[ƒWƒƒ
+//å®šæ•°ãƒãƒãƒ¼ã‚¸ãƒ£
 class ConstantManager
 {
 	ConstantManager();
@@ -106,8 +106,8 @@ public:
 	VECTOR3();
 	VECTOR3(double tx, double ty, double tz);
 
-	//XY•½–Êó‚Ì2“_‚ğŒ‹‚Ô’¼ü‚ÌŠp“x(–k‚ª0“x‚Å+180“x(“Œ)`-180“x(¼))BƒWƒƒƒCƒ‚ÌŠp“x‚Æ‚Í³•‰‚ª‹t‚Å‚·
+	//XYå¹³é¢çŠ¶ã®2ç‚¹ã‚’çµã¶ç›´ç·šã®è§’åº¦(åŒ—ãŒ0åº¦ã§+180åº¦(æ±)ã€œ-180åº¦(è¥¿))ã€‚ã‚¸ãƒ£ã‚¤ãƒ­ã®è§’åº¦ã¨ã¯æ­£è² ãŒé€†ã§ã™
 	static double calcAngleXY(const VECTOR3& current,const VECTOR3& target);
-	//2“_ŠÔ‚Ì‹——£‚ğŒvZ
+	//2ç‚¹é–“ã®è·é›¢ã‚’è¨ˆç®—
 	static double calcDistanceXY(const VECTOR3& current,const VECTOR3& target);
 };

@@ -20,7 +20,7 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 		filename.get(mFilename);
 	}
 #ifndef _LOG_DETAIL
-	if(level == LOG_DETAIL)return; //ƒfƒoƒbƒOƒ‚[ƒh‚Å‚È‚¯‚ê‚ÎƒƒOo—Í‚µ‚È‚¢
+	if(level == LOG_DETAIL)return; //ãƒ‡ãƒãƒƒã‚°ãƒ¢ãƒ¼ãƒ‰ã§ãªã‘ã‚Œã°ãƒ­ã‚°å‡ºåŠ›ã—ãªã„
 #endif
 
 	char buf[MAX_STRING_LENGTH];
@@ -29,9 +29,9 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 	va_start(argp, fmt);
 	vsprintf(buf, fmt, argp);
 	
-	//‰æ–Ê‚Éo—Í
+	//ç”»é¢ã«å‡ºåŠ›
 	printf(buf);
-	//ƒƒOƒtƒ@ƒCƒ‹‚Éo—Í
+	//ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›
 	if(level != LOG_PRINT)
 	{
 		std::ofstream of(mFilename.c_str(),std::ios::out | std::ios::app);
@@ -46,7 +46,7 @@ void Filename::get(std::string& name)
 }
 Filename::Filename(const std::string& prefix,const std::string& suffix) : mPrefix(prefix),mSuffix(suffix),mIndex(0)
 {
-	//B‰eƒCƒ“ƒfƒbƒNƒX‚ğŠù‘¶‚Ìƒtƒ@ƒCƒ‹‚Éã‘‚«‚µ‚È‚¢‚æ‚¤‚É•ÏX
+	//æ’®å½±ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’æ—¢å­˜ã®ãƒ•ã‚¡ã‚¤ãƒ«ã«ä¸Šæ›¸ãã—ãªã„ã‚ˆã†ã«å¤‰æ›´
 	std::string filename;
 	struct stat st;
 	do
@@ -61,7 +61,7 @@ double Time::dt(const struct timespec& now,const struct timespec& last)
 }
 void String::split(const std::string& input,std::vector<std::string>& outputs)
 {
-	//•¶š—ñ‚ğ‹ó”’•¶š‚Å•ªŠ„‚µ‚Ävector‚ÉŠi”[
+	//æ–‡å­—åˆ—ã‚’ç©ºç™½æ–‡å­—ã§åˆ†å‰²ã—ã¦vectorã«æ ¼ç´
 	outputs.clear();
 	std::istringstream iss(input);
 	std::copy(std::istream_iterator<std::string>(iss),  std::istream_iterator<std::string>(), std::back_inserter(outputs));
@@ -131,7 +131,7 @@ void ConstantManager::load(const char* filename)
 	{
 		Debug::print(LOG_SUMMARY, "Reading %s\r\n",filename);
 		
-		//s‚²‚Æ‚É“Ç‚İ‚ñ‚Åİ’è‚ğ“Ç‚İ‚Ş
+		//è¡Œã”ã¨ã«èª­ã¿è¾¼ã‚“ã§è¨­å®šã‚’èª­ã¿è¾¼ã‚€
 		while(!ifs.eof() && !ifs.fail() && !ifs.bad())
 		{
 			std::getline(ifs,str);

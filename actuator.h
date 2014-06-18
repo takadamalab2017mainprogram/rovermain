@@ -1,19 +1,19 @@
 /*
-	ƒAƒNƒ`ƒ…ƒG[ƒ^§ŒäƒvƒƒOƒ‰ƒ€
+	ã‚¢ã‚¯ãƒãƒ¥ã‚¨ãƒ¼ã‚¿åˆ¶å¾¡ãƒ—ãƒ­ã‚°ãƒ©ãƒ 
 
-	ƒ‚[ƒ^ˆÈŠO‚ÌÀ¢ŠE‚É“­‚«‚©‚¯‚éƒ‚ƒWƒ…[ƒ‹‚ğ‘€ì‚µ‚Ü‚·
-	task.h‚àQÆ
+	ãƒ¢ãƒ¼ã‚¿ä»¥å¤–ã®å®Ÿä¸–ç•Œã«åƒãã‹ã‘ã‚‹ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚’æ“ä½œã—ã¾ã™
+	task.hã‚‚å‚ç…§
 */
 
 #pragma once
 #include "task.h"
 
-// ƒuƒU[§ŒäƒNƒ‰ƒX
+// ãƒ–ã‚¶ãƒ¼åˆ¶å¾¡ã‚¯ãƒ©ã‚¹
 class Buzzer : public TaskBase
 {
 private:
 	int mPin;
-	int mPeriod;//0ˆÈã‚È‚ç–Â‚ç‚·A•‰‚È‚ç–Â‚ç‚³‚È‚¢
+	int mPeriod;//0ä»¥ä¸Šãªã‚‰é³´ã‚‰ã™ã€è² ãªã‚‰é³´ã‚‰ã•ãªã„
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -21,16 +21,16 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 
 public:
-	//ƒuƒU[‚ğperiod[ms]‚¾‚¯–Â‚ç‚·(’·‚³‚ÍŒµ–§‚Å‚Í‚ ‚è‚Ü‚¹‚ñI)
+	//ãƒ–ã‚¶ãƒ¼ã‚’period[ms]ã ã‘é³´ã‚‰ã™(é•·ã•ã¯å³å¯†ã§ã¯ã‚ã‚Šã¾ã›ã‚“ï¼)
 	void start(int period);
-	//ƒuƒU[‚ğ~‚ß‚é
+	//ãƒ–ã‚¶ãƒ¼ã‚’æ­¢ã‚ã‚‹
 	void stop();
 
 	Buzzer();
 	~Buzzer();
 };
 
-// ƒT[ƒ{§ŒäƒNƒ‰ƒX(ƒn[ƒhƒEƒFƒAPWM‚ğg‚¤)
+// ã‚µãƒ¼ãƒœåˆ¶å¾¡ã‚¯ãƒ©ã‚¹(ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢PWMã‚’ä½¿ã†)
 class Servo : public TaskBase
 {
 private:
@@ -40,16 +40,16 @@ protected:
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	//ƒT[ƒ{‚ğw’è‚³‚ê‚½angle[0-1]‚É‚È‚é‚æ‚¤‚É§Œä‚ğŠJn‚·‚é
+	//ã‚µãƒ¼ãƒœã‚’æŒ‡å®šã•ã‚ŒãŸangle[0-1]ã«ãªã‚‹ã‚ˆã†ã«åˆ¶å¾¡ã‚’é–‹å§‹ã™ã‚‹
 	void start(double angle);
-	//ƒT[ƒ{‚Ì§Œä‚ğI—¹‚·‚é
+	//ã‚µãƒ¼ãƒœã®åˆ¶å¾¡ã‚’çµ‚äº†ã™ã‚‹
 	void stop();
 
 	Servo();
 	~Servo();
 };
 
-// XBeeƒXƒŠ[ƒv§ŒäƒNƒ‰ƒX
+// XBeeã‚¹ãƒªãƒ¼ãƒ—åˆ¶å¾¡ã‚¯ãƒ©ã‚¹
 class XBeeSleep : public TaskBase
 {
 private:

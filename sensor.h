@@ -1,8 +1,8 @@
 /*
-	ƒZƒ“ƒT§ŒäƒvƒƒOƒ‰ƒ€
+	ã‚»ãƒ³ã‚µåˆ¶å¾¡ãƒ—ãƒ­ã‚°ãƒ©ãƒ 
 
-	ƒ‚[ƒ^ˆÈŠO‚ÌÀ¢ŠE‚©‚çî•ñ‚ğæ“¾‚·‚éƒ‚ƒWƒ…[ƒ‹‚ğ‘€ì‚µ‚Ü‚·
-	task.h‚àQÆ
+	ãƒ¢ãƒ¼ã‚¿ä»¥å¤–ã®å®Ÿä¸–ç•Œã‹ã‚‰æƒ…å ±ã‚’å–å¾—ã™ã‚‹ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚’æ“ä½œã—ã¾ã™
+	task.hã‚‚å‚ç…§
 */
 #pragma once
 #include "task.h"
@@ -10,115 +10,115 @@
 #include <pthread.h>
 #include <list>
 
-//MPL115A2‚©‚çƒf[ƒ^‚ğæ“¾‚·‚éƒNƒ‰ƒX
-//‹Cˆ³‚Ì’l‚ÍhPa’PˆÊ‚Å+-10hPa‚ÌŒë·‚ ‚è
+//MPL115A2ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã‚¯ãƒ©ã‚¹
+//æ°—åœ§ã®å€¤ã¯hPaå˜ä½ã§+-10hPaã®èª¤å·®ã‚ã‚Š
 class PressureSensor : public TaskBase
 {
 private:
-	float mA0,mB1,mB2,mC12;//‹Cˆ³ŒvZ—p‚ÌŒW”
-	int mPressure;//ÅŒã‚Éæ“¾‚µ‚½‹Cˆ³
-	int mFileHandle;//winringPi i2c@‚Ìƒtƒ@ƒCƒ‹ƒnƒ“ƒhƒ‰
+	float mA0,mB1,mB2,mC12;//æ°—åœ§è¨ˆç®—ç”¨ã®ä¿‚æ•°
+	int mPressure;//æœ€å¾Œã«å–å¾—ã—ãŸæ°—åœ§
+	int mFileHandle;//winringPi i2cã€€ã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ³ãƒ‰ãƒ©
 
-	struct timespec mLastUpdateRequest;//ÅŒã‚É‹Cˆ³‚ÌXV‚ğMPL115A2‚Éw¦‚µ‚½
+	struct timespec mLastUpdateRequest;//æœ€å¾Œã«æ°—åœ§ã®æ›´æ–°ã‚’MPL115A2ã«æŒ‡ç¤ºã—ãŸæ™‚åˆ»
 
 	float val2float(unsigned int val, int total_bits, int fractional_bits, int zero_pad);
 	void requestSample();
 protected:
-	//‹Cˆ³ƒZƒ“ƒT‚ğ‰Šú‰»
+	//æ°—åœ§ã‚»ãƒ³ã‚µã‚’åˆæœŸåŒ–
 	virtual bool onInit(const struct timespec& time);
-	//ƒZƒ“ƒT‚Ìg—p‚ğI—¹‚·‚é
+	//ã‚»ãƒ³ã‚µã®ä½¿ç”¨ã‚’çµ‚äº†ã™ã‚‹
 	virtual void onClean();
 
-	//ˆê’èŠÔŠu‚²‚Æ‚É‹Cˆ³‚ğƒAƒbƒvƒf[ƒg‚·‚é
+	//ä¸€å®šé–“éš”ã”ã¨ã«æ°—åœ§ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã™ã‚‹
 	virtual void onUpdate(const struct timespec& time);
 
-	//ƒRƒ}ƒ“ƒh‚ğˆ—‚·‚é
+	//ã‚³ãƒãƒ³ãƒ‰ã‚’å‡¦ç†ã™ã‚‹
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	//ÅŒã‚ÉƒAƒbƒvƒf[ƒg‚³‚ê‚½‹Cˆ³‚ğ•Ô‚·
+	//æœ€å¾Œã«ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã•ã‚ŒãŸæ°—åœ§ã‚’è¿”ã™
 	int get();
 
 	PressureSensor();
 	~PressureSensor();
 };
 
-//Navigatron v2‚©‚çƒf[ƒ^‚ğæ“¾‚·‚éƒNƒ‰ƒX
+//Navigatron v2ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class GPSSensor : public TaskBase
 {
 private:
-	int mFileHandle;//winringPi i2c@‚Ìƒtƒ@ƒCƒ‹ƒnƒ“ƒhƒ‰
-	VECTOR3 mPos;//À•W(Œo“xAˆÜ“xA‚“x)
-	int mSatelites;//•â‘«‚µ‚½‰q¯‚Ì”
-	bool mIsNewData;//V‚µ‚¢À•Wƒf[ƒ^‚ª‚ ‚ê‚Î^
+	int mFileHandle;//winringPi i2cã€€ã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ³ãƒ‰ãƒ©
+	VECTOR3 mPos;//åº§æ¨™(çµŒåº¦ã€ç·¯åº¦ã€é«˜åº¦)
+	int mSatelites;//è£œè¶³ã—ãŸè¡›æ˜Ÿã®æ•°
+	bool mIsNewData;//æ–°ã—ã„åº§æ¨™ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚Œã°çœŸ
 protected:
-	//GPS‚ğ‰Šú‰»
+	//GPSã‚’åˆæœŸåŒ–
 	virtual bool onInit(const struct timespec& time);
-	//ƒZƒ“ƒT‚Ìg—p‚ğI—¹‚·‚é
+	//ã‚»ãƒ³ã‚µã®ä½¿ç”¨ã‚’çµ‚äº†ã™ã‚‹
 	virtual void onClean();
-	//Œ»İ‚ÌÀ•W‚ğƒAƒbƒvƒf[ƒg‚·‚é
+	//ç¾åœ¨ã®åº§æ¨™ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã™ã‚‹
 	virtual void onUpdate(const struct timespec& time);
-	//ƒRƒ}ƒ“ƒh‚ğˆ—‚·‚é
+	//ã‚³ãƒãƒ³ãƒ‰ã‚’å‡¦ç†ã™ã‚‹
 	virtual bool onCommand(const std::vector<std::string> args);
 
 public:
-	//Œ»İ‚ÌÀ•W‚ğæ“¾‚·‚é(false‚ğ•Ô‚µ‚½ê‡‚ÍêŠ‚ª•s–¾)
-	//disableNewFlag‚ğfalse‚É‚·‚é‚ÆÀ•W‚ªV‚µ‚¢‚Æ‚¢‚¤î•ñ‚ğíœ
+	//ç¾åœ¨ã®åº§æ¨™ã‚’å–å¾—ã™ã‚‹(falseã‚’è¿”ã—ãŸå ´åˆã¯å ´æ‰€ãŒä¸æ˜)
+	//disableNewFlagã‚’falseã«ã™ã‚‹ã¨åº§æ¨™ãŒæ–°ã—ã„ã¨ã„ã†æƒ…å ±ã‚’å‰Šé™¤
 	bool get(VECTOR3& pos, bool disableNewFlag = false);
 
-	//‘O‰ñ‚ÌÀ•Wæ“¾ˆÈ~‚Éƒf[ƒ^‚ªXV‚³‚ê‚½ê‡‚Í^
+	//å‰å›ã®åº§æ¨™å–å¾—ä»¥é™ã«ãƒ‡ãƒ¼ã‚¿ãŒæ›´æ–°ã•ã‚ŒãŸå ´åˆã¯çœŸ
 	bool isNewPos();
 
 	GPSSensor();
 	~GPSSensor();
 };
 
-//L3GD20‚©‚çƒf[ƒ^‚ğæ“¾‚·‚éƒNƒ‰ƒX
+//L3GD20ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class GyroSensor : public TaskBase
 {
 private:
-	int mFileHandle;//winringPi i2c@‚Ìƒtƒ@ƒCƒ‹ƒnƒ“ƒhƒ‰
-	VECTOR3 mRVel;//Šp‘¬“x
-	VECTOR3 mRAngle;//Šp“x
+	int mFileHandle;//winringPi i2cã€€ã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ³ãƒ‰ãƒ©
+	VECTOR3 mRVel;//è§’é€Ÿåº¦
+	VECTOR3 mRAngle;//è§’åº¦
 	struct timespec mLastSampleTime;
 
-	//ƒhƒŠƒtƒgŒë·•â³—p
-	std::list<VECTOR3> mRVelHistory;//‰ß‹‚ÌŠp‘¬“x
-	VECTOR3 mRVelOffset;//ƒTƒ“ƒvƒ‹‚ ‚½‚è‚ÌƒhƒŠƒtƒgŒë·‚Ì„’è’l
-	bool mIsCalculatingOffset;//ƒhƒŠƒtƒgŒë·ŒvZ’†ƒtƒ‰ƒO
+	//ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®è£œæ­£ç”¨
+	std::list<VECTOR3> mRVelHistory;//éå»ã®è§’é€Ÿåº¦
+	VECTOR3 mRVelOffset;//ã‚µãƒ³ãƒ—ãƒ«ã‚ãŸã‚Šã®ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®ã®æ¨å®šå€¤
+	bool mIsCalculatingOffset;//ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®è¨ˆç®—ä¸­ãƒ•ãƒ©ã‚°
 protected:
-	//ƒWƒƒƒCƒƒZƒ“ƒT‚ğ‰Šú‰»
+	//ã‚¸ãƒ£ã‚¤ãƒ­ã‚»ãƒ³ã‚µã‚’åˆæœŸåŒ–
 	virtual bool onInit(const struct timespec& time);
-	//ƒZƒ“ƒT‚Ìg—p‚ğI—¹‚·‚é
+	//ã‚»ãƒ³ã‚µã®ä½¿ç”¨ã‚’çµ‚äº†ã™ã‚‹
 	virtual void onClean();
 
-	//ˆê’èŠÔŠu‚²‚Æ‚Éƒf[ƒ^‚ğƒAƒbƒvƒf[ƒg‚·‚é
+	//ä¸€å®šé–“éš”ã”ã¨ã«ãƒ‡ãƒ¼ã‚¿ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã™ã‚‹
 	virtual void onUpdate(const struct timespec& time);
 
-	//ƒRƒ}ƒ“ƒh‚ğˆ—‚·‚é
+	//ã‚³ãƒãƒ³ãƒ‰ã‚’å‡¦ç†ã™ã‚‹
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	//ÅŒã‚ÉƒAƒbƒvƒf[ƒg‚³‚ê‚½ƒf[ƒ^‚ğ•Ô‚·
+	//æœ€å¾Œã«ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã‚’è¿”ã™
 	bool getRVel(VECTOR3& vel);
 	double getRvx();
 	double getRvy();
 	double getRvz();
 
 	//////////////////////////////////////////////////
-	//Šp‘¬“x‚©‚çŒvZ‚³‚ê‚½Šp“x‚ğˆ—‚·‚éŠÖ”
+	//è§’é€Ÿåº¦ã‹ã‚‰è¨ˆç®—ã•ã‚ŒãŸè§’åº¦ã‚’å‡¦ç†ã™ã‚‹é–¢æ•°
 
-	//Œ»İ‚ÌŠp“x‚ğŠî€‚Æ‚·‚é
+	//ç¾åœ¨ã®è§’åº¦ã‚’åŸºæº–ã¨ã™ã‚‹
 	void setZero();
 
-	//Œ»İ‚ÌŠp“x‚ğ•Ô‚·(-180`+180)
+	//ç¾åœ¨ã®è§’åº¦ã‚’è¿”ã™(-180ã€œ+180)
 	bool getRPos(VECTOR3& pos);
 	double getRx();
 	double getRy();
 	double getRz();
 
-	//ƒhƒŠƒtƒgŒë·‚ğ•â³‚·‚é(Ã~ó‘Ô‚ÅŒÄ‚Ño‚·‚±‚Æ)
+	//ãƒ‰ãƒªãƒ•ãƒˆèª¤å·®ã‚’è£œæ­£ã™ã‚‹(é™æ­¢çŠ¶æ…‹ã§å‘¼ã³å‡ºã™ã“ã¨)
 	void calibrate();
 
-	//ˆø”‚ÌƒxƒNƒgƒ‹‚ğ(-180`+180)‚Ì”ÍˆÍ‚ÉC³
+	//å¼•æ•°ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’(-180ã€œ+180)ã®ç¯„å›²ã«ä¿®æ­£
 	static void normalize(VECTOR3& pos);
 	static double normalize(double pos);
 
@@ -126,50 +126,50 @@ public:
 	~GyroSensor();
 };
 
-////MMA8451Q‚©‚çƒf[ƒ^‚ğæ“¾‚·‚éƒNƒ‰ƒX
-//class AccelerationSensor : public TaskBase
-//{
-//private:
-//	int mFileHandle;//winringPi i2c@‚Ìƒtƒ@ƒCƒ‹ƒnƒ“ƒhƒ‰
-//	VECTOR3 mAccel;//‰Á‘¬“x
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onClean();
-//	virtual void onUpdate(const struct timespec& time);
-//	virtual bool onCommand(const std::vector<std::string> args);
-//public:
-//	//ÅŒã‚ÉƒAƒbƒvƒf[ƒg‚³‚ê‚½ƒf[ƒ^‚ğ•Ô‚·
-//	bool getAccel(VECTOR3& acc);
-//	double getAx();
-//	double getAy();
-//	double getAz();
-//
-//	AccelerationSensor();
-//	~AccelerationSensor();
-//};
+//MMA8451Qã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã‚¯ãƒ©ã‚¹
+class AccelerationSensor : public TaskBase
+{
+private:
+	int mFileHandle;//winringPi i2cã€€ã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ³ãƒ‰ãƒ©
+	VECTOR3 mAccel;//åŠ é€Ÿåº¦
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+public:
+	//æœ€å¾Œã«ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã‚’è¿”ã™
+	bool getAccel(VECTOR3& acc);
+	double getAx();
+	double getAy();
+	double getAz();
 
-//Cds‚©‚çƒf[ƒ^‚ğæ“¾‚·‚éƒNƒ‰ƒX
+	AccelerationSensor();
+	~AccelerationSensor();
+};
+
+//Cdsã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class LightSensor : public TaskBase
 {
 private:
 	int mPin;
 protected:
-	//‰Šú‰»
+	//åˆæœŸåŒ–
 	virtual bool onInit(const struct timespec& time);
-	//ƒZƒ“ƒT‚Ìg—p‚ğI—¹‚·‚é
+	//ã‚»ãƒ³ã‚µã®ä½¿ç”¨ã‚’çµ‚äº†ã™ã‚‹
 	virtual void onClean();
-	//ƒRƒ}ƒ“ƒh‚ğˆ—‚·‚é
+	//ã‚³ãƒãƒ³ãƒ‰ã‚’å‡¦ç†ã™ã‚‹
 	virtual bool onCommand(const std::vector<std::string> args);
 
 public:
-	//Œ»İ‚Ì–¾‚é‚³‚ğæ“¾‚·‚é
+	//ç¾åœ¨ã®æ˜ã‚‹ã•ã‚’å–å¾—ã™ã‚‹
 	bool get();
 
 	LightSensor();
 	~LightSensor();
 };
 
-//WebƒJƒƒ‰‚Ì“®‰æ‚ğƒLƒƒƒvƒ`ƒƒ‚·‚éƒNƒ‰ƒX
+//Webã‚«ãƒ¡ãƒ©ã®å‹•ç”»ã‚’ã‚­ãƒ£ãƒ—ãƒãƒ£ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class WebCamera : public TaskBase
 {
 protected:
@@ -183,7 +183,7 @@ public:
 	~WebCamera();
 };
 
-//‹——£ƒZƒ“ƒT[‚ğ‘€ì‚·‚éƒNƒ‰ƒX
+//è·é›¢ã‚»ãƒ³ã‚µãƒ¼ã‚’æ“ä½œã™ã‚‹ã‚¯ãƒ©ã‚¹
 class DistanceSensor : public TaskBase
 {
 	double mLastDistance;
@@ -199,10 +199,10 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	bool ping();//‹——£ƒZƒ“ƒT[‚ÉŒv‘ª‚ğw¦‚·‚é
+	bool ping();//è·é›¢ã‚»ãƒ³ã‚µãƒ¼ã«è¨ˆæ¸¬ã‚’æŒ‡ç¤ºã™ã‚‹
 
-	//Œv‘ª‚³‚ê‚½‹——£‚ğ•Ô‚·(V‚µ‚¢ƒf[ƒ^‚Å‚ ‚ê‚Îtrue‚ğ•Ô‚·)
-	//Œv‘ª•s”\‚Å‚ ‚ê‚Î-1‚ğ•Ô‚·
+	//è¨ˆæ¸¬ã•ã‚ŒãŸè·é›¢ã‚’è¿”ã™(æ–°ã—ã„ãƒ‡ãƒ¼ã‚¿ã§ã‚ã‚Œã°trueã‚’è¿”ã™)
+	//è¨ˆæ¸¬ä¸èƒ½ã§ã‚ã‚Œã°-1ã‚’è¿”ã™
 	bool getDistance(double& distance);
 
 	DistanceSensor();
@@ -217,7 +217,7 @@ class CameraCapture : public TaskBase
 	CvCapture* mpCapture;
 	bool mIsWarming;
 	Filename mFilename;
-	unsigned int mCurVideoDeviceID;//Œ»İg—p‚µ‚Ä‚¢‚éƒJƒƒ‰‚ÌƒfƒoƒCƒX”Ô†(/dev/video*)
+	unsigned int mCurVideoDeviceID;//ç¾åœ¨ä½¿ç”¨ã—ã¦ã„ã‚‹ã‚«ãƒ¡ãƒ©ã®ãƒ‡ãƒã‚¤ã‚¹ç•ªå·(/dev/video*)
 
 	const static int WIDTH = 320,HEIGHT = 240;
 protected:
@@ -228,7 +228,7 @@ protected:
 
 	void verifyCamera(bool reinitialize = true);
 public:
-	void startWarming();//getFrame‚·‚é­‚µ‘O‚ÉŒÄ‚Ño‚·‚±‚Æ.ŒÃ‚¢‰æ‘œ‚ªæ“¾‚³‚ê‚é‚Ì‚ğ–h~‚Å‚«‚é
+	void startWarming();//getFrameã™ã‚‹å°‘ã—å‰ã«å‘¼ã³å‡ºã™ã“ã¨.å¤ã„ç”»åƒãŒå–å¾—ã•ã‚Œã‚‹ã®ã‚’é˜²æ­¢ã§ãã‚‹
 	IplImage* getFrame();
 
 	void save(const std::string* name = NULL,IplImage* pImage = NULL, bool nolog = false);
