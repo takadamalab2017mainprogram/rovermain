@@ -745,6 +745,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.startWarming();
 	gMotorDrive.setRunMode(true);
     mIsLastActionStraight = false;
+    mTryCount = 0;
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -791,6 +792,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
 				}
+				mTryCount = 0;
 			}
 			else//色検知しなかったら
 			{
@@ -799,7 +801,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 {
                 	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
 
-                	Debug::print(LOG_SUMMARY, "diff=%f\r\n", diff);
+                	Debug::print(LOG_SUMMARY, "diff = %f\r\n", diff);
 
                     if (diff < 0)
                     {
@@ -821,18 +823,26 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 
                 	mCurStep = STEP_TURNING;
 
-                	if ( diff < 0 )
+                	if ( mTryCount > 2 )
+                	{
+                		//とりあえず右に曲がるか．
+                		mCurStep = STEP_TURNING;
+	                    gMotorDrive.drive(30,-30);
+                	}
+                	else if ( diff < 0 )
                 	{
                 		//右を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
 	                    gMotorDrive.drive(-30,30);
+	                    mTryCount++;
 
                 	}
-                	else
+                	else if ( diff >= 0 )
                 	{
                 		//左を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
 	                    gMotorDrive.drive(30,-30);
+	                    mTryCount++;
                 	}
                 }
                 

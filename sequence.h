@@ -230,6 +230,7 @@ class ColorAccessing : public TaskBase
 	enum STEP mCurStep;
     double mAngleOnBegin;
     bool mIsLastActionStraight;
+    int mTryCount;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
