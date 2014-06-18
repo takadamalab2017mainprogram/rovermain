@@ -20,4 +20,4 @@ clean:
 
 .PHONY : install
 install:
-	@scp $(TARGET) pi@192.168.0.167:~/arliss/
+	@scp $(TARGET) pi@192.168.100.1:~/arliss/
