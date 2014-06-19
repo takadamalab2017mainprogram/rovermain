@@ -746,12 +746,18 @@ WadachiPredicting::~WadachiPredicting()
 /* ここから　2014年6月オープンラボ前に実装 */
 bool ColorAccessing::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Start ColorAccessing\r\n");
+	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
 
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
+	gBuzzer.setRunMode(true);
+	gGyroSensor.setRunMode(true);
+	gGPSSensor.setRunMode(true);
+	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
+	gCameraCapture.setRunMode(true);
+	gSensorLoggingState.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
