@@ -747,9 +747,14 @@ WadachiPredicting::~WadachiPredicting()
 bool ColorAccessing::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Start ColorAccessing\r\n");
+
+	//必要なタスクを使用できるようにする
+	TaskManager::getInstance()->setRunMode(false);
+	setRunMode(true);
+	gMotorDrive.setRunMode(true);
+
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
-	gMotorDrive.setRunMode(true);
     mIsLastActionStraight = false;
     mTryCount = 0;
 	return true;
