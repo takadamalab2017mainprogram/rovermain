@@ -26,7 +26,7 @@ Avoiding gAvoidingState;
 WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
-ColorAccessing ColorAccessing;
+ColorAccessing gColorAccessingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -584,6 +584,11 @@ bool Navigating::onCommand(const std::vector<std::string> args)
 			setGoal(pos);
 			return true;
 		}
+		else if(args[1].compare("goal") == 0)
+		{
+			nextState();
+			return true;
+		}
 	}
 	if(args.size() == 3)
 	{
@@ -596,19 +601,19 @@ bool Navigating::onCommand(const std::vector<std::string> args)
 	}
 	Debug::print(LOG_PRINT, "navigating                 : get goal\r\n\
 navigating [pos x] [pos y] : set goal at specified position\r\n\
-navigating here            : set goal at current position\r\n");
+navigating here            : set goal at current position\r\n\
+navigating goal            : call nextState\r\n");
 	return true;
 }
 //次の状態に移行
 void Navigating::nextState()
 {
-	gBuzzer.start(1000);
+	gBuzzer.start(300);
 
 	//次の状態を設定
-	gTestingState.setRunMode(true);
-	gPictureTakingState.setRunMode(true);
+	gColorAccessingState.setRunMode(true);
 	
-	Debug::print(LOG_SUMMARY, "Goal!\r\n");
+	Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 }
 void Navigating::setGoal(const VECTOR3& pos)
 {
@@ -741,6 +746,7 @@ WadachiPredicting::~WadachiPredicting()
 /* ここから　2014年6月オープンラボ前に実装 */
 bool ColorAccessing::onInit(const struct timespec& time)
 {
+	Debug::print(LOG_SUMMARY, "Start ColorAccessing\r\n");
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
 	gMotorDrive.setRunMode(true);
@@ -890,6 +896,17 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 	}
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
 	return false;
+}
+//次の状態に移行
+void ColorAccessing::nextState()
+{
+	gBuzzer.start(1000);
+
+	//次の状態を設定
+	gTestingState.setRunMode(true);
+	gPictureTakingState.setRunMode(true);
+	
+	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
 ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)
 {

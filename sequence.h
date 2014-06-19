@@ -235,11 +235,15 @@ protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
+
+	//次の状態に移行
+	void nextState();
 public:
 	ColorAccessing();
 	~ColorAccessing();
 };
 /* ここまで　2014年6月オープンラボ前に実装 */
+
 
 //記念撮影
 class PictureTaking : public TaskBase
