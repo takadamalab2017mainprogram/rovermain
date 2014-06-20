@@ -26,6 +26,9 @@ protected:
 	virtual void restart();
 
 public:
+	//特に指定しない場合のブザーの間隔
+	const static int DEFAULT_OFF_PERIOD = 500;
+	
 	//ブザーをperiod[ms]だけ鳴らす(長さは厳密ではありません！)
 	void start(int period);
 

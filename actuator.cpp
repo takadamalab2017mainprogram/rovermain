@@ -89,7 +89,7 @@ void Buzzer::start(int period)
 }
 void Buzzer::start(int on_period, int count)
 {
-	start(on_period, 500, count);	//デフォルトで鳴らさない時間500ms
+	start(on_period, DEFAULT_OFF_PERIOD, count);
 }
 void Buzzer::start(int on_period, int off_period, int count)
 {
