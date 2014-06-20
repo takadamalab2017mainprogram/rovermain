@@ -7,6 +7,7 @@
 ImageProc gImageProc;
 
 /* ここから　2014年6月オープンラボ前に実装 */
+// 実行速度：0.22~0.24sec
 int ImageProc::howColorGap(IplImage* src)
 {
 	int x_gap = 0;												//返り値(中心からのX位置のずれ)
@@ -54,6 +55,12 @@ int ImageProc::howColorGap(IplImage* src)
 		if(-160 < x_gap && x_gap < 160)
 		{
 			Debug::print(LOG_SUMMARY, "gap = %d\n", x_gap);
+
+			// もし50%以上が赤でうめつくされていたら．
+			if ( count > 240*320*0.5 ) 
+			{
+				x_gap = INT_MIN;
+			}
 		}
 		else
 		{
@@ -66,6 +73,7 @@ int ImageProc::howColorGap(IplImage* src)
 		Debug::print(LOG_SUMMARY, "Color is not detected.\n", x_gap);
 		x_gap = INT_MAX;
 	}
+
 	return x_gap;										//中心からのX位置のずれを返す
 }
 /* ここまで　2014年6月オープンラボ前に実装 */
