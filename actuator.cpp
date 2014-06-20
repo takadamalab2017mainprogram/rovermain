@@ -20,22 +20,45 @@ void Buzzer::onClean()
 }
 bool Buzzer::onCommand(const std::vector<std::string> args)
 {
-	if(args.size() >= 2)
+	if(args.size() < 2)
 	{
-		if(args[1].compare("stop") == 0)
-		{
-			stop();
-			Debug::print(LOG_PRINT,"Command Executed!\r\n");
-			return true;
-		}else if(args.size() == 2)
-		{
+			Debug::print(LOG_PRINT,"buzzer [period]                         : wake buzzer while period\r\n\
+buzzer [period] [count]                 : wake buzzer several times (COUNT)\r\n\
+buzzer [on period] [off period] [count] : wake buzzer several times (COUNT)\r\n\
+buzzer stop                             : stop buzzer\r\n");
+		return true;
+	}
+
+	switch(args.size())
+	{
+		case 2:
+			if(args[1].compare("stop") == 0)	//buzzer stop
+			{
+				stop();
+				Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			}
+			else								//buzzer [period]
+			{
+				int period = atoi(args[1].c_str());
+				start(period);
+				Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			}
+			break;
+			
+		case 3:									//buzzer [period] [count]
 			int period = atoi(args[1].c_str());
-			start(period);
+			int count  = atoi(args[2].c_str());
+			start(period, count);
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
-		}
-	}else{
-			Debug::print(LOG_PRINT,"buzzer [period]       : wake buzzer while period\r\n\
-buzzer stop           : stop buzzer\r\n");
+			break;
+			
+		case 4:									//buzzer [on oeriod] [off period] [count]
+			int on_period  = atoi(args[1].c_str());
+			int off_period = atoi(args[2].c_str());
+			int count  	   = atoi(args[3].c_str());
+			start(on_period, off_period, count);
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			break;
 	}
 	return true;
 }
