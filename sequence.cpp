@@ -399,6 +399,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gServo.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -758,6 +759,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
@@ -797,17 +799,18 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			{
 				mLastUpdateTime = time;
 
+				// ゴール判定
 				if (x_pos == INT_MIN)
 				{
 					nextState();
 				}
-				else if(x_pos < -80)
+				else if ( x_pos < -80 )
 				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(0,40);
                     mIsLastActionStraight = false;
 				}
-				else if(80 < x_pos)
+				else if ( 80 < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(40,0);
@@ -835,13 +838,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                     {
                         //右に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(0,40);
+                        gMotorDrive.drive(0,30);
                     }
                     else
                     {
                         //左に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(40,0);
+                        gMotorDrive.drive(30,0);
                     }
                 }
                 //前回の行動が直進以外なら
@@ -898,7 +901,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	case STEP_STOPPING_LONG:
 		if(Time::dt(time,mLastUpdateTime) > 0.8)
 		{
-			// gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
