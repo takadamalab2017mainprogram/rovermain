@@ -480,6 +480,17 @@ void Navigating::onUpdate(const struct timespec& time)
 		}
 	}
 
+	//エンコーダ処理
+	unsigned long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();	//エンコーダの値の取得
+	unsigned long long nowMotorPulseL = newMotorPulseL - mLastMotorPulseL;	//前回の値との差分を計算
+	unsigned long long nowMotorPulseR = newMotorPulseR - mLastMotorPulseR;
+
+	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%l %l)\r\n", nowMotorPulseL, nowMotorPulseR);
+
+	//前回のエンコーダの値を更新
+	mLastMotorPulseL = newMotorPulseL;
+	mLastMotorPulseR = newMotorPulseR;
+
 	//座標データをひとつ残して削除
 	currentPos = mLastPos.back();
 	mLastPos.clear();

@@ -94,6 +94,10 @@ private:
 
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
+
+	//前回チェック時のモーター回転数
+	unsigned long long mLastMotorPulseL,mLastMotorPulseR;	
+
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
