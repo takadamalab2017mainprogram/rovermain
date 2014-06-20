@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 //
 	time_t timer;
 	timer = time(NULL);
-	Debug::print(LOG_SUMMARY,"%s\r\n2013 Takadama-lab ARLISS\r\n* Rivai Team *\r\n",ctime(&timer));
+	Debug::print(LOG_SUMMARY,"%s\r\n2014 Takadama-lab ARLISS\r\n* MINERVA Team *\r\n",ctime(&timer));
 
 	//キーボードによる終了を阻止
 	if(!(setSighandle(SIGINT) && setSighandle(SIGQUIT)))
