@@ -41,22 +41,69 @@ buzzer stop           : stop buzzer\r\n");
 }
 void Buzzer::onUpdate(const struct timespec& time)
 {
-	if(mPeriod == 1)stop();
-	if(mPeriod > 0)--mPeriod;
+	if(mOffPeriod == 1)		//鳴らさない時間の終了
+	{
+		restart();
+	}
+	else if(mOffPeriod > 0)	//鳴らさない時間
+	{
+		--mOffPeriod;
+		return;
+	}
+
+	if(mOnPeriod == 1)		//鳴らす時間の終了
+	{
+		stop();
+	}
+	else if(mOnPeriod > 0)	//鳴らす時間
+	{
+		--mOnPeriod;
+	}
 }
 void Buzzer::start(int period)
 {
-	if(mPeriod == 0 && period > 1)Debug::print(LOG_DETAIL,"Buzzer Start!\r\n");
-	mPeriod = period;
+	start(period, 1, 1);
+}
+void Buzzer::start(int on_period, int count)
+{
+	start(on_period, 500, count);	//デフォルトで鳴らさない時間500ms
+}
+void Buzzer::start(int on_period, int off_period, int count)
+{
+	if(mOnPeriod == 0 && on_period > 1 && off_period > 1 && count >= 1)
+	{
+		Debug::print(LOG_DETAIL,"Buzzer Start!\r\n");
+		mOnPeriodMemory  = on_period;
+		mOnPeriod		 = on_period;
+		mOffPeriodMemory = off_period;
+		mOffPeriod		 = 0;
+		mCount			 = count;
+		digitalWrite(mPin, HIGH);
+	}
+}
+void Buzzer::restart()
+{
 	digitalWrite(mPin, HIGH);
+	mOnPeriod = mOnPeriodMemory;
+	mOffPeriod = 0;
 }
 void Buzzer::stop()
 {
-	mPeriod = 0;
+	mOnPeriod = 0;
 	digitalWrite(mPin, LOW);
-	Debug::print(LOG_DETAIL,"Buzzer Stop!\r\n");
+
+	if(mCount == 1)
+	{
+		Debug::print(LOG_DETAIL,"Buzzer Stop!\r\n");
+		mCount = 0;
+	}
+	else if(mCount > 0)
+	{
+		mOffPeriod = mOffPeriodMemory;
+		--mCount;
+	}
 }
-Buzzer::Buzzer() : mPin(PIN_BUZZER),mPeriod(0)
+Buzzer::Buzzer() : mPin(PIN_BUZZER),mOnPeriod(0),mOffPeriod(0),mCount(0),mOnPeriodMemory(0)
 {
 	setName("buzzer");
 	setPriority(TASK_PRIORITY_ACTUATOR,TASK_INTERVAL_ACTUATOR);
