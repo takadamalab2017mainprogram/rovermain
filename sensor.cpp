@@ -77,14 +77,15 @@ unsigned int wiringPiI2CReadReg32LE(int fd, int address)
 {
 	return (unsigned int)((unsigned long)wiringPiI2CReadReg8(fd, address + 3) << 24 | (unsigned int)wiringPiI2CReadReg8(fd, address + 2) << 16 | (unsigned int)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned int)wiringPiI2CReadReg8(fd, address));
 }
-unsigned short wiringPiI2CReadReg16LE(int fd, int address)
-{
-	return (unsigned short)((unsigned short)wiringPiI2CReadReg8(fd, address + 1) << 8 | (unsigned short)wiringPiI2CReadReg8(fd, address));
-}
 unsigned short wiringPiI2CReadReg16BE(int fd, int address)
 {
-	return (unsigned short)((unsigned short)wiringPiI2CReadReg8(fd, address + 1) | (unsigned short)wiringPiI2CReadReg8(fd, address) << 8);
+	return (unsigned short)((unsigned short)wiringPiI2CReadReg8(fd, address) << 8 | (unsigned short)wiringPiI2CReadReg8(fd, address + 1));
 }
+unsigned short wiringPiI2CReadReg16LE(int fd, int address)
+{
+	return (unsigned short)((unsigned short)wiringPiI2CReadReg8(fd, address) | (unsigned short)wiringPiI2CReadReg8(fd, address + 1) << 8);
+}
+
 
 
 //////////////////////////////////////////////
@@ -485,26 +486,32 @@ GyroSensor::~GyroSensor()
 bool AccelerationSensor::onInit(const struct timespec& time)
 {
 	mAccel.x = mAccel.y = mAccel.z = 0;
-	
-	if((mFileHandle = wiringPiI2CSetup(0x1c)) == -1)
+
+	if((mFileHandle = wiringPiI2CSetup(0x1d)) == -1)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to setup Acceleration Sensor\r\n");
 		return false;
 	}
 
 	//データサンプリング有効化
-	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x1b);
+	wiringPiI2CWriteReg8(mFileHandle,0x16,0x09); // 64 LSB/g
+	wiringPiI2CWriteReg8(mFileHandle,0x18,0x38);
 	return true;
 }
 
 void AccelerationSensor::onClean()
 {
 	//データサンプリング無効化
-	wiringPiI2CWriteReg8(mFileHandle,0x2A,0x00);
+	wiringPiI2CWriteReg8(mFileHandle,0x16,0x00);
 
 	close(mFileHandle);
 }
 
+short ushortTo10BitShort(unsigned short val)
+{
+  if(val & 0x200)val |= 0xfc00;
+  return (short)val;
+}
 void AccelerationSensor::onUpdate(const struct timespec& time)
 {
   //union i2c_smbus_data data;
@@ -512,9 +519,13 @@ void AccelerationSensor::onUpdate(const struct timespec& time)
 	//mAccel.x = ((signed char)data.block[1]);
 	//mAccel.y = ((signed char)data.block[2]);
 	//mAccel.z = ((signed char)data.block[3]);
-	mAccel.x = wiringPiI2CReadReg16BE(mFileHandle, 0x01);
-	mAccel.y = wiringPiI2CReadReg16BE(mFileHandle, 0x03);
-	mAccel.z = wiringPiI2CReadReg16BE(mFileHandle, 0x05);
+  short x = ushortTo10BitShort(wiringPiI2CReadReg16LE(mFileHandle, 0x00));
+  short y = ushortTo10BitShort(wiringPiI2CReadReg16LE(mFileHandle, 0x02));
+  short z = ushortTo10BitShort(wiringPiI2CReadReg16LE(mFileHandle, 0x04));
+
+  mAccel.x = x / 64.0f;
+  mAccel.y = y / 64.0f;
+  mAccel.z = z / 64.0f;
 }
 bool AccelerationSensor::onCommand(const std::vector<std::string> args)
 {
