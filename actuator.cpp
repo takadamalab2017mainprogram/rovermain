@@ -29,6 +29,7 @@ buzzer stop                             : stop buzzer\r\n");
 		return true;
 	}
 
+	int period, on_period, off_period, count;
 	switch(args.size())
 	{
 		case 2:
@@ -39,25 +40,27 @@ buzzer stop                             : stop buzzer\r\n");
 			}
 			else								//buzzer [period]
 			{
-				int period = atoi(args[1].c_str());
+				period = atoi(args[1].c_str());
 				start(period);
 				Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			}
 			break;
 			
 		case 3:									//buzzer [period] [count]
-			int period = atoi(args[1].c_str());
-			int count  = atoi(args[2].c_str());
+			period = atoi(args[1].c_str());
+			count  = atoi(args[2].c_str());
 			start(period, count);
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			break;
 			
 		case 4:									//buzzer [on oeriod] [off period] [count]
-			int on_period  = atoi(args[1].c_str());
-			int off_period = atoi(args[2].c_str());
-			int count  	   = atoi(args[3].c_str());
+			on_period  = atoi(args[1].c_str());
+			off_period = atoi(args[2].c_str());
+			count  	   = atoi(args[3].c_str());
 			start(on_period, off_period, count);
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			break;
+		default:
 			break;
 	}
 	return true;
@@ -126,7 +129,7 @@ void Buzzer::stop()
 		--mCount;
 	}
 }
-Buzzer::Buzzer() : mPin(PIN_BUZZER),mOnPeriod(0),mOffPeriod(0),mCount(0),mOnPeriodMemory(0)
+Buzzer::Buzzer() : mPin(PIN_BUZZER),mOnPeriodMemory(0),mOnPeriod(0),mOffPeriodMemory(0),mOffPeriod(0),mCount(0)
 {
 	setName("buzzer");
 	setPriority(TASK_PRIORITY_ACTUATOR,TASK_INTERVAL_ACTUATOR);

@@ -36,7 +36,7 @@ public:
 	void start(int on_period, int count);	
 
 	//(鳴らす時間[ms], 鳴らさない時間[ms], 鳴らす回数)
-	void start(int on_period, off_period, count);	
+	void start(int on_period, int off_period, int count);	
 	//ブザーを止める
 	void stop();
 
