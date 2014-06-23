@@ -399,7 +399,6 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gServo.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -486,7 +485,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	unsigned long long nowMotorPulseL = newMotorPulseL - mLastMotorPulseL;	//前回の値との差分を計算
 	unsigned long long nowMotorPulseR = newMotorPulseR - mLastMotorPulseR;
 
-	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%l %l)\r\n", nowMotorPulseL, nowMotorPulseR);
+	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%d %d)\r\n", nowMotorPulseL, nowMotorPulseR);
 
 	//前回のエンコーダの値を更新
 	mLastMotorPulseL = newMotorPulseL;
@@ -620,7 +619,7 @@ navigating goal            : call nextState\r\n");
 //次の状態に移行
 void Navigating::nextState()
 {
-	gBuzzer.start(300);
+	gBuzzer.start(100, 50, 3);
 
 	//次の状態を設定
 	gColorAccessingState.setRunMode(true);
@@ -770,19 +769,15 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
-
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
 {
-	const static int TRY_THRESHOLD = 2;
-
 	if(gAvoidingState.isActive())return;
 
 	switch(mCurStep)
@@ -798,7 +793,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CHECKING:
-		if( Time::dt(time,mLastUpdateTime) > 1.0 )
+		if(Time::dt(time,mLastUpdateTime) > 1.0)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
 			IplImage* pImage = gCameraCapture.getFrame();
@@ -809,26 +804,17 @@ void ColorAccessing::onUpdate(const struct timespec& time)
             if(x_pos != INT_MAX)
 			{
 				mLastUpdateTime = time;
-
-				// ゴール判定
-				if (x_pos == INT_MIN)
-				{
-					nextState();
-				}
-				else if ( x_pos < -80 )
-				{
+				if(x_pos < -80){
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(0,40);
                     mIsLastActionStraight = false;
 				}
-				else if ( 80 < x_pos )
-				{
+				else if(80 < x_pos){
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(40,0);
                     mIsLastActionStraight = false;
 				}
-				else
-				{
+				else{
 					mCurStep = STEP_STOPPING_LONG;
 					gMotorDrive.drive(40,40);
                     mIsLastActionStraight = true;
@@ -839,23 +825,23 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			else//色検知しなかったら
 			{
                 // もし前回の行動が直進なら．
-                if ( mIsLastActionStraight )
+                if (mIsLastActionStraight)//前回の行動が直進なら．
                 {
                 	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
 
                 	Debug::print(LOG_SUMMARY, "diff = %f\r\n", diff);
 
-                    if ( diff < 0 )
+                    if (diff < 0)
                     {
                         //右に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(0,30);
+                        gMotorDrive.drive(0,40);
                     }
                     else
                     {
                         //左に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(30,0);
+                        gMotorDrive.drive(40,0);
                     }
                 }
                 //前回の行動が直進以外なら
@@ -865,7 +851,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 
                 	mCurStep = STEP_TURNING;
 
-                	if ( mTryCount > TRY_THRESHOLD )
+                	if ( mTryCount > 2 )
                 	{
                 		//とりあえず右に曲がるか．
                 		mCurStep = STEP_TURNING;
@@ -896,22 +882,19 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_TURNING:
-		if(Time::dt(time,mLastUpdateTime) > 0.5)
-		{
+		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
             gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_STOPPING_FAST:
-		if(Time::dt(time,mLastUpdateTime) > 0.5)
-		{
+		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_STOPPING_LONG:
-		if(Time::dt(time,mLastUpdateTime) > 0.8)
-		{
+		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 		}
