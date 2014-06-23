@@ -485,7 +485,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	unsigned long long nowMotorPulseL = newMotorPulseL - mLastMotorPulseL;	//前回の値との差分を計算
 	unsigned long long nowMotorPulseR = newMotorPulseR - mLastMotorPulseR;
 
-	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%l %l)\r\n", nowMotorPulseL, nowMotorPulseR);
+	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%d %d)\r\n", nowMotorPulseL, nowMotorPulseR);
 
 	//前回のエンコーダの値を更新
 	mLastMotorPulseL = newMotorPulseL;
