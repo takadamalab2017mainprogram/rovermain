@@ -139,25 +139,20 @@ Buzzer::~Buzzer()
 }
 
 //////////////////////////////////////////////
-// Servo
+// ParaServo
 //////////////////////////////////////////////
 
-bool Servo::onInit(const struct timespec& time)
+bool ParaServo::onInit(const struct timespec& time)
 {
-	pinMode(mPin, PWM_OUTPUT);
-
-	pwmSetMode(PWM_MODE_MS);
-	pwmSetRange(9000);
-	pwmSetClock(32);
-
-	pwmWrite (mPin, 0);
+	softPwmCreate(mPin, 0, 100);
+	softpwmWrite(mPin,0);
 	return true;
 }
-void Servo::onClean()
+void ParaServo::onClean()
 {
 	stop();
 }
-bool Servo::onCommand(const std::vector<std::string> args)
+bool ParaServo::onCommand(const std::vector<std::string> args)
 {
 	if(args.size() >= 2)
 	{
@@ -185,25 +180,104 @@ servo stop           : stop servo\r\n");
 	}
 	return true;
 }
-void Servo::start(double angle)
+void ParaServo::start(double angle)
+{
+	if(angle > 1)angle = 1;
+	else if(angle < 0)angle = 0;
+
+	softpwmWrite (mPin, angle * 100);
+	Debug::print(LOG_DETAIL,"ParaServo Start (%f)!\r\n",angle);
+}
+void ParaServo::stop()
+{
+	pwmWrite (mPin, 0);
+	Debug::print(LOG_DETAIL,"ParaServo Stop!\r\n");
+}
+Servo::Servo() : mPin(PIN_PARA_SERVO)
+{
+	setName("paraservo");
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
+}
+Servo::~Servo()
+{
+}
+
+//////////////////////////////////////////////
+// StabiServo
+//////////////////////////////////////////////
+
+bool StabiServo::onInit(const struct timespec& time)
+{
+	pinMode(mPin, PWM_OUTPUT);
+
+	pwmSetMode(PWM_MODE_MS);
+	pwmSetRange(9000);
+	pwmSetClock(32);
+
+	pwmWrite (mPin, 0);
+	return true;
+}
+void StabiServo::onClean()
+{
+	stop();
+}
+bool StabiServo::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() >= 2)
+	{
+		if(args[1].compare("stop") == 0)
+		{
+			stop();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}else if(args[1].compare("close") == 0)
+		{
+			close();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}else
+		{
+			//角度指定
+			float period = 0;
+			if(args.size() == 2)
+			{
+				period = atof(args[1].c_str());
+			}
+			start(period);
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+	}else
+	{
+		Debug::print(LOG_PRINT,"servo [0-1]          : set servo angle\r\n\
+servo stop           : stop servo\r\n");
+	}
+	return true;
+}
+void StabiServo::start(double angle)
 {
 	if(angle > 1)angle = 1;
 	else if(angle < 0)angle = 0;
 
 	pwmWrite (mPin, SERVO_BASE_VALUE + angle * SERVO_MOVABLE_RANGE);
-	Debug::print(LOG_DETAIL,"Servo Start (%f)!\r\n",angle);
+	Debug::print(LOG_DETAIL,"StabiServo Start (%f)!\r\n",angle);
 }
-void Servo::stop()
+void StabiServo::stop()
 {
 	pwmWrite (mPin, 0);
-	Debug::print(LOG_DETAIL,"Servo Stop!\r\n");
+	Debug::print(LOG_DETAIL,"StabiServo Stop!\r\n");
 }
-Servo::Servo() : mPin(PIN_SERVO)
+void StabiServo::close()
 {
-	setName("servo");
+	pwmWrite(mPin, SERVO_BASE_VALUE);
+	Debug::print(LOG_DETAIL,"StabiServo Close!\r\n");
+}
+StabiServo::StabiServo() : mPin(PIN_STABI_SERVO)
+{
+	setName("stabiservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
-Servo::~Servo()
+StabiServo::~StabiServo()
 {
 }
 
@@ -257,5 +331,6 @@ XBeeSleep::~XBeeSleep()
 }
 
 Buzzer gBuzzer;
-Servo gServo;
+ParaServo gParaServo;
+StabiServo gStabiServo;
 XBeeSleep gXbeeSleep;

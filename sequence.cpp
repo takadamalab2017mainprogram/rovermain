@@ -33,7 +33,8 @@ bool Testing::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gServo.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
@@ -285,7 +286,8 @@ bool Separating::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gServo.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
@@ -293,7 +295,7 @@ bool Separating::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 
 	mLastUpdateTime = time;
-	gServo.start(0);
+	gParaServo.start(0);
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
@@ -310,7 +312,7 @@ void Separating::onUpdate(const struct timespec& time)
 		mLastUpdateTime = time;
 
 		mCurServoState = !mCurServoState;
-		gServo.start(mCurServoState);
+		gParaServo.start(mCurServoState);
 		++mServoCount;
 		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
 
