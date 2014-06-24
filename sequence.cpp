@@ -1,4 +1,4 @@
-#include<stdlib.h>
+#include <stdlib.h>
 #include <math.h>
 #include <fstream>
 #include <opencv2/opencv.hpp>
@@ -39,7 +39,7 @@ bool Testing::onInit(const struct timespec& time)
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
-	//gAccelerationSensor.setRunMode(true);
+	gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	gWebCamera.setRunMode(true);
 	//gDistanceSensor.setRunMode(true);
@@ -769,6 +769,8 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gAccelerationSensor.setRunMode(true);
+	gServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
@@ -779,6 +781,23 @@ bool ColorAccessing::onInit(const struct timespec& time)
 void ColorAccessing::onUpdate(const struct timespec& time)
 {
 	if(gAvoidingState.isActive())return;
+
+
+	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
+	
+	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() )
+	{
+		Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
+		mLastUpdateTime = time;
+		// mCurStep = STEP_PRE_PARA_JUDGE;
+		gWakingState.setRunMode(true);
+	}
+
+	// if(gWakingState.isActive())
+	// {
+	// 	mLastUpdateTime = time;//起き上がり動作中は待機する
+	// 	return;
+	// }
 
 	switch(mCurStep)
 	{
@@ -1180,6 +1199,8 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gMotorDrive.drive(18,18);
 	gGyroSensor.setRunMode(true);
+	gAccelerationSensor.setRunMode(true);
+	gServo.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
 	return true;
@@ -1233,11 +1254,36 @@ void Waking::onUpdate(const struct timespec& time)
 
 	case STEP_VERIFY:
 		//起き上がりが成功したか否かをカメラ画像で検証
+		//加速度使う．
 		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
-			IplImage* pCaptureFrame = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL,pCaptureFrame);
-			if(gImageProc.isSky(pCaptureFrame))
+			// IplImage* pCaptureFrame = gCameraCapture.getFrame();
+			// gCameraCapture.save(NULL,pCaptureFrame);
+			// if(gImageProc.isSky(pCaptureFrame))
+			// {
+			// 	mLastUpdateTime = time;
+			// 	mCurStep = STEP_START;
+			// 	mAngleOnBegin = gGyroSensor.getRvx();
+			// 	gMotorDrive.drive(50,50);
+
+			// 	if(++mWakeRetryCount > WAKING_RETRY_COUNT)
+			// 	{
+			// 		Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+			// 		setRunMode(false);
+			// 		return;
+			// 	}
+			// 	Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d)\r\n",mWakeRetryCount,WAKING_RETRY_COUNT);
+			// }else
+			// {
+			// 	Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
+			// 	setRunMode(false);
+			// }
+			if(gAccelerationSensor.getAz()>0.0)
+			{
+				Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
+				setRunMode(false);
+			}
+			else
 			{
 				mLastUpdateTime = time;
 				mCurStep = STEP_START;
@@ -1251,11 +1297,8 @@ void Waking::onUpdate(const struct timespec& time)
 					return;
 				}
 				Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d)\r\n",mWakeRetryCount,WAKING_RETRY_COUNT);
-			}else
-			{
-				Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
-				setRunMode(false);
 			}
+
 		}
 		break;
 	}

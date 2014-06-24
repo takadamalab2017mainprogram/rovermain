@@ -244,5 +244,5 @@ extern LightSensor gLightSensor;
 extern WebCamera gWebCamera;
 extern DistanceSensor gDistanceSensor;
 extern CameraCapture gCameraCapture;
-//extern AccelerationSensor gAccelerationSensor;
+extern AccelerationSensor gAccelerationSensor;
 
