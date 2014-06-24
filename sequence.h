@@ -157,20 +157,34 @@ public:
 	~Escaping();
 };
 
-//轍脱出脱出（旧ランダム）
-class EscapingRandom : public TaskBase
+//轍脱出脱出（スタビ使用ver）
+class EscapingByStabi : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-
-	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
-	enum STEP mCurStep;
+	bool stuckflag;
+	int stopcount;
+	VECTOR3 vec;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 public:
-	EscapingRandom();
-	~EscapingRandom();
+	EscapingByStabi();
+	~EscapingByStabi();
 };
+////轍脱出脱出（旧ランダム）
+//class EscapingRandom : public TaskBase
+//{
+//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+//
+//	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
+//	enum STEP mCurStep;
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onUpdate(const struct timespec& time);
+//public:
+//	EscapingRandom();
+//	~EscapingRandom();
+//};
 
 //ローバーの姿勢制御
 //姿勢制御が完了するとタスクが終了します

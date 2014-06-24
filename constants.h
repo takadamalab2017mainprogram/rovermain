@@ -65,6 +65,8 @@ const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を�
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
 const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.0 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
 
+const static double SPEED_WHEN_IT_IS_STOPPED = 0.5; // スタックしたとみなすスピード(EscapingByStabiで使用)
+
 const static double WAKING_THRESHOLD = 200;
 const static unsigned int WAKING_RETRY_COUNT = 5;
 
