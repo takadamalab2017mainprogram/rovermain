@@ -1,4 +1,5 @@
 #include <wiringPi.h>
+#include <softPwm.h>
 #include <stdlib.h>
 #include "actuator.h"
 #include "constants.h"
@@ -145,7 +146,7 @@ Buzzer::~Buzzer()
 bool ParaServo::onInit(const struct timespec& time)
 {
 	softPwmCreate(mPin, 0, 100);
-	softpwmWrite(mPin,0);
+	softPwmWrite(mPin,0);
 	return true;
 }
 void ParaServo::onClean()
@@ -185,12 +186,12 @@ void ParaServo::start(double angle)
 	if(angle > 1)angle = 1;
 	else if(angle < 0)angle = 0;
 
-	softpwmWrite (mPin, angle * 100);
+	softPwmWrite (mPin, angle * 100);
 	Debug::print(LOG_DETAIL,"ParaServo Start (%f)!\r\n",angle);
 }
 void ParaServo::stop()
 {
-	pwmWrite (mPin, 0);
+	softPwmWrite (mPin, 0);
 	Debug::print(LOG_DETAIL,"ParaServo Stop!\r\n");
 }
 ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
