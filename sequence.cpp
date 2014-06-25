@@ -19,7 +19,7 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
-EscapingRandom gEscapingRandomState;
+//EscapingRandom gEscapingRandomState;
 Waking gWakingState;
 Turning gTurningState;
 Avoiding gAvoidingState;

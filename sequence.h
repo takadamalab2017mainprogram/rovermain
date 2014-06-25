@@ -302,7 +302,7 @@ extern Waking gWakingState;
 extern Turning gTurningState;
 extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
-extern EscapingRandom gEscapingRandomState;
+//extern EscapingRandom gEscapingRandomState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;
