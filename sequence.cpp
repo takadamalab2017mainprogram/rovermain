@@ -1133,6 +1133,7 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 {
 	//mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
+	stopcount = 0;
 	//gMotorDrive.drive(20,20);
 	return true;
 }
@@ -1158,8 +1159,10 @@ bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 			return true;
 		}
 	}
+	Debug::print(LOG_SUMMARY, "predicting [start]  : switch avoiding mode\r\n");
+	return false;
 }
-EscapingByStabi::EscapingByStabi() : stopcount = 0
+EscapingByStabi::EscapingByStabi()
 {
 	setName("escapingbystabi");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
