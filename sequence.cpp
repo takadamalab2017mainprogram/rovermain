@@ -1127,44 +1127,42 @@ Escaping::Escaping()
 Escaping::~Escaping()
 {
 }
-bool EscapingByStabi::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	stuckflag = false;
-	gStabiServo.setRunMode(true);
-	gGPSSensor.setRunMode(true);
-	//gMotorDrive.drive(-100,-100);
-	stopcount = 0;
-	gGPSSensor.get(vec);
-	return true;
-}
-void EscapingByStabi::onUpdate(const struct timespec& time)
-{
-	timespec remtime = Time::dt(time,mLastUpdateTime);
-	mLastUpdateTime = time;
-	VECTOR3 pastvec;
-	pastvec = vec;
-	gGPSSensor.get(vec);
-	if(pow((newvec.x-vec.x),2)+pow((newvec.y-vec.y),2)/remtime>SPEED_WHEN_IT_IS_STOPPED) stopcount++;
-	else stuckflag = false;
-	if(stopcount > 10) stuckflag = true;
-	if(stuckflag)// 止まったと判断 (サーボの標準はangle=0.6)
-	{
-		gMotorDrive.drive(0,0);
-		gStabiServo.close();
-		gMotorDrive.drive(100,100);
-		gStabiServo.start(0.6);
-		stopcount = 0;
-	}
-}
-EscapingByStabi::EscapingByStabi()
-{
-	setName("escapingbystabi");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-EscapingByStabi::~EscapingByStabi()
-{
-}
+//bool EscapingByStabi::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	gStabiServo.setRunMode(true);
+//	gGPSSensor.setRunMode(true);
+//	//gMotorDrive.drive(-100,-100);
+//	gGPSSensor.get(vec);
+//	return true;
+//}
+//void EscapingByStabi::onUpdate(const struct timespec& time)
+//{
+//	timespec remtime = Time::dt(time,mLastUpdateTime);
+//	mLastUpdateTime = time;
+//	VECTOR3 pastvec;
+//	pastvec = vec;
+//	gGPSSensor.get(vec);
+//	if(pow((newvec.x-vec.x),2)+pow((newvec.y-vec.y),2)/remtime>SPEED_WHEN_IT_IS_STOPPED) stopcount++;
+//	else stuckflag = false;
+//	if(stopcount > 10) stuckflag = true;
+//	if(stuckflag)// 止まったと判断 (サーボの標準はangle=0.6)
+//	{
+//		gMotorDrive.drive(0,0);
+//		gStabiServo.close();
+//		gMotorDrive.drive(100,100);
+//		gStabiServo.start(0.6);
+//		stopcount = 0;
+//	}
+//}
+//EscapingByStabi::EscapingByStabi() : stopcount = 0, stuckflag = false,
+//{
+//	setName("escapingbystabi");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//EscapingByStabi::~EscapingByStabi()
+//{
+//}
 bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
