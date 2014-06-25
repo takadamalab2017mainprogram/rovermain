@@ -11,9 +11,8 @@ sudo apt-get install libc6-i386 lib32stdc++6 zlib1g:i386
 ~~export PKG_CONFIG_PATH=さっき解凍したコンパイラのディレクトリのパス/arm-linux-gnueabihf/lib/pkgconfig:$PKG_CONFIG_PATH~~  
 という1行を追加して，  
 source ~/.bashrc  
-を実行．  
-  
-やらなくてもいいです．2014/06/25
+を実行．    
+やらなくていいです．2014/06/25  
 5. ソースコードのあるディレクトリでmakeコマンド実行．
 
 ## UbuntuでBitbucketをsshで利用する方法 ##
