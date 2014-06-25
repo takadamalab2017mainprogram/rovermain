@@ -7,11 +7,11 @@ sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0
 sudo apt-get install libc6-i386 lib32stdc++6 zlib1g:i386  
 3. https://bitbucket.org/hogefugabar/minerva/downloads/compiler.tar.gz  
 を落としてきて，解凍し，ソースコードのあるディレクトリに放り込む．  
-4. ~/.bashrcに  
+4. ~~ ~/.bashrcに~~  
 ~~export PKG_CONFIG_PATH=さっき解凍したコンパイラのディレクトリのパス/arm-linux-gnueabihf/lib/pkgconfig:$PKG_CONFIG_PATH~~  
-という1行を追加して，  
-source ~/.bashrc  
-を実行．    
+~~という1行を追加して，~~  
+~~source ~/.bashrc~~  
+~~を実行．~~    
 やらなくていいです．2014/06/25  
 5. ソースコードのあるディレクトリでmakeコマンド実行．
 
