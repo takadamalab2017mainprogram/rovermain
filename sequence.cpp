@@ -1134,19 +1134,26 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 	//mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
 	stopcount = 0;
+	flag = false;
 	//gMotorDrive.drive(20,20);
 	return true;
 }
 void EscapingByStabi::onUpdate(const struct timespec& time)
 {
-	gMotorDrive.drive(0,0);
-	gStabiServo.close();
-	gMotorDrive.drive(100,100);
-	gStabiServo.start(0.6);
-	if(stopcount++ > 5) 
+	if(!flag)
+	{
+		gMotorDrive.drive(0,0);
+		gStabiServo.close();
+	}else
+	{
+		gMotorDrive.drive(100,100);
+		gStabiServo.start(0.6);
+	}
+	flag = !flag;
+	if(stopcount++ > 10) 
 	{
 		//gEscapingState.setRunMode(true);
-		setRunMode(false);
+		this.setRunMode(false);
 	}
 }
 bool EscapingByStabi::onCommand(const std::vector<std::string> args)
@@ -1155,7 +1162,12 @@ bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 	{
 		if(args[1].compare("start") == 0)
 		{
-			setRunMode(true);
+			this.setRunMode(true);
+			return true;
+		}
+		if(args[1].compare("stop") == 0)
+		{
+			this.setRunMode(false);
 			return true;
 		}
 	}
