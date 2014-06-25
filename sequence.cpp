@@ -1131,7 +1131,7 @@ Escaping::~Escaping()
 }
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
-	//mLastUpdateTime = time;
+	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
 	stopcount = 0;
 	flag = false;
@@ -1140,6 +1140,8 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 }
 void EscapingByStabi::onUpdate(const struct timespec& time)
 {
+	if(Time::dt(time,mLastUpdateTime) < 1) return;
+	mLastUpdateTime = time;
 	if(!flag)
 	{
 		gMotorDrive.drive(0,0);

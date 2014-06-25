@@ -160,7 +160,7 @@ public:
 //轍脱出脱出（スタビ使用ver）
 class EscapingByStabi : public TaskBase
 {
-	//struct timespec mLastUpdateTime;//前回の行動からの変化時間
+	struct timespec mLastUpdateTime;//前回の行動からの変化時間
 	bool flag;
 	int stopcount;
 protected:
