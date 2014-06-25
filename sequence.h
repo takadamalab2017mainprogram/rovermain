@@ -158,19 +158,17 @@ public:
 };
 
 //轍脱出脱出（スタビ使用ver）
-//class EscapingByStabi : public TaskBase
-//{
-//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-//	bool stuckflag;
-//	int stopcount;
-//	VECTOR3 vec;
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onUpdate(const struct timespec& time);
-//public:
-//	EscapingByStabi();
-//	~EscapingByStabi();
-//};
+class EscapingByStabi : public TaskBase
+{
+	//struct timespec mLastUpdateTime;//前回の行動からの変化時間
+	int stopcount;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	EscapingByStabi();
+	~EscapingByStabi();
+};
 ////轍脱出脱出（旧ランダム）
 //class EscapingRandom : public TaskBase
 //{
@@ -303,6 +301,7 @@ extern Turning gTurningState;
 extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
 //extern EscapingRandom gEscapingRandomState;
+extern EscapingByStabi gEscapingByStabiState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;
