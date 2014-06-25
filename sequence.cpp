@@ -1144,8 +1144,19 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 	gStabiServo.start(0.6);
 	if(stopcount++ > 5) 
 	{
-		gEscapingState.setRunMode(true);
+		//gEscapingState.setRunMode(true);
 		setRunMode(false);
+	}
+}
+bool EscapingByStabi::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 2)
+	{
+		if(args[1].compare("start") == 0)
+		{
+			setRunMode(true);
+			return true;
+		}
 	}
 }
 EscapingByStabi::EscapingByStabi() : stopcount = 0

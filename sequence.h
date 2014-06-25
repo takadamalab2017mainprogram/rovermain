@@ -165,6 +165,7 @@ class EscapingByStabi : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
 public:
 	EscapingByStabi();
 	~EscapingByStabi();
