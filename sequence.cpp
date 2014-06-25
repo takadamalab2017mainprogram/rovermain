@@ -1153,7 +1153,7 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 	if(stopcount++ > 10) 
 	{
 		//gEscapingState.setRunMode(true);
-		this.setRunMode(false);
+		gEscapingByStabiState.setRunMode(false);
 	}
 }
 bool EscapingByStabi::onCommand(const std::vector<std::string> args)
@@ -1162,12 +1162,12 @@ bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 	{
 		if(args[1].compare("start") == 0)
 		{
-			this.setRunMode(true);
+			gEscapingByStabiState.setRunMode(true);
 			return true;
 		}
 		if(args[1].compare("stop") == 0)
 		{
-			this.setRunMode(false);
+			gEscapingByStabiState.setRunMode(false);
 			return true;
 		}
 	}
