@@ -193,12 +193,12 @@ void ParaServo::stop()
 	pwmWrite (mPin, 0);
 	Debug::print(LOG_DETAIL,"ParaServo Stop!\r\n");
 }
-Servo::Servo() : mPin(PIN_PARA_SERVO)
+ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
 {
 	setName("paraservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
-Servo::~Servo()
+ParaServo::~ParaServo()
 {
 }
 
