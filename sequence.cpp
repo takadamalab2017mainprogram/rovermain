@@ -467,8 +467,8 @@ void Navigating::onUpdate(const struct timespec& time)
 	}else if(isStuck())//スタック判定
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
-		//gEscapingByStabiState.setRunMode(true);
-		gEscapingState.setRunMode(true);
+		gEscapingByStabiState.setRunMode(true);
+		//gEscapingState.setRunMode(true);
 	}else
 	{
 		if(gEscapingState.isActive())//脱出モードが完了した時
@@ -1154,8 +1154,9 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 	flag = !flag;
 	if(stopcount++ > 10) 
 	{
-		//gEscapingState.setRunMode(true);
+		gMotorDrive.drive(0,0);
 		gEscapingByStabiState.setRunMode(false);
+		if(Navigating::isStuck()) gEscapingState.setRunMode(true);
 	}
 }
 bool EscapingByStabi::onCommand(const std::vector<std::string> args)
