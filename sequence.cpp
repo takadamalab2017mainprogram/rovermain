@@ -1156,7 +1156,7 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 	{
 		gMotorDrive.drive(0,0);
 		gEscapingByStabiState.setRunMode(false);
-		if(Navigating::isStuck()) gEscapingState.setRunMode(true);
+		//if(Navigating::isStuck()) gEscapingState.setRunMode(true);
 	}
 }
 bool EscapingByStabi::onCommand(const std::vector<std::string> args)
