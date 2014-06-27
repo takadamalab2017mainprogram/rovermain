@@ -1201,7 +1201,7 @@ void Jumping::onUpdate(const struct timespec& time)
 	if(stopcount < 0)
 	{
 		gMotorDrive.drive(0,0);
-		gStabiServo.close();
+		gStabiServo.start(0.1);
 	}else if(stopcount == 0)
 	{
 		gMotorDrive.drive(100,100);
