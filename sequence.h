@@ -189,6 +189,7 @@ public:
 class Jumping : public TaskBase
 {
 	struct timespec mLastUpdateTime; // 前回の行動からの変化時間
+	bool flag;
 	int stopcount;
 protected:
 	virtual bool onInit(const struct timespec& time);

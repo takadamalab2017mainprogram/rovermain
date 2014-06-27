@@ -468,11 +468,11 @@ void Navigating::onUpdate(const struct timespec& time)
 	}else if(isStuck())//スタック判定
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
-		gEscapingByStabiState.setRunMode(true);
-		//gEscapingState.setRunMode(true);
+		//gEscapingByStabiState.setRunMode(true);
+		gEscapingState.setRunMode(true);
 	}else
 	{
-		if(gEscapingByStabiState.isActive()/*gEscapingState.isActive()*/)//脱出モードが完了した時
+		if(/*gEscapingByStabiState.isActive()*/gEscapingState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
@@ -1191,27 +1191,29 @@ bool Jumping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
-	stopcount = -1;
+	flag = false;
+	stopcount = 0;
 	return true;
 }
 void Jumping::onUpdate(const struct timespec& time)
 {
 	if(Time::dt(time,mLastUpdateTime) < 1) return;
 	mLastUpdateTime = time;
-	if(stopcount < 0)
+	if(!flag)
 	{
 		gMotorDrive.drive(0,0);
-		gStabiServo.start(0.1);
-	}else if(stopcount == 0)
+		gStabiServo.close();
+	}else
 	{
-		gMotorDrive.drive(100,100);
+		gMotorDrive.drive(-20,-20);
 		gStabiServo.start(0.6);
-	}else if(stopcount > 0)
-	{
-	gMotorDrive.drive(0,0);
-	gJumpingState.setRunMode(false);
 	}
-	stopcount++;
+	flag = !flag;
+	if(stopcount++ > 2) 
+	{
+		gMotorDrive.drive(0,0);
+		gJumpingState.setRunMode(false);
+	}
 }
 Jumping::Jumping()
 {
