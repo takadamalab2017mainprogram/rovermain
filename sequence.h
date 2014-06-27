@@ -196,7 +196,7 @@ protected:
 public:
 	Jumping();
 	~Jumping();
-}
+};
 
 //ローバーの姿勢制御
 //姿勢制御が完了するとタスクが終了します
