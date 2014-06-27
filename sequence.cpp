@@ -1206,11 +1206,10 @@ void Jumping::onUpdate(const struct timespec& time)
 	{
 		gMotorDrive.drive(100,100);
 		gStabiServo.start(0.6);
+		gMotorDrive.drive(0,0);
+		gJumpingState.setRunMode(false);
 	}
 	flag = !flag;
-	gMotorDrive.drive(0,0);
-	gJumpingState.setRunMode(false);
-	}
 }
 Jumping::Jumping()
 {
