@@ -403,7 +403,8 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gServo.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -781,7 +782,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
@@ -1257,7 +1258,7 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.drive(18,18);
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
 	return true;
