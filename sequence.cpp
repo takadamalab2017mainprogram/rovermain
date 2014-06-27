@@ -399,6 +399,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gServo.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
