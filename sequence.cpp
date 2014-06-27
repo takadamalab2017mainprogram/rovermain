@@ -1205,7 +1205,7 @@ void Jumping::onUpdate(const struct timespec& time)
 		gStabiServo.close();
 	}else
 	{
-		gMotorDrive.drive(-20,-20);
+		gMotorDrive.drive(-5,-5);
 		gStabiServo.start(0.6);
 	}
 	flag = !flag;
