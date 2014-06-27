@@ -21,6 +21,7 @@ Navigating gNavigatingState;
 Escaping gEscapingState;
 //EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
+Jumping gJumpingState;
 Waking gWakingState;
 Turning gTurningState;
 Avoiding gAvoidingState;
@@ -471,7 +472,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//gEscapingState.setRunMode(true);
 	}else
 	{
-		if(gEscapingState.isActive())//脱出モードが完了した時
+		if(gEscapingByStabiState.isActive()/*gEscapingState.isActive()*/)//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
@@ -1185,6 +1186,41 @@ EscapingByStabi::EscapingByStabi()
 EscapingByStabi::~EscapingByStabi()
 {
 }
+
+bool Jumping::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	gStabiServo.setRunMode(true);
+	flag = false;
+	return true;
+}
+void Jumping::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) < 1) return;
+	mLastUpdateTime = time;
+	if(!flag)
+	{
+		gMotorDrive.drive(0,0);
+		gStabiServo.close();
+	}else
+	{
+		gMotorDrive.drive(100,100);
+		gStabiServo.start(0.6);
+	}
+	flag = !flag;
+	gMotorDrive.drive(0,0);
+	gJumpingState.setRunMode(false);
+	}
+}
+Jumping::Jumping()
+{
+	setName("jumping");
+	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+}
+Jumping::~Jumping()
+{
+}
+
 bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
