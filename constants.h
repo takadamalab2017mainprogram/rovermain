@@ -31,6 +31,10 @@ const static int PIN_DISTANCE = 6;	//距離センサー
 const static int MOTOR_MAX_POWER = 100;
 const static double MOTOR_MAX_POWER_CHANGE =(double)5;//モータ出力の最大変化量
 
+//エンコーダ関連 ※モータを変えたらここも変えてください。
+const static int RESOLVING_POWER = 32;		//モータの分解能
+const static int GEAR_RATIO = 29;			//モータのギア比
+
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
 const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
