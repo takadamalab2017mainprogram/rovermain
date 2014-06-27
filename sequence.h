@@ -157,19 +157,46 @@ public:
 	~Escaping();
 };
 
-//轍脱出脱出（旧ランダム）
-class EscapingRandom : public TaskBase
+//轍脱出脱出（スタビ使用ver）
+class EscapingByStabi : public TaskBase
 {
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-
-	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
-	enum STEP mCurStep;
+	bool flag;
+	int stopcount;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+public:
+	EscapingByStabi();
+	~EscapingByStabi();
+};
+////轍脱出脱出（旧ランダム）
+//class EscapingRandom : public TaskBase
+//{
+//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+//
+//	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
+//	enum STEP mCurStep;
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onUpdate(const struct timespec& time);
+//public:
+//	EscapingRandom();
+//	~EscapingRandom();
+//};
+// ジャンプ機構（仮）
+class Jumping : public TaskBase
+{
+	struct timespec mLastUpdateTime; // 前回の行動からの変化時間
+	bool flag;
+	int stopcount;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 public:
-	EscapingRandom();
-	~EscapingRandom();
+	Jumping();
+	~Jumping();
 };
 
 //ローバーの姿勢制御
@@ -288,7 +315,9 @@ extern Waking gWakingState;
 extern Turning gTurningState;
 extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
-extern EscapingRandom gEscapingRandomState;
+//extern EscapingRandom gEscapingRandomState;
+extern EscapingByStabi gEscapingByStabiState;
+extern Jumping gJumpingState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;
