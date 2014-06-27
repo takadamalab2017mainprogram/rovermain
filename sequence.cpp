@@ -1191,25 +1191,27 @@ bool Jumping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
-	flag = false;
+	stopcount = -1;
 	return true;
 }
 void Jumping::onUpdate(const struct timespec& time)
 {
 	if(Time::dt(time,mLastUpdateTime) < 1) return;
 	mLastUpdateTime = time;
-	if(!flag)
+	if(stopcount < 0)
 	{
 		gMotorDrive.drive(0,0);
 		gStabiServo.close();
-	}else
+	}else if(stopcount == 0)
 	{
 		gMotorDrive.drive(100,100);
 		gStabiServo.start(0.6);
-		gMotorDrive.drive(0,0);
-		gJumpingState.setRunMode(false);
+	}else if(stopcount > 0)
+	{
+	gMotorDrive.drive(0,0);
+	gJumpingState.setRunMode(false);
 	}
-	flag = !flag;
+	stopcount++;
 }
 Jumping::Jumping()
 {
