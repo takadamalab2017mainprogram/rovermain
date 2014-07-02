@@ -35,3 +35,19 @@ ssh-add ~/.ssh/
 もしくは  
 python setup.py  
 4. USBメモリを抜く．
+
+## ログファイルのUSBメモリへの転送方法 ##
+1. USBメモリのルートディレクトリにlogというディレクトリをつくる．  
+2. USBメモリをローバーに挿して，log.pyを実行する．実行方法は，  
+./log.py  
+もしくは  
+python log.py  
+3. USBメモリを抜く．  
+
+## 画像ファイルのUSBメモリへの転送方法 ##
+1. USBメモリのルートディレクトリにpicというディレクトリをつくる．  
+2. USBメモリをローバーに挿して，picture.pyを実行する．実行方法は，  
+./picture.py  
+もしくは  
+python picture.py  
+3. USBメモリを抜く．
