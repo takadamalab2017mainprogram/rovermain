@@ -44,8 +44,8 @@ public:
 	~Buzzer();
 };
 
-// サーボ制御クラス(ハードウェアPWMを使う)
-class Servo : public TaskBase
+// パラシュートサーボ制御クラス(ソフトウェアPWMを使う)
+class ParaServo : public TaskBase
 {
 private:
 	int mPin;
@@ -59,8 +59,29 @@ public:
 	//サーボの制御を終了する
 	void stop();
 
-	Servo();
-	~Servo();
+	ParaServo();
+	~ParaServo();
+};
+
+// スタビサーボ制御クラス(ハードウェアPWMを使う)
+class StabiServo : public TaskBase
+{
+private:
+	int mPin;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string> args);
+public:
+	//サーボを指定されたangle[0-1]になるように制御を開始する
+	void start(double angle);
+	//サーボの制御を終了する
+	void stop();
+	//サーボをしまう
+	void close();
+
+	StabiServo();
+	~StabiServo();
 };
 
 // XBeeスリープ制御クラス
@@ -81,6 +102,7 @@ public:
 };
 
 extern Buzzer gBuzzer;
-extern Servo gServo;
+extern ParaServo gParaServo;
+extern StabiServo gStabiServo;
 extern XBeeSleep gXbeeSleep;
 

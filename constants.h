@@ -24,12 +24,17 @@ const static int PIN_INVERT_MOTOR_B = 2;
 const static int PIN_BUZZER = 12;			//ブザー
 const static int PIN_XBEE_SLEEP = 13;		//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;		//Cdsセンサピン
-const static int PIN_SERVO = 1;				//サーボピン
-const static int PIN_DISTANCE = 6;	//距離センサー
+const static int PIN_PARA_SERVO = 6;		//パラシュートサーボピン
+const static int PIN_STABI_SERVO = 1;       //スタビサーボピン
+const static int PIN_DISTANCE = 8;	//距離センサー(ピン番号は適当)
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
 const static double MOTOR_MAX_POWER_CHANGE =(double)5;//モータ出力の最大変化量
+
+//エンコーダ関連 ※モータを変えたらここも変えてください。
+const static int RESOLVING_POWER = 32;		//モータの分解能
+const static int GEAR_RATIO = 29;			//モータのギア比
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
@@ -63,6 +68,8 @@ const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近�
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒)
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
 const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.0 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
+
+const static double SPEED_WHEN_IT_IS_STOPPED = 0.5; // スタックしたとみなすスピード(EscapingByStabiで使用)
 
 const static double WAKING_THRESHOLD = 200;
 const static unsigned int WAKING_RETRY_COUNT = 5;

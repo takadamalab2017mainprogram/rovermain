@@ -19,7 +19,9 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
-EscapingRandom gEscapingRandomState;
+//EscapingRandom gEscapingRandomState;
+EscapingByStabi gEscapingByStabiState;
+Jumping gJumpingState;
 Waking gWakingState;
 Turning gTurningState;
 Avoiding gAvoidingState;
@@ -33,7 +35,8 @@ bool Testing::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gServo.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
@@ -285,7 +288,8 @@ bool Separating::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gServo.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
@@ -293,7 +297,7 @@ bool Separating::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 
 	mLastUpdateTime = time;
-	gServo.start(0);
+	gParaServo.start(0);
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
@@ -310,7 +314,7 @@ void Separating::onUpdate(const struct timespec& time)
 		mLastUpdateTime = time;
 
 		mCurServoState = !mCurServoState;
-		gServo.start(mCurServoState);
+		gParaServo.start(mCurServoState);
 		++mServoCount;
 		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
 
@@ -399,7 +403,8 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gServo.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 
 	mLastCheckTime = time;
 	mLastPos.clear();
@@ -465,10 +470,11 @@ void Navigating::onUpdate(const struct timespec& time)
 	}else if(isStuck())//スタック判定
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
+		//gEscapingByStabiState.setRunMode(true);
 		gEscapingState.setRunMode(true);
 	}else
 	{
-		if(gEscapingState.isActive())//脱出モードが完了した時
+		if(/*gEscapingByStabiState.isActive()*/gEscapingState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
@@ -482,15 +488,20 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	//エンコーダ処理
-	unsigned long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();	//エンコーダの値の取得
-	unsigned long long nowMotorPulseL = newMotorPulseL - mLastMotorPulseL;	//前回の値との差分を計算
-	unsigned long long nowMotorPulseR = newMotorPulseR - mLastMotorPulseR;
+	unsigned long long newPulseL = gMotorDrive.getL(), newPulseR = gMotorDrive.getR();	//エンコーダの値の取得
+	unsigned long long currentPulseL = newPulseL - mLastMotorPulseL;	//前回の値との差分を計算
+	unsigned long long currentPulseR = newPulseR - mLastMotorPulseR;
 
-	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%llu %llu)\r\n", nowMotorPulseL, nowMotorPulseR);
+	//回転数を計算
+	unsigned long long rotationsL = currentPulseL  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);	//分解能とギア比で割る
+	unsigned long long rotationsR = currentPulseR  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+
+	//回転数の出力
+	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%llu %llu)\r\n", rotationsL, rotationsR);
 
 	//前回のエンコーダの値を更新
-	mLastMotorPulseL = newMotorPulseL;
-	mLastMotorPulseR = newMotorPulseR;
+	mLastMotorPulseL = newPulseL;
+	mLastMotorPulseR = newPulseR;
 
 	//座標データをひとつ残して削除
 	currentPos = mLastPos.back();
@@ -771,7 +782,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
@@ -1152,54 +1163,100 @@ Escaping::Escaping()
 Escaping::~Escaping()
 {
 }
-bool EscapingRandom::onInit(const struct timespec& time)
+bool EscapingByStabi::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
-	mCurStep = STEP_BACKWARD;
-	gMotorDrive.drive(-100,-100);
+	gStabiServo.setRunMode(true);
+	stopcount = 0;
+	flag = false;
+	//gMotorDrive.drive(20,20);
 	return true;
 }
-void EscapingRandom::onUpdate(const struct timespec& time)
+void EscapingByStabi::onUpdate(const struct timespec& time)
 {
-	switch(mCurStep)
+	if(Time::dt(time,mLastUpdateTime) < 1) return;
+	mLastUpdateTime = time;
+	if(!flag)
 	{
-	case STEP_BACKWARD:
-		//バックを行う
-		if(Time::dt(time,mLastUpdateTime) >= 3)
-		{
-			mCurStep = STEP_TURN;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(100,-100);
-		}
-		break;
-	case STEP_TURN:
-		//その場回転を行う
-		if(Time::dt(time,mLastUpdateTime) >= 3)
-		{
-			mCurStep = STEP_FORWARD;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(100,100);
-		}
-		break;
-	case STEP_FORWARD:
-		//前進を行う
-		if(Time::dt(time,mLastUpdateTime) >= 3)
-		{
-			mCurStep = STEP_BACKWARD;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(-100,-100);
-		}
-		break;
+		gMotorDrive.drive(0,0);
+		gStabiServo.close();
+	}else
+	{
+		gMotorDrive.drive(100,100);
+		gStabiServo.start(0.6);
+	}
+	flag = !flag;
+	if(stopcount++ > 10) 
+	{
+		gMotorDrive.drive(0,0);
+		gEscapingByStabiState.setRunMode(false);
+		//if(Navigating::isStuck()) gEscapingState.setRunMode(true);
 	}
 }
-EscapingRandom::EscapingRandom()
+bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 {
-	setName("random");
+	if(args.size() == 2)
+	{
+		if(args[1].compare("start") == 0)
+		{
+			gEscapingByStabiState.setRunMode(true);
+			return true;
+		}
+		if(args[1].compare("stop") == 0)
+		{
+			gEscapingByStabiState.setRunMode(false);
+			return true;
+		}
+	}
+	Debug::print(LOG_SUMMARY, "predicting [start]  : switch avoiding mode\r\n");
+	return false;
+}
+EscapingByStabi::EscapingByStabi()
+{
+	setName("escapingbystabi");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
-EscapingRandom::~EscapingRandom()
+EscapingByStabi::~EscapingByStabi()
 {
 }
+
+bool Jumping::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	gStabiServo.setRunMode(true);
+	flag = false;
+	stopcount = 0;
+	return true;
+}
+void Jumping::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) < 1) return;
+	mLastUpdateTime = time;
+	if(!flag)
+	{
+		gMotorDrive.drive(0,0);
+		gStabiServo.close();
+	}else
+	{
+		gMotorDrive.drive(-5,-5);
+		gStabiServo.start(0.6);
+	}
+	flag = !flag;
+	if(stopcount++ > 2) 
+	{
+		gMotorDrive.drive(0,0);
+		gJumpingState.setRunMode(false);
+	}
+}
+Jumping::Jumping()
+{
+	setName("jumping");
+	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+}
+Jumping::~Jumping()
+{
+}
+
 bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -1208,7 +1265,7 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.drive(18,18);
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
 	return true;
