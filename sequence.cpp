@@ -821,20 +821,27 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			int x_pos = gImageProc.howColorGap(pImage);
 			
             //色検知したよ
-            if(x_pos != INT_MAX)
+            if( x_pos != INT_MAX )
 			{
 				mLastUpdateTime = time;
-				if(x_pos < -80){
+				if ( x_pos == INT_MIN )
+				{
+					nextState();
+				}
+				else if ( x_pos < -80 )
+				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(0,40);
                     mIsLastActionStraight = false;
 				}
-				else if(80 < x_pos){
+				else if ( 80 < x_pos )
+				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(40,0);
                     mIsLastActionStraight = false;
 				}
-				else{
+				else if ( -80 <= x_pos && x_pos <= 80 )
+				{
 					mCurStep = STEP_STOPPING_LONG;
 					gMotorDrive.drive(40,40);
                     mIsLastActionStraight = true;

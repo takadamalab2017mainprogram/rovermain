@@ -26,8 +26,60 @@ int ImageProc::howColorGap(IplImage* src)
 	hsv_color_img = smooth_img.clone();						//平滑化データをコピー
 
 	int count = 240*320;
-	for(int y=0; y<240;y++){
-		for(int x=0; x<320; x++){
+
+	//////////座標検索///////////////////////////////////////
+	double min_x = -1;
+	double min_y = -1;
+	double max_x = -1;
+	double max_y = -1;
+
+	for(int y=0; y<320; y++)
+	{
+		for(int x=0; x<240; x++)
+		{
+			int a = hsv_img.step*y+(x*3);					//参照番号を設定
+			//閾値によって抽出色以外を黒に
+			if(( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
+				min_x = x;
+				min_y = y;
+				break;
+			}
+		}
+		if ( min_x != -1 && min_y != -1 )
+		{
+			break;
+		}
+	}
+	for(int y=320-1; y>=0; y--)
+	{
+		for(int x=240-1; x>=0; x--)
+		{
+			int a = hsv_img.step*y+(x*3);					//参照番号を設定
+			//閾値によって抽出色以外を黒に
+			if(( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
+				max_x = x;
+				max_y = y;
+				break;
+			}
+		}
+		if ( max_x != -1 && max_y != -1 )
+		{
+			break;
+		}
+	}
+	// double distance = sqrt( (max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y) );
+
+	double distance = max_y-min_y;
+
+	Debug::print(LOG_SUMMARY,"ditance = %f\r\n", distance);
+	/////////////////////////////////////////////////////////
+
+
+
+	for(int y=0; y<240;y++)
+	{
+		for(int x=0; x<320; x++)
+		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
 			//閾値によって抽出色以外を黒に
 			if(!( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
@@ -56,8 +108,10 @@ int ImageProc::howColorGap(IplImage* src)
 		{
 			Debug::print(LOG_SUMMARY, "gap = %d\n", x_gap);
 
-			// もし50%以上が赤でうめつくされていたら．
-			if ( count > 240*320*0.5 ) 
+			// もし30%以上が赤でうめつくされていたら．
+			// かつ y range = 200以上
+
+			if ( count > 240*320*0.3 && distance > 270.0 ) 
 			{
 				x_gap = INT_MIN;
 			}
