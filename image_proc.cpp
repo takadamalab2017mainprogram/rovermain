@@ -33,9 +33,9 @@ int ImageProc::howColorGap(IplImage* src)
 	double max_x = -1;
 	double max_y = -1;
 
-	for(int y=0; y<320; y++)
+	for(int y=0; y<240; y++)
 	{
-		for(int x=0; x<240; x++)
+		for(int x=0; x<320; x++)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
 			//閾値によって抽出色以外を黒に
@@ -50,9 +50,9 @@ int ImageProc::howColorGap(IplImage* src)
 			break;
 		}
 	}
-	for(int y=320-1; y>=0; y--)
+	for(int y=240-1; y>=0; y--)
 	{
-		for(int x=240-1; x>=0; x--)
+		for(int x=320-1; x>=0; x--)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
 			//閾値によって抽出色以外を黒に
@@ -110,8 +110,9 @@ int ImageProc::howColorGap(IplImage* src)
 
 			// もし30%以上が赤でうめつくされていたら．
 			// かつ y range = 200以上
+			// 今のところこの値は適当
 
-			if ( count > 240*320*0.3 && distance > 270.0 ) 
+			if ( count > 240*320*0.3 && distance > 200.0 ) 
 			{
 				x_gap = INT_MIN;
 			}
