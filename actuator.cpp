@@ -97,7 +97,7 @@ void Buzzer::start(int on_period, int count)
 }
 void Buzzer::start(int on_period, int off_period, int count)
 {
-	if(mOnPeriod == 0 && on_period > 1 && off_period > 1 && count >= 1)
+	if(mOnPeriod == 0 && on_period >= 1 && off_period >= 1 && count >= 1)
 	{
 		Debug::print(LOG_DETAIL,"Buzzer Start!\r\n");
 		mOnPeriodMemory  = on_period;
