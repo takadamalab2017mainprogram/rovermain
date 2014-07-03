@@ -311,8 +311,8 @@ class MovementLogging : public TaskBase
 	struct timespec mLastUpdateTime;
 	std::string mFilenameEncoder,mFilenameAcceleration;
 
-	//前回チェック時のモーター回転数
-	unsigned long long mLastEncL,mLastEncR;
+	unsigned long long mLastEncL,mLastEncR;	//前回チェック時のモーター回転数
+	double mPrevPowerL,mPrevPowerR;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

@@ -232,6 +232,15 @@ void MotorDrive::setRatio(int ratioL,int ratioR)
 	mMotorR.setCoeff((double)(mRatioR = std::max(std::min(ratioR,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
 }
 
+double MotorDrive::getPowerL()
+{
+	return mMotorL.getPower();
+}
+double MotorDrive::getPowerR()
+{
+	return mMotorR.getPower();
+}
+
 void MotorDrive::drive(int powerL, int powerR)
 {
 	mDriveMode = DRIVE_RATIO;

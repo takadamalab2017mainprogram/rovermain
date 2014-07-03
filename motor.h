@@ -115,6 +115,10 @@ public:
 		//モータの左右比を設定
 		void setRatio(int ratioL,int ratioR);
 
+		//Current powerの取得
+		double getPowerL();
+		double getPowerR();
+
 		//指定された出力でモータを回転させる((100,100)の場合、実際のpwm出力はsetRatioに設定した値になる)
         void drive(int powerL,int powerR);
 

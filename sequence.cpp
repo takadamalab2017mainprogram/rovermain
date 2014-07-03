@@ -1598,37 +1598,52 @@ bool MovementLogging::onInit(const struct timespec& time)
 }
 void MovementLogging::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time,mLastUpdateTime) >= 1)
+	if(Time::dt(time,mLastUpdateTime) < 1)
 	{
-		gBuzzer.start(30);
-		mLastUpdateTime = time;
+		return;
+	}
 
-		//加速度のログを保存
-		if(gAccelerationSensor.isActive())
+	//gBuzzer.start(30);
+	mLastUpdateTime = time;
+
+	//加速度のログを保存
+	if(gAccelerationSensor.isActive())
+	{
+		write(mFilenameAcceleration,"%f,%f,%f\r\n",gAccelerationSensor.getAx(),gAccelerationSensor.getAy(),gAccelerationSensor.getAz());
+	}
+	else
+	{
+		write(mFilenameAcceleration,"unavailable\r\n");
+	}
+
+	//エンコーダのログを保存
+	if(gMotorDrive.isActive())
+	{
+		//レシオ比が変更されたらlogに反映する
+		if(gMotorDrive.getPowerL() != mPrevPowerL || gMotorDrive.getPowerR() != mPrevPowerR)
 		{
-			write(mFilenameAcceleration,"%f,%f,%f\r\n",gAccelerationSensor.getAx(),gAccelerationSensor.getAy(),gAccelerationSensor.getAz());
+			mPrevPowerL = gMotorDrive.getPowerL();
+			mPrevPowerR = gMotorDrive.getPowerR();
+			write(mFilenameEncoder,"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
+			Debug::print(LOG_SUMMARY, "Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
 		}
-		else
-		{
-			write(mFilenameAcceleration,"unavailable\r\n");
-		}
 
-		//エンコーダのログを保存
-		if(gMotorDrive.isActive())
-		{
-			//エンコーダ処理
-			unsigned long long newPulseL = gMotorDrive.getL(), newPulseR = gMotorDrive.getR();	//エンコーダの値の取得
-			unsigned long long currentPulseL = newPulseL - mLastEncL;	//前回の値との差分を計算
-			unsigned long long currentPulseR = newPulseR - mLastEncR;
+		//エンコーダ処理
+		unsigned long long newPulseL = gMotorDrive.getL(), newPulseR = gMotorDrive.getR();	//エンコーダの値の取得
+		unsigned long long currentPulseL = newPulseL - mLastEncL;	//前回の値との差分を計算
+		unsigned long long currentPulseR = newPulseR - mLastEncR;
 
-			//回転数を計算
-			unsigned long long rotationsL = currentPulseL  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);	//分解能とギア比で割る
-			unsigned long long rotationsR = currentPulseR  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+		//回転数を計算
+		unsigned long long rotationsL = currentPulseL  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);	//分解能とギア比で割る
+		unsigned long long rotationsR = currentPulseR  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
 
-			write(mFilenameEncoder,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",currentPulseL,currentPulseR,rotationsL,rotationsR);
-			mLastEncL = gMotorDrive.getL();
-			mLastEncR = gMotorDrive.getR();
-		}else write(mFilenameEncoder,"unavailable\r\n");
+		write(mFilenameEncoder,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",currentPulseL,currentPulseR,rotationsL,rotationsR);
+		mLastEncL = gMotorDrive.getL();
+		mLastEncR = gMotorDrive.getR();
+	}
+	else
+	{
+		write(mFilenameEncoder,"unavailable\r\n");
 	}
 }
 bool MovementLogging::onCommand(const std::vector<std::string> args)
@@ -1646,7 +1661,7 @@ void MovementLogging::write(const std::string& filename, const char* fmt, ... )
 	vsprintf(buf, fmt, argp);
 
 	of << buf;
-	Debug::print(LOG_SUMMARY, "%s\r\n",buf);
+	//Debug::print(LOG_SUMMARY, "%s\r\n",buf);
 }
 MovementLogging::MovementLogging() : mLastUpdateTime()
 {
