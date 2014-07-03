@@ -305,6 +305,25 @@ public:
 	~SensorLogging();
 };
 
+// 前進しつつ1秒ごとにタイヤ回転数、加速度の値を取得
+class MovementLogging : public TaskBase
+{
+	struct timespec mLastUpdateTime;
+	std::string mFilenameEncoder,mFilenameAcceleration;
+
+	//前回チェック時のモーター回転数
+	unsigned long long mLastEncL,mLastEncR;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+
+	void write(const std::string& filename,const char* fmt, ... );
+public:
+	MovementLogging();
+	~MovementLogging();
+};
+
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
@@ -321,3 +340,4 @@ extern Jumping gJumpingState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;
+extern MovementLogging gMovementLoggingState;

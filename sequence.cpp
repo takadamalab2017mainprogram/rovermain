@@ -29,6 +29,7 @@ WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 ColorAccessing gColorAccessingState;
+MovementLogging gMovementLoggingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -1560,7 +1561,7 @@ void SensorLogging::write(const std::string& filename, const char* fmt, ... )
 }
 SensorLogging::SensorLogging() : mLastUpdateTime()
 {
-	setName("logging");
+	setName("sensorlogging");
 	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
 
 	Filename("log_gps",".txt").get(mFilenameGPS);
@@ -1573,5 +1574,90 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
 }
 SensorLogging::~SensorLogging()
+{
+}
+
+bool MovementLogging::onInit(const struct timespec& time)
+{
+	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
+
+	write(mFilenameEncoder,"Log started\r\n");
+	write(mFilenameAcceleration,"Log started\r\n");
+
+	gGyroSensor.setRunMode(true);
+	gGPSSensor.setRunMode(true);
+	gPressureSensor.setRunMode(true);
+	gAccelerationSensor.setRunMode(true);
+	gBuzzer.setRunMode(true);
+	gMotorDrive.setRunMode(true);
+	mLastUpdateTime = time;
+	mLastEncL = gMotorDrive.getL();
+	mLastEncR = gMotorDrive.getR();
+	gMotorDrive.drive(100,100);
+	return true;
+}
+void MovementLogging::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) >= 1)
+	{
+		gBuzzer.start(30);
+		mLastUpdateTime = time;
+
+		//加速度のログを保存
+		if(gAccelerationSensor.isActive())
+		{
+			write(mFilenameAcceleration,"%f,%f,%f\r\n",gAccelerationSensor.getAx(),gAccelerationSensor.getAy(),gAccelerationSensor.getAz());
+		}
+		else
+		{
+			write(mFilenameAcceleration,"unavailable\r\n");
+		}
+
+		//エンコーダのログを保存
+		if(gMotorDrive.isActive())
+		{
+			//エンコーダ処理
+			unsigned long long newPulseL = gMotorDrive.getL(), newPulseR = gMotorDrive.getR();	//エンコーダの値の取得
+			unsigned long long currentPulseL = newPulseL - mLastEncL;	//前回の値との差分を計算
+			unsigned long long currentPulseR = newPulseR - mLastEncR;
+
+			//回転数を計算
+			unsigned long long rotationsL = currentPulseL  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);	//分解能とギア比で割る
+			unsigned long long rotationsR = currentPulseR  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+
+			write(mFilenameEncoder,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",currentPulseL,currentPulseR,rotationsL,rotationsR);
+			mLastEncL = gMotorDrive.getL();
+			mLastEncR = gMotorDrive.getR();
+		}else write(mFilenameEncoder,"unavailable\r\n");
+	}
+}
+bool MovementLogging::onCommand(const std::vector<std::string> args)
+{
+	return true;
+}
+void MovementLogging::write(const std::string& filename, const char* fmt, ... )
+{
+	std::ofstream of(filename.c_str(),std::ios::out | std::ios::app);
+
+	char buf[MAX_STRING_LENGTH];
+
+	va_list argp;
+	va_start(argp, fmt);
+	vsprintf(buf, fmt, argp);
+
+	of << buf;
+	Debug::print(LOG_SUMMARY, "%s\r\n",buf);
+}
+MovementLogging::MovementLogging() : mLastUpdateTime()
+{
+	setName("movementlogging");
+	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
+
+	Filename("log_encoder",".txt").get(mFilenameEncoder);
+	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
+	Filename("log_acceleration",".txt").get(mFilenameAcceleration);
+	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameAcceleration.c_str());
+}
+MovementLogging::~MovementLogging()
 {
 }
