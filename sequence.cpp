@@ -782,6 +782,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
+	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
 	mLastUpdateTime = time;
