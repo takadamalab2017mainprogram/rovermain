@@ -1648,6 +1648,24 @@ void MovementLogging::onUpdate(const struct timespec& time)
 }
 bool MovementLogging::onCommand(const std::vector<std::string> args)
 {
+	if(!gMovementLoggingState.isActive())
+	{
+		Debug::print(LOG_PRINT,"Movement Logging is not active\r\n");
+		return true;
+	}
+
+	if(args.size() == 2)
+	{
+		if(args[1].compare("stop") == 0)
+		{
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			gMotorDrive.drive(0,0);
+			gMovementLoggingState.setRunMode(false);
+			return true;
+		}
+	}
+	
+	Debug::print(LOG_PRINT,"movementlogging stop : stop MovementLogging\r\n");
 	return true;
 }
 void MovementLogging::write(const std::string& filename, const char* fmt, ... )
