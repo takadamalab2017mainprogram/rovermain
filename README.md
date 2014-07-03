@@ -25,8 +25,20 @@ ssh-add ~/.ssh/
 を実行するとうまく行くかも．
 
 ## WindowsでBitbucketをsshで利用する方法 ##
-ごめんわかんない．
-
+1. TortoiseGitをインストール
+    * 本体： https://code.google.com/p/tortoisegit/
+    * ライブラリ： http://msysgit.github.io/
+2. puttyをインストール
+    * 以下からZipまたはインストーラでダウンロード
+    * http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
+3. PuTTYgenを起動してsshキーを生成
+    * 公開鍵が上に表示されるからこれをBitBucketにコピペ
+    * 秘密鍵はローカルの好きな場所に保存(クラウドは非推奨)
+4. リポジトリをおきたいフォルダで右クリック→git cloneを選択
+5. 設定する
+    * URL： git@bitbucket.org:hogefugabar/minerva.git
+    * Load Putty Keyにチェック
+    * Putty Keyとして先ほどの秘密鍵を選択
 ## プログラムの転送方法 ##
 1. USBメモリのルートディレクトリにarliss2014rivaiというディレクトリをつくる．  
 2. 転送したいものを1で作ったディレクトリにいれる．
