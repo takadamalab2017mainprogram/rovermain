@@ -21,49 +21,58 @@ void Buzzer::onClean()
 }
 bool Buzzer::onCommand(const std::vector<std::string> args)
 {
-	if(args.size() < 2)
-	{
-			Debug::print(LOG_PRINT,"buzzer [period]                         : wake buzzer while period\r\n\
-buzzer [period] [count]                 : wake buzzer several times (COUNT)\r\n\
-buzzer [on period] [off period] [count] : wake buzzer several times (COUNT)\r\n\
-buzzer stop                             : stop buzzer\r\n");
-		return true;
-	}
-
 	int period, on_period, off_period, count;
 	switch(args.size())
 	{
 		case 2:
-			if(args[1].compare("stop") == 0)	//buzzer stop
+			if(args[1].compare("stop") == 0)		//buzzer stop
 			{
-				stop();
-				Debug::print(LOG_PRINT,"Command Executed!\r\n");
+				if(mOnPeriod == 0 && mOffPeriod == 0 && mCount == 0)
+				{
+					Debug::print(LOG_PRINT,"Buzzer is already stopping\r\n");
+				}
+				else
+				{
+					Debug::print(LOG_PRINT,"Stop Command Executed!\r\n");
+					mOffPeriod = 0;
+					mCount = 1;
+					stop();
+				}
+				return true;
 			}
-			else								//buzzer [period]
+			else									//buzzer [period]
 			{
+				Debug::print(LOG_PRINT,"Start Command Executed!\r\n");
 				period = atoi(args[1].c_str());
 				start(period);
-				Debug::print(LOG_PRINT,"Command Executed!\r\n");
+				return true;	
 			}
 			break;
 			
 		case 3:									//buzzer [period] [count]
+			Debug::print(LOG_PRINT,"Start Command Executed!\r\n");
 			period = atoi(args[1].c_str());
 			count  = atoi(args[2].c_str());
 			start(period, count);
-			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
 			break;
 			
 		case 4:									//buzzer [on oeriod] [off period] [count]
+			Debug::print(LOG_PRINT,"Start Command Executed!\r\n");
 			on_period  = atoi(args[1].c_str());
 			off_period = atoi(args[2].c_str());
 			count  	   = atoi(args[3].c_str());
 			start(on_period, off_period, count);
-			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
 			break;
 		default:
 			break;
 	}
+	
+	Debug::print(LOG_PRINT,"buzzer [period]                         : wake buzzer while period\r\n\
+buzzer [period] [count]                 : wake buzzer several times (COUNT)\r\n\
+buzzer [on period] [off period] [count] : wake buzzer several times (COUNT)\r\n\
+buzzer stop                             : stop buzzer\r\n");
 	return true;
 }
 void Buzzer::onUpdate(const struct timespec& time)
