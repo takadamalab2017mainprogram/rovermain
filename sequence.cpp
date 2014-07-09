@@ -1178,21 +1178,24 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 {
 	if(Time::dt(time,mLastUpdateTime) < 1) return;
 	mLastUpdateTime = time;
-	if(!flag)
-	{
-		gMotorDrive.drive(0,0);
-		gStabiServo.close();
-	}else
-	{
-		gMotorDrive.drive(100,100);
-		gStabiServo.start(0.6);
-	}
-	flag = !flag;
-	if(stopcount++ > 10) 
+	if(++stopcount > 2 * limitcount) 
 	{
 		gMotorDrive.drive(0,0);
 		gEscapingByStabiState.setRunMode(false);
 		//if(Navigating::isStuck()) gEscapingState.setRunMode(true);
+	}
+	else
+	{
+		if(!flag)
+		{
+			gMotorDrive.drive(0,0);
+			gStabiServo.start(angle);
+		}else
+		{
+			gMotorDrive.drive(100,100);
+			gStabiServo.start(0.6);
+		}
+		flag = !flag;
 	}
 }
 bool EscapingByStabi::onCommand(const std::vector<std::string> args)
@@ -1207,6 +1210,21 @@ bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 		if(args[1].compare("stop") == 0)
 		{
 			gEscapingByStabiState.setRunMode(false);
+			return true;
+		}
+	}
+	else if(args.size() == 3)
+	{
+		if(args[1].compare("limit") == 0)
+		{
+			limitcount = atoi(args[2].c_str());
+			Debug::print(LOG_SUMMARY, "limit: %d\r\n", limitcount);
+			return true;
+		}
+		if(args[1].compare("angle") == 0)
+		{
+			angle = atof(args[2].c_str());
+			Debug::print(LOG_SUMMARY, "angle: %f\r\n", angle);
 			return true;
 		}
 	}
