@@ -48,16 +48,27 @@ public:
 class ParaServo : public TaskBase
 {
 private:
+	const static int SERVO_MAX_RANGE = 100;		//そのうちconstants.hに移す
+
+	//POSITION_RELEASE: ピンが抜ける位置, POSITION_HOLD: ピンが刺さった状態の位置
+	enum POSITION {POSITION_RELEASE = 1, POSITION_HOLD = 50};
+
 	int mPin;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual bool onCommand(const std::vector<std::string> args);
+
+	//サーボを指定されたangle[0-SERVO_MAX_RANGE]になるように制御を開始する
+	//(※2014verはSoftware PWM使用のため細かい角度の調整は難しい)
+	virtual void start(int angle);
+	virtual void start(POSITION p);
 public:
-	//サーボを指定されたangle[0-1]になるように制御を開始する
-	void start(double angle);
 	//サーボの制御を終了する
 	void stop();
+
+	void moveRelease();//パラシュート切り離し
+	void moveHold();//ピンが刺さった状態の位置に移動
 
 	ParaServo();
 	~ParaServo();

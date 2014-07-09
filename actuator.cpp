@@ -149,13 +149,18 @@ Buzzer::~Buzzer()
 }
 
 //////////////////////////////////////////////
-// ParaServo
+// ParaServo(Software PWM)
 //////////////////////////////////////////////
 
 bool ParaServo::onInit(const struct timespec& time)
 {
-	softPwmCreate(mPin, 0, 100);
-	softPwmWrite(mPin,0);
+	if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
+	{
+		Debug::print(LOG_PRINT,"ParaServoError: wiringPi setup failed...\n");
+	}
+
+	softPwmCreate(mPin, 0, SERVO_MAX_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
+	softPwmWrite(mPin,POSITION_HOLD);			//void softPwmWrite (int pin, int value);
 	return true;
 }
 void ParaServo::onClean()
@@ -171,10 +176,11 @@ bool ParaServo::onCommand(const std::vector<std::string> args)
 			stop();
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			return true;
-		}else
+		}
+		else
 		{
 			//角度指定
-			float period = 0;
+			int period = 0;
 			if(args.size() == 2)
 			{
 				period = atof(args[1].c_str());
@@ -183,25 +189,44 @@ bool ParaServo::onCommand(const std::vector<std::string> args)
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			return true;
 		}
-	}else
+	}
+	else
 	{
-		Debug::print(LOG_PRINT,"servo [0-1]          : set servo angle\r\n\
-servo stop           : stop servo\r\n");
+		Debug::print(LOG_PRINT,"paraservo [0-%d]\t: set servo position\r\n\
+paraservo stop\t\t: stop servo\r\n", SERVO_MAX_RANGE - 1);
 	}
 	return true;
 }
-void ParaServo::start(double angle)
+void ParaServo::start(int angle)
 {
-	if(angle > 1)angle = 1;
-	else if(angle < 0)angle = 0;
+	//範囲のチェック
+	if(angle >= SERVO_MAX_RANGE)
+	{
+		angle = SERVO_MAX_RANGE - 1;
+	}
+	else if(angle < 0)
+	{
+		angle = 0;
+	}
 
-	softPwmWrite (mPin, angle * 100);
-	Debug::print(LOG_DETAIL,"ParaServo Start (%f)!\r\n",angle);
+	softPwmWrite (mPin, angle);			//void softPwmWrite (int pin, int value);
+	Debug::print(LOG_PRINT,"ParaServo Start (%d)!\r\n",angle);
+}
+void ParaServo::start(POSITION p)
+{
+	start((int)p);
 }
 void ParaServo::stop()
 {
 	softPwmWrite (mPin, 0);
-	Debug::print(LOG_DETAIL,"ParaServo Stop!\r\n");
+}
+void ParaServo::moveRelease()
+{
+	start(POSITION_RELEASE);
+}
+void ParaServo::moveHold()
+{
+	start(POSITION_HOLD);
 }
 ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
 {
@@ -259,8 +284,8 @@ bool StabiServo::onCommand(const std::vector<std::string> args)
 		}
 	}else
 	{
-		Debug::print(LOG_PRINT,"servo [0-1]          : set servo angle\r\n\
-servo stop           : stop servo\r\n");
+		Debug::print(LOG_PRINT,"stabiservo [0-1]          : set servo angle\r\n\
+stabiservo stop           : stop servo\r\n");
 	}
 	return true;
 }

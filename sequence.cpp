@@ -298,7 +298,7 @@ bool Separating::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 
 	mLastUpdateTime = time;
-	gParaServo.start(0);
+	gParaServo.moveHold();
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
@@ -315,7 +315,16 @@ void Separating::onUpdate(const struct timespec& time)
 		mLastUpdateTime = time;
 
 		mCurServoState = !mCurServoState;
-		gParaServo.start(mCurServoState);
+
+		if(mCurServoState)
+		{
+			gParaServo.moveRelease();
+		}
+		else
+		{
+			gParaServo.moveHold();
+		}
+		
 		++mServoCount;
 		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
 
