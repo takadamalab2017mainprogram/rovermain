@@ -62,6 +62,10 @@ private:
 	static void pulseRCallback();
 public:
 	static MotorEncoder* getInstance();
+
+	//引数のパルス数を回転数に換算して返す
+	static unsigned long long convertRotation(unsigned long long pulse);
+
 	//パルスチェック開始
 	bool init();
 	//パルスチェック終了
@@ -74,9 +78,6 @@ public:
 	//前回パルス数を取得した時との差分パルス数を返す(呼ぶとmPulseCountはリセットされます)
 	unsigned long long getDeltaPulseL();
 	unsigned long long getDeltaPulseR();
-
-	//引数のパルス数を回転数に換算して返す
-	unsigned long long convertRotation(unsigned long long pulse);
 	
 	//蓄積したパルス数をリセット
 	void reset();
@@ -146,6 +147,8 @@ public:
 		//エンコーダの値を返す
 		unsigned long long getR();
 		unsigned long long getL();
+		unsigned long long getDeltaPulseL();	//差分を返す
+		unsigned long long getDeltaPulseR();
 
         MotorDrive();
         ~MotorDrive();

@@ -383,6 +383,14 @@ unsigned long long MotorDrive::getR()
 {
 	return mpMotorEncoder->getR();
 }
+unsigned long long MotorDrive::getDeltaPulseL()
+{
+	return mpMotorEncoder->getDeltaPulseL();
+}
+unsigned long long MotorDrive::getDeltaPulseR()
+{
+	return mpMotorEncoder->getDeltaPulseR();
+}
 MotorDrive::MotorDrive() : mMotorL(),mMotorR(),mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
 {
 	setName("motor");

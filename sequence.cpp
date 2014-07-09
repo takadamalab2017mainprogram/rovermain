@@ -488,21 +488,16 @@ void Navigating::onUpdate(const struct timespec& time)
 		}
 	}
 
-	//エンコーダ処理
-	unsigned long long newPulseL = gMotorDrive.getL(), newPulseR = gMotorDrive.getR();	//エンコーダの値の取得
-	unsigned long long currentPulseL = newPulseL - mLastMotorPulseL;	//前回の値との差分を計算
-	unsigned long long currentPulseR = newPulseR - mLastMotorPulseR;
+	//エンコーダパルスの差分値の取得
+	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
+	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
 
-	//回転数を計算
-	unsigned long long rotationsL = currentPulseL  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);	//分解能とギア比で割る
-	unsigned long long rotationsR = currentPulseR  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+	//回転数に換算
+	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
+	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
 
 	//回転数の出力
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%llu %llu)\r\n", rotationsL, rotationsR);
-
-	//前回のエンコーダの値を更新
-	mLastMotorPulseL = newPulseL;
-	mLastMotorPulseR = newPulseR;
 
 	//座標データをひとつ残して削除
 	currentPos = mLastPos.back();
@@ -1591,8 +1586,6 @@ bool MovementLogging::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	mLastUpdateTime = time;
-	mLastEncL = gMotorDrive.getL();
-	mLastEncR = gMotorDrive.getR();
 	gMotorDrive.drive(100,100);
 	return true;
 }
@@ -1628,18 +1621,15 @@ void MovementLogging::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
 		}
 
-		//エンコーダ処理
-		unsigned long long newPulseL = gMotorDrive.getL(), newPulseR = gMotorDrive.getR();	//エンコーダの値の取得
-		unsigned long long currentPulseL = newPulseL - mLastEncL;	//前回の値との差分を計算
-		unsigned long long currentPulseR = newPulseR - mLastEncR;
+		//エンコーダパルスの差分値の取得
+		unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
+		unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
 
-		//回転数を計算
-		unsigned long long rotationsL = currentPulseL  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);	//分解能とギア比で割る
-		unsigned long long rotationsR = currentPulseR  / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+		//回転数に換算
+		unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
+		unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
 
-		write(mFilenameEncoder,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",currentPulseL,currentPulseR,rotationsL,rotationsR);
-		mLastEncL = gMotorDrive.getL();
-		mLastEncR = gMotorDrive.getR();
+		write(mFilenameEncoder,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
 	}
 	else
 	{
