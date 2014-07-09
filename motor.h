@@ -67,18 +67,20 @@ public:
 	//パルスチェック終了
 	void clean();
 
-	//モータのパルス数を返す
+	//モータのパルス数を返す(呼んでもリセットされず,蓄積されていきます)
 	unsigned long long getL();
 	unsigned long long getR();
 
-	//前回パルス数を取得した時との差分を返す(引数は前回のパルス数)
-	unsigned long long getDeltaPulseL(unsigned long long prevPulse);
-	unsigned long long getDeltaPulseR(unsigned long long prevPulse);
+	//前回パルス数を取得した時との差分パルス数を返す(呼ぶとmPulseCountはリセットされます)
+	unsigned long long getDeltaPulseL();
+	unsigned long long getDeltaPulseR();
 
-	//差分を回転数に換算して返す(引数は前回のパルス数)
-	unsigned long long getDeltaRotationL(unsigned long long prevPulse);
-	unsigned long long getDeltaRotationR(unsigned long long prevPulse);
+	//引数のパルス数を回転数に換算して返す
+	unsigned long long convertRotation(unsigned long long pulse);
 	
+	//蓄積したパルス数をリセット
+	void reset();
+
 	~MotorEncoder();
 };
 
@@ -88,9 +90,6 @@ class MotorDrive : public TaskBase
 private:
         Motor mMotorL,mMotorR;
 		MotorEncoder* mpMotorEncoder;
-
-		//前回取得したモータパルス数
-		unsigned long long mPrevPulseL, mPrevPulseR;
 
 		typedef enum{//制御モード
 			DRIVE_RATIO, //レシオ指定で制御する

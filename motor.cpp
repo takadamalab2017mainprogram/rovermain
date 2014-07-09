@@ -130,23 +130,28 @@ unsigned long long MotorEncoder::getR()
 {
 	return mPulseCountR;
 }
-unsigned long long MotorEncoder::getDeltaPulseL(unsigned long long prevPulse)
+unsigned long long MotorEncoder::getDeltaPulseL()
 {
-	return mPulseCountL - prevPulse;
+	long long ret = mPulseCountL;
+	mPulseCountL = 0;	//リセット
+	return ret;
 }
-unsigned long long MotorEncoder::getDeltaPulseR(unsigned long long prevPulse)
+unsigned long long MotorEncoder::getDeltaPulseR()
 {
-	return mPulseCountR - prevPulse;
+	long long ret = mPulseCountR;
+	mPulseCountR = 0;	//リセット
+	return ret;
 }
-unsigned long long MotorEncoder::getDeltaRotationL(unsigned long long prevPulse)
+unsigned long long MotorEncoder::convertRotation(unsigned long long pulse)
 {
 	//分解能とギア比で割る
-	return getDeltaPulseL(prevPulse) / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+	return pulse / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
 }
-unsigned long long MotorEncoder::getDeltaRotationR(unsigned long long prevPulse)
+void MotorEncoder::reset()
 {
-	//分解能とギア比で割る
-	return getDeltaPulseR(prevPulse) / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+	mPulseCountL = 0;
+	mPulseCountR = 0;
+	Debug::print(LOG_SUMMARY,"Motor Pulse Count Reset\r\n");
 }
 
 MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B),mEncoderPinR(PIN_PULSE_A),mPulseCountL(0),mPulseCountR(0)
@@ -297,11 +302,6 @@ bool MotorDrive::onCommand(const std::vector<std::string> args)
 	{
 		Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n"    ,mMotorL.getPower(),-mMotorR.getPower());
 		Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n",mpMotorEncoder->getL(),mpMotorEncoder->getR());
-		Debug::print(LOG_SUMMARY, "Delta Motor Pulse   : %lld %lld\r\n",mpMotorEncoder->getDeltaPulseL(mPrevPulseL),mpMotorEncoder->getDeltaPulseR(mPrevPulseR));
-		Debug::print(LOG_SUMMARY, "Delta Motor Rotation: %lld %lld\r\n",mpMotorEncoder->getDeltaRotationL(mPrevPulseL),mpMotorEncoder->getDeltaRotationR(mPrevPulseR));
-
-		mPrevPulseL = mpMotorEncoder->getL();
-		mPrevPulseR = mpMotorEncoder->getR();
 	}
 	else if(size >= 2)
 	{
@@ -383,7 +383,7 @@ unsigned long long MotorDrive::getR()
 {
 	return mpMotorEncoder->getR();
 }
-MotorDrive::MotorDrive() : mMotorL(),mMotorR(),mPrevPulseL(0),mPrevPulseR(0),mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
+MotorDrive::MotorDrive() : mMotorL(),mMotorR(),mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
 {
 	setName("motor");
 	setPriority(TASK_PRIORITY_MOTOR,TASK_INTERVAL_MOTOR);
