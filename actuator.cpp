@@ -160,7 +160,6 @@ bool ParaServo::onInit(const struct timespec& time)
 	}
 
 	softPwmCreate(mPin, 0, SERVO_MAX_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
-	softPwmWrite(mPin,POSITION_HOLD);			//void softPwmWrite (int pin, int value);
 	return true;
 }
 void ParaServo::onClean()
@@ -209,7 +208,7 @@ void ParaServo::start(int angle)
 		angle = 0;
 	}
 
-	softPwmWrite (mPin, angle);			//void softPwmWrite (int pin, int value);
+	softPwmWrite(mPin, angle);			//void softPwmWrite (int pin, int value);
 	Debug::print(LOG_PRINT,"ParaServo Start (%d)!\r\n",angle);
 }
 void ParaServo::start(POSITION p)

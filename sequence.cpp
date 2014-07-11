@@ -136,6 +136,8 @@ bool Waiting::onInit(const struct timespec& time)
 	gXbeeSleep.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gParaServo.moveHold();
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -161,7 +163,7 @@ void Waiting::onUpdate(const struct timespec& time)
 	if(gLightSensor.get())
 	{
 		++mContinuousLightCount;
-		gBuzzer.start(2);
+		gBuzzer.start(10);
 	}else mContinuousLightCount = 0;
 
 	if(mContinuousLightCount >= WAITING_LIGHT_COUNT)//明るい場合放出判定
@@ -203,6 +205,8 @@ bool Falling::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gParaServo.setRunMode(true);
+	gParaServo.moveHold();
 
 	return true;
 }
@@ -356,6 +360,7 @@ void Separating::onUpdate(const struct timespec& time)
 			if(gImageProc.isParaExist(pImage))
 			{
 				//回避動作に遷移
+				gBuzzer.start(20, 20, 5);
 				mCurStep = STEP_PARA_DODGE;
 				mLastUpdateTime = time;
 				gTurningState.setRunMode(true);
@@ -482,7 +487,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		gEscapingByStabiState.setRunMode(true);
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
-		gBuzzer.start(20, 20, 5);
+		gBuzzer.start(20, 20, 8);
 	}
 	else
 	{
