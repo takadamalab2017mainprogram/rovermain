@@ -480,15 +480,15 @@ void Navigating::onUpdate(const struct timespec& time)
 	}else if(isStuck())//スタック判定
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
-		//gEscapingByStabiState.setRunMode(true);
-		gEscapingState.setRunMode(true);
+		gEscapingByStabiState.setRunMode(true);
 	}else
 	{
-		if(/*gEscapingByStabiState.isActive()*/gEscapingState.isActive())//脱出モードが完了した時
+		if(gEscapingByStabiState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-			gEscapingState.setRunMode(false);
+			gEscapingByStabiState.setRunMode(false);
+			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
 		}else
 		{
 			//通常のナビゲーション
