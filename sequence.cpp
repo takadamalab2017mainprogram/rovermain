@@ -477,19 +477,25 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(gPredictingState.isWorking(time))
 	{
 		//轍回避中
-	}else if(isStuck())//スタック判定
+	}
+	else if(isStuck())//スタック判定
 	{
-		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
 		gEscapingByStabiState.setRunMode(true);
-	}else
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
+		gBuzzer.start(20, 20, 5);
+	}
+	else
 	{
 		if(gEscapingByStabiState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gEscapingByStabiState.setRunMode(false);
+			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
 			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-		}else
+			gBuzzer.start(80, 20, 3);
+		}
+		else
 		{
 			//通常のナビゲーション
 			if(mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
@@ -1171,36 +1177,37 @@ Escaping::~Escaping()
 }
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
+	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start!\r\n");
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
-	stopcount = 0;
-	flag = false;
 	//gMotorDrive.drive(20,20);
+	mFlag = false;
+	mTryCount = 0;
 	return true;
 }
 void EscapingByStabi::onUpdate(const struct timespec& time)
 {
 	if(Time::dt(time,mLastUpdateTime) < 1) return;
+
 	mLastUpdateTime = time;
-	if(++stopcount > 2 * limitcount) 
+
+	if(!mFlag)
 	{
 		gMotorDrive.drive(0,0);
-		gEscapingByStabiState.setRunMode(false);
-		//if(Navigating::isStuck()) gEscapingState.setRunMode(true);
+		gStabiServo.start(mAngle);
 	}
 	else
 	{
-		if(!flag)
+		gMotorDrive.drive(100,100);
+		gStabiServo.start(STABI_BASE_ANGLE);
+		mTryCount++;
+
+		if(mTryCount % 5 == 0)
 		{
-			gMotorDrive.drive(0,0);
-			gStabiServo.start(angle);
-		}else
-		{
-			gMotorDrive.drive(100,100);
-			gStabiServo.start(0.6);
+			Debug::print(LOG_SUMMARY, "Escaping TryCount: %d\r\n", mTryCount);
 		}
-		flag = !flag;
 	}
+	mFlag = !mFlag;
 }
 bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 {
@@ -1213,26 +1220,24 @@ bool EscapingByStabi::onCommand(const std::vector<std::string> args)
 		}
 		if(args[1].compare("stop") == 0)
 		{
+			gMotorDrive.drive(0,0);
+			Debug::print(LOG_SUMMARY, "Escaping By Stabi Finished!\r\n");
 			gEscapingByStabiState.setRunMode(false);
 			return true;
 		}
 	}
 	else if(args.size() == 3)
 	{
-		if(args[1].compare("limit") == 0)
-		{
-			limitcount = atoi(args[2].c_str());
-			Debug::print(LOG_SUMMARY, "limit: %d\r\n", limitcount);
-			return true;
-		}
 		if(args[1].compare("angle") == 0)
 		{
-			angle = atof(args[2].c_str());
-			Debug::print(LOG_SUMMARY, "angle: %f\r\n", angle);
+			mAngle = atof(args[2].c_str());
+			Debug::print(LOG_SUMMARY, "angle: %f\r\n", mAngle);
 			return true;
 		}
 	}
-	Debug::print(LOG_SUMMARY, "predicting [start]  : switch avoiding mode\r\n");
+	Debug::print(LOG_SUMMARY, "escapingbystabi start       : start Escaping by stabi mode\r\n\
+escapingbystabi stop        : stop  Escaping by stabi mode\r\n\
+escapingbystabi angle [0-1] : set stabi angle\r\n");
 	return false;
 }
 EscapingByStabi::EscapingByStabi()

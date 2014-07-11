@@ -247,7 +247,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 		return false;
 	}
 
-	Debug::print(LOG_SUMMARY, "Start\n");
+	//Debug::print(LOG_SUMMARY, "Start\n");
 
 	const static int DIV_NUM = 15;
 	const static int PIC_SIZE_W = 320;
@@ -310,11 +310,11 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 		}
 	}
 
-	Debug::print(LOG_SUMMARY, "ave : %f\n",risk_ave * RISK_AVE_RATE);
-	Debug::print(LOG_SUMMARY, "risk : \n");
-	for(int i=0; i<DIV_NUM; i++){
-		Debug::print(LOG_SUMMARY, "%f\n",risk[i]);
-	}
+	//Debug::print(LOG_SUMMARY, "ave : %f\n",risk_ave * RISK_AVE_RATE);
+	//Debug::print(LOG_SUMMARY, "risk : \n");
+	//for(int i=0; i<DIV_NUM; i++){
+	//	Debug::print(LOG_SUMMARY, "%f\n",risk[i]);
+	//}
 
 	if(wadachi_find){
 		Debug::print(LOG_SUMMARY, "Wadachi Found\r\n");
@@ -328,7 +328,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
 
-	Debug::print(LOG_SUMMARY, "Finish\n");
+	//Debug::print(LOG_SUMMARY, "Finish\n");
 
 	return wadachi_find;
 }

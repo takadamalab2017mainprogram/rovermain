@@ -156,12 +156,11 @@ public:
 
 //轍脱出脱出（スタビ使用ver）
 class EscapingByStabi : public TaskBase
-{
+{	
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-	bool flag;
-	int stopcount;
-	int limitcount; // 芋虫走行を何回で止めるか
-	double angle; // 芋虫走行中のスタビ角度
+	bool mFlag;
+	int mTryCount;
+	double mAngle;// 芋虫走行中のスタビ角度 
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

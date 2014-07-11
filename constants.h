@@ -41,6 +41,9 @@ const static int SERVO_RANGE = 9000;//パルス間隔
 const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
 const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 
+//スタビサーボ設定
+const static double STABI_BASE_ANGLE = 0.6;	//通常時のスタビ角度
+
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
 
