@@ -421,7 +421,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
-	mLastCheckTime = time;
+	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
 
 	return true;
@@ -454,7 +454,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gPredictingState.setRunMode(true);
-			mLastCheckTime = time;
+			mLastNaviMoveCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
 	}	
@@ -469,9 +469,36 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 
+	//エンコーダの値によるスタック判定処理
+	if(!gEscapingByStabiState.isActive() && Time::dt(time,mLastEncoderCheckTime) > 1 )
+	{
+		mLastEncoderCheckTime = time;
+
+		//エンコーダパルスの差分値の取得
+		unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
+		unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
+
+		//パルスの出力
+		//Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder Pulse(LEFT RIGHT)= (%llu %llu)\r\n", deltaPulseL, deltaPulseR);
+
+		//前回が閾値以上で、今回が閾値以下ならスタック判定する
+		if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
+		{
+			if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
+			{
+				//スタック判定
+				gBuzzer.start(200, 50 ,3);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by pulse count(%llu %llu) at (%f %f)\r\n",deltaPulseL,deltaPulseR,currentPos.x,currentPos.y);
+				gEscapingByStabiState.setRunMode(true);
+			}
+		}
+		mPrevDeltaPulseL = deltaPulseL;
+		mPrevDeltaPulseR = deltaPulseR;
+	}
+
 	//数秒たっていなければ処理を返す
-	if(Time::dt(time,mLastCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
-	mLastCheckTime = time;
+	if(Time::dt(time,mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
+	mLastNaviMoveCheckTime = time;
 
 	//異常値排除
 	if(removeError())
@@ -486,7 +513,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	else if(isStuck())//スタック判定
 	{
 		gEscapingByStabiState.setRunMode(true);
-		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected at (%f %f)\r\n",currentPos.x,currentPos.y);
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n",currentPos.x,currentPos.y);
 		gBuzzer.start(20, 20, 8);
 	}
 	else
@@ -507,17 +534,6 @@ void Navigating::onUpdate(const struct timespec& time)
 			navigationMove(distance);//過去の座標から進行方向を変更する
 		}
 	}
-
-	//エンコーダパルスの差分値の取得
-	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
-	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
-
-	//回転数に換算
-	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
-	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
-
-	//回転数の出力
-	Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder(LEFT RIGHT)= (%llu %llu)\r\n", rotationsL, rotationsR);
 
 	//座標データをひとつ残して削除
 	currentPos = mLastPos.back();
@@ -660,7 +676,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos(), mPrevDeltaPulseL(0), mPrevDeltaPulseR(0)
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -1632,8 +1648,6 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	{
 		return;
 	}
-
-	//gBuzzer.start(30);
 	mLastUpdateTime = time;
 
 	//加速度のログを保存
@@ -1646,32 +1660,43 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		write(mFilenameAcceleration,"unavailable\r\n");
 	}
 
-	//エンコーダのログを保存
-	if(gMotorDrive.isActive())
-	{
-		//レシオ比が変更されたらlogに反映する
-		if(gMotorDrive.getPowerL() != mPrevPowerL || gMotorDrive.getPowerR() != mPrevPowerR)
-		{
-			mPrevPowerL = gMotorDrive.getPowerL();
-			mPrevPowerR = gMotorDrive.getPowerR();
-			write(mFilenameEncoder,"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
-			Debug::print(LOG_SUMMARY, "Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
-		}
-
-		//エンコーダパルスの差分値の取得
-		unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
-		unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
-
-		//回転数に換算
-		unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
-		unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
-
-		write(mFilenameEncoder,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
-	}
-	else
+	if(!gMotorDrive.isActive())
 	{
 		write(mFilenameEncoder,"unavailable\r\n");
+		return;
 	}
+
+	//エンコーダのログを保存
+	//レシオ比が変更されたらlogに反映する
+	if(gMotorDrive.getPowerL() != mPrevPowerL || gMotorDrive.getPowerR() != mPrevPowerR)
+	{
+		mPrevPowerL = gMotorDrive.getPowerL();
+		mPrevPowerR = gMotorDrive.getPowerR();
+		write(mFilenameEncoder,		"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
+		Debug::print(LOG_SUMMARY,	"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
+	}
+
+	//エンコーダパルスの差分値の取得
+	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
+	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
+
+	//回転数に換算
+	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
+	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
+
+	write(mFilenameEncoder,	 "Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
+	Debug::print(LOG_SUMMARY,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
+
+	//スタック判定のテスト
+	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
+	{
+		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
+		{
+			gBuzzer.start(200, 50 ,3);		//スタック判定(音を鳴らすのみ)
+		}
+	}
+	mPrevDeltaPulseL = deltaPulseL;
+	mPrevDeltaPulseR = deltaPulseR;
 }
 bool MovementLogging::onCommand(const std::vector<std::string> args)
 {
@@ -1708,7 +1733,7 @@ void MovementLogging::write(const std::string& filename, const char* fmt, ... )
 	of << buf;
 	//Debug::print(LOG_SUMMARY, "%s\r\n",buf);
 }
-MovementLogging::MovementLogging() : mLastUpdateTime()
+MovementLogging::MovementLogging() : mLastUpdateTime(), mPrevPowerL(0), mPrevPowerR(0), mPrevDeltaPulseL(0), mPrevDeltaPulseR(0)
 {
 	setName("movementlogging");
 	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);

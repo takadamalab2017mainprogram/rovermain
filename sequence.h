@@ -86,7 +86,8 @@ public:
 class Navigating : public TaskBase
 {
 private:
-	struct timespec mLastCheckTime;//前回のチェック時刻
+	struct timespec mLastNaviMoveCheckTime;	//前回のGPSによるスタック判定とナビゲーション処理のチェック時刻
+	struct timespec mLastEncoderCheckTime;	//前回のエンコーダチェック時刻
 
 	//ゴール位置
 	VECTOR3 mGoalPos;
@@ -94,6 +95,9 @@ private:
 
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
+
+	//前回のパルス数
+	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
 
 protected:
 	virtual bool onInit(const struct timespec& time);
@@ -310,6 +314,9 @@ class MovementLogging : public TaskBase
 	std::string mFilenameEncoder,mFilenameAcceleration;
 
 	double mPrevPowerL,mPrevPowerR;
+
+	//前回のパルス数
+	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
