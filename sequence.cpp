@@ -1684,15 +1684,22 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
 	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
 
-	write(mFilenameEncoder,	 "Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
-	Debug::print(LOG_SUMMARY,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
+	if(mPrintFlag)
+	{
+		Debug::print(LOG_SUMMARY,"Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
+	}
+	write(mFilenameEncoder,	 	 "Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
 
 	//スタック判定のテスト
 	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
 	{
 		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
 		{
-			gBuzzer.start(200, 50 ,3);		//スタック判定(音を鳴らすのみ)
+			write(mFilenameEncoder,		"Stuck detected!");
+			if(mBuzzerFlag)
+			{
+				gBuzzer.start(200, 50 ,3);		//スタック判定(音を鳴らすのみ)
+			}
 		}
 	}
 	mPrevDeltaPulseL = deltaPulseL;
@@ -1715,9 +1722,45 @@ bool MovementLogging::onCommand(const std::vector<std::string> args)
 			gMovementLoggingState.setRunMode(false);
 			return true;
 		}
+		else if(args[1].compare("buzzer") == 0)
+		{
+			mBuzzerFlag = !mBuzzerFlag;	//flagの切り替え
+			if(mBuzzerFlag)
+			{
+				Debug::print(LOG_PRINT,"Command Executed! Buzzer(ON)\r\n");
+			}
+			else
+			{
+				Debug::print(LOG_PRINT,"Command Executed! Buzzer(OFF)\r\n");
+			}
+			return true;
+		}
+		else if(args[1].compare("print") == 0)
+		{
+			mPrintFlag = !mPrintFlag;	//flagの切り替え
+			if(mBuzzerFlag)
+			{
+				Debug::print(LOG_PRINT,"Command Executed! Print(ON)\r\n");
+			}
+			else
+			{
+				Debug::print(LOG_PRINT,"Command Executed! Print(OFF)\r\n");
+			}
+			return true;
+		}
+		else if(args[1].compare("comment") == 0)
+		{
+			string str = args[2];
+			write(mFilenameAcceleration,"comment: %s\r\n", str);
+			write(mFilenameEncoder,		"comment: %s\r\n", str);
+			return true;
+		}
 	}
 	
-	Debug::print(LOG_PRINT,"movementlogging stop : stop MovementLogging\r\n");
+	Debug::print(LOG_PRINT,"movementlogging stop            : stop MovementLogging\r\n\
+movementlogging buzzer          : switch buzzer\r\n\
+movementlogging print           : switch pulse print\r\n\
+movementlogging comment [string]: comment into log\r\n");
 	return true;
 }
 void MovementLogging::write(const std::string& filename, const char* fmt, ... )
@@ -1733,7 +1776,7 @@ void MovementLogging::write(const std::string& filename, const char* fmt, ... )
 	of << buf;
 	//Debug::print(LOG_SUMMARY, "%s\r\n",buf);
 }
-MovementLogging::MovementLogging() : mLastUpdateTime(), mPrevPowerL(0), mPrevPowerR(0), mPrevDeltaPulseL(0), mPrevDeltaPulseR(0)
+MovementLogging::MovementLogging() : mLastUpdateTime(), mPrevPowerL(0), mPrevPowerR(0), mPrevDeltaPulseL(0), mPrevDeltaPulseR(0), mBuzzerFlag(true), mPrintFlag(false)
 {
 	setName("movementlogging");
 	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
