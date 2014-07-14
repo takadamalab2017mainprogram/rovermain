@@ -817,6 +817,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
+	mStartTime = time;		//現在の時刻を保存
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
@@ -826,7 +827,6 @@ bool ColorAccessing::onInit(const struct timespec& time)
 void ColorAccessing::onUpdate(const struct timespec& time)
 {
 	if(gAvoidingState.isActive())return;
-
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 	
@@ -843,6 +843,9 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	mLastUpdateTime = time;//起き上がり動作中は待機する
 	// 	return;
 	// }
+	
+	//ColorAccessingを開始してからの経過時間を確認
+	timeCheck();
 
 	switch(mCurStep)
 	{
@@ -970,6 +973,12 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			mCurStep = STEP_STARTING;
 		}
 		break;
+	case STEP_RESTART:
+		if(Time::dt(time,mLastUpdateTime) > 10)//しばらく直進する
+		{
+			prevState();
+		}
+		break;
 	}
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
@@ -987,7 +996,7 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 			return true;
 		}
 	}
-	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");//ToDo: 修正する
 	return false;
 }
 //次の状態に移行
@@ -1000,6 +1009,27 @@ void ColorAccessing::nextState()
 	gPictureTakingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
+}
+//前の状態に移行
+void ColorAccessing::prevState()
+{
+	gBuzzer.start(50,30,8);
+
+	//前の状態に戻る
+	gNavigatingState.setRunMode(true);
+	
+	Debug::print(LOG_SUMMARY, "Navigating Restart!\r\n");
+}
+void ColorAccessing::timeCheck()
+{
+	if(Time::dt(time, mStartTime) > COLOR_ACCESSING_ABORT_TIME)//一定時間が経過したらNavigatingからやり直し
+	{
+		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout!\r\n");
+		mCurStep = STEP_RESTART;
+		gMotorDrive.drive(100,100);
+		mLastUpdateTime = time;
+		gBuzzer.start(50,30,8);
+	}
 }
 ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)
 {

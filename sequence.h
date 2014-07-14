@@ -257,9 +257,12 @@ public:
 /* ここから　2014年6月オープンラボ前に実装 */
 class ColorAccessing : public TaskBase
 {
+	const static unsigned int COLOR_ACCESSING_ABORT_TIME = 60;//0mゴール検知状態を強制終了しNavigatingに復帰する時間(ToDo: テストしたらconstants.hに移動.値を600にする)
 	struct timespec mLastUpdateTime;//前回のチェック時刻
+	struct timespec mStartTime;		//状態開始時刻
+	
 	bool mIsAvoidingEnable;
-	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING};
+	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_RESTART};
 	enum STEP mCurStep;
     double mAngleOnBegin;
     bool mIsLastActionStraight;
@@ -269,8 +272,12 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
-	//次の状態に移行
-	void nextState();
+	void nextState();	//次の状態に移行
+	void prevState();	//前の状態に移行
+	
+	//ColorAccessingを開始してからの経過時間を確認
+	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
+	void timeCheck();
 public:
 	ColorAccessing();
 	~ColorAccessing();
