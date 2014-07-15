@@ -1738,7 +1738,7 @@ bool MovementLogging::onCommand(const std::vector<std::string> args)
 		else if(args[1].compare("print") == 0)
 		{
 			mPrintFlag = !mPrintFlag;	//flagの切り替え
-			if(mBuzzerFlag)
+			if(mPrintFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Print(ON)\r\n");
 			}
@@ -1748,11 +1748,15 @@ bool MovementLogging::onCommand(const std::vector<std::string> args)
 			}
 			return true;
 		}
-		else if(args[1].compare("comment") == 0)
+	}
+	else if(args.size() == 3)
+	{
+		if(args[1].compare("comment") == 0)
 		{
-			string str = args[2];
-			write(mFilenameAcceleration,"comment: %s\r\n", str);
-			write(mFilenameEncoder,		"comment: %s\r\n", str);
+			std::string str = args[2];
+			Debug::print(LOG_PRINT,"Command Executed! comment: %s\r\n", str.c_str());
+			write(mFilenameAcceleration,"comment: %s\r\n", str.c_str());
+			write(mFilenameEncoder,		"comment: %s\r\n", str.c_str());
 			return true;
 		}
 	}
