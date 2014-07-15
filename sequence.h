@@ -323,6 +323,9 @@ class MovementLogging : public TaskBase
 
 	//前回のパルス数
 	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
+	
+	bool mBuzzerFlag;	//ブザーのON,OFFを管理 				true:ON, false:OFF
+	bool mPrintFlag;	//TeraTerm上の表示のON,OFFを管理	true:ON, false:OFF
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
