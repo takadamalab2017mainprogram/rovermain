@@ -845,7 +845,11 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// }
 	
 	//ColorAccessingを開始してからの経過時間を確認
-	timeCheck();
+	if(mCurStep != STEP_RESTART)
+	{
+		timeCheck(time);	
+	}
+
 
 	switch(mCurStep)
 	{
@@ -1013,22 +1017,22 @@ void ColorAccessing::nextState()
 //前の状態に移行
 void ColorAccessing::prevState()
 {
-	gBuzzer.start(50,30,8);
+	gBuzzer.start(30,10,8);
 
 	//前の状態に戻る
 	gNavigatingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Navigating Restart!\r\n");
 }
-void ColorAccessing::timeCheck()
+void ColorAccessing::timeCheck(const struct timespec& time)
 {
-	if(Time::dt(time, mStartTime) > COLOR_ACCESSING_ABORT_TIME)//一定時間が経過したらNavigatingからやり直し
+	if(Time::dt(time,mStartTime) > COLOR_ACCESSING_ABORT_TIME)//一定時間が経過したらNavigatingからやり直し
 	{
 		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout!\r\n");
 		mCurStep = STEP_RESTART;
 		gMotorDrive.drive(100,100);
 		mLastUpdateTime = time;
-		gBuzzer.start(50,30,8);
+		gBuzzer.start(30,10,8);
 	}
 }
 ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)

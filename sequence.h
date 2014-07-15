@@ -257,7 +257,6 @@ public:
 /* ここから　2014年6月オープンラボ前に実装 */
 class ColorAccessing : public TaskBase
 {
-	const static unsigned int COLOR_ACCESSING_ABORT_TIME = 60;//0mゴール検知状態を強制終了しNavigatingに復帰する時間(ToDo: テストしたらconstants.hに移動.値を600にする)
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
@@ -277,7 +276,7 @@ protected:
 	
 	//ColorAccessingを開始してからの経過時間を確認
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
-	void timeCheck();
+	void timeCheck(const struct timespec& time);
 public:
 	ColorAccessing();
 	~ColorAccessing();
