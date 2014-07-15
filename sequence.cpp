@@ -30,6 +30,7 @@ PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 ColorAccessing gColorAccessingState;
 MovementLogging gMovementLoggingState;
+WatchPulse gWatchPulseState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -821,6 +822,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
+	motorPower = 40;
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -875,19 +877,19 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				else if ( x_pos < -80 )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(0,40);
+					gMotorDrive.drive(0,motorPower);
                     mIsLastActionStraight = false;
 				}
 				else if ( 80 < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(40,0);
+					gMotorDrive.drive(motorPower,0);
                     mIsLastActionStraight = false;
 				}
 				else if ( -80 <= x_pos && x_pos <= 80 )
 				{
 					mCurStep = STEP_STOPPING_LONG;
-					gMotorDrive.drive(40,40);
+					gMotorDrive.drive(motorPower,motorPower);
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
 				}
@@ -906,13 +908,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                     {
                         //右に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(0,40);
+                        gMotorDrive.drive(0,motorPower);
                     }
                     else
                     {
                         //左に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(40,0);
+                        gMotorDrive.drive(motorPower,0);
                     }
                 }
                 //前回の行動が直進以外なら
@@ -926,13 +928,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 	{
                 		//とりあえず右に曲がるか．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(30,-30);
+	                    gMotorDrive.drive(motorPower-10,-motorPower+10);
                 	}
                 	else if ( diff < 0 )
                 	{
                 		//右を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(-30,30);
+	                    gMotorDrive.drive(-motorPower+10,motorPower-10);
 	                    mTryCount++;
 
                 	}
@@ -940,7 +942,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 	{
                 		//左を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(30,-30);
+	                    gMotorDrive.drive(motorPower-10,-motorPower+10);
 	                    mTryCount++;
                 	}
                 }
@@ -1744,5 +1746,59 @@ MovementLogging::MovementLogging() : mLastUpdateTime(), mPrevPowerL(0), mPrevPow
 	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameAcceleration.c_str());
 }
 MovementLogging::~MovementLogging()
+{
+}
+
+bool WatchPulse::onInit(const struct timespec& time)
+{
+	gMotorDrive.setRunMode(true);
+	mLastUpdateTime = time;
+	debugFlag = false;
+	pulseFlag = false;
+	deltaRPulse = 0; deltaLPulse = 0;
+
+	return true;
+}
+void WatchPulse::onUpdate(const struct timespec& time)
+{
+	if(Time::dt(time,mLastUpdateTime) < 1) return;
+	mLastUpdateTime = time;
+
+	if(gMotorDrive.getR() < 4000 || gMotorDrive.getL() < 4000) return;
+	mRightPulse.push_front(gMotorDrive.getR());
+	mLeftPulse.push_front(gMotorDrive.getL());
+
+	if(mRightPulse.size() < 2 || mLeftPulse.size() < 2) return;
+	deltaRPulse = mRightPulse.front() - mRightPulse.back();
+	deltaLPulse = mLeftPulse.front() - mLeftPulse.back();
+	mRightPulse.pop_back(); mLeftPulse.pop_back();
+
+	Debug::print(LOG_SUMMARY,"motordpulse : (%f %f)\r\n", gMotorDrive.getR(), gMotorDrive.getL());
+	if(debugFlag) Debug::print(LOG_SUMMARY,"delta pulse : (%f %f)\r\n", deltaRPulse, deltaLPulse);
+	if(pulseFlag) Debug::print(LOG_SUMMARY,"motordpulse : (%f %f)\r\n", gMotorDrive.getDeltaPulseR(), gMotorDrive.getDeltaPulseL());
+}
+bool WatchPulse::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 1)
+	{
+		debugFlag = true;
+		return true;
+	}
+	else if(args.size() == 2)
+	{
+		if(args[1].compare("motor") == 0)
+		{
+			pulseFlag = true;
+			return true;
+		}
+	}
+	return false;
+}
+WatchPulse::WatchPulse()
+{
+	setName("watchpulse");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+WatchPulse::~WatchPulse()
 {
 }
