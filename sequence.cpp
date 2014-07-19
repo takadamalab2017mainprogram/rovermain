@@ -383,7 +383,6 @@ void Separating::onUpdate(const struct timespec& time)
 		}
 	};
 }
-
 void Separating::nextState()
 {
 	//ブザー鳴らしとく
@@ -394,7 +393,6 @@ void Separating::nextState()
 	
 	Debug::print(LOG_SUMMARY, "Separating Finished!\r\n");
 }
-
 Separating::Separating() : mCurServoState(false),mServoCount(0)
 {
 	setName("separating");
@@ -403,6 +401,7 @@ Separating::Separating() : mCurServoState(false),mServoCount(0)
 Separating::~Separating()
 {
 }
+
 //ゴールへの移動中
 bool Navigating::onInit(const struct timespec& time)
 {
@@ -660,6 +659,7 @@ navigating here            : set goal at current position\r\n\
 navigating goal            : call nextState\r\n");
 	return true;
 }
+
 //次の状態に移行
 void Navigating::nextState()
 {
@@ -798,7 +798,7 @@ WadachiPredicting::~WadachiPredicting()
 {
 }
 
-/* ここから　2014年6月オープンラボ前に実装 */
+/* ここから　2014年実装 */
 bool ColorAccessing::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
@@ -871,27 +871,26 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gCameraCapture.save(NULL,pImage);
 			int x_pos = gImageProc.howColorGap(pImage);
 			
-            //色検知したよ
-            if( x_pos != INT_MAX )
+            if( x_pos != INT_MAX )	//色検知したら
 			{
 				mLastUpdateTime = time;
-				if ( x_pos == INT_MIN )
+				if ( x_pos == INT_MIN )	//ゴール判定時
 				{
 					nextState();
 				}
-				else if ( x_pos < -80 )
+				else if ( x_pos < -40 )
 				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(0,40);
                     mIsLastActionStraight = false;
 				}
-				else if ( 80 < x_pos )
+				else if ( 40 < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(40,0);
                     mIsLastActionStraight = false;
 				}
-				else if ( -80 <= x_pos && x_pos <= 80 )
+				else if ( -40 <= x_pos && x_pos <= 40 )
 				{
 					mCurStep = STEP_STOPPING_LONG;
 					gMotorDrive.drive(40,40);
@@ -902,8 +901,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			}
 			else//色検知しなかったら
 			{
-                // もし前回の行動が直進なら．
-                if (mIsLastActionStraight)//前回の行動が直進なら．
+                if (mIsLastActionStraight)	//前回の行動が直進なら．
                 {
                 	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
 
@@ -1043,7 +1041,7 @@ ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTI
 ColorAccessing::~ColorAccessing()
 {
 }
-/* ここまで　2014年6月オープンラボ前に実装 */
+/* ここまで　2014年実装 */
 
 bool Escaping::onInit(const struct timespec& time)
 {
@@ -1452,7 +1450,6 @@ void Waking::onUpdate(const struct timespec& time)
 		break;
 	}
 }
-
 Waking::Waking() : mWakeRetryCount(0)
 {
 	setName("waking");
@@ -1470,7 +1467,6 @@ bool Turning::onInit(const struct timespec& time)
 	mLastUpdateTime = time;
 	return true;
 }
-
 void Turning::onUpdate(const struct timespec& time)
 {
 	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
@@ -1486,7 +1482,6 @@ void Turning::onUpdate(const struct timespec& time)
 		if(turnedAngle < 5)mTurnPower += 0.1;
 	}
 }
-
 void Turning::setDirection(bool left)
 {
 	mIsTurningLeft = left;
@@ -1575,7 +1570,6 @@ void PictureTaking::onUpdate(const struct timespec& time)
 		}
 	}
 }
-
 PictureTaking::PictureTaking() : mStepCount(0)
 {
 	setName("kinen");

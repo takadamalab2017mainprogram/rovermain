@@ -6,7 +6,7 @@
 
 ImageProc gImageProc;
 
-/* ここから　2014年6月オープンラボ前に実装 */
+/* ここから　2014年実装 */
 // 実行速度：0.22~0.24sec
 int ImageProc::howColorGap(IplImage* src)
 {
@@ -38,7 +38,6 @@ int ImageProc::howColorGap(IplImage* src)
 		for(int x=0; x<320; x++)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
-			//閾値によって抽出色以外を黒に
 			if(( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
 				min_x = x;
 				min_y = y;
@@ -55,7 +54,6 @@ int ImageProc::howColorGap(IplImage* src)
 		for(int x=320-1; x>=0; x--)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
-			//閾値によって抽出色以外を黒に
 			if(( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
 				max_x = x;
 				max_y = y;
@@ -95,14 +93,13 @@ int ImageProc::howColorGap(IplImage* src)
 	cvtColor(tmp_img, gray_img, CV_RGB2GRAY);						//グレースケール化
 	cv::threshold(gray_img, mono_img, 1, 255, CV_THRESH_BINARY);	//二値化
 
-	moments = cv::moments(mono_img);				//重心計算
-	int gX = moments.m10 / moments.m00;				//重心X位置計算
-	// int gY = moments.m01 / moments.m00;				//重心Y位置計算
-	//std::cout << "" << gX << "," << gY << "\n";	//重心位置をコンソールに表示
-	x_gap = -160 + gX;								//中心からのX位置のずれを設定
-	//画面内に重心がある時　ずれをコンソール表示
-	Debug::print(LOG_SUMMARY, "color = %f%%", ((double)count / (240*320)));
-	if(count > 240*320*0.0005)//閾値0.05%に変更．2014/06/14 みなと
+	moments = cv::moments(mono_img);										//重心計算
+	int gX = moments.m10 / moments.m00;										//重心X位置計算
+	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
+	x_gap = -160 + gX;														//中心からのX位置のずれを設定
+	Debug::print(LOG_SUMMARY, "color = %f%%", ((double)count / (240*320)));	//ずれをコンソール表示
+
+	if(count > 240*320*0.0005)	//閾値0.05%に変更．2014/06/14 みなと
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
@@ -114,7 +111,7 @@ int ImageProc::howColorGap(IplImage* src)
 
 			if ( count > 240*320*0.3 && distance > 200.0 ) 
 			{
-				x_gap = INT_MIN;
+				x_gap = INT_MIN;	//ゴール判定
 			}
 		}
 		else
@@ -129,10 +126,9 @@ int ImageProc::howColorGap(IplImage* src)
 		x_gap = INT_MAX;
 	}
 
-	return x_gap;										//中心からのX位置のずれを返す
+	return x_gap;	//中心からのX位置のずれを返す
 }
-/* ここまで　2014年6月オープンラボ前に実装 */
-
+/* ここまで　2014年実装 */
 bool ImageProc::isParaExist(IplImage* src)
 {
 	if(src == NULL)
