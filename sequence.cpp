@@ -1352,7 +1352,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 			mCurStep = STEP_TURN;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100,-100);
-			//スタビたたむ
+			gStabiServo.start(0);					//スタビたたむ
 		}
 		break;
 	case STEP_TURN:
@@ -1362,7 +1362,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100,100);
-			//スタビ伸ばす
+			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
 		}
 		break;
 	case STEP_FORWARD:
@@ -1372,7 +1372,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 			mCurStep = STEP_BACKWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(-100,-100);
-			//スタビ伸ばす
+			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
 		}
 		break;
 	}
