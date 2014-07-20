@@ -19,7 +19,7 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
-//EscapingRandom gEscapingRandomState;
+EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 Jumping gJumpingState;
 Waking gWakingState;
@@ -511,17 +511,44 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 	else if(isStuck())//スタック判定
 	{
-		gEscapingByStabiState.setRunMode(true);
+		if(!gEscapingRandomState.isActive())
+		{
+			gEscapingByStabiState.setRunMode(true);
+		}
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n",currentPos.x,currentPos.y);
 		gBuzzer.start(20, 20, 8);
+
+		if(gEscapingByStabiState.isActive())		//EscapingByStabi中
+		{
+			if(gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_COUNT_THRESHOLD)
+			{
+				//EscapingRandomに移行
+				gEscapingByStabiState.setRunMode(false);
+				gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping Random Start! \r\n");
+				gEscapingRandomState.setRunMode(true);
+				mEscapingRandomStartTime = time;
+			}
+		}
+		else if(gEscapingRandomState.isActive())	//EscapingRandom中
+		{
+			if(Time::dt(time,mEscapingRandomStartTime) > ESCAPING_RANDOM_TIME_THRESHOLD)
+			{
+				//EscapingByStabiに移行
+				gEscapingRandomState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping ByStabi Start! \r\n");
+				gEscapingByStabiState.setRunMode(true);
+			}
+		}
 	}
 	else
 	{
-		if(gEscapingByStabiState.isActive())//脱出モードが完了した時
+		if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gEscapingByStabiState.setRunMode(false);
+			gEscapingRandomState.setRunMode(false);
 			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
 			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
 			gBuzzer.start(80, 20, 3);
@@ -1293,12 +1320,69 @@ escapingbystabi stop        : stop  Escaping by stabi mode\r\n\
 escapingbystabi angle [0-1] : set stabi angle\r\n");
 	return false;
 }
+EscapingByStabi::getTryCount()
+{
+	return mTryCount;
+}
 EscapingByStabi::EscapingByStabi()
 {
 	setName("escapingbystabi");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 EscapingByStabi::~EscapingByStabi()
+{
+}
+
+bool EscapingRandom::onInit(const struct timespec& time)
+{
+	gStabiServo.setRunMode(true);
+	mLastUpdateTime = time;
+	mCurStep = STEP_BACKWARD;
+	gMotorDrive.drive(-100,-100);
+	return true;
+}
+void EscapingRandom::onUpdate(const struct timespec& time)
+{
+	switch(mCurStep)
+	{
+	case STEP_BACKWARD:
+		//バックを行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_TURN;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(100,-100);
+			//スタビたたむ
+		}
+		break;
+	case STEP_TURN:
+		//その場回転を行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_FORWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(100,100);
+			//スタビ伸ばす
+		}
+		break;
+	case STEP_FORWARD:
+		//前進を行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_BACKWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(-100,-100);
+			//スタビ伸ばす
+		}
+		break;
+	}
+}
+EscapingRandom::EscapingRandom()
+{
+	setName("random");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+EscapingRandom::~EscapingRandom()
 {
 }
 
