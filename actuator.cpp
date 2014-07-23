@@ -248,7 +248,6 @@ bool StabiServo::onInit(const struct timespec& time)
 	pwmSetRange(9000);
 	pwmSetClock(32);
 
-	pwmWrite (mPin, 0);
 	return true;
 }
 void StabiServo::onClean()
