@@ -382,8 +382,18 @@ void Separating::onUpdate(const struct timespec& time)
 		if(!gTurningState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
+			gMotorDrive.drive(100,100);
+			mLastUpdateTime = time;
+			mCurStep = STEP_GO_FORWARD;
+		}
+		break;
+	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
+		if(Time::dt(time,mLastUpdateTime) > 3)
+		{
+			gMotorDrive.drive(0,0);
 			nextState();
 		}
+		break;
 	};
 }
 void Separating::nextState()
