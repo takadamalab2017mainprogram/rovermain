@@ -829,6 +829,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 {
 	if(gAvoidingState.isActive())return;
 
+	
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 	
@@ -970,6 +971,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
+			motorPower = gWatchPulseState.setMotorDrive();
 		}
 		break;
 	}
@@ -1773,9 +1775,7 @@ void WatchPulse::onUpdate(const struct timespec& time)
 	deltaLPulse = mLeftPulse.front() - mLeftPulse.back();
 	mRightPulse.pop_back(); mLeftPulse.pop_back();
 
-	Debug::print(LOG_SUMMARY,"motordpulse : (%f %f)\r\n", gMotorDrive.getR(), gMotorDrive.getL());
 	if(debugFlag) Debug::print(LOG_SUMMARY,"delta pulse : (%f %f)\r\n", deltaRPulse, deltaLPulse);
-	if(pulseFlag) Debug::print(LOG_SUMMARY,"motordpulse : (%f %f)\r\n", gMotorDrive.getDeltaPulseR(), gMotorDrive.getDeltaPulseL());
 }
 bool WatchPulse::onCommand(const std::vector<std::string> args)
 {
@@ -1793,6 +1793,12 @@ bool WatchPulse::onCommand(const std::vector<std::string> args)
 		}
 	}
 	return false;
+}
+int WatchPulse::setMotorDrive()
+{
+	if(2250 < deltaRPulse && deltaRPulse < 3750 && 2250 < deltaLPulse && deltaLPulse < 3750) return 30;
+	else if(3750 < deltaRPulse || 3750 < deltaLPulse) return 20;
+	else if(deltaRPulse < 2250 || deltaLPulse < 2250) return 60;
 }
 WatchPulse::WatchPulse()
 {

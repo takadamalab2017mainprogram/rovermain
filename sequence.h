@@ -343,6 +343,8 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
+	int setMotorDrive();
+
 	WatchPulse();
 	~WatchPulse();
 };
