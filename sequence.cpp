@@ -881,19 +881,19 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				else if ( x_pos < -40 )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(0,40);
+					gMotorDrive.drive(0,20);
                     mIsLastActionStraight = false;
 				}
 				else if ( 40 < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(40,0);
+					gMotorDrive.drive(20,0);
                     mIsLastActionStraight = false;
 				}
 				else if ( -40 <= x_pos && x_pos <= 40 )
 				{
 					mCurStep = STEP_STOPPING_LONG;
-					gMotorDrive.drive(40,40);
+					gMotorDrive.drive(20,20);
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
 				}
