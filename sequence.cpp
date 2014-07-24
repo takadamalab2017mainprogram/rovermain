@@ -305,7 +305,7 @@ bool Separating::onInit(const struct timespec& time)
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
@@ -433,7 +433,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 
 	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
@@ -832,7 +832,8 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
-	mStartTime = time;		//現在の時刻を保存
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+	mStartTime = time;		//開始時刻を保存
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
@@ -859,13 +860,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	return;
 	// }
 	
-	//ColorAccessingを開始してからの経過時間を確認
-	if(mCurStep != STEP_RESTART)
-	{
-		timeCheck(time);	
-	}
-
-
 	switch(mCurStep)
 	{
 	case STEP_STARTING:
@@ -997,6 +991,12 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	}
+
+	//ColorAccessingを開始してからの経過時間を確認
+	if(mCurStep != STEP_RESTART)
+	{
+		timeCheck(time);	
+	}
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
@@ -1033,6 +1033,7 @@ void ColorAccessing::prevState()
 	gBuzzer.start(30,10,8);
 
 	//前の状態に戻る
+	gColorAccessingState.setRunMode(false);
 	gNavigatingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Navigating Restart!\r\n");
