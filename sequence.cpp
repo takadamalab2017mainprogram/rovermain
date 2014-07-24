@@ -53,6 +53,8 @@ bool Testing::onInit(const struct timespec& time)
 
 	gSerialCommand.setRunMode(true);
 
+	gStabiServo.stop();
+
 	return true;
 }
 bool Testing::onCommand(const std::vector<std::string> args)
@@ -303,6 +305,7 @@ bool Separating::onInit(const struct timespec& time)
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
@@ -379,8 +382,18 @@ void Separating::onUpdate(const struct timespec& time)
 		if(!gTurningState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
+			gMotorDrive.drive(100,100);
+			mLastUpdateTime = time;
+			mCurStep = STEP_GO_FORWARD;
+		}
+		break;
+	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
+		if(Time::dt(time,mLastUpdateTime) > 3)
+		{
+			gMotorDrive.drive(0,0);
 			nextState();
 		}
+		break;
 	};
 }
 void Separating::nextState()
@@ -419,6 +432,8 @@ bool Navigating::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
+	
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
 
 	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
