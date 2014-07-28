@@ -48,10 +48,12 @@ public:
 class ParaServo : public TaskBase
 {
 private:
-	const static int SERVO_MAX_RANGE = 100;		//そのうちconstants.hに移す
+	const static int SERVO_MIN_RANGE = 6;	//そのうちconstants.hに移す
+	const static int SERVO_MAX_RANGE = 25;	//そのうちconstants.hに移す
+	const static int SERVO_RANGE = 100;		//そのうちconstants.hに移す
 
 	//POSITION_RELEASE: ピンが抜ける位置, POSITION_HOLD: ピンが刺さった状態の位置
-	enum POSITION {POSITION_RELEASE = 1, POSITION_HOLD = 50};
+	enum POSITION {POSITION_RELEASE = 6, POSITION_HOLD = 25};
 
 	int mPin;
 protected:

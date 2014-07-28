@@ -159,7 +159,7 @@ bool ParaServo::onInit(const struct timespec& time)
 		Debug::print(LOG_PRINT,"ParaServoError: wiringPi setup failed...\n");
 	}
 
-	softPwmCreate(mPin, 0, SERVO_MAX_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
+	softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
 	return true;
 }
 void ParaServo::onClean()
@@ -191,8 +191,8 @@ bool ParaServo::onCommand(const std::vector<std::string> args)
 	}
 	else
 	{
-		Debug::print(LOG_PRINT,"paraservo [0-%d]\t: set servo position\r\n\
-paraservo stop\t\t: stop servo\r\n", SERVO_MAX_RANGE - 1);
+		Debug::print(LOG_PRINT,"paraservo [0 or %d-%d]\t: set servo position\r\n\
+paraservo stop\t\t: stop servo\r\n", SERVO_MIN_RANGE ,SERVO_MAX_RANGE);
 	}
 	return true;
 }
@@ -201,11 +201,15 @@ void ParaServo::start(int angle)
 	//範囲のチェック
 	if(angle >= SERVO_MAX_RANGE)
 	{
-		angle = SERVO_MAX_RANGE - 1;
+		angle = SERVO_MAX_RANGE;
 	}
-	else if(angle < 0)
+	else if(angle <= 0)
 	{
 		angle = 0;
+	}
+	else if(angle < SERVO_MIN_RANGE)
+	{
+		angle = SERVO_MIN_RANGE;
 	}
 
 	softPwmWrite(mPin, angle);			//void softPwmWrite (int pin, int value);
