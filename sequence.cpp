@@ -1796,9 +1796,13 @@ bool WatchPulse::onCommand(const std::vector<std::string> args)
 }
 int WatchPulse::setMotorDrive()
 {
-	if(2250 < deltaRPulse && deltaRPulse < 3750 && 2250 < deltaLPulse && deltaLPulse < 3750) return 30;
-	else if(3750 < deltaRPulse || 3750 < deltaLPulse) return 20;
-	else if(deltaRPulse < 2250 || deltaLPulse < 2250) return 60;
+	int drive = 30;
+	if(2250 < deltaRPulse && deltaRPulse < 3750 && 2250 < deltaLPulse && deltaLPulse < 3750) drive = 30;
+	else if(3750 < deltaRPulse || 3750 < deltaLPulse) drive = 20;
+	else if(deltaRPulse < 2250 || deltaLPulse < 2250) drive = 60;
+
+	Debug::print(LOG_SUMMARY,"motordrive： %d\r\n", drive);
+	return drive;
 }
 WatchPulse::WatchPulse()
 {
