@@ -164,14 +164,14 @@ class EscapingByStabi : public TaskBase
 {	
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
 	bool mFlag;
-	int mTryCount;
+	unsigned int mTryCount;
 	double mAngle;// 芋虫走行中のスタビ角度 
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	int getTryCount();
+	unsigned int getTryCount();
 	EscapingByStabi();
 	~EscapingByStabi();
 };

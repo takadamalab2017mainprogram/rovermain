@@ -1320,7 +1320,7 @@ escapingbystabi stop        : stop  Escaping by stabi mode\r\n\
 escapingbystabi angle [0-1] : set stabi angle\r\n");
 	return false;
 }
-EscapingByStabi::getTryCount()
+unsigned int EscapingByStabi::getTryCount()
 {
 	return mTryCount;
 }
