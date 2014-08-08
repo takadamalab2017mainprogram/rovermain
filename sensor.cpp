@@ -183,6 +183,7 @@ PressureSensor::~PressureSensor()
 //////////////////////////////////////////////
 bool GPSSensor::onInit(const struct timespec& time)
 {
+	mLastCheckTime = time;
 	if((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to setup GPS Sensor\r\n");
@@ -198,7 +199,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 
 	mPos.x = mPos.y = mPos.z = 0;
 	mIsNewData = false;
-
+	mIsLogger = false;
 	return true;
 }
 void GPSSensor::onClean()
@@ -232,12 +233,42 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	}
 	//衛星個数を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
 	if(wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
+
+	if(mIsLogger)
+	{
+		if(Time::dt(time,mLastCheckTime) > 1)
+		{
+			mLastCheckTime = time;
+			showState();
+		}
+	}
 }
 bool GPSSensor::onCommand(const std::vector<std::string> args)
 {
 	if(!isActive())return false;
-	if(mSatelites < 4)Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
-	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
+
+	if(args.size() == 1)
+	{
+		showState();
+		return true;
+	}
+	else if(args.size() == 2)
+	{
+		if(args[1].compare("start") == 0)
+		{
+			mIsLogger = true;
+			Debug::print(LOG_SUMMARY, "GPS logger start!\r\n");
+			return true;
+		}else if(args[1].compare("stop") == 0)
+		{
+			mIsLogger = false;
+			Debug::print(LOG_SUMMARY, "GPS logger stop!\r\n");
+			return true;
+		}
+	}
+	Debug::print(LOG_PRINT, "gps      : show GPS state\r\n\
+gps start: GPS logger start\r\n\
+gps stop : GPS logger stop\r\n");
 	return true;
 }
 bool GPSSensor::get(VECTOR3& pos, bool disableNewFlag)
@@ -253,6 +284,11 @@ bool GPSSensor::get(VECTOR3& pos, bool disableNewFlag)
 bool GPSSensor::isNewPos()
 {
 	return mIsNewData;
+}
+void GPSSensor::showState()
+{
+	if(mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
+	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
 }
 GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0),mIsNewData(false)
 {
