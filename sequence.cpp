@@ -139,7 +139,9 @@ bool Waiting::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
-	gParaServo.moveHold();
+	gStabiServo.setRunMode(true);
+
+	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -208,7 +210,9 @@ bool Falling::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
 	gParaServo.moveHold();
+	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納状態で固定
 
 	return true;
 }
