@@ -45,6 +45,9 @@ class Time
 public:
 	//時間の変化量を計算(秒)
 	static double dt(const struct timespec& now,const struct timespec& last);
+
+	//現在時刻をログに出力する
+	static void showNowTime();
 };
 
 class String

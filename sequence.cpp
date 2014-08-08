@@ -78,9 +78,15 @@ bool Testing::onCommand(const std::vector<std::string> args)
 
 			if(gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n",gLightSensor.get() ? "High" : "Low");
 			return true;
-		}else if(args[1].compare("waking") == 0)
+		}
+		else if(args[1].compare("waking") == 0)
 		{
 			gWakingState.setRunMode(true);
+		}
+		else if(args[1].compare("time") == 0)
+		{
+			Time::showNowTime();
+			return true;
 		}
 	}
 	if(args.size() == 3)
@@ -108,6 +114,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 		}
 	}
 	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n\
+testing time                      : show current time\r\n\
 testing sensor                    : check sensor values\r\n");
 
 	return true;
