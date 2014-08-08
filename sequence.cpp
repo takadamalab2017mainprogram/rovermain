@@ -479,6 +479,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//ゴール判定
 		gMotorDrive.drive(0,0);
+		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 		nextState();
 		return;
 	}
@@ -682,8 +683,6 @@ void Navigating::nextState()
 
 	//次の状態を設定
 	gColorAccessingState.setRunMode(true);
-	
-	Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 }
 void Navigating::setGoal(const VECTOR3& pos)
 {
@@ -833,6 +832,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gStabiServo.setRunMode(true);
 
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+	mCurStep = STEP_STARTING;
 	mStartTime = time;		//開始時刻を保存
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
@@ -1049,7 +1049,7 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 		gBuzzer.start(30,10,8);
 	}
 }
-ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)
+ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
