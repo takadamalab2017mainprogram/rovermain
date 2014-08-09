@@ -78,9 +78,15 @@ bool Testing::onCommand(const std::vector<std::string> args)
 
 			if(gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n",gLightSensor.get() ? "High" : "Low");
 			return true;
-		}else if(args[1].compare("waking") == 0)
+		}
+		else if(args[1].compare("waking") == 0)
 		{
 			gWakingState.setRunMode(true);
+		}
+		else if(args[1].compare("time") == 0)
+		{
+			Time::showNowTime();
+			return true;
 		}
 	}
 	if(args.size() == 3)
@@ -108,6 +114,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 		}
 	}
 	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n\
+testing time                      : show current time\r\n\
 testing sensor                    : check sensor values\r\n");
 
 	return true;
@@ -125,6 +132,7 @@ Testing::~Testing()
 bool Waiting::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Waiting...\r\n");
+	Time::showNowTime();
 
 	mContinuousLightCount = 0;
 
@@ -193,7 +201,8 @@ Waiting::~Waiting(){}
 bool Falling::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Falling...\r\n");
-
+	Time::showNowTime();
+	
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
@@ -294,7 +303,8 @@ Falling::~Falling()
 bool Separating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Separating...\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -423,7 +433,8 @@ Separating::~Separating()
 bool Navigating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -847,7 +858,8 @@ WadachiPredicting::~WadachiPredicting()
 bool ColorAccessing::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -1056,6 +1068,7 @@ void ColorAccessing::nextState()
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
+	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
 //前の状態に移行
@@ -1278,6 +1291,8 @@ Escaping::~Escaping()
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start!\r\n");
+	Time::showNowTime();
+	
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
 	//gMotorDrive.drive(20,20);
@@ -1355,6 +1370,8 @@ EscapingByStabi::~EscapingByStabi()
 
 bool EscapingRandom::onInit(const struct timespec& time)
 {
+		Debug::print(LOG_SUMMARY, "Start Escaping Random...\r\n");
+	Time::showNowTime();
 	gStabiServo.setRunMode(true);
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWARD;
