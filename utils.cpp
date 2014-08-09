@@ -66,14 +66,7 @@ void Time::showNowTime()
 	now = time(NULL);
 	ts = localtime(&now);
 
-	//日本時間とラズパイ時刻の差を調整
-	int min = ts->tm_hour * 60 + ts->tm_min + 1440;	//ラズパイ時刻を秒に変換
-	min -= 410;										//日本時間との差を引く
-	if(min >= 1440) min -= 1440;
-	
-	int h = min / 60, m = min % 60;
-
-	Debug::print(LOG_SUMMARY,"Time: %d:%d:%d\r\n",h,m,ts->tm_sec);
+	Debug::print(LOG_SUMMARY,"Time: %d:%d:%d\r\n",ts->tm_hour, ts->tm_min, ts->tm_sec);
 }
 void String::split(const std::string& input,std::vector<std::string>& outputs)
 {

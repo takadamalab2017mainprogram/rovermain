@@ -132,6 +132,7 @@ Testing::~Testing()
 bool Waiting::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Waiting...\r\n");
+	Time::showNowTime();
 
 	mContinuousLightCount = 0;
 
@@ -200,7 +201,8 @@ Waiting::~Waiting(){}
 bool Falling::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Falling...\r\n");
-
+	Time::showNowTime();
+	
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
@@ -301,7 +303,8 @@ Falling::~Falling()
 bool Separating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Separating...\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -430,7 +433,8 @@ Separating::~Separating()
 bool Navigating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -854,7 +858,8 @@ WadachiPredicting::~WadachiPredicting()
 bool ColorAccessing::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -1063,6 +1068,7 @@ void ColorAccessing::nextState()
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
+	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
 //前の状態に移行
@@ -1285,6 +1291,8 @@ Escaping::~Escaping()
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start!\r\n");
+	Time::showNowTime();
+	
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
 	//gMotorDrive.drive(20,20);
@@ -1362,6 +1370,8 @@ EscapingByStabi::~EscapingByStabi()
 
 bool EscapingRandom::onInit(const struct timespec& time)
 {
+		Debug::print(LOG_SUMMARY, "Start Escaping Random...\r\n");
+	Time::showNowTime();
 	gStabiServo.setRunMode(true);
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWARD;
