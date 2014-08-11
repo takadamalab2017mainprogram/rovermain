@@ -86,8 +86,9 @@ public:
 class Navigating : public TaskBase
 {
 private:
-	struct timespec mLastNaviMoveCheckTime;	//前回のGPSによるスタック判定とナビゲーション処理のチェック時刻
-	struct timespec mLastEncoderCheckTime;	//前回のエンコーダチェック時刻
+	struct timespec mLastNaviMoveCheckTime;	 //前回のGPSによるスタック判定とナビゲーション処理のチェック時刻
+	struct timespec mLastEncoderCheckTime;	 //前回のエンコーダチェック時刻
+	struct timespec mEscapingRandomStartTime;//EscapingRandomの開始時刻
 
 	//ゴール位置
 	VECTOR3 mGoalPos;
@@ -163,30 +164,31 @@ class EscapingByStabi : public TaskBase
 {	
 	struct timespec mLastUpdateTime;//前回の行動からの変化時間
 	bool mFlag;
-	int mTryCount;
+	unsigned int mTryCount;
 	double mAngle;// 芋虫走行中のスタビ角度 
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
+	unsigned int getTryCount();
 	EscapingByStabi();
 	~EscapingByStabi();
 };
-////轍脱出脱出（旧ランダム）
-//class EscapingRandom : public TaskBase
-//{
-//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-//
-//	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
-//	enum STEP mCurStep;
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onUpdate(const struct timespec& time);
-//public:
-//	EscapingRandom();
-//	~EscapingRandom();
-//};
+//轍脱出脱出（旧ランダム）
+class EscapingRandom : public TaskBase
+{
+	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+
+	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
+	enum STEP mCurStep;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	EscapingRandom();
+	~EscapingRandom();
+};
 // ジャンプ機構（仮）
 class Jumping : public TaskBase
 {
@@ -347,7 +349,7 @@ extern Waking gWakingState;
 extern Turning gTurningState;
 extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
-//extern EscapingRandom gEscapingRandomState;
+extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
 extern Jumping gJumpingState;
 extern PictureTaking gPictureTakingState;

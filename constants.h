@@ -43,6 +43,7 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.6;	//通常時のスタビ角度
+const static double STABI_FOLD_ANGLE = 0.0;	//収納時のスタビ角度
 
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
@@ -62,7 +63,7 @@ const static unsigned int FALLING_MOTOR_PULSE_THRESHOLD = 1000;//１秒辺りの
 const static unsigned int FALLING_MOTOR_PULSE_COUNT = 5;//モータパルスの値が閾値以下のサンプルがこれだけ連続したら着地と判定
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
-const static unsigned int SEPARATING_SERVO_COUNT = 12;//サーボの向きを変える回数
+const static unsigned int SEPARATING_SERVO_COUNT = 16;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
 const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)
@@ -70,8 +71,10 @@ const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.5;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒)
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
-const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1.0 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
+const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 0.7 / 111111.1; //NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
 const static unsigned long long STUCK_ENCODER_PULSE_THRESHOLD = 3000;//前回のエンコーダパルス数がこの値以上で、現在のパルス数がこの値以下ならスタック判定とする
+const static unsigned int ESCAPING_BY_STABI_COUNT_THRESHOLD = 30;//この回数以上EscapingByStabiの動作を繰り返してもスタック脱出できない場合，EscapingRandomに遷移する
+const static unsigned int ESCAPING_RANDOM_TIME_THRESHOLD = 60;//この秒数以上EscapingRandom動作をしてもスタック脱出できない場合，EscapingByStabiに遷移する
 const static unsigned int COLOR_ACCESSING_ABORT_TIME = 300;//0mゴール検知状態を強制終了しNavigatingに復帰する時間
 
 const static double SPEED_WHEN_IT_IS_STOPPED = 0.5; // スタックしたとみなすスピード(EscapingByStabiで使用)

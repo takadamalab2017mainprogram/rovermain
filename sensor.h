@@ -46,10 +46,14 @@ public:
 class GPSSensor : public TaskBase
 {
 private:
+	struct timespec mLastCheckTime;//前回のチェック時刻
 	int mFileHandle;//winringPi i2c　のファイルハンドラ
 	VECTOR3 mPos;//座標(経度、緯度、高度)
 	int mSatelites;//補足した衛星の数
 	bool mIsNewData;//新しい座標データがあれば真
+	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
+
+	void showState();//補足した衛星数と座標を表示
 protected:
 	//GPSを初期化
 	virtual bool onInit(const struct timespec& time);

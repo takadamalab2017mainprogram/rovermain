@@ -19,7 +19,7 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Escaping gEscapingState;
-//EscapingRandom gEscapingRandomState;
+EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 Jumping gJumpingState;
 Waking gWakingState;
@@ -78,9 +78,15 @@ bool Testing::onCommand(const std::vector<std::string> args)
 
 			if(gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n",gLightSensor.get() ? "High" : "Low");
 			return true;
-		}else if(args[1].compare("waking") == 0)
+		}
+		else if(args[1].compare("waking") == 0)
 		{
 			gWakingState.setRunMode(true);
+		}
+		else if(args[1].compare("time") == 0)
+		{
+			Time::showNowTime();
+			return true;
 		}
 	}
 	if(args.size() == 3)
@@ -108,6 +114,7 @@ bool Testing::onCommand(const std::vector<std::string> args)
 		}
 	}
 	Debug::print(LOG_PRINT, "testing [start/stop] [task name]  : enable/disable task\r\n\
+testing time                      : show current time\r\n\
 testing sensor                    : check sensor values\r\n");
 
 	return true;
@@ -125,6 +132,7 @@ Testing::~Testing()
 bool Waiting::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Waiting...\r\n");
+	Time::showNowTime();
 
 	mContinuousLightCount = 0;
 
@@ -138,8 +146,10 @@ bool Waiting::onInit(const struct timespec& time)
 	gXbeeSleep.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	//gParaServo.setRunMode(true);
-	//gParaServo.moveHold();
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
+
+	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -191,7 +201,8 @@ Waiting::~Waiting(){}
 bool Falling::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Falling...\r\n");
-
+	Time::showNowTime();
+	
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
@@ -207,8 +218,10 @@ bool Falling::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	//gParaServo.setRunMode(true);
-	//gParaServo.moveHold();
+	gParaServo.setRunMode(true);
+	gStabiServo.setRunMode(true);
+	gParaServo.moveHold();
+	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納状態で固定
 
 	return true;
 }
@@ -290,7 +303,8 @@ Falling::~Falling()
 bool Separating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Separating...\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -305,7 +319,7 @@ bool Separating::onInit(const struct timespec& time)
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
@@ -338,6 +352,7 @@ void Separating::onUpdate(const struct timespec& time)
 		if(mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
 			//次状態に遷移
+			gParaServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);
@@ -419,7 +434,8 @@ Separating::~Separating()
 bool Navigating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -433,7 +449,7 @@ bool Navigating::onInit(const struct timespec& time)
 	//gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 
 	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
@@ -479,6 +495,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//ゴール判定
 		gMotorDrive.drive(0,0);
+		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 		nextState();
 		return;
 	}
@@ -526,17 +543,44 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 	else if(isStuck())//スタック判定
 	{
-		gEscapingByStabiState.setRunMode(true);
+		if(!gEscapingRandomState.isActive())
+		{
+			gEscapingByStabiState.setRunMode(true);
+		}
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n",currentPos.x,currentPos.y);
 		gBuzzer.start(20, 20, 8);
+
+		if(gEscapingByStabiState.isActive())		//EscapingByStabi中
+		{
+			if(gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_COUNT_THRESHOLD)
+			{
+				//EscapingRandomに移行
+				gEscapingByStabiState.setRunMode(false);
+				gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping Random Start! \r\n");
+				gEscapingRandomState.setRunMode(true);
+				mEscapingRandomStartTime = time;
+			}
+		}
+		else if(gEscapingRandomState.isActive())	//EscapingRandom中
+		{
+			if(Time::dt(time,mEscapingRandomStartTime) > ESCAPING_RANDOM_TIME_THRESHOLD)
+			{
+				//EscapingByStabiに移行
+				gEscapingRandomState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping ByStabi Start! \r\n");
+				gEscapingByStabiState.setRunMode(true);
+			}
+		}
 	}
 	else
 	{
-		if(gEscapingByStabiState.isActive())//脱出モードが完了した時
+		if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
 		{
 			//ローバーがひっくり返っている可能性があるため、しばらく前進する
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gEscapingByStabiState.setRunMode(false);
+			gEscapingRandomState.setRunMode(false);
 			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
 			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
 			gBuzzer.start(80, 20, 3);
@@ -682,8 +726,6 @@ void Navigating::nextState()
 
 	//次の状態を設定
 	gColorAccessingState.setRunMode(true);
-	
-	Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 }
 void Navigating::setGoal(const VECTOR3& pos)
 {
@@ -817,7 +859,8 @@ WadachiPredicting::~WadachiPredicting()
 bool ColorAccessing::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
-
+	Time::showNowTime();
+	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -832,7 +875,9 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
-	mStartTime = time;		//現在の時刻を保存
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+	mCurStep = STEP_STARTING;
+	mStartTime = time;		//開始時刻を保存
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
@@ -859,13 +904,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	return;
 	// }
 	
-	//ColorAccessingを開始してからの経過時間を確認
-	if(mCurStep != STEP_RESTART)
-	{
-		timeCheck(time);	
-	}
-
-
 	switch(mCurStep)
 	{
 	case STEP_STARTING:
@@ -997,6 +1035,12 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	}
+
+	//ColorAccessingを開始してからの経過時間を確認
+	if(mCurStep != STEP_RESTART)
+	{
+		timeCheck(time);	
+	}
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
@@ -1025,6 +1069,7 @@ void ColorAccessing::nextState()
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
+	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
 //前の状態に移行
@@ -1033,6 +1078,7 @@ void ColorAccessing::prevState()
 	gBuzzer.start(30,10,8);
 
 	//前の状態に戻る
+	gColorAccessingState.setRunMode(false);
 	gNavigatingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Navigating Restart!\r\n");
@@ -1048,7 +1094,7 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 		gBuzzer.start(30,10,8);
 	}
 }
-ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)
+ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -1246,6 +1292,8 @@ Escaping::~Escaping()
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start!\r\n");
+	Time::showNowTime();
+	
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
 	//gMotorDrive.drive(20,20);
@@ -1308,12 +1356,71 @@ escapingbystabi stop        : stop  Escaping by stabi mode\r\n\
 escapingbystabi angle [0-1] : set stabi angle\r\n");
 	return false;
 }
+unsigned int EscapingByStabi::getTryCount()
+{
+	return mTryCount;
+}
 EscapingByStabi::EscapingByStabi()
 {
 	setName("escapingbystabi");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 EscapingByStabi::~EscapingByStabi()
+{
+}
+
+bool EscapingRandom::onInit(const struct timespec& time)
+{
+		Debug::print(LOG_SUMMARY, "Start Escaping Random...\r\n");
+	Time::showNowTime();
+	gStabiServo.setRunMode(true);
+	mLastUpdateTime = time;
+	mCurStep = STEP_BACKWARD;
+	gMotorDrive.drive(-100,-100);
+	return true;
+}
+void EscapingRandom::onUpdate(const struct timespec& time)
+{
+	switch(mCurStep)
+	{
+	case STEP_BACKWARD:
+		//バックを行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_TURN;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(100,-100);
+			gStabiServo.start(0);					//スタビたたむ
+		}
+		break;
+	case STEP_TURN:
+		//その場回転を行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_FORWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(100,100);
+			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
+		}
+		break;
+	case STEP_FORWARD:
+		//前進を行う
+		if(Time::dt(time,mLastUpdateTime) >= 3)
+		{
+			mCurStep = STEP_BACKWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(-100,-100);
+			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
+		}
+		break;
+	}
+}
+EscapingRandom::EscapingRandom()
+{
+	setName("random");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+EscapingRandom::~EscapingRandom()
 {
 }
 
