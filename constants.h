@@ -63,7 +63,7 @@ const static unsigned int FALLING_MOTOR_PULSE_THRESHOLD = 1000;//１秒辺りの
 const static unsigned int FALLING_MOTOR_PULSE_COUNT = 5;//モータパルスの値が閾値以下のサンプルがこれだけ連続したら着地と判定
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
-const static unsigned int SEPARATING_SERVO_COUNT = 12;//サーボの向きを変える回数
+const static unsigned int SEPARATING_SERVO_COUNT = 16;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
 const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3 / 111111.1;//ゴール判定とするゴールからの距離(度)

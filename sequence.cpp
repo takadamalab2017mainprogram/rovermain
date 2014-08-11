@@ -352,6 +352,7 @@ void Separating::onUpdate(const struct timespec& time)
 		if(mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
 			//次状態に遷移
+			gParaServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);
