@@ -66,7 +66,7 @@ void Time::showNowTime()
 	now = time(NULL);
 	ts = localtime(&now);
 
-	Debug::print(LOG_SUMMARY,"Time: %d:%d:%d\r\n",ts->tm_hour, ts->tm_min, ts->tm_sec);
+	Debug::print(LOG_SUMMARY,"Time --> %d:%d:%d\r\n",ts->tm_hour, ts->tm_min, ts->tm_sec);
 }
 void String::split(const std::string& input,std::vector<std::string>& outputs)
 {
