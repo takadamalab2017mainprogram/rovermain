@@ -138,8 +138,8 @@ bool Waiting::onInit(const struct timespec& time)
 	gXbeeSleep.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gParaServo.setRunMode(true);
-	gParaServo.moveHold();
+	//gParaServo.setRunMode(true);
+	//gParaServo.moveHold();
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -207,8 +207,8 @@ bool Falling::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gParaServo.setRunMode(true);
-	gParaServo.moveHold();
+	//gParaServo.setRunMode(true);
+	//gParaServo.moveHold();
 
 	return true;
 }
@@ -430,7 +430,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gParaServo.setRunMode(true);
+	//gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す

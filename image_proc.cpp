@@ -28,10 +28,10 @@ int ImageProc::howColorGap(IplImage* src)
 	int count = 240*320;
 
 	//////////座標検索///////////////////////////////////////
-	double min_x = -1;
-	double min_y = -1;
-	double max_x = -1;
-	double max_y = -1;
+	double min_x = -1; //
+	double min_y = -1; //
+	double max_x = -1; //
+	double max_y = -1; //
 
 	for(int y=0; y<240; y++)
 	{
@@ -183,7 +183,7 @@ bool ImageProc::isParaExist(IplImage* src)
 	Debug::print(LOG_SUMMARY, "Para ratio: %f\r\n",ratio);
 	return ratio > SEPARATING_PARA_DETECT_THRESHOLD;
 }
-bool ImageProc::isSky(IplImage* src)
+bool ImageProc::isSky(IplImage* src) //2014年度は使用しない
 {
 	const static double SKY_DETECT_THRESHOLD = 0.8;
 	if(src == NULL)
@@ -235,7 +235,7 @@ bool ImageProc::isSky(IplImage* src)
 	Debug::print(LOG_SUMMARY, "Sky ratio: %f\r\n",ratio);
 	return ratio >= SKY_DETECT_THRESHOLD;
 }
-bool ImageProc::isWadachiExist(IplImage* pImage)
+bool ImageProc::isWadachiExist(IplImage* pImage) //2014年度は使用しない
 {
 	if(pImage == NULL)
 	{
@@ -328,7 +328,7 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 
 	return wadachi_find;
 }
-int ImageProc::wadachiExiting(IplImage* pImage)
+int ImageProc::wadachiExiting(IplImage* pImage) //2014年度は使用しない
 {
 	const static int DIV_HOR_NUM = 5;
 	const static int MEDIAN = 5;
@@ -488,7 +488,7 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
 	return true;
 }
-void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt)
+void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度は使用しない
 {
 	const static int DIV_VER_NUM = 80;                 // 縦に読むピクセル数
 	const static int DIV_HOR_NUM = 5;                   // 判定に用いる列数
