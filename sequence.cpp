@@ -818,6 +818,8 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
+	gWatchPulseState.setRunMode(true);
+
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
@@ -972,6 +974,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 			motorPower = gWatchPulseState.setMotorDrive();
+			Debug::print(LOG_SUMMARY, "motorpower : %f\r\n", motorPower);
 		}
 		break;
 	}
