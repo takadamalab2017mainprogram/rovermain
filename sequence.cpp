@@ -974,7 +974,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 			motorPower = gWatchPulseState.setMotorDrive();
-			Debug::print(LOG_SUMMARY, "motorpower : %f\r\n", motorPower);
+			Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", motorPower);
 		}
 		break;
 	}
@@ -1769,7 +1769,7 @@ void WatchPulse::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastUpdateTime) < 1) return;
 	mLastUpdateTime = time;
 
-	if(gMotorDrive.getR() < 4000 || gMotorDrive.getL() < 4000) return;
+	//if(gMotorDrive.getR() < 4000 || gMotorDrive.getL() < 4000) return;
 	mRightPulse.push_front(gMotorDrive.getR());
 	mLeftPulse.push_front(gMotorDrive.getL());
 
@@ -1800,11 +1800,10 @@ bool WatchPulse::onCommand(const std::vector<std::string> args)
 int WatchPulse::setMotorDrive()
 {
 	int drive = 30;
-	if(2250 < deltaRPulse && deltaRPulse < 3750 && 2250 < deltaLPulse && deltaLPulse < 3750) drive = 30;
-	else if(3750 < deltaRPulse || 3750 < deltaLPulse) drive = 20;
-	else if(deltaRPulse < 2250 || deltaLPulse < 2250) drive = 60;
+	if(2000 < deltaRPulse && deltaRPulse < 3000 && 2000 < deltaLPulse && deltaLPulse < 3000) drive = 30;
+	else if(3000 < deltaRPulse || 3000 < deltaLPulse) drive = 20;
+	else if(deltaRPulse < 2000 || deltaLPulse < 2000) drive = 60;
 
-	Debug::print(LOG_SUMMARY,"motordrive： %d\r\n", drive);
 	return drive;
 }
 WatchPulse::WatchPulse()
