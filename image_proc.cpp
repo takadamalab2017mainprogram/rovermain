@@ -97,7 +97,7 @@ int ImageProc::howColorGap(IplImage* src)
 	int gX = moments.m10 / moments.m00;										//重心X位置計算
 	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
-	Debug::print(LOG_SUMMARY, "color = %f%%", ((double)count / (240*320)));	//ずれをコンソール表示
+	Debug::print(LOG_SUMMARY, "color = %f%% ", ((double)count / (240*320)));	//ずれをコンソール表示
 
 	if(count > 240*320*0.0005)	//閾値0.05%に変更．2014/06/14 みなと
 	{

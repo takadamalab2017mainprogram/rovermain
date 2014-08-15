@@ -131,7 +131,7 @@ Testing::~Testing()
 
 bool Waiting::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Waiting...\r\n");
+	Debug::print(LOG_SUMMARY, "Waiting... ");
 	Time::showNowTime();
 
 	mContinuousLightCount = 0;
@@ -197,7 +197,7 @@ Waiting::~Waiting(){}
 
 bool Falling::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Falling...\r\n");
+	Debug::print(LOG_SUMMARY, "Falling... ");
 	Time::showNowTime();
 	
 	mStartTime = mLastCheckTime = time;
@@ -299,7 +299,7 @@ Falling::~Falling()
 
 bool Separating::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Separating...\r\n");
+	Debug::print(LOG_SUMMARY, "Separating... ");
 	Time::showNowTime();
 	
 	//必要なタスクを使用できるようにする
@@ -430,7 +430,7 @@ Separating::~Separating()
 //ゴールへの移動中
 bool Navigating::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
+	Debug::print(LOG_SUMMARY, "Navigating... ");
 	Time::showNowTime();
 	
 	//必要なタスクを使用できるようにする
@@ -854,7 +854,7 @@ WadachiPredicting::~WadachiPredicting()
 /* ここから　2014年実装 */
 bool ColorAccessing::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
+	Debug::print(LOG_SUMMARY, "Start Goal Detecting... ");
 	Time::showNowTime();
 	
 	//必要なタスクを使用できるようにする
@@ -1050,6 +1050,7 @@ void ColorAccessing::nextState()
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
+	Debug::print(LOG_SUMMARY, "Detecting Finish! ");
 	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
@@ -1272,7 +1273,7 @@ Escaping::~Escaping()
 }
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start!\r\n");
+	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start! ");
 	Time::showNowTime();
 	
 	mLastUpdateTime = time;
@@ -1352,7 +1353,7 @@ EscapingByStabi::~EscapingByStabi()
 
 bool EscapingRandom::onInit(const struct timespec& time)
 {
-		Debug::print(LOG_SUMMARY, "Start Escaping Random...\r\n");
+		Debug::print(LOG_SUMMARY, "Start Escaping Random... ");
 	Time::showNowTime();
 	gStabiServo.setRunMode(true);
 	mLastUpdateTime = time;
