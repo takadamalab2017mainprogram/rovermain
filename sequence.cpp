@@ -147,9 +147,6 @@ bool Waiting::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
-	gStabiServo.setRunMode(true);
-
-	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -446,7 +443,6 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	//gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
@@ -872,7 +868,6 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
@@ -1044,21 +1039,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
-	if(args.size() == 2)
-	{
-		if(args[1].compare("enable") == 0)
-		{
-			mIsAvoidingEnable = true;
-			return true;
-		}
-		if(args[1].compare("disable") == 0)
-		{
-			mIsAvoidingEnable = false;
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");//ToDo: 修正する
-	return false;
+	return true;
 }
 //次の状態に移行
 void ColorAccessing::nextState()
@@ -1094,7 +1075,7 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 		gBuzzer.start(30,10,8);
 	}
 }
-ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false)
+ColorAccessing::ColorAccessing()
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

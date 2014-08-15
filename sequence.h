@@ -262,7 +262,6 @@ class ColorAccessing : public TaskBase
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
-	bool mIsAvoidingEnable;
 	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_RESTART};
 	enum STEP mCurStep;
     double mAngleOnBegin;
