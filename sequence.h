@@ -189,19 +189,6 @@ public:
 	EscapingRandom();
 	~EscapingRandom();
 };
-// ジャンプ機構（仮）
-class Jumping : public TaskBase
-{
-	struct timespec mLastUpdateTime; // 前回の行動からの変化時間
-	bool flag;
-	int stopcount;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-public:
-	Jumping();
-	~Jumping();
-};
 
 //ローバーの姿勢制御
 //姿勢制御が完了するとタスクが終了します
@@ -350,7 +337,6 @@ extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
-extern Jumping gJumpingState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;

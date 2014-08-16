@@ -77,8 +77,6 @@ const static unsigned int ESCAPING_BY_STABI_COUNT_THRESHOLD = 30;//この回数�
 const static unsigned int ESCAPING_RANDOM_TIME_THRESHOLD = 60;//この秒数以上EscapingRandom動作をしてもスタック脱出できない場合，EscapingByStabiに遷移する
 const static unsigned int COLOR_ACCESSING_ABORT_TIME = 300;//0mゴール検知状態を強制終了しNavigatingに復帰する時間
 
-const static double SPEED_WHEN_IT_IS_STOPPED = 0.5; // スタックしたとみなすスピード(EscapingByStabiで使用)
-
 const static double WAKING_THRESHOLD = 200;
 const static unsigned int WAKING_RETRY_COUNT = 5;
 

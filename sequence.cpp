@@ -21,7 +21,6 @@ Navigating gNavigatingState;
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
-Jumping gJumpingState;
 Waking gWakingState;
 Turning gTurningState;
 Avoiding gAvoidingState;
@@ -1403,43 +1402,6 @@ EscapingRandom::EscapingRandom()
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 EscapingRandom::~EscapingRandom()
-{
-}
-
-bool Jumping::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gStabiServo.setRunMode(true);
-	flag = false;
-	stopcount = 0;
-	return true;
-}
-void Jumping::onUpdate(const struct timespec& time)
-{
-	if(Time::dt(time,mLastUpdateTime) < 1) return;
-	mLastUpdateTime = time;
-	if(!flag)
-	{
-		gMotorDrive.drive(0,0);
-		gStabiServo.close();
-	}else
-	{
-		gMotorDrive.drive(-5,-5);
-		gStabiServo.start(0.6);
-	}
-	flag = !flag;
-	if(stopcount++ > 2) 
-	{
-		gMotorDrive.drive(0,0);
-		gJumpingState.setRunMode(false);
-	}
-}
-Jumping::Jumping()
-{
-	setName("jumping");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
-}
-Jumping::~Jumping()
 {
 }
 
