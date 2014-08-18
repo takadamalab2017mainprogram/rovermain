@@ -254,6 +254,8 @@ class ColorAccessing : public TaskBase
     double mAngleOnBegin;
     bool mIsLastActionStraight;
     int mTryCount;
+	bool mIsGPS;					//Detectingで一度でもGPS座標を取得できている場合はtrue
+	VECTOR3 mCurrentPos;				//最新の座標を保持
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
