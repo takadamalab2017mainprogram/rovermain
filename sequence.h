@@ -265,6 +265,7 @@ class ColorAccessing : public TaskBase
     bool mIsLastActionStraight;
     int mTryCount;
 	int motorPower;
+	int actCount;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

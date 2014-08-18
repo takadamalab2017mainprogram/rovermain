@@ -825,6 +825,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
     mIsLastActionStraight = false;
     mTryCount = 0;
 	motorPower = 40;
+	actCount = 0;
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -895,6 +896,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 					gMotorDrive.drive(motorPower,motorPower);
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
+					actCount = 0;
 				}
 				mTryCount = 0;
 			}
@@ -955,6 +957,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
             
 			//2014/06/13移動
 			mLastUpdateTime = time;
+			actCount++;
 		}
 		break;
 	case STEP_TURNING:
@@ -974,6 +977,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 			motorPower = gWatchPulseState.setMotorDrive();
+			if(actCount > 10 && actCount % 5 == 0) motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
 			Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", motorPower);
 		}
 		break;
@@ -1800,9 +1804,9 @@ bool WatchPulse::onCommand(const std::vector<std::string> args)
 int WatchPulse::setMotorDrive()
 {
 	int drive = 30;
-	if(2000 < deltaRPulse && deltaRPulse < 3000 && 2000 < deltaLPulse && deltaLPulse < 3000) drive = 30;
-	else if(3000 < deltaRPulse || 3000 < deltaLPulse) drive = 20;
-	else if(deltaRPulse < 2000 || deltaLPulse < 2000) drive = 60;
+	if(1500 < deltaRPulse && deltaRPulse < 2500 && 1500 < deltaLPulse && deltaLPulse < 2500) drive = 30;
+	else if(2500 < deltaRPulse || 2500 < deltaLPulse) drive = 20;
+	else if(deltaRPulse < 1500 || deltaLPulse < 1500) drive = 0;
 
 	return drive;
 }
