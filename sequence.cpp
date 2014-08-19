@@ -1041,11 +1041,26 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	//ColorAccessingを開始してからの経過時間を確認
 	if(mCurStep != STEP_RESTART)
 	{
-		timeCheck(time);	
+		bool retry_flag = timeCheck(time);
+		if(!retry_flag)
+		{
+			Debug::print(LOG_SUMMARY, "Detecting failed ... try count: %d\r\n", mDetectingRetryCount);
+			nextState();//一定回数以上ナビ復帰を繰り返したのでその場でゴール判定
+		}
 	}
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
+	if(args.size() == 2)
+	{
+		if(args[1].compare("reset") == 0)
+		{
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			mDetectingRetryCount = 0;
+			return true;
+		}
+	}
+	Debug::print(LOG_PRINT, "detecting reset: reset detecting retry count\r\n");
 	return true;
 }
 //次の状態に移行
@@ -1075,18 +1090,26 @@ void ColorAccessing::prevState()
 	
 	Debug::print(LOG_SUMMARY, "Navigating Restart!\r\n");
 }
-void ColorAccessing::timeCheck(const struct timespec& time)
+bool ColorAccessing::timeCheck(const struct timespec& time)
 {
 	if(Time::dt(time,mStartTime) > COLOR_ACCESSING_ABORT_TIME)//一定時間が経過したらNavigatingからやり直し
 	{
-		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout!\r\n");
+		mDetectingRetryCount++;
+		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout! try count: %d\r\n", mDetectingRetryCount);
+		
+		if(mDetectingRetryCount >= DETECTING_MAX_RETRY_COUNT)//一定回数以上ナビ復帰を繰り返した場合はfalse
+		{
+			return false;
+		}
+		
 		mCurStep = STEP_RESTART;
 		gMotorDrive.drive(100,100);
 		mLastUpdateTime = time;
 		gBuzzer.start(30,10,8);
 	}
+	return true;
 }
-ColorAccessing::ColorAccessing()
+ColorAccessing::ColorAccessing() : mDetectingRetryCount(0)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

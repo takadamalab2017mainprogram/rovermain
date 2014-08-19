@@ -246,6 +246,7 @@ public:
 /* ここから　2014年6月オープンラボ前に実装 */
 class ColorAccessing : public TaskBase
 {
+	const static int DETECTING_MAX_RETRY_COUNT = 5;			//ToDo: テストが完了したらconstants.hに移動する
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
@@ -254,6 +255,7 @@ class ColorAccessing : public TaskBase
     double mAngleOnBegin;
     bool mIsLastActionStraight;
     int mTryCount;
+	int mDetectingRetryCount;		//時間経過してナビからやり直した回数
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -264,7 +266,8 @@ protected:
 	
 	//ColorAccessingを開始してからの経過時間を確認
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
-	void timeCheck(const struct timespec& time);
+	//一定回数以上ナビ復帰を繰り返した場合はfalseを返す
+	bool timeCheck(const struct timespec& time);
 public:
 	ColorAccessing();
 	~ColorAccessing();
