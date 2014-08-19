@@ -30,7 +30,6 @@ PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 ColorAccessing gColorAccessingState;
 MovementLogging gMovementLoggingState;
-WatchPulse gWatchPulseState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -818,14 +817,14 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
-	gWatchPulseState.setRunMode(true);
-
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
 	motorPower = 40;
 	actCount = 0;
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -849,6 +848,9 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	mLastUpdateTime = time;//起き上がり動作中は待機する
 	// 	return;
 	// }
+
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 
 	switch(mCurStep)
 	{
@@ -977,7 +979,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 			motorPower = gWatchPulseState.setMotorDrive();
-			if(actCount > 10 && actCount % 5 == 0) motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
+			//if(actCount > 10 && actCount % 5 == 0) motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
 			Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", motorPower);
 		}
 		break;
@@ -1000,6 +1002,16 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 	}
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
 	return false;
+}
+void ColorAccessing::setMotorPower()
+{
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+	Debug::print(LOG_SUMMARY, "deltapulseL : %f,  deltapulseR : %f\r\n");
+
+	if(gDeltaPulseL > 900 || gDeltaPulseR > 900) motorPower = 20;
+	else if(gDeltaPulseL < 100 || gDeltaPulseR < 100) motorPower = 60;
+	else motorPower = 30;
 }
 //次の状態に移行
 void ColorAccessing::nextState()
@@ -1767,54 +1779,4 @@ bool WatchPulse::onInit(const struct timespec& time)
 	deltaRPulse = 0; deltaLPulse = 0;
 
 	return true;
-}
-void WatchPulse::onUpdate(const struct timespec& time)
-{
-	if(Time::dt(time,mLastUpdateTime) < 1) return;
-	mLastUpdateTime = time;
-
-	//if(gMotorDrive.getR() < 4000 || gMotorDrive.getL() < 4000) return;
-	mRightPulse.push_front(gMotorDrive.getR());
-	mLeftPulse.push_front(gMotorDrive.getL());
-
-	if(mRightPulse.size() < 2 || mLeftPulse.size() < 2) return;
-	deltaRPulse = mRightPulse.front() - mRightPulse.back();
-	deltaLPulse = mLeftPulse.front() - mLeftPulse.back();
-	mRightPulse.pop_back(); mLeftPulse.pop_back();
-
-	if(debugFlag) Debug::print(LOG_SUMMARY,"delta pulse : (%f %f)\r\n", deltaRPulse, deltaLPulse);
-}
-bool WatchPulse::onCommand(const std::vector<std::string> args)
-{
-	if(args.size() == 1)
-	{
-		debugFlag = true;
-		return true;
-	}
-	else if(args.size() == 2)
-	{
-		if(args[1].compare("motor") == 0)
-		{
-			pulseFlag = true;
-			return true;
-		}
-	}
-	return false;
-}
-int WatchPulse::setMotorDrive()
-{
-	int drive = 30;
-	if(1500 < deltaRPulse && deltaRPulse < 3800 && 1500 < deltaLPulse && deltaLPulse < 3800) drive = 30;
-	else if(3800 < deltaRPulse || 3800 < deltaLPulse) drive = 20;
-	else if(deltaRPulse < 1500 || deltaLPulse < 1500) drive = 60;
-
-	return drive;
-}
-WatchPulse::WatchPulse()
-{
-	setName("watchpulse");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-WatchPulse::~WatchPulse()
-{
 }

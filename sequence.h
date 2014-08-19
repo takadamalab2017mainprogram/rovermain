@@ -266,11 +266,14 @@ class ColorAccessing : public TaskBase
     int mTryCount;
 	int motorPower;
 	int actCount;
+	double gDeltaPulseL;
+	double gDeltaPulseR;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
+	void setMotorPower();
 	//次の状態に移行
 	void nextState();
 public:
@@ -329,27 +332,6 @@ public:
 	MovementLogging();
 	~MovementLogging();
 };
-
-// エンコーダのパルスを見る
-class WatchPulse : public TaskBase
-{
-	struct timespec mLastUpdateTime;
-	bool debugFlag;
-	bool pulseFlag;
-	std::list<double> mRightPulse;
-	std::list<double> mLeftPulse;
-	double deltaRPulse, deltaLPulse;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
-public:
-	int setMotorDrive();
-
-	WatchPulse();
-	~WatchPulse();
-};
-
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
@@ -367,4 +349,3 @@ extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;
 extern MovementLogging gMovementLoggingState;
-extern WatchPulse gWatchPulseState;
