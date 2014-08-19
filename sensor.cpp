@@ -806,6 +806,10 @@ DistanceSensor::~DistanceSensor()
 {
 }
 
+//////////////////////////////////////////////
+// Web Camera
+//////////////////////////////////////////////
+
 bool CameraCapture::onInit(const struct timespec& time)
 {
 	const static int WIDTH = 320,HEIGHT = 240;

@@ -916,6 +916,14 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
+			
+			if(pImage == NULL)//カメラが死んでるのでその場でゴール判定する
+			{
+				Debug::print(LOG_SUMMARY, "Detecting: Camera is not working...\r\n");
+				nextState();
+				return;
+			}
+			
 			int x_pos = gImageProc.howColorGap(pImage);
 			
             if( x_pos != INT_MAX )	//色検知したら
@@ -1048,6 +1056,9 @@ void ColorAccessing::nextState()
 	//次の状態を設定
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
+	
+	gMotorDrive.drive(0,0);//念のため2回
+	gMotorDrive.drive(0,0);
 	
 	Debug::print(LOG_SUMMARY, "Detecting Finish! ");
 	Time::showNowTime();

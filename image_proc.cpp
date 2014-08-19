@@ -10,6 +10,12 @@ ImageProc gImageProc;
 // 実行速度：0.22~0.24sec
 int ImageProc::howColorGap(IplImage* src)
 {
+	if(src == NULL)//カメラが死んでる場合
+	{
+		Debug::print(LOG_SUMMARY, "Image is NULL...\r\n");
+		return INT_MAX;
+	}
+	
 	int x_gap = 0;												//返り値(中心からのX位置のずれ)
 	cv::Mat input_img;											//カメラ
 	cv::Mat hsv_img;											//HSV
