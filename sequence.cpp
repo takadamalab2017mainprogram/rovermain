@@ -1806,7 +1806,7 @@ int WatchPulse::setMotorDrive()
 	int drive = 30;
 	if(1500 < deltaRPulse && deltaRPulse < 3800 && 1500 < deltaLPulse && deltaLPulse < 3800) drive = 30;
 	else if(3800 < deltaRPulse || 3800 < deltaLPulse) drive = 20;
-	else if(deltaRPulse < 1500 || deltaLPulse < 1500) drive = 0;
+	else if(deltaRPulse < 1500 || deltaLPulse < 1500) drive = 60;
 
 	return drive;
 }
