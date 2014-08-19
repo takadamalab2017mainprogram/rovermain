@@ -886,13 +886,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	if(gAvoidingState.isActive())return;
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
-	
-	//新しい位置を取得できていれば座標を表示する
-	if(gGPSSensor.get(mCurrentPos,false))
-	{
-		mIsGPS = true;	//一度でもGPS座標取得に成功したらtrueに
-		Debug::print(LOG_SUMMARY, "Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
-	}
 
 	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() )
 	{
@@ -924,6 +917,14 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 1.0)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
+			
+			//新しい位置を取得できていれば座標を表示する
+			if(gGPSSensor.get(mCurrentPos,false))
+			{
+				mIsGPS = true;	//一度でもGPS座標取得に成功したらtrueに
+				Debug::print(LOG_SUMMARY, "Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
+			}
+			
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			int x_pos = gImageProc.howColorGap(pImage);
