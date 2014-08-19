@@ -273,7 +273,7 @@ void Falling::onUpdate(const struct timespec& time)
 
 	if(Time::dt(time,mStartTime) > FALLING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
 	{
-		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
+		Debug::print(LOG_SUMMARY, "Falling Timeout\r\n");
 		nextState();
 		return;
 	}
