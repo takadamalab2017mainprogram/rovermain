@@ -246,10 +246,11 @@ public:
 /* ここから　2014年6月オープンラボ前に実装 */
 class ColorAccessing : public TaskBase
 {
+	const static double DEACCELERATE_DURATION = 0.5;
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
-	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_RESTART};
+	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_DEACCELERATE, STEP_RESTART};
 	enum STEP mCurStep;
     double mAngleOnBegin;
     bool mIsLastActionStraight;

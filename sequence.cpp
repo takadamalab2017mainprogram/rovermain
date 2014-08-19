@@ -897,6 +897,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	mLastUpdateTime = time;//起き上がり動作中は待機する
 	// 	return;
 	// }
+	double dt;
 	
 	switch(mCurStep)
 	{
@@ -1014,20 +1015,35 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		break;
 	case STEP_TURNING:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
-            gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_STOPPING_FAST:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_STOPPING_LONG:
 		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
-			gMotorDrive.drive(0,0);
-			mCurStep = STEP_STARTING;
+			mCurStep = STEP_DEACCELERATE;
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_DEACCELERATE:	//ゆっくり減速する
+		dt = Time::dt(time, mLastUpdateTime);
+        if(dt > DEACCELERATE_DURATION)
+        {
+            mLastUpdateTime = time;
+            mCurStep = STEP_STARTING;
+                
+            gMotorDrive.drive(0, 0);
+        }
+		else
+		{
+			int tmp_power = std::max((int)((1 - dt / DEACCELERATE_DURATION) * (20 / 2/*2で割る*/)), 0);	//ToDo: 20を変数に置き換える
+			gMotorDrive.drive(tmp_power, tmp_power);
 		}
 		break;
 	case STEP_RESTART:
