@@ -236,6 +236,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 
 	if(mIsLogger)
 	{
+		//1秒ごとにGPS座標を表示する
 		if(Time::dt(time,mLastCheckTime) > 1)
 		{
 			mLastCheckTime = time;

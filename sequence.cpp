@@ -429,8 +429,7 @@ Separating::~Separating()
 //ゴールへの移動中
 bool Navigating::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Navigating... ");
-	Time::showNowTime();
+	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
 	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
@@ -477,7 +476,9 @@ void Navigating::onUpdate(const struct timespec& time)
 		//最初の座標を取得したら移動を開始する
 		if(mLastPos.empty())
 		{
-			Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
+			Debug::print(LOG_SUMMARY, "Starting navigation...");
+			Time::showNowTime();//制御開始時刻をログに出力
+			Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n",currentPos.x,currentPos.y);
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gPredictingState.setRunMode(true);
 			mLastNaviMoveCheckTime = time;
@@ -492,6 +493,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//ゴール判定
 		gMotorDrive.drive(0,0);
 		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
+		Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n",currentPos.x,currentPos.y);
 		nextState();
 		return;
 	}
@@ -887,6 +889,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
+	mIsGPS = false;
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -894,7 +897,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	if(gAvoidingState.isActive())return;
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
-	
+
 	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() )
 	{
 		Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
@@ -926,6 +929,14 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 1.0)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
+			
+			//新しい位置を取得できていれば座標を表示する
+			if(gGPSSensor.get(mCurrentPos,false))
+			{
+				mIsGPS = true;	//一度でもGPS座標取得に成功したらtrueに
+				Debug::print(LOG_SUMMARY, "Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
+			}
+			
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			
@@ -943,6 +954,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				mLastUpdateTime = time;
 				if ( x_pos == INT_MIN )	//ゴール判定時
 				{
+					//新しい位置を取得できていれば座標を表示する
+					if(mIsGPS) Debug::print(LOG_SUMMARY, "Control Finish Point:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
 					nextState();
 				}
 				else if ( x_pos < -40 )
@@ -1006,7 +1019,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 		mCurStep = STEP_TURNING;
 	                    gMotorDrive.drive(-30,30);
 	                    mTryCount++;
-
                 	}
                 	else if ( diff >= 0 )
                 	{
@@ -1019,8 +1031,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 
                 mIsLastActionStraight = false;
 			}
-            
-			//2014/06/13移動
 			mLastUpdateTime = time;
 		}
 		break;
