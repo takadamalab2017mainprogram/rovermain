@@ -1769,14 +1769,3 @@ MovementLogging::MovementLogging() : mLastUpdateTime(), mPrevPowerL(0), mPrevPow
 MovementLogging::~MovementLogging()
 {
 }
-
-bool WatchPulse::onInit(const struct timespec& time)
-{
-	gMotorDrive.setRunMode(true);
-	mLastUpdateTime = time;
-	debugFlag = false;
-	pulseFlag = false;
-	deltaRPulse = 0; deltaLPulse = 0;
-
-	return true;
-}
