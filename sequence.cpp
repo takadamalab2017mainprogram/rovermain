@@ -499,7 +499,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	//エンコーダの値によるスタック判定処理
-	if(Time::dt(time,mLastEncoderCheckTime) > 1)
+	if(Time::dt(time,mLastEncoderCheckTime) > 1 && (distance > NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD))
 	{
 		chechStuckByEncoder(time, currentPos);
 	}
