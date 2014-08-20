@@ -12,23 +12,14 @@
 #include "actuator.h"
 #include "motor.h"
 #include "image_proc.h"
+#include "subsidiary_sequence.h"
 
 Testing gTestingState;
 Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
-Escaping gEscapingState;
-EscapingRandom gEscapingRandomState;
-EscapingByStabi gEscapingByStabiState;
-Waking gWakingState;
-Turning gTurningState;
-Avoiding gAvoidingState;
-WadachiPredicting gPredictingState;
-PictureTaking gPictureTakingState;
-SensorLogging gSensorLoggingState;
 ColorAccessing gColorAccessingState;
-MovementLogging gMovementLoggingState;
 
 bool Testing::onInit(const struct timespec& time)
 {
@@ -126,7 +117,6 @@ Testing::Testing()
 Testing::~Testing()
 {
 }
-
 
 bool Waiting::onInit(const struct timespec& time)
 {

@@ -5,13 +5,24 @@
 #include <opencv/cvaux.h>
 #include <opencv/highgui.h>
 #include <stdarg.h>
-#include "sequence.h"
+#include "subsidiary_sequence.h"
 #include "utils.h"
 #include "serial_command.h"
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
 #include "image_proc.h"
+
+Escaping gEscapingState;
+EscapingRandom gEscapingRandomState;
+EscapingByStabi gEscapingByStabiState;
+Waking gWakingState;
+Turning gTurningState;
+Avoiding gAvoidingState;
+WadachiPredicting gPredictingState;
+PictureTaking gPictureTakingState;
+SensorLogging gSensorLoggingState;
+MovementLogging gMovementLoggingState;
 
 bool WadachiPredicting::onInit(const struct timespec& time)
 {
