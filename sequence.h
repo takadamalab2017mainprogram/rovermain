@@ -106,7 +106,8 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 
 	void navigationMove(double distance) const; //通常時の移動処理
-	bool isStuck() const;//スタック判定
+	bool isStuckByGPS() const;//スタック判定(GPS)
+	void chechStuckByEncoder(const struct timespec& time);//スタック判定チェック(エンコーダ)
 	bool removeError();//異常値の除去
 
 	//次の状態に移行

@@ -448,7 +448,8 @@ bool Navigating::onInit(const struct timespec& time)
 
 	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
-
+	mPrevDeltaPulseL = 0;
+	mPrevDeltaPulseR = 0;
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
@@ -496,30 +497,9 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	//エンコーダの値によるスタック判定処理
-	if(!gEscapingByStabiState.isActive() && Time::dt(time,mLastEncoderCheckTime) > 1 )
+	if(Time::dt(time,mLastEncoderCheckTime) > 1)
 	{
-		mLastEncoderCheckTime = time;
-
-		//エンコーダパルスの差分値の取得
-		unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
-		unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
-
-		//パルスの出力
-		//Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder Pulse(LEFT RIGHT)= (%llu %llu)\r\n", deltaPulseL, deltaPulseR);
-
-		//前回が閾値以上で、今回が閾値以下ならスタック判定する
-		if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
-		{
-			if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
-			{
-				//スタック判定
-				gBuzzer.start(200, 50 ,3);
-				Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by pulse count(%llu %llu) at (%f %f)\r\n",deltaPulseL,deltaPulseR,currentPos.x,currentPos.y);
-				gEscapingByStabiState.setRunMode(true);
-			}
-		}
-		mPrevDeltaPulseL = deltaPulseL;
-		mPrevDeltaPulseR = deltaPulseR;
+		chechStuckByEncoder(time);
 	}
 
 	//数秒たっていなければ処理を返す
@@ -536,7 +516,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//轍回避中
 	}
-	else if(isStuck())//スタック判定
+	else if(isStuckByGPS())//スタック判定
 	{
 		if(!gEscapingRandomState.isActive())
 		{
@@ -619,7 +599,7 @@ bool Navigating::removeError()
 	}
 	return false;
 }
-bool Navigating::isStuck() const
+bool Navigating::isStuckByGPS() const
 {
 	//スタック判定
 	VECTOR3 averagePos1,averagePos2;
@@ -640,6 +620,37 @@ bool Navigating::isStuck() const
 	averagePos2 /= i - border;
 
 	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
+}
+void Navigating::chechStuckByEncoder(const struct timespec& time)
+{
+	mLastEncoderCheckTime = time;
+
+	//エンコーダパルスの差分値の取得
+	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
+	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
+
+	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//既にスタック判定中である
+	{
+		mPrevDeltaPulseL = 0;//リセット
+		mPrevDeltaPulseR = 0;
+		return;
+	}
+
+	//Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder Pulse(LEFT RIGHT)= (%llu %llu)\r\n", deltaPulseL, deltaPulseR);//パルスの出力
+
+	//前回が閾値以上で、今回が閾値以下ならスタック判定する
+	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
+	{
+		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
+		{
+			//スタック判定
+			gBuzzer.start(200, 50 ,3);
+			Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by pulse count(%llu %llu) at (%f %f)\r\n",deltaPulseL,deltaPulseR,currentPos.x,currentPos.y);
+			gEscapingByStabiState.setRunMode(true);
+		}
+	}
+	mPrevDeltaPulseL = deltaPulseL;
+	mPrevDeltaPulseR = deltaPulseR;
 }
 void Navigating::navigationMove(double distance) const
 {
@@ -728,7 +739,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos(), mPrevDeltaPulseL(0), mPrevDeltaPulseR(0)
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
