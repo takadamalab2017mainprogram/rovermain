@@ -499,7 +499,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	//エンコーダの値によるスタック判定処理
 	if(Time::dt(time,mLastEncoderCheckTime) > 1)
 	{
-		chechStuckByEncoder(time);
+		chechStuckByEncoder(time, currentPos);
 	}
 
 	//数秒たっていなければ処理を返す
@@ -621,7 +621,7 @@ bool Navigating::isStuckByGPS() const
 
 	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
-void Navigating::chechStuckByEncoder(const struct timespec& time)
+void Navigating::chechStuckByEncoder(const struct timespec& time, VECTOR3 currentPos)
 {
 	mLastEncoderCheckTime = time;
 
