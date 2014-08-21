@@ -10,6 +10,12 @@ ImageProc gImageProc;
 // 実行速度：0.22~0.24sec
 int ImageProc::howColorGap(IplImage* src)
 {
+	if(src == NULL)//カメラが死んでる場合
+	{
+		Debug::print(LOG_SUMMARY, "Image is NULL...\r\n");
+		return INT_MAX;
+	}
+	
 	int x_gap = 0;												//返り値(中心からのX位置のずれ)
 	cv::Mat input_img;											//カメラ
 	cv::Mat hsv_img;											//HSV
@@ -102,7 +108,7 @@ int ImageProc::howColorGap(IplImage* src)
 	int gX = moments.m10 / moments.m00;										//重心X位置計算
 	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
-	Debug::print(LOG_SUMMARY, "color = %f%%", ((double)count / (240*320)));	//ずれをコンソール表示
+	Debug::print(LOG_SUMMARY, "color = %f%% ", ((double)count / (240*320)));	//ずれをコンソール表示
 
 	if(count > 240*320*0.0005)	//閾値0.05%に変更．2014/06/14 みなと
 	{

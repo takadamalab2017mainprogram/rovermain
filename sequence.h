@@ -106,7 +106,8 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 
 	void navigationMove(double distance) const; //通常時の移動処理
-	bool isStuck() const;//スタック判定
+	bool isStuckByGPS() const;//スタック判定(GPS)
+	void chechStuckByEncoder(const struct timespec& time, VECTOR3 currentPos);//スタック判定チェック(エンコーダ)
 	bool removeError();//異常値の除去
 
 	//次の状態に移行
@@ -189,19 +190,6 @@ public:
 	EscapingRandom();
 	~EscapingRandom();
 };
-// ジャンプ機構（仮）
-class Jumping : public TaskBase
-{
-	struct timespec mLastUpdateTime; // 前回の行動からの変化時間
-	bool flag;
-	int stopcount;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-public:
-	Jumping();
-	~Jumping();
-};
 
 //ローバーの姿勢制御
 //姿勢制御が完了するとタスクが終了します
@@ -259,15 +247,17 @@ public:
 /* ここから　2014年6月オープンラボ前に実装 */
 class ColorAccessing : public TaskBase
 {
+	const static double DEACCELERATE_DURATION = 0.5;
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
-	bool mIsAvoidingEnable;
-	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_RESTART};
+	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_DEACCELERATE, STEP_RESTART};
 	enum STEP mCurStep;
     double mAngleOnBegin;
     bool mIsLastActionStraight;
     int mTryCount;
+	bool mIsGPS;					//Detectingで一度でもGPS座標を取得できている場合はtrue
+	VECTOR3 mCurrentPos;				//最新の座標を保持
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -351,7 +341,6 @@ extern Avoiding gAvoidingState;
 extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
-extern Jumping gJumpingState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern ColorAccessing gColorAccessing;

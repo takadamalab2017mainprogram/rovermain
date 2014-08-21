@@ -42,7 +42,7 @@ const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
 const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 
 //スタビサーボ設定
-const static double STABI_BASE_ANGLE = 0.6;	//通常時のスタビ角度
+const static double STABI_BASE_ANGLE = 0.7;	//通常時のスタビ角度
 const static double STABI_FOLD_ANGLE = 0.0;	//収納時のスタビ角度
 
 //ジャイロ設定
@@ -76,8 +76,6 @@ const static unsigned long long STUCK_ENCODER_PULSE_THRESHOLD = 3000;//前回の
 const static unsigned int ESCAPING_BY_STABI_COUNT_THRESHOLD = 30;//この回数以上EscapingByStabiの動作を繰り返してもスタック脱出できない場合，EscapingRandomに遷移する
 const static unsigned int ESCAPING_RANDOM_TIME_THRESHOLD = 60;//この秒数以上EscapingRandom動作をしてもスタック脱出できない場合，EscapingByStabiに遷移する
 const static unsigned int COLOR_ACCESSING_ABORT_TIME = 300;//0mゴール検知状態を強制終了しNavigatingに復帰する時間
-
-const static double SPEED_WHEN_IT_IS_STOPPED = 0.5; // スタックしたとみなすスピード(EscapingByStabiで使用)
 
 const static double WAKING_THRESHOLD = 200;
 const static unsigned int WAKING_RETRY_COUNT = 5;

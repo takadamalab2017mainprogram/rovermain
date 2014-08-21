@@ -21,7 +21,6 @@ Navigating gNavigatingState;
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
-Jumping gJumpingState;
 Waking gWakingState;
 Turning gTurningState;
 Avoiding gAvoidingState;
@@ -131,7 +130,7 @@ Testing::~Testing()
 
 bool Waiting::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Waiting...\r\n");
+	Debug::print(LOG_SUMMARY, "Waiting... ");
 	Time::showNowTime();
 
 	mContinuousLightCount = 0;
@@ -147,9 +146,6 @@ bool Waiting::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
-	gStabiServo.setRunMode(true);
-
-	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納
 
 	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
@@ -200,7 +196,7 @@ Waiting::~Waiting(){}
 
 bool Falling::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Falling...\r\n");
+	Debug::print(LOG_SUMMARY, "Falling... ");
 	Time::showNowTime();
 	
 	mStartTime = mLastCheckTime = time;
@@ -277,7 +273,7 @@ void Falling::onUpdate(const struct timespec& time)
 
 	if(Time::dt(time,mStartTime) > FALLING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
 	{
-		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
+		Debug::print(LOG_SUMMARY, "Falling Timeout\r\n");
 		nextState();
 		return;
 	}
@@ -302,7 +298,7 @@ Falling::~Falling()
 
 bool Separating::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Separating...\r\n");
+	Debug::print(LOG_SUMMARY, "Separating... ");
 	Time::showNowTime();
 	
 	//必要なタスクを使用できるようにする
@@ -434,7 +430,6 @@ Separating::~Separating()
 bool Navigating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
-	Time::showNowTime();
 	
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
@@ -446,14 +441,14 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	//gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 
 	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
-
+	mPrevDeltaPulseL = 0;
+	mPrevDeltaPulseR = 0;
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
@@ -481,7 +476,9 @@ void Navigating::onUpdate(const struct timespec& time)
 		//最初の座標を取得したら移動を開始する
 		if(mLastPos.empty())
 		{
-			Debug::print(LOG_SUMMARY, "Starting navigation...\r\n");
+			Debug::print(LOG_SUMMARY, "Starting navigation...");
+			Time::showNowTime();//制御開始時刻をログに出力
+			Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n",currentPos.x,currentPos.y);
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
 			gPredictingState.setRunMode(true);
 			mLastNaviMoveCheckTime = time;
@@ -496,35 +493,15 @@ void Navigating::onUpdate(const struct timespec& time)
 		//ゴール判定
 		gMotorDrive.drive(0,0);
 		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
+		Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n",currentPos.x,currentPos.y);
 		nextState();
 		return;
 	}
 
 	//エンコーダの値によるスタック判定処理
-	if(!gEscapingByStabiState.isActive() && Time::dt(time,mLastEncoderCheckTime) > 1 )
+	if(Time::dt(time,mLastEncoderCheckTime) > 1)
 	{
-		mLastEncoderCheckTime = time;
-
-		//エンコーダパルスの差分値の取得
-		unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
-		unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
-
-		//パルスの出力
-		//Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder Pulse(LEFT RIGHT)= (%llu %llu)\r\n", deltaPulseL, deltaPulseR);
-
-		//前回が閾値以上で、今回が閾値以下ならスタック判定する
-		if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
-		{
-			if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
-			{
-				//スタック判定
-				gBuzzer.start(200, 50 ,3);
-				Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by pulse count(%llu %llu) at (%f %f)\r\n",deltaPulseL,deltaPulseR,currentPos.x,currentPos.y);
-				gEscapingByStabiState.setRunMode(true);
-			}
-		}
-		mPrevDeltaPulseL = deltaPulseL;
-		mPrevDeltaPulseR = deltaPulseR;
+		chechStuckByEncoder(time, currentPos);
 	}
 
 	//数秒たっていなければ処理を返す
@@ -541,7 +518,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//轍回避中
 	}
-	else if(isStuck())//スタック判定
+	else if(isStuckByGPS())//スタック判定
 	{
 		if(!gEscapingRandomState.isActive())
 		{
@@ -624,7 +601,7 @@ bool Navigating::removeError()
 	}
 	return false;
 }
-bool Navigating::isStuck() const
+bool Navigating::isStuckByGPS() const
 {
 	//スタック判定
 	VECTOR3 averagePos1,averagePos2;
@@ -645,6 +622,37 @@ bool Navigating::isStuck() const
 	averagePos2 /= i - border;
 
 	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
+}
+void Navigating::chechStuckByEncoder(const struct timespec& time, VECTOR3 currentPos)
+{
+	mLastEncoderCheckTime = time;
+
+	//エンコーダパルスの差分値の取得
+	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
+	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
+
+	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//既にスタック判定中である
+	{
+		mPrevDeltaPulseL = 0;//リセット
+		mPrevDeltaPulseR = 0;
+		return;
+	}
+
+	//Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder Pulse(LEFT RIGHT)= (%llu %llu)\r\n", deltaPulseL, deltaPulseR);//パルスの出力
+
+	//前回が閾値以上で、今回が閾値以下ならスタック判定する
+	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
+	{
+		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
+		{
+			//スタック判定
+			gBuzzer.start(200, 50 ,3);
+			Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by pulse count(%llu %llu) at (%f %f)\r\n",deltaPulseL,deltaPulseR,currentPos.x,currentPos.y);
+			gEscapingByStabiState.setRunMode(true);
+		}
+	}
+	mPrevDeltaPulseL = deltaPulseL;
+	mPrevDeltaPulseR = deltaPulseR;
 }
 void Navigating::navigationMove(double distance) const
 {
@@ -733,7 +741,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 	mGoalPos = pos;
 	Debug::print(LOG_SUMMARY, "Set Goal ( %f %f )\r\n",mGoalPos.x,mGoalPos.y);
 }
-Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos(), mPrevDeltaPulseL(0), mPrevDeltaPulseR(0)
+Navigating::Navigating() : mGoalPos(),  mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -858,7 +866,7 @@ WadachiPredicting::~WadachiPredicting()
 /* ここから　2014年実装 */
 bool ColorAccessing::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Start Goal Detecting\r\n");
+	Debug::print(LOG_SUMMARY, "Start Goal Detecting... ");
 	Time::showNowTime();
 	
 	//必要なタスクを使用できるようにする
@@ -872,7 +880,6 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
@@ -882,6 +889,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
+	mIsGPS = false;
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -889,7 +897,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	if(gAvoidingState.isActive())return;
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
-	
+
 	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() )
 	{
 		Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
@@ -903,6 +911,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	mLastUpdateTime = time;//起き上がり動作中は待機する
 	// 	return;
 	// }
+	double dt;
 	
 	switch(mCurStep)
 	{
@@ -920,8 +929,24 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 1.0)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
+			
+			//新しい位置を取得できていれば座標を表示する
+			if(gGPSSensor.get(mCurrentPos,false))
+			{
+				mIsGPS = true;	//一度でもGPS座標取得に成功したらtrueに
+				Debug::print(LOG_SUMMARY, "Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
+			}
+			
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
+			
+			if(pImage == NULL)//カメラが死んでるのでその場でゴール判定する
+			{
+				Debug::print(LOG_SUMMARY, "Detecting: Camera is not working...\r\n");
+				nextState();
+				return;
+			}
+			
 			int x_pos = gImageProc.howColorGap(pImage);
 			
             if( x_pos != INT_MAX )	//色検知したら
@@ -929,6 +954,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				mLastUpdateTime = time;
 				if ( x_pos == INT_MIN )	//ゴール判定時
 				{
+					//新しい位置を取得できていれば座標を表示する
+					if(mIsGPS) Debug::print(LOG_SUMMARY, "Control Finish Point:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
 					nextState();
 				}
 				else if ( x_pos < -40 )
@@ -992,7 +1019,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 		mCurStep = STEP_TURNING;
 	                    gMotorDrive.drive(-30,30);
 	                    mTryCount++;
-
                 	}
                 	else if ( diff >= 0 )
                 	{
@@ -1005,27 +1031,40 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 
                 mIsLastActionStraight = false;
 			}
-            
-			//2014/06/13移動
 			mLastUpdateTime = time;
 		}
 		break;
 	case STEP_TURNING:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
-            gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_STOPPING_FAST:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_STOPPING_LONG:
 		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
-			gMotorDrive.drive(0,0);
-			mCurStep = STEP_STARTING;
+			mCurStep = STEP_DEACCELERATE;
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_DEACCELERATE:	//ゆっくり減速する
+		dt = Time::dt(time, mLastUpdateTime);
+        if(dt > DEACCELERATE_DURATION)
+        {
+            mLastUpdateTime = time;
+            mCurStep = STEP_STARTING;
+                
+            gMotorDrive.drive(0, 0);
+        }
+		else
+		{
+			int tmp_power = std::max((int)((1 - dt / DEACCELERATE_DURATION) * (20 / 2/*2で割る*/)), 0);	//ToDo: 20を変数に置き換える
+			gMotorDrive.drive(tmp_power, tmp_power);
 		}
 		break;
 	case STEP_RESTART:
@@ -1044,21 +1083,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
-	if(args.size() == 2)
-	{
-		if(args[1].compare("enable") == 0)
-		{
-			mIsAvoidingEnable = true;
-			return true;
-		}
-		if(args[1].compare("disable") == 0)
-		{
-			mIsAvoidingEnable = false;
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");//ToDo: 修正する
-	return false;
+	return true;
 }
 //次の状態に移行
 void ColorAccessing::nextState()
@@ -1069,6 +1094,10 @@ void ColorAccessing::nextState()
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
+	gMotorDrive.drive(0,0);//念のため2回
+	gMotorDrive.drive(0,0);
+	
+	Debug::print(LOG_SUMMARY, "Detecting Finish! ");
 	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
 }
@@ -1094,7 +1123,7 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 		gBuzzer.start(30,10,8);
 	}
 }
-ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false)
+ColorAccessing::ColorAccessing()
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -1291,7 +1320,7 @@ Escaping::~Escaping()
 }
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
-	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start!\r\n");
+	Debug::print(LOG_SUMMARY, "Escaping By Stabi Start! ");
 	Time::showNowTime();
 	
 	mLastUpdateTime = time;
@@ -1371,7 +1400,7 @@ EscapingByStabi::~EscapingByStabi()
 
 bool EscapingRandom::onInit(const struct timespec& time)
 {
-		Debug::print(LOG_SUMMARY, "Start Escaping Random...\r\n");
+		Debug::print(LOG_SUMMARY, "Start Escaping Random... ");
 	Time::showNowTime();
 	gStabiServo.setRunMode(true);
 	mLastUpdateTime = time;
@@ -1421,43 +1450,6 @@ EscapingRandom::EscapingRandom()
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 EscapingRandom::~EscapingRandom()
-{
-}
-
-bool Jumping::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gStabiServo.setRunMode(true);
-	flag = false;
-	stopcount = 0;
-	return true;
-}
-void Jumping::onUpdate(const struct timespec& time)
-{
-	if(Time::dt(time,mLastUpdateTime) < 1) return;
-	mLastUpdateTime = time;
-	if(!flag)
-	{
-		gMotorDrive.drive(0,0);
-		gStabiServo.close();
-	}else
-	{
-		gMotorDrive.drive(-5,-5);
-		gStabiServo.start(0.6);
-	}
-	flag = !flag;
-	if(stopcount++ > 2) 
-	{
-		gMotorDrive.drive(0,0);
-		gJumpingState.setRunMode(false);
-	}
-}
-Jumping::Jumping()
-{
-	setName("jumping");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
-}
-Jumping::~Jumping()
 {
 }
 

@@ -236,6 +236,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 
 	if(mIsLogger)
 	{
+		//1秒ごとにGPS座標を表示する
 		if(Time::dt(time,mLastCheckTime) > 1)
 		{
 			mLastCheckTime = time;
@@ -805,6 +806,10 @@ DistanceSensor::DistanceSensor() : mLastDistance(-1), mIsCalculating(false), mIs
 DistanceSensor::~DistanceSensor()
 {
 }
+
+//////////////////////////////////////////////
+// Web Camera
+//////////////////////////////////////////////
 
 bool CameraCapture::onInit(const struct timespec& time)
 {
