@@ -264,16 +264,18 @@ class ColorAccessing : public TaskBase
     double mAngleOnBegin;
     bool mIsLastActionStraight;
     int mTryCount;
-	int motorPower;
+	int mMotorPower;
+	int mCurrentMotorPower;
 	int actCount;
-	double gDeltaPulseL;
-	double gDeltaPulseR;
+	unsigned long long gDeltaPulseL;
+	unsigned long long gDeltaPulseR;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
 	void setMotorPower();
+	void adjMotorPower();
 	//次の状態に移行
 	void nextState();
 public:

@@ -821,7 +821,8 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
-	motorPower = 40;
+	mMotorPower = 40;
+	mCurrentMotorPower = 40;
 	actCount = 0;
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
@@ -883,19 +884,19 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				else if ( x_pos < -80 )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(0,motorPower);
+					gMotorDrive.drive(0,mMotorPower);
                     mIsLastActionStraight = false;
 				}
 				else if ( 80 < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(motorPower,0);
+					gMotorDrive.drive(mMotorPower,0);
                     mIsLastActionStraight = false;
 				}
 				else if ( -80 <= x_pos && x_pos <= 80 )
 				{
 					mCurStep = STEP_STOPPING_LONG;
-					gMotorDrive.drive(motorPower,motorPower);
+					gMotorDrive.drive(mMotorPower,mMotorPower);
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
 					actCount = 0;
@@ -915,13 +916,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                     {
                         //右に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(0,motorPower);
+                        gMotorDrive.drive(0,mMotorPower);
                     }
                     else
                     {
                         //左に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(motorPower,0);
+                        gMotorDrive.drive(mMotorPower,0);
                     }
                 }
                 //前回の行動が直進以外なら
@@ -935,13 +936,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 	{
                 		//とりあえず右に曲がるか．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(motorPower-10,-motorPower+10);
+	                    gMotorDrive.drive(mMotorPower-10,-mMotorPower+10);
                 	}
                 	else if ( diff < 0 )
                 	{
                 		//右を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(-motorPower+10,motorPower-10);
+	                    gMotorDrive.drive(-mMotorPower+10,mMotorPower-10);
 	                    mTryCount++;
 
                 	}
@@ -949,7 +950,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 	{
                 		//左を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(motorPower-10,-motorPower+10);
+	                    gMotorDrive.drive(mMotorPower-10,-mMotorPower+10);
 	                    mTryCount++;
                 	}
                 }
@@ -978,12 +979,12 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
-			motorPower = gWatchPulseState.setMotorDrive();
-			//if(actCount > 10 && actCount % 5 == 0) motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
-			Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", motorPower);
+			setMotorPower();
 		}
 		break;
 	}
+	if(actCount > 10 && actCount % 5 == 0) adjMotorPower();//motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
+	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
@@ -1003,15 +1004,38 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
 	return false;
 }
+//モータの出力設定
 void ColorAccessing::setMotorPower()
 {
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-	Debug::print(LOG_SUMMARY, "deltapulseL : %f,  deltapulseR : %f\r\n");
+	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
 
-	if(gDeltaPulseL > 900 || gDeltaPulseR > 900) motorPower = 20;
-	else if(gDeltaPulseL < 100 || gDeltaPulseR < 100) motorPower = 60;
-	else motorPower = 30;
+	if(gDeltaPulseL > 900 || gDeltaPulseR > 900) mMotorPower = 20;
+	else if(gDeltaPulseL < 100 || gDeltaPulseR < 100) mMotorPower = 60;
+	else mMotorPower = 30;
+	mCurrentMotorPower = mMotorPower;
+}
+//探し当てられないときのモータ出力の調整
+void ColorAccessing::adjMotorPower()
+{
+	if(actCount < 50)
+	{
+		if(mCurrentMotorPower == 60 || mCurrentMotorPower == 40)
+		{
+			mMotorPower = mCurrentMotorPower - actCount + 10;
+		}
+		else if(mCurrentMotorPower == 20)
+		{
+			mMotorPower = mCurrentMotorPower + actCount - 10;
+		}
+		if(mMotorPower < 10) mMotorPower = 10;
+	}
+	else
+	{
+		mMotorPower = 40;
+		actCount = 0;
+	}
 }
 //次の状態に移行
 void ColorAccessing::nextState()
