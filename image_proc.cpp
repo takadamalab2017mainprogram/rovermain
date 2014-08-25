@@ -31,6 +31,7 @@ int ImageProc::howColorGap(IplImage* src)
 	int MAX_H = 175;
 	int MIN_S = 170;	//S < 255
 	int MIN_V = 60;		//V < 255
+	double DISTANCE_THRESHOLD = 200.0;
 	////////////////////////////
 
 	input_img = cv::cvarrToMat(src);						//カメラのストリーミング先を設定
@@ -120,8 +121,9 @@ int ImageProc::howColorGap(IplImage* src)
 			// かつ y range = 200以上
 			// 今のところこの値は適当
 
-			if ( count > 240*320*0.3 && distance > 200.0 ) 
+			if ( count > 240*320*0.3 && distance > DISTANCE_THRESHOLD ) 
 			{
+				Debug::print(LOG_SUMMARY, "Goal is detected! count = %f, distance = %f > %f  \n", count, distance, DISTANCE_THRESHOLD);
 				x_gap = INT_MIN;	//ゴール判定
 			}
 		}
