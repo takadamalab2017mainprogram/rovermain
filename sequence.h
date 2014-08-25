@@ -133,6 +133,7 @@ class ColorAccessing : public TaskBase
     int mTryCount;
 	bool mIsGPS;					//Detectingで一度でもGPS座標を取得できている場合はtrue
 	VECTOR3 mCurrentPos;				//最新の座標を保持
+	bool mIsDetectingExecute;//falseならdetectingは実施せずGPSですぐにゴール判定する(2nd flight 高速度賞狙い)
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -144,6 +145,12 @@ protected:
 	//ColorAccessingを開始してからの経過時間を確認
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
 	void timeCheck(const struct timespec& time);
+
+	//detectingを実施するかどうかを設定する(true:実施する false:実施せず)
+	//基本的に呼ぶ必要はない
+	//detectingをOFFにする場合はinitialize.txtに"detecting setmode OFF"を記載する
+	void setIsDetectingExecute(bool flag);
+	bool getIsDetectingExecute();
 public:
 	ColorAccessing();
 	~ColorAccessing();

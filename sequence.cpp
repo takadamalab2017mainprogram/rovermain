@@ -720,10 +720,27 @@ navigating goal            : call nextState\r\n");
 //次の状態に移行
 void Navigating::nextState()
 {
-	gBuzzer.start(100, 50, 3);
+	if(getIsDetectingExecute())
+	{
+		gBuzzer.start(100, 50, 3);
 
-	//次の状態を設定
-	gColorAccessingState.setRunMode(true);
+		//次の状態を設定
+		gColorAccessingState.setRunMode(true);
+	}
+	else
+	{
+		gBuzzer.start(1000);
+
+		//次の状態を設定
+		gTestingState.setRunMode(true);
+		gPictureTakingState.setRunMode(true);
+	
+		gMotorDrive.drive(0,0);//念のため2回
+		gMotorDrive.drive(0,0);
+	
+		Time::showNowTime();
+		Debug::print(LOG_SUMMARY, "Goal!\r\n");
+	}
 }
 void Navigating::setGoal(const VECTOR3& pos)
 {
@@ -960,6 +977,33 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
+	if(args.size() == 2)
+	{
+		if(args[1].compare("setmode") == 0)
+		{
+			if(mIsDetectingExecute) Debug::print(LOG_SUMMARY, "Detecting mode: ON\r\n");
+			else Debug::print(LOG_SUMMARY, "Detecting mode: OFF\r\n");
+			return true;
+		}
+	}
+	else if(args.size() == 3)
+	{
+		if(args[1].compare("setmode") == 0)
+		{
+			if(args[2].compare("ON") == 0)
+			{
+				setmIsDetectingExecute(true);
+				return true;
+			}
+			else if(args[2].compare("OFF") == 0)
+			{
+				setmIsDetectingExecute(false);
+				return true;
+			}
+		}
+	}
+	Debug::print(LOG_PRINT, "detecting setmode [ON/OFF]: set detecting mode\r\n\
+detecting setmode         : show detecting mode state\r\n");
 	return true;
 }
 //次の状態に移行
@@ -1000,7 +1044,37 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 		gBuzzer.start(30,10,8);
 	}
 }
-ColorAccessing::ColorAccessing()
+void ColorAccessing::setIsDetectingExecute(bool flag)
+{
+	if(flag)
+	{
+		if(mIsDetectingExecute)
+		{
+			Debug::print(LOG_SUMMARY, "Detecting has already set \"ON\"\r\n");
+			return;
+		}
+		mIsDetectingExecute = flag;
+		Debug::print(LOG_SUMMARY, "Detecting has set \"ON\"\r\n");
+	}
+	else
+	{
+		if(!mIsDetectingExecute)
+		{
+			Debug::print(LOG_SUMMARY, "Detecting has already set \"OFF\"\r\n");
+			return;
+		}
+		mIsDetectingExecute = flag;
+		Debug::print(LOG_SUMMARY, "Detecting has set \"OFF\"\r\n");
+		Debug::print(LOG_SUMMARY, "******warning******\r\n\
+This mode does \"not\" execute Detecting!\r\n\
+******warning******\r\n");
+	}
+}
+bool ColorAccessing::getIsDetectingExecute()
+{
+	return mIsDetectingExecute;
+}
+ColorAccessing::ColorAccessing():mIsDetectingExecute(true)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
