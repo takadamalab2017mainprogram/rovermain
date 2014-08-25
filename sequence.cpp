@@ -21,6 +21,10 @@ Separating gSeparatingState;
 Navigating gNavigatingState;
 ColorAccessing gColorAccessingState;
 
+//////////////////////////////////////////////
+// Testing
+//////////////////////////////////////////////
+
 bool Testing::onInit(const struct timespec& time)
 {
 	TaskManager::getInstance()->setRunMode(false);
@@ -119,6 +123,10 @@ Testing::~Testing()
 {
 }
 
+//////////////////////////////////////////////
+// Waiting
+//////////////////////////////////////////////
+
 bool Waiting::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Waiting... ");
@@ -184,6 +192,10 @@ Waiting::Waiting()
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 Waiting::~Waiting(){}
+
+//////////////////////////////////////////////
+// Falling
+//////////////////////////////////////////////
 
 bool Falling::onInit(const struct timespec& time)
 {
@@ -286,6 +298,10 @@ Falling::Falling() : mLastPressure(0),mLastMotorPulseL(0),mLastMotorPulseR(0),mC
 Falling::~Falling()
 {
 }
+
+//////////////////////////////////////////////
+// Separating
+//////////////////////////////////////////////
 
 bool Separating::onInit(const struct timespec& time)
 {
@@ -416,6 +432,10 @@ Separating::Separating() : mCurServoState(false),mServoCount(0)
 Separating::~Separating()
 {
 }
+
+//////////////////////////////////////////////
+// Navigating
+//////////////////////////////////////////////
 
 //ゴールへの移動中
 bool Navigating::onInit(const struct timespec& time)
@@ -758,6 +778,9 @@ Navigating::~Navigating()
 {
 }
 
+//////////////////////////////////////////////
+// ColorAccessing
+//////////////////////////////////////////////
 /* ここから　2014年実装 */
 bool ColorAccessing::onInit(const struct timespec& time)
 {
