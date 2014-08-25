@@ -132,12 +132,11 @@ bool Waiting::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gLightSensor.setRunMode(true);
-	gXbeeSleep.setRunMode(true);
+	//gXbeeSleep.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
+	//Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
-
-	Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 
 	return true;
 }
@@ -146,7 +145,8 @@ void Waiting::nextState()
 	gBuzzer.start(100);
 
 	//スリープを解除
-	gXbeeSleep.setState(false);
+	//gXbeeSleep.setState(false);//Xbeeをスリープモードにするならコメントアウトを解除すること
+
 	//次の状態を設定
 	gFallingState.setRunMode(true);
 	
@@ -155,7 +155,7 @@ void Waiting::nextState()
 void Waiting::onUpdate(const struct timespec& time)
 {
 	//XBeeをスリープモードに設定(ロケット内電波規制)
-	gXbeeSleep.setState(true);
+	//gXbeeSleep.setState(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
 
 	//明るい場合カウント
 	if(gLightSensor.get())
