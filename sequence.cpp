@@ -792,7 +792,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 
-	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() )
+	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() && mCurStep != STEP_GO_BACK)
 	{
 		Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 		mLastUpdateTime = time;
@@ -962,17 +962,19 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_GO_BACK:	//バックする
-		if(Time::dt(time,mLastUpdateTime) > 2)
+		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
-			Debug::print(LOG_SUMMARY, "Detecting: TURNING start!\r\n");
-			mCurStep = STEP_TURNING;
+			gBuzzer.start(100);
+			Debug::print(LOG_SUMMARY, "Detecting: CHANGE_OF_DIRECTION start!\r\n");
+			mCurStep = STEP_CHANGE_OF_DIRECTION;
 			gMotorDrive.drive(0, 0);
 			gTurningState.setRunMode(true);
 		}
 		break;
-	case STEP_TURNING:	//方向転換する
-		if(!gTurningState.isActive())
+	case STEP_CHANGE_OF_DIRECTION:	//方向転換する
+		if(!gTurningState.isActive() && !gWakingState.isActive())
 		{
+			gBuzzer.start(100);
 			Debug::print(LOG_SUMMARY, "Detecting: TURNING Finished!\r\n");
 			gMotorDrive.drive(100,100);
 			mLastUpdateTime = time;
@@ -988,7 +990,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	}
 
 	//ColorAccessingを開始してからの経過時間を確認
-	if(mCurStep != STEP_GO_BACK && mCurStep != STEP_TURNING && mCurStep != STEP_LEAVING)
+	if(mCurStep != STEP_GO_BACK && mCurStep != STEP_CHANGE_OF_DIRECTION && mCurStep != STEP_LEAVING)
 	{
 		timeCheck(time);	
 	}
@@ -1043,7 +1045,7 @@ void ColorAccessing::nextState()
 //前の状態に移行
 void ColorAccessing::prevState()
 {
-	gBuzzer.start(30,10,8);
+	gBuzzer.start(10,5,8);
 
 	//前の状態に戻る
 	gColorAccessingState.setRunMode(false);
@@ -1060,7 +1062,7 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 		mCurStep = STEP_GO_BACK;
 		gMotorDrive.drive(-100, -100);
 		mLastUpdateTime = time;
-		gBuzzer.start(20,10,8);
+		gBuzzer.start(10,5,8);
 	}
 }
 void ColorAccessing::setIsDetectingExecute(bool flag)
