@@ -26,6 +26,13 @@ int ImageProc::howColorGap(IplImage* src)
 	cv::Mat tmp_img;											//一時Mat
 	cv::Moments moments;										//重心計算用
 
+	//////////threshold//////////
+	int MIN_H = 5;		//H < 180
+	int MAX_H = 175;
+	int MIN_S = 170;	//S < 255
+	int MIN_V = 60;		//V < 255
+	////////////////////////////
+
 	input_img = cv::cvarrToMat(src);						//カメラのストリーミング先を設定
 	cv::medianBlur(input_img,smooth_img,7);					//ノイズがあるので平滑化
 	cv::cvtColor(smooth_img,hsv_img,CV_BGR2HSV);			//HSVに変換(グローバル)
@@ -44,7 +51,7 @@ int ImageProc::howColorGap(IplImage* src)
 		for(int x=0; x<320; x++)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
-			if(( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
+			if(( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
 				min_x = x;
 				min_y = y;
 				break;
@@ -60,7 +67,7 @@ int ImageProc::howColorGap(IplImage* src)
 		for(int x=320-1; x>=0; x--)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
-			if(( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
+			if(( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
 				max_x = x;
 				max_y = y;
 				break;
@@ -71,14 +78,12 @@ int ImageProc::howColorGap(IplImage* src)
 			break;
 		}
 	}
-	// double distance = sqrt( (max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y) );
 
+	// double distance = sqrt( (max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y) );
 	double distance = max_y-min_y;
 
 	Debug::print(LOG_SUMMARY,"ditance = %f\r\n", distance);
 	/////////////////////////////////////////////////////////
-
-
 
 	for(int y=0; y<240;y++)
 	{
@@ -86,7 +91,7 @@ int ImageProc::howColorGap(IplImage* src)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
 			//閾値によって抽出色以外を黒に
-			if(!( (hsv_img.data[a] <=5 || 175 <= hsv_img.data[a] ) && hsv_img.data[a+1] >=170 && hsv_img.data[a+2] >= 60 )){//s100/v100
+			if(!( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
 				hsv_color_img.data[a] = 0;		//H値 (0-180)
 				hsv_color_img.data[a+1] = 0;	//S値 (0-255)
 				hsv_color_img.data[a+2] = 0;	//V値 (0-255)
