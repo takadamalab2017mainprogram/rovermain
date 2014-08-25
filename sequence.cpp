@@ -720,7 +720,7 @@ navigating goal            : call nextState\r\n");
 //次の状態に移行
 void Navigating::nextState()
 {
-	if(getIsDetectingExecute())
+	if(gColorAccessingState.getIsDetectingExecute())
 	{
 		gBuzzer.start(100, 50, 3);
 
@@ -992,12 +992,12 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		{
 			if(args[2].compare("ON") == 0)
 			{
-				setmIsDetectingExecute(true);
+				setIsDetectingExecute(true);
 				return true;
 			}
 			else if(args[2].compare("OFF") == 0)
 			{
-				setmIsDetectingExecute(false);
+				setIsDetectingExecute(false);
 				return true;
 			}
 		}

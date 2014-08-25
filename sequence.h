@@ -146,14 +146,15 @@ protected:
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
 	void timeCheck(const struct timespec& time);
 
+public:
+	ColorAccessing();
+	~ColorAccessing();
+	
 	//detectingを実施するかどうかを設定する(true:実施する false:実施せず)
 	//基本的に呼ぶ必要はない
 	//detectingをOFFにする場合はinitialize.txtに"detecting setmode OFF"を記載する
 	void setIsDetectingExecute(bool flag);
 	bool getIsDetectingExecute();
-public:
-	ColorAccessing();
-	~ColorAccessing();
 };
 /* ここまで　2014年6月オープンラボ前に実装 */
 
