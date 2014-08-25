@@ -134,9 +134,9 @@ bool Waiting::onInit(const struct timespec& time)
 	gLightSensor.setRunMode(true);
 	//gXbeeSleep.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
 	//Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
+	gSerialCommand.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトすること
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gParaServo.setRunMode(true);
 
 	return true;
 }
