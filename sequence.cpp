@@ -1010,6 +1010,12 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 			else Debug::print(LOG_SUMMARY, "Detecting mode: OFF\r\n");
 			return true;
 		}
+		else if(args[1].compare("reset") == 0)
+		{
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			mDetectingRetryCount = 0;
+			return true;
+		}
 	}
 	else if(args.size() == 3)
 	{
@@ -1028,6 +1034,7 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		}
 	}
 	Debug::print(LOG_PRINT, "detecting setmode [ON/OFF]: set detecting mode\r\n\
+detecting reset           : reset detecting retry count\r\n\
 detecting setmode         : show detecting mode state\r\n");
 	return true;
 }
@@ -1108,7 +1115,7 @@ bool ColorAccessing::getIsDetectingExecute()
 {
 	return mIsDetectingExecute;
 }
-ColorAccessing::ColorAccessing():mIsDetectingExecute(true)
+ColorAccessing::ColorAccessing():mIsDetectingExecute(true), mDetectingRetryCount(0)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

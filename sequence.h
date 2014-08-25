@@ -131,11 +131,11 @@ class ColorAccessing : public TaskBase
 	enum STEP mCurStep;
     double mAngleOnBegin;
     bool mIsLastActionStraight;
-    int mTryCount;
-	int mDetectingRetryCount;		//時間経過してナビからやり直した回数
 	bool mIsGPS;					//Detectingで一度でもGPS座標を取得できている場合はtrue
 	VECTOR3 mCurrentPos;				//最新の座標を保持
 	bool mIsDetectingExecute;//falseならdetectingは実施せずGPSですぐにゴール判定する(2nd flight 高速度賞狙い)
+    int mTryCount;
+	int mDetectingRetryCount;		//時間経過してナビからやり直した回数
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
