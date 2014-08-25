@@ -44,6 +44,7 @@ bool Testing::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 
 	gStabiServo.stop();
+	gBuzzer.start(200);
 
 	return true;
 }
