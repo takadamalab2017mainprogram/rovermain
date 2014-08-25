@@ -1065,9 +1065,9 @@ void ColorAccessing::setIsDetectingExecute(bool flag)
 		}
 		mIsDetectingExecute = flag;
 		Debug::print(LOG_SUMMARY, "Detecting has set \"OFF\"\r\n");
-		Debug::print(LOG_SUMMARY, "******warning******\r\n\
+		Debug::print(LOG_SUMMARY, "\n****** WARNING ******\r\n\
 This mode does \"not\" execute Detecting!\r\n\
-******warning******\r\n");
+****** WARNING ******\r\n\n");
 	}
 }
 bool ColorAccessing::getIsDetectingExecute()
