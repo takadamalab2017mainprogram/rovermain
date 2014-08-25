@@ -824,6 +824,12 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	mMotorPower = 40;
 	mCurrentMotorPower = 40;
 	actCount = 0;
+	gStraightThresholdHigh = 900;
+	gStraightThresholdLow = 100;
+	gRotationThresholdHigh = 900;
+	gRotationThresholdLow = 100;
+	gCurveThresholdHigh = 900;
+	gCurveThresholdLow = 100;
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	return true;
@@ -979,11 +985,11 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
-			setMotorPower();
+			setStraightMotorPower();
 		}
 		break;
 	}
-	if(actCount > 10 && actCount % 5 == 0) adjMotorPower();//motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
+	//if(actCount > 10 && actCount % 5 == 0) adjMotorPower();//motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
 	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
@@ -1001,18 +1007,86 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 			return true;
 		}
 	}
+	if(args.size() == 5)
+	{
+		if(args[1].compare("threshold") == 0)
+		{
+			if(args[2].compare("straight") == 0)
+			{
+				if(args[3].compare("high") == 0)
+				{
+					gStraightThresholdHigh = atof(args[4].c_str());
+				}
+				if(args[3].compare("low") == 0)
+				{
+					gStraightThresholdLow = atof(args[4].c_str());
+				}
+			}
+			if(args[2].compare("rotation") == 0)
+			{
+				if(args[3].compare("high") == 0)
+				{
+					gRotationThresholdHigh = atof(args[4].c_str());
+				}
+				if(args[3].compare("low") == 0)
+				{
+					gRotationThresholdLow = atof(args[4].c_str());
+				}
+			}
+			if(args[2].compare("curve") == 0)
+			{
+				if(args[3].compare("high") == 0)
+				{
+					gCurveThresholdHigh = atof(args[4].c_str());
+				}
+				if(args[3].compare("low") == 0)
+				{
+					gCurveThresholdLow = atof(args[4].c_str());
+				}
+			}
+		}
+		Debug::print(LOG_SUMMARY, "threshold straight : %lu %lu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
+		Debug::print(LOG_SUMMARY, "threshold rotation : %lu %lu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
+		Debug::print(LOG_SUMMARY, "threshold curve    : %lu %lu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
+		return true;
+	}
+	
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	
 	return false;
 }
 //モータの出力設定
-void ColorAccessing::setMotorPower()
+void ColorAccessing::setStraightMotorPower()
 {
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
 
-	if(gDeltaPulseL > 900 || gDeltaPulseR > 900) mMotorPower = 20;
-	else if(gDeltaPulseL < 100 || gDeltaPulseR < 100) mMotorPower = 60;
+	if(gDeltaPulseL > gStraightThresholdHigh || gDeltaPulseR > gStraightThresholdHigh) mMotorPower = 20;
+	else if(gDeltaPulseL < gStraightThresholdLow || gDeltaPulseR < gStraightThresholdLow) mMotorPower = 60;
+	else mMotorPower = 30;
+	mCurrentMotorPower = mMotorPower;
+}
+void ColorAccessing::setRotationMotorPower()
+{
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
+
+	if(gDeltaPulseL > gRotationThresholdHigh || gDeltaPulseR > gRotationThresholdHigh) mMotorPower = 20;
+	else if(gDeltaPulseL < gRotationThresholdLow || gDeltaPulseR < gRotationThresholdLow) mMotorPower = 60;
+	else mMotorPower = 30;
+	mCurrentMotorPower = mMotorPower;
+}
+void ColorAccessing::setCurveMotorPower()
+{
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
+
+	if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
+	if(gDeltaPulseL > gCurveThresholdHigh) mMotorPower = 20;
+	else if(gDeltaPulseL < gCurveThresholdLow) mMotorPower = 60;
 	else mMotorPower = 30;
 	mCurrentMotorPower = mMotorPower;
 }
