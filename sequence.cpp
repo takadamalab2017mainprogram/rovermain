@@ -1044,7 +1044,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		bool retry_flag = timeCheck(time);
 		if(!retry_flag)
 		{
-			Debug::print(LOG_SUMMARY, "Detecting failed ... try count: %d\r\n", mDetectingRetryCount);
+			Debug::print(LOG_SUMMARY, "Detecting failed ... try count: %d\r\n", mDetectingRetryCount - 1);
 			nextState();//一定回数以上ナビ復帰を繰り返したのでその場でゴール判定
 		}
 	}
