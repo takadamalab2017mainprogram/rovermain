@@ -961,7 +961,25 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(tmp_power, tmp_power);
 		}
 		break;
-	case STEP_RESTART:
+	case STEP_GO_BACK:	//バックする
+		if(Time::dt(time,mLastUpdateTime) > 2)
+		{
+			Debug::print(LOG_SUMMARY, "Detecting: TURNING start!\r\n");
+			mCurStep = STEP_TURNING;
+			gMotorDrive.drive(0, 0);
+			gTurningState.setRunMode(true);
+		}
+		break;
+	case STEP_TURNING:	//方向転換する
+		if(!gTurningState.isActive())
+		{
+			Debug::print(LOG_SUMMARY, "Detecting: TURNING Finished!\r\n");
+			gMotorDrive.drive(100,100);
+			mLastUpdateTime = time;
+			mCurStep = STEP_LEAVING;
+		}
+		break;
+	case STEP_LEAVING:	//しばらく直進し、ゴールから一時的に離れる
 		if(Time::dt(time,mLastUpdateTime) > 10)//しばらく直進する
 		{
 			prevState();
@@ -970,7 +988,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	}
 
 	//ColorAccessingを開始してからの経過時間を確認
-	if(mCurStep != STEP_RESTART)
+	if(mCurStep != STEP_GO_BACK && mCurStep != STEP_TURNING && mCurStep != STEP_LEAVING)
 	{
 		timeCheck(time);	
 	}
@@ -1038,10 +1056,11 @@ void ColorAccessing::timeCheck(const struct timespec& time)
 	if(Time::dt(time,mStartTime) > COLOR_ACCESSING_ABORT_TIME)//一定時間が経過したらNavigatingからやり直し
 	{
 		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout!\r\n");
-		mCurStep = STEP_RESTART;
-		gMotorDrive.drive(100,100);
+		Debug::print(LOG_SUMMARY, "Detecting: GO_BACK start!\r\n");
+		mCurStep = STEP_GO_BACK;
+		gMotorDrive.drive(-100, -100);
 		mLastUpdateTime = time;
-		gBuzzer.start(30,10,8);
+		gBuzzer.start(20,10,8);
 	}
 }
 void ColorAccessing::setIsDetectingExecute(bool flag)
