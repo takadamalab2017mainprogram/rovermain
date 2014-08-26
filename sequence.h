@@ -269,6 +269,8 @@ class ColorAccessing : public TaskBase
 	int actCount;
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;
+	unsigned long long gThresholdHigh;
+	unsigned long long gThresholdLow;
 	unsigned long long gStraightThresholdHigh;
 	unsigned long long gStraightThresholdLow;
 	unsigned long long gRotationThresholdHigh;
@@ -280,9 +282,9 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string> args);
 
-	void setStraightMotorPower();
-	void setRotationMotorPower();
-	void setCurveMotorPower();
+	void setMotorPower(std::string str);
+	/*void setRotationMotorPower();
+	void setCurveMotorPower();*/
 	void adjMotorPower();
 	//次の状態に移行
 	void nextState();

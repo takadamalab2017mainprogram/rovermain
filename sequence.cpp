@@ -824,12 +824,14 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	mMotorPower = 40;
 	mCurrentMotorPower = 40;
 	actCount = 0;
-	gStraightThresholdHigh = 900;
+	gThresholdHigh = 900;
+	gThresholdLow = 100;
+	/*gStraightThresholdHigh = 900;
 	gStraightThresholdLow = 100;
 	gRotationThresholdHigh = 900;
 	gRotationThresholdLow = 100;
 	gCurveThresholdHigh = 900;
-	gCurveThresholdLow = 100;
+	gCurveThresholdLow = 100;*/
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	return true;
@@ -855,9 +857,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	// 	mLastUpdateTime = time;//起き上がり動作中は待機する
 	// 	return;
 	// }
-
-	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
-	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 
 	switch(mCurStep)
 	{
@@ -973,24 +972,25 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
             gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
+			setMotorPower("rotation");
 		}
 		break;
 	case STEP_STOPPING_FAST:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
+			setMotorPower("curve");
 		}
 		break;
 	case STEP_STOPPING_LONG:
 		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
-			setStraightMotorPower();
+			setMotorPower("straight");
 		}
 		break;
 	}
 	//if(actCount > 10 && actCount % 5 == 0) adjMotorPower();//motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
-	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
@@ -1045,9 +1045,9 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 				}
 			}
 		}
-		Debug::print(LOG_SUMMARY, "threshold straight : %lu %lu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
-		Debug::print(LOG_SUMMARY, "threshold rotation : %lu %lu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
-		Debug::print(LOG_SUMMARY, "threshold curve    : %lu %lu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
+		Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
+		Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
+		Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
 		return true;
 	}
 	
@@ -1056,40 +1056,58 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 	return false;
 }
 //モータの出力設定
-void ColorAccessing::setStraightMotorPower()
+void ColorAccessing::setMotorPower(std::string str)
 {
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
+	Debug::print(LOG_SUMMARY, "deltapulseL : %llu,  deltapulseR : %llu\r\n", gDeltaPulseL, gDeltaPulseR);
 
-	if(gDeltaPulseL > gStraightThresholdHigh || gDeltaPulseR > gStraightThresholdHigh) mMotorPower = 20;
-	else if(gDeltaPulseL < gStraightThresholdLow || gDeltaPulseR < gStraightThresholdLow) mMotorPower = 60;
-	else mMotorPower = 30;
-	mCurrentMotorPower = mMotorPower;
-}
-void ColorAccessing::setRotationMotorPower()
-{
-	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
-	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
+	if(str.compare("straight"))
+	{
+		gThresholdHigh = gStraightThresholdHigh;
+		gThresholdLow = gStraightThresholdLow;
+	}
+	if(str.compare("rotation"))
+	{
+		gThresholdHigh = gRotationThresholdHigh;
+		gThresholdLow = gRotationThresholdLow;
+	}
+	if(str.compare("curve"))
+	{
+		gThresholdHigh = gCurveThresholdHigh;
+		gThresholdLow = gCurveThresholdLow;
+		if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
+		else gDeltaPulseR = gDeltaPulseL;
+	}
 
-	if(gDeltaPulseL > gRotationThresholdHigh || gDeltaPulseR > gRotationThresholdHigh) mMotorPower = 20;
-	else if(gDeltaPulseL < gRotationThresholdLow || gDeltaPulseR < gRotationThresholdLow) mMotorPower = 60;
-	else mMotorPower = 30;
+	if(gDeltaPulseL > gThresholdHigh || gDeltaPulseR > gThresholdHigh) mMotorPower -= 5;
+	else if(gDeltaPulseL < gThresholdLow || gDeltaPulseR < gThresholdLow) mMotorPower += 5;
 	mCurrentMotorPower = mMotorPower;
+	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
-void ColorAccessing::setCurveMotorPower()
-{
-	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
-	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
-
-	if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
-	if(gDeltaPulseL > gCurveThresholdHigh) mMotorPower = 20;
-	else if(gDeltaPulseL < gCurveThresholdLow) mMotorPower = 60;
-	else mMotorPower = 30;
-	mCurrentMotorPower = mMotorPower;
-}
+//void ColorAccessing::setRotationMotorPower()
+//{
+//	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+//	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+//	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
+//
+//	if(gDeltaPulseL > gRotationThresholdHigh || gDeltaPulseR > gRotationThresholdHigh) mMotorPower = 20;
+//	else if(gDeltaPulseL < gRotationThresholdLow || gDeltaPulseR < gRotationThresholdLow) mMotorPower = 60;
+//	else mMotorPower = 30;
+//	mCurrentMotorPower = mMotorPower;
+//}
+//void ColorAccessing::setCurveMotorPower()
+//{
+//	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+//	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+//	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
+//
+//	if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
+//	if(gDeltaPulseL > gCurveThresholdHigh) mMotorPower = 20;
+//	else if(gDeltaPulseL < gCurveThresholdLow) mMotorPower = 60;
+//	else mMotorPower = 30;
+//	mCurrentMotorPower = mMotorPower;
+//}
 //探し当てられないときのモータ出力の調整
 void ColorAccessing::adjMotorPower()
 {
@@ -1126,6 +1144,12 @@ ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTI
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+	gStraightThresholdHigh = 900;
+	gStraightThresholdLow = 100;
+	gRotationThresholdHigh = 900;
+	gRotationThresholdLow = 100;
+	gCurveThresholdHigh = 900;
+	gCurveThresholdLow = 100;
 }
 ColorAccessing::~ColorAccessing()
 {
