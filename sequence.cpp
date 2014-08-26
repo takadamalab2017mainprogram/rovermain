@@ -826,12 +826,6 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	actCount = 0;
 	gThresholdHigh = 900;
 	gThresholdLow = 100;
-	/*gStraightThresholdHigh = 900;
-	gStraightThresholdLow = 100;
-	gRotationThresholdHigh = 900;
-	gRotationThresholdLow = 100;
-	gCurveThresholdHigh = 900;
-	gCurveThresholdLow = 100;*/
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	return true;
@@ -1085,29 +1079,6 @@ void ColorAccessing::setMotorPower(std::string str)
 	mCurrentMotorPower = mMotorPower;
 	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
-//void ColorAccessing::setRotationMotorPower()
-//{
-//	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
-//	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-//	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
-//
-//	if(gDeltaPulseL > gRotationThresholdHigh || gDeltaPulseR > gRotationThresholdHigh) mMotorPower = 20;
-//	else if(gDeltaPulseL < gRotationThresholdLow || gDeltaPulseR < gRotationThresholdLow) mMotorPower = 60;
-//	else mMotorPower = 30;
-//	mCurrentMotorPower = mMotorPower;
-//}
-//void ColorAccessing::setCurveMotorPower()
-//{
-//	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
-//	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-//	Debug::print(LOG_SUMMARY, "deltapulseL : %lu,  deltapulseR : %lu\r\n", gDeltaPulseL, gDeltaPulseR);
-//
-//	if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
-//	if(gDeltaPulseL > gCurveThresholdHigh) mMotorPower = 20;
-//	else if(gDeltaPulseL < gCurveThresholdLow) mMotorPower = 60;
-//	else mMotorPower = 30;
-//	mCurrentMotorPower = mMotorPower;
-//}
 //探し当てられないときのモータ出力の調整
 void ColorAccessing::adjMotorPower()
 {

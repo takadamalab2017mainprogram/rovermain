@@ -283,8 +283,6 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 
 	void setMotorPower(std::string str);
-	/*void setRotationMotorPower();
-	void setCurveMotorPower();*/
 	void adjMotorPower();
 	//次の状態に移行
 	void nextState();
