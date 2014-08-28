@@ -590,6 +590,18 @@ double AccelerationSensor::getAz()
 {
 	return mAccel.z;
 }
+double Accelerometer::getTheta()
+{
+    return atan2f(mAccel.x, sqrt(pow(mAccel.y, 2) + pow(mAccel.z, 2)));
+}
+double Accelerometer::getPsi()
+{
+    return atan2f(mAccel.y, sqrt(pow(mAccel.x, 2) + pow(mAccel.z, 2)));
+}
+double Accelerometer::getPhi()
+{
+    return atan2f(sqrt(pow(mAccel.x, 2) + pow(mAccel.y, 2)), mAccel.z);
+}
 AccelerationSensor::AccelerationSensor() : mFileHandle(-1),mAccel()
 {
 	setName("accel");
