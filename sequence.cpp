@@ -800,7 +800,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
 
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+	//gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 	mCurStep = STEP_STARTING;
 	mStartTime = time;		//開始時刻を保存
 	mLastUpdateTime = time;
@@ -820,6 +820,8 @@ bool ColorAccessing::onInit(const struct timespec& time)
 void ColorAccessing::onUpdate(const struct timespec& time)
 {
 	if(gAvoidingState.isActive())return;
+
+	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 
