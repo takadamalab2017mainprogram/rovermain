@@ -807,7 +807,13 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gCameraCapture.startWarming();
     mIsLastActionStraight = false;
     mTryCount = 0;
-	mIsGPS = false;
+	mMotorPower = 40;
+	mCurrentMotorPower = 40;
+	actCount = 0;
+	gThresholdHigh = 900;
+	gThresholdLow = 100;
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -879,21 +885,22 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				else if ( x_pos < -40 )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(0,20);
+					gMotorDrive.drive(0,mMotorPower);
                     mIsLastActionStraight = false;
 				}
 				else if ( 40 < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(20,0);
+					gMotorDrive.drive(mMotorPower,0);
                     mIsLastActionStraight = false;
 				}
 				else if ( -40 <= x_pos && x_pos <= 40 )
 				{
 					mCurStep = STEP_STOPPING_LONG;
-					gMotorDrive.drive(20,20);
+					gMotorDrive.drive(mMotorPower,mMotorPower);
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
+					actCount = 0;
 				}
 				mTryCount = 0;
 			}
@@ -909,13 +916,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                     {
                         //右に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(0,40);
+                        gMotorDrive.drive(0,mMotorPower);
                     }
                     else
                     {
                         //左に向いた時の行動
                         mCurStep = STEP_STOPPING_FAST;
-                        gMotorDrive.drive(40,0);
+                        gMotorDrive.drive(mMotorPower,0);
                     }
                 }
                 //前回の行動が直進以外なら
@@ -929,20 +936,20 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 	{
                 		//とりあえず右に曲がるか．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(30,-30);
+	                    gMotorDrive.drive(mMotorPower-10,-mMotorPower+10);
                 	}
                 	else if ( diff < 0 )
                 	{
                 		//右を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(-30,30);
+	                    gMotorDrive.drive(-mMotorPower+10,mMotorPower-10);
 	                    mTryCount++;
                 	}
                 	else if ( diff >= 0 )
                 	{
                 		//左を向いていた時の処理．
                 		mCurStep = STEP_TURNING;
-	                    gMotorDrive.drive(30,-30);
+	                    gMotorDrive.drive(mMotorPower-10,-mMotorPower+10);
 	                    mTryCount++;
                 	}
                 }
@@ -950,23 +957,186 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 mIsLastActionStraight = false;
 			}
 			mLastUpdateTime = time;
+			actCount++;
 		}
 		break;
 	case STEP_TURNING:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
+			setMotorPower("rotation");
 		}
 		break;
 	case STEP_STOPPING_FAST:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
+			setMotorPower("curve");
 		}
 		break;
 	case STEP_STOPPING_LONG:
-		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
-			mCurStep = STEP_DEACCELERATE;
+		if(Time::dt(time,mLastUpdateTime) > mStraightTime){//1.5
+			gMotorDrive.drive(0,0);
+			mCurStep = STEP_STARTING;
+			setMotorPower("straight");
+		}
+		break;
+	}
+}
+bool ColorAccessing::onCommand(const std::vector<std::string> args)
+{
+	if(args.size() == 2)
+	{
+		if(args[1].compare("enable") == 0)
+		{
+			mIsAvoidingEnable = true;
+			return true;
+		}
+		if(args[1].compare("disable") == 0)
+		{
+			mIsAvoidingEnable = false;
+			return true;
+		}
+	}
+	if(args.size() == 3)
+	{
+		if(args[1].compare("straighttime") == 0)
+		{
+			mStraightTime = atof(args[2].c_str());
+			return true;
+		}
+	}
+	if(args.size() == 5)
+	{
+		if(args[1].compare("threshold") == 0)
+		{
+			if(args[2].compare("straight") == 0)
+			{
+				if(args[3].compare("high") == 0)
+				{
+					gStraightThresholdHigh = atof(args[4].c_str());
+				}
+				if(args[3].compare("low") == 0)
+				{
+					gStraightThresholdLow = atof(args[4].c_str());
+				}
+			}
+			if(args[2].compare("rotation") == 0)
+			{
+				if(args[3].compare("high") == 0)
+				{
+					gRotationThresholdHigh = atof(args[4].c_str());
+				}
+				if(args[3].compare("low") == 0)
+				{
+					gRotationThresholdLow = atof(args[4].c_str());
+				}
+			}
+			if(args[2].compare("curve") == 0)
+			{
+				if(args[3].compare("high") == 0)
+				{
+					gCurveThresholdHigh = atof(args[4].c_str());
+				}
+				if(args[3].compare("low") == 0)
+				{
+					gCurveThresholdLow = atof(args[4].c_str());
+				}
+			}
+		}	
+		return true;
+	}
+	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
+	Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
+	Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
+	return false;
+}
+//モータの出力設定
+void ColorAccessing::setMotorPower(std::string str)
+{
+	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
+	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+	Debug::print(LOG_SUMMARY, "deltapulseL : %llu,  deltapulseR : %llu\r\n", gDeltaPulseL, gDeltaPulseR);
+
+	if(str.compare("straight"))
+	{
+		gThresholdHigh = gStraightThresholdHigh;
+		gThresholdLow = gStraightThresholdLow;
+	}
+	if(str.compare("rotation"))
+	{
+		gThresholdHigh = gRotationThresholdHigh;
+		gThresholdLow = gRotationThresholdLow;
+	}
+	if(str.compare("curve"))
+	{
+		gThresholdHigh = gCurveThresholdHigh;
+		gThresholdLow = gCurveThresholdLow;
+		if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
+		else gDeltaPulseR = gDeltaPulseL;
+	}
+
+	if(gDeltaPulseL > gThresholdHigh || gDeltaPulseR > gThresholdHigh) mMotorPower -= 5;
+	else if(gDeltaPulseL < gThresholdLow || gDeltaPulseR < gThresholdLow) mMotorPower += 5;
+	mCurrentMotorPower = mMotorPower;
+	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
+}
+//次の状態に移行
+void ColorAccessing::nextState()
+{
+	gBuzzer.start(1000);
+
+	//次の状態を設定
+	gTestingState.setRunMode(true);
+	gPictureTakingState.setRunMode(true);
+	
+	Debug::print(LOG_SUMMARY, "Goal!\r\n");
+}
+ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTING)
+{
+	setName("detecting");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+	gStraightThresholdHigh = 900;
+	gStraightThresholdLow = 100;
+	gRotationThresholdHigh = 900;
+	gRotationThresholdLow = 100;
+	gCurveThresholdHigh = 900;
+	gCurveThresholdLow = 100;
+	mStraightTime = 0.8;
+}
+ColorAccessing::~ColorAccessing()
+{
+}
+/* ここまで　2014年6月オープンラボ前に実装 */
+
+bool Escaping::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	mCurStep = STEP_BACKWARD;
+	gMotorDrive.drive(-100,-100);
+	gCameraCapture.setRunMode(true);
+	gGyroSensor.setRunMode(true);
+	mEscapingTriedCount = 0;
+	return true;
+}
+void Escaping::onClean()
+{
+	gWakingState.setRunMode(false);
+	gTurningState.setRunMode(false);
+}
+void Escaping::onUpdate(const struct timespec& time)
+{
+	const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 20;
+	const static unsigned int ESCAPING_MAX_RANDOM_ESCAPING_COUNT = 20;
+	switch(mCurStep)
+	{
+	case STEP_BACKWARD:
+		//バックを行う
+		if(Time::dt(time,mLastUpdateTime) >= 2)
+		{
+			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
+			mCurStep = STEP_AFTER_BACKWARD;
 			mLastUpdateTime = time;
 		}
 		break;

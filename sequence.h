@@ -135,7 +135,20 @@ class ColorAccessing : public TaskBase
 	VECTOR3 mCurrentPos;				//最新の座標を保持
 	bool mIsDetectingExecute;//falseならdetectingは実施せずGPSですぐにゴール判定する(2nd flight 高速度賞狙い)
     int mTryCount;
-	int mDetectingRetryCount;		//時間経過してナビからやり直した回数
+	int mMotorPower;
+	int mCurrentMotorPower;
+	int actCount;
+	double mStraightTime;
+	unsigned long long gDeltaPulseL;
+	unsigned long long gDeltaPulseR;
+	unsigned long long gThresholdHigh;
+	unsigned long long gThresholdLow;
+	unsigned long long gStraightThresholdHigh;
+	unsigned long long gStraightThresholdLow;
+	unsigned long long gRotationThresholdHigh;
+	unsigned long long gRotationThresholdLow;
+	unsigned long long gCurveThresholdHigh;
+	unsigned long long gCurveThresholdLow;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
