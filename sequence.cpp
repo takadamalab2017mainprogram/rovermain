@@ -977,14 +977,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_STOPPING_LONG:
-		if(Time::dt(time,mLastUpdateTime) > 0.8){//1.5
+		if(Time::dt(time,mLastUpdateTime) > mStraightTime){//1.5
 			gMotorDrive.drive(0,0);
 			mCurStep = STEP_STARTING;
 			setMotorPower("straight");
 		}
 		break;
 	}
-	//if(actCount > 10 && actCount % 5 == 0) adjMotorPower();//motorPower = 10 * (int)(rand() * (10 - 1 + 1)/(1 + RAND_MAX));
 }
 bool ColorAccessing::onCommand(const std::vector<std::string> args)
 {
@@ -998,6 +997,14 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		if(args[1].compare("disable") == 0)
 		{
 			mIsAvoidingEnable = false;
+			return true;
+		}
+	}
+	if(args.size() == 3)
+	{
+		if(args[1].compare("straighttime") == 0)
+		{
+			mStraightTime = atof(args[2].c_str());
 			return true;
 		}
 	}
@@ -1038,15 +1045,13 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 					gCurveThresholdLow = atof(args[4].c_str());
 				}
 			}
-		}
-		Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
-		Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
-		Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
+		}	
 		return true;
 	}
-	
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
-	
+	Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
+	Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
+	Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
 	return false;
 }
 //モータの出力設定
@@ -1079,27 +1084,6 @@ void ColorAccessing::setMotorPower(std::string str)
 	mCurrentMotorPower = mMotorPower;
 	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
-//探し当てられないときのモータ出力の調整
-void ColorAccessing::adjMotorPower()
-{
-	if(actCount < 50)
-	{
-		if(mCurrentMotorPower == 60 || mCurrentMotorPower == 40)
-		{
-			mMotorPower = mCurrentMotorPower - actCount + 10;
-		}
-		else if(mCurrentMotorPower == 20)
-		{
-			mMotorPower = mCurrentMotorPower + actCount - 10;
-		}
-		if(mMotorPower < 10) mMotorPower = 10;
-	}
-	else
-	{
-		mMotorPower = 40;
-		actCount = 0;
-	}
-}
 //次の状態に移行
 void ColorAccessing::nextState()
 {
@@ -1121,6 +1105,7 @@ ColorAccessing::ColorAccessing() : mIsAvoidingEnable(false),mCurStep(STEP_STARTI
 	gRotationThresholdLow = 100;
 	gCurveThresholdHigh = 900;
 	gCurveThresholdLow = 100;
+	mStraightTime = 0.8;
 }
 ColorAccessing::~ColorAccessing()
 {

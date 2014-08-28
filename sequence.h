@@ -267,6 +267,7 @@ class ColorAccessing : public TaskBase
 	int mMotorPower;
 	int mCurrentMotorPower;
 	int actCount;
+	double mStraightTime;
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;
 	unsigned long long gThresholdHigh;
@@ -283,7 +284,6 @@ protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 
 	void setMotorPower(std::string str);
-	void adjMotorPower();
 	//次の状態に移行
 	void nextState();
 public:
