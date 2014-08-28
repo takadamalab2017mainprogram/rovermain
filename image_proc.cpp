@@ -27,11 +27,11 @@ int ImageProc::howColorGap(IplImage* src)
 	cv::Moments moments;										//重心計算用
 
 	//////////threshold//////////
-	int MIN_H = 5;		//H < 180
-	int MAX_H = 175;
-	int MIN_S = 170;	//S < 255
-	int MIN_V = 60;		//V < 255
-	double DISTANCE_THRESHOLD = 200.0;
+	int MIN_H = mHMinThreshold;		//H < 180
+	int MAX_H = mHMaxThreshold;
+	int MIN_S = mSMinThreshold;		//S < 255
+	int MIN_V = mVMinThreshold;		//V < 255
+	double DISTANCE_THRESHOLD = mDistanceThreshold;
 	////////////////////////////
 
 	input_img = cv::cvarrToMat(src);						//カメラのストリーミング先を設定
@@ -498,7 +498,30 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 		/* ここまで　2014年6月オープンラボ前に実装 */
 		return false;
 	}
+	else if ( args.size () >= 3 )
+	{
+		if ( args[1].compare ("setH") == 0 )
+		{
+			mHMinThreshold = atoi ( args[2].c_str() );
+			mHMaxThreshold = atoi ( args[3].c_str() );
+			return true;
+		}
+		else if ( args[1].compare ("setS") == 0 )
+		{
+			mSMinThreshold = atoi ( args[2].c_str() );
+			return true;
+		}
+		else if ( args[1].compare ("setV") == 0 )
+		{
+			mVMinThreshold = atoi ( args[2].c_str() );
+			return true;
+		}
+
+		return false;
+	}
+
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
+	Debug::print(LOG_SUMMARY, "image [setH/setS/setV] val : set threshold\r\n");
 	return true;
 }
 void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度は使用しない
@@ -643,7 +666,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 	cvReleaseImage(&pHsv);
 }
 
-ImageProc::ImageProc()
+ImageProc::ImageProc() : mHMinThreshold(5),  mHMaxThreshold(175), mSMinThreshold(170), mVMinThreshold(60), mDistanceThreshold(200.0)
 {
 	setName("image");
 	setPriority(UINT_MAX,UINT_MAX);
