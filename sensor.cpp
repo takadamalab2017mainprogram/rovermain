@@ -566,7 +566,13 @@ void AccelerationSensor::onUpdate(const struct timespec& time)
 }
 bool AccelerationSensor::onCommand(const std::vector<std::string> args)
 {
+	if(!isActive())
+	{
+		Debug::print(LOG_PRINT, "Start accel before sampling\r\n");
+		return false;
+	}
 	Debug::print(LOG_SUMMARY, "Acceleration: %f %f %f\r\n",getAx(),getAy(),getAz());
+	Debug::print(LOG_SUMMARY, "Accel. angle: %f %f %f\r\n",getTheta() / M_PI * 180,getPsi() / M_PI * 180,getPhi() / M_PI * 180);
 	return true;
 }
 bool AccelerationSensor::getAccel(VECTOR3& acc)
