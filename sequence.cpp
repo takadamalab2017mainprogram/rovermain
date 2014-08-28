@@ -898,7 +898,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				else if ( -40 <= x_pos && x_pos <= 40 )
 				{
 					mCurStep = STEP_STOPPING_LONG;
-					gMotorDrive.drive(mMotorPower,mMotorPower);
+					gMotorDrive.startPID(0,mMotorPower);
                     mIsLastActionStraight = true;
                     mAngleOnBegin = gGyroSensor.getRz();
 					actCount = 0;
@@ -1187,7 +1187,7 @@ bool ColorAccessing::timeCheck(const struct timespec& time)
 		mDetectingRetryCount++;
 		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout! try count: %d\r\n", mDetectingRetryCount);
 		
-		if(mDetectingRetryCount >= DETECTING_MAX_RETRY_COUNT)//一定回数以上ナビ復帰を繰り返した場合はfalse
+		if(mDetectingRetryCount >= COLOR_ACCESSING_MAX_RETRY_COUNT)//一定回数以上ナビ復帰を繰り返した場合はfalse
 		{
 			return false;
 		}
