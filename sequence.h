@@ -135,10 +135,12 @@ class ColorAccessing : public TaskBase
 	VECTOR3 mCurrentPos;				//最新の座標を保持
 	bool mIsDetectingExecute;//falseならdetectingは実施せずGPSですぐにゴール判定する(2nd flight 高速度賞狙い)
     int mTryCount;
+	int mDetectingRetryCount;		//一定時間経過してナビからやり直した回数
 	int mMotorPower;
 	int mCurrentMotorPower;
 	int actCount;
 	double mStraightTime;
+
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;
 	unsigned long long gThresholdHigh;
@@ -156,6 +158,8 @@ protected:
 
 	void nextState();	//次の状態に移行
 	void prevState();	//前の状態に移行
+
+	void setMotorPower(std::string str);
 	
 	//ColorAccessingを開始してからの経過時間を確認
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
