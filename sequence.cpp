@@ -1048,13 +1048,13 @@ void ColorAccessing::setMotorPower(std::string str)
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	if(gPastDeltaPulseL > 0) 
 	{
-		gDeltaPulseL = gPastDeltaPulseL / 2;
+		gDeltaPulseL = gPastDeltaPulseL - 800;
 		gPastDeltaPulseL = 0;
 		Debug::print(LOG_SUMMARY, "use past delta pulse left!\r\n");
 	}
 	if(gPastDeltaPulseR > 0)
 	{
-		gDeltaPulseR = gPastDeltaPulseR / 2;
+		gDeltaPulseR = gPastDeltaPulseR - 800;
 		gPastDeltaPulseR = 0;
 		Debug::print(LOG_SUMMARY, "use past delta pulse right!\r\n");
 	}
