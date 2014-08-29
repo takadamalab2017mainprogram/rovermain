@@ -142,6 +142,8 @@ class ColorAccessing : public TaskBase
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;
+	unsigned long long gPastDeltaPulseL;
+	unsigned long long gPastDeltaPulseR;
 	unsigned long long gThresholdHigh;
 	unsigned long long gThresholdLow;
 	unsigned long long gStraightThresholdHigh;
