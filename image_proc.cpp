@@ -141,6 +141,28 @@ int ImageProc::howColorGap(IplImage* src)
 	}
 
 	return x_gap;	//中心からのX位置のずれを返す
+
+	//////////赤味がけるアルゴリズム　現地で必要になった時用//
+	//////////使用時は正しい位置に挿入すること////////////////
+	//for(int y=0; y<240;y++)
+	//{
+	//	for(int x=0; x<320; x++)
+	//	{
+	//		int a = smooth_img.step*y+(x*3);		//参照番号を設定
+	//		if(smooth_img.data[a] >= 0+10)
+	//			smooth_img.data[a] -= 10;	//B
+	//		else
+	//			smooth_img.data[a] = 0;
+	//		if(smooth_img.data[a+1] >= 0+10)
+	//			smooth_img.data[a+1] -= 10;	//G
+	//		else
+	//			smooth_img.data[a+1] = 0;
+	//		if(smooth_img.data[a+2] <= 255-20)
+	//			smooth_img.data[a+2] += 20;	//R
+	//		else
+	//			smooth_img.data[a+2] = 255;
+	//	}
+	//}
 }
 /* ここまで　2014年実装 */
 bool ImageProc::isParaExist(IplImage* src)
