@@ -123,7 +123,6 @@ public:
 class ColorAccessing : public TaskBase
 {
 	const static double DEACCELERATE_DURATION = 0.5;
-	const static int DETECTING_MAX_RETRY_COUNT = 5;			//ToDo: テストが完了したらconstants.hに移動する
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
@@ -135,7 +134,7 @@ class ColorAccessing : public TaskBase
 	VECTOR3 mCurrentPos;				//最新の座標を保持
 	bool mIsDetectingExecute;//falseならdetectingは実施せずGPSですぐにゴール判定する(2nd flight 高速度賞狙い)
     int mTryCount;
-	int mDetectingRetryCount;		//一定時間経過してナビからやり直した回数
+	unsigned int mDetectingRetryCount;		//一定時間経過してナビからやり直した回数
 	int mMotorPower;
 	int mCurrentMotorPower;
 	int actCount;

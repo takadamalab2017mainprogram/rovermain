@@ -76,6 +76,7 @@ const static unsigned long long STUCK_ENCODER_PULSE_THRESHOLD = 3000;//前回の
 const static unsigned int ESCAPING_BY_STABI_COUNT_THRESHOLD = 30;//この回数以上EscapingByStabiの動作を繰り返してもスタック脱出できない場合，EscapingRandomに遷移する
 const static unsigned int ESCAPING_RANDOM_TIME_THRESHOLD = 60;//この秒数以上EscapingRandom動作をしてもスタック脱出できない場合，EscapingByStabiに遷移する
 const static unsigned int COLOR_ACCESSING_ABORT_TIME = 300;//0mゴール検知状態を強制終了しNavigatingに復帰する時間
+const static unsigned int COLOR_ACCESSING_MAX_RETRY_COUNT = 5;//この回数以上DetectingからNavigating復帰を繰り返したらその場でゴール判定して停止する
 
 const static double WAKING_THRESHOLD = 200;
 const static unsigned int WAKING_RETRY_COUNT = 5;
