@@ -140,6 +140,7 @@ class ColorAccessing : public TaskBase
 	int mCurrentMotorPower;
 	int actCount;
 	double mStraightTime;
+	bool wakingflag;
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;

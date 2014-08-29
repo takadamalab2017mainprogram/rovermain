@@ -812,6 +812,8 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	actCount = 0;
 	gThresholdHigh = 900;
 	gThresholdLow = 100;
+	gPastDeltaPulseL = 0;
+	gPastDeltaPulseR = 0;
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
 	mIsGPS = false;
@@ -830,6 +832,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 		mLastUpdateTime = time;
 		// mCurStep = STEP_PRE_PARA_JUDGE;
+		gPastDeltaPulseL = gDeltaPulseL;
+		gPastDeltaPulseR = gDeltaPulseR;
 		gWakingState.setRunMode(true);
 	}
 
@@ -1042,6 +1046,18 @@ void ColorAccessing::setMotorPower(std::string str)
 {
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+	if(gPastDeltaPulseL > 0) 
+	{
+		gDeltaPulseL = gPastDeltaPulseL / 2;
+		gPastDeltaPulseL = 0;
+		Debug::print(LOG_SUMMARY, "use past delta pulse left!\r\n");
+	}
+	if(gPastDeltaPulseR > 0)
+	{
+		gDeltaPulseR = gPastDeltaPulseR / 2;
+		gPastDeltaPulseR = 0;
+		Debug::print(LOG_SUMMARY, "use past delta pulse right!\r\n");
+	}
 	Debug::print(LOG_SUMMARY, "deltapulseL : %llu,  deltapulseR : %llu\r\n", gDeltaPulseL, gDeltaPulseR);
 
 	if(str.compare("straight"))
@@ -1064,6 +1080,8 @@ void ColorAccessing::setMotorPower(std::string str)
 
 	if(gDeltaPulseL > gThresholdHigh || gDeltaPulseR > gThresholdHigh) mMotorPower -= 5;
 	else if(gDeltaPulseL < gThresholdLow || gDeltaPulseR < gThresholdLow) mMotorPower += 5;
+	if(mMotorPower < 0) mMotorPower = 0;
+	if(mMotorPower > 100) mMotorPower = 100;
 	mCurrentMotorPower = mMotorPower;
 	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
