@@ -889,19 +889,19 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 					if(mIsGPS) Debug::print(LOG_SUMMARY, "Control Finish Point:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
 					nextState();
 				}
-				else if ( x_pos < -40 )
+				else if ( x_pos < -mColorWidth )
 				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(0,mMotorPower);
                     mIsLastActionStraight = false;
 				}
-				else if ( 40 < x_pos )
+				else if ( mColorWidth < x_pos )
 				{
 					mCurStep = STEP_STOPPING_FAST;
 					gMotorDrive.drive(mMotorPower,0);
                     mIsLastActionStraight = false;
 				}
-				else if ( -40 <= x_pos && x_pos <= 40 )
+				else if ( -mColorWidth <= x_pos && x_pos <= mColorWidth )
 				{
 					mCurStep = STEP_STOPPING_LONG;
 					gMotorDrive.startPID(0,mMotorPower);
@@ -971,14 +971,14 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
-			setMotorPower("rotation");
+			setMotorPower(100);
 		}
 		break;
 	case STEP_STOPPING_FAST:
 		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
-			setMotorPower("curve");
+			setMotorPower(-100);
 		}
 		break;
 	case STEP_STOPPING_LONG:
@@ -992,9 +992,9 @@ void ColorAccessing::onUpdate(const struct timespec& time)
         {
             mLastUpdateTime = time;
             mCurStep = STEP_STARTING;
-                
+            
             gMotorDrive.drive(0, 0);
-			setMotorPower("straight");
+			setMotorPower(0);
         }
 		else
 		{
@@ -1042,7 +1042,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	}
 }
 //モータの出力設定
-void ColorAccessing::setMotorPower(std::string str)
+void ColorAccessing::setMotorPower(int mode)
 {
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
@@ -1060,23 +1060,28 @@ void ColorAccessing::setMotorPower(std::string str)
 	}
 	Debug::print(LOG_SUMMARY, "deltapulseL : %llu,  deltapulseR : %llu\r\n", gDeltaPulseL, gDeltaPulseR);
 
-	if(str.compare("straight"))
+	if(mode == 0)
 	{
 		gThresholdHigh = gStraightThresholdHigh;
 		gThresholdLow = gStraightThresholdLow;
 	}
-	if(str.compare("rotation"))
+	else
 	{
-		gThresholdHigh = gRotationThresholdHigh;
-		gThresholdLow = gRotationThresholdLow;
+		if(mode > 50)
+		{
+			gThresholdHigh = gRotationThresholdHigh;
+			gThresholdLow = gRotationThresholdLow;
+		}
+		else if(mode < 50)
+		{
+			gThresholdHigh = gCurveThresholdHigh;
+			gThresholdLow = gCurveThresholdLow;
+			if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
+			else gDeltaPulseR = gDeltaPulseL;
+		}
 	}
-	if(str.compare("curve"))
-	{
-		gThresholdHigh = gCurveThresholdHigh;
-		gThresholdLow = gCurveThresholdLow;
-		if(gDeltaPulseL < gDeltaPulseR) gDeltaPulseL = gDeltaPulseR;
-		else gDeltaPulseR = gDeltaPulseL;
-	}
+	Debug::print(LOG_SUMMARY, "mode is %d\r\n", mode);
+	Debug::print(LOG_SUMMARY, "gThresholdHigh : %llu,  gThresholdLow : %llu\r\n", gThresholdHigh, gThresholdLow);
 
 	if(gDeltaPulseL > gThresholdHigh || gDeltaPulseR > gThresholdHigh) mMotorPower -= 5;
 	else if(gDeltaPulseL < gThresholdLow || gDeltaPulseR < gThresholdLow) mMotorPower += 5;
@@ -1120,6 +1125,11 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		else if(args[1].compare("straighttime") == 0)
 		{
 			mStraightTime = atof(args[2].c_str());
+			return true;
+		}
+		else if(args[1].compare("colorwidth") == 0)
+		{
+			mColorWidth = atoi(args[2].c_str());
 			return true;
 		}
 	}
@@ -1167,6 +1177,7 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 	Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
 	Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
 	Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
+	Debug::print(LOG_SUMMARY, "color width is %d\r\n", mColorWidth);
 
 	Debug::print(LOG_PRINT, "detecting setmode [ON/OFF]: set detecting mode\r\n\
 detecting reset           : reset detecting retry count\r\n\
@@ -1261,6 +1272,7 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	gCurveThresholdHigh = 900;
 	gCurveThresholdLow = 100;
 	mStraightTime = 0.8;
+	mColorWidth = 40;
 }
 ColorAccessing::~ColorAccessing()
 {

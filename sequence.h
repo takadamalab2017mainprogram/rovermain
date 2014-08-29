@@ -139,6 +139,7 @@ class ColorAccessing : public TaskBase
 	int mCurrentMotorPower;
 	int actCount;
 	double mStraightTime;
+	int mColorWidth;
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;
@@ -160,7 +161,7 @@ protected:
 	void nextState();	//次の状態に移行
 	void prevState();	//前の状態に移行
 
-	void setMotorPower(std::string str);
+	void setMotorPower(int mode);
 	
 	//ColorAccessingを開始してからの経過時間を確認
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す
