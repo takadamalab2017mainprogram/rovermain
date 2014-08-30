@@ -865,7 +865,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			if(gGPSSensor.get(mCurrentPos,false))
 			{
 				mIsGPS = true;	//一度でもGPS座標取得に成功したらtrueに
-				Debug::print(LOG_SUMMARY, "Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
+				Debug::print(LOG_SUMMARY, "Detecting: Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
 			}
 			
 			IplImage* pImage = gCameraCapture.getFrame();
@@ -878,7 +878,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				return;
 			}
 			
-			int x_pos = gImageProc.howColorGap(pImage);
+			double count = 0; //画像上の赤色の割合
+			int x_pos = gImageProc.howColorGap(pImage, &count);
 			
             if( x_pos != INT_MAX )	//色検知したら
 			{
@@ -886,28 +887,60 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 				if ( x_pos == INT_MIN )	//ゴール判定時
 				{
 					//新しい位置を取得できていれば座標を表示する
-					if(mIsGPS) Debug::print(LOG_SUMMARY, "Control Finish Point:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
+					if(mIsGPS) Debug::print(LOG_SUMMARY, "Detecting: Control Finish at (%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
 					nextState();
 				}
-				else if ( x_pos < -mColorWidth )
-				{
-					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(0,mMotorPower);
-                    mIsLastActionStraight = false;
+				else if ( count < mColorCount ) {
+					Debug::print(LOG_SUMMARY, "Detecting: FAR count:%f%%\n", count);
+					if ( x_pos < -mColorWidth )
+					{
+					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\n", x_pos);
+						mCurStep = STEP_STOPPING_FAST;
+						gMotorDrive.drive(0,mMotorPower);
+						mIsLastActionStraight = false;
+					}
+					else if ( mColorWidth < x_pos )
+					{
+					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\n", x_pos);
+						mCurStep = STEP_STOPPING_FAST;
+						gMotorDrive.drive(mMotorPower,0);
+						mIsLastActionStraight = false;
+					}
+					else if ( -mColorWidth <= x_pos && x_pos <= mColorWidth )
+					{
+					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\n", x_pos);
+						mCurStep = STEP_STOPPING_LONG;
+						gMotorDrive.startPID(0,mMotorPower);
+						mIsLastActionStraight = true;
+						mAngleOnBegin = gGyroSensor.getRz();
+						actCount = 0;
+					}
 				}
-				else if ( mColorWidth < x_pos )
-				{
-					mCurStep = STEP_STOPPING_FAST;
-					gMotorDrive.drive(mMotorPower,0);
-                    mIsLastActionStraight = false;
-				}
-				else if ( -mColorWidth <= x_pos && x_pos <= mColorWidth )
-				{
-					mCurStep = STEP_STOPPING_LONG;
-					gMotorDrive.startPID(0,mMotorPower);
-                    mIsLastActionStraight = true;
-                    mAngleOnBegin = gGyroSensor.getRz();
-					actCount = 0;
+				else if( count > mColorCount ) {
+					Debug::print(LOG_SUMMARY, "Detecting: NEAR count:%f\n", count);
+					if ( x_pos < -mColorWidth+50 )
+					{
+					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\n", x_pos);
+						mCurStep = STEP_STOPPING_FAST;
+						gMotorDrive.drive(0,mMotorPower);
+						mIsLastActionStraight = false;
+					}
+					else if ( mColorWidth-50 < x_pos )
+					{
+					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\n", x_pos);
+						mCurStep = STEP_STOPPING_FAST;
+						gMotorDrive.drive(mMotorPower,0);
+						mIsLastActionStraight = false;
+					}
+					else if ( -mColorWidth+50 <= x_pos && x_pos <= mColorWidth-50 )
+					{
+					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\n", x_pos);
+						mCurStep = STEP_STOPPING_LONG;
+						gMotorDrive.startPID(0,mMotorPower);
+						mIsLastActionStraight = true;
+						mAngleOnBegin = gGyroSensor.getRz();
+						actCount = 0;
+					}
 				}
 				mTryCount = 0;
 			}
@@ -917,7 +950,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                 {
                 	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
 
-                	Debug::print(LOG_SUMMARY, "diff = %f\r\n", diff);
+                	Debug::print(LOG_SUMMARY, "Detecting: Gyro diff = %f\r\n", diff);
 
                     if (diff < 0)
                     {
@@ -1058,7 +1091,7 @@ void ColorAccessing::setMotorPower(int mode)
 		gPastDeltaPulseR = 0;
 		Debug::print(LOG_SUMMARY, "use past delta pulse right!\r\n");
 	}
-	Debug::print(LOG_SUMMARY, "deltapulseL : %llu,  deltapulseR : %llu\r\n", gDeltaPulseL, gDeltaPulseR);
+	Debug::print(LOG_SUMMARY, "deltapulseL: %llu,  deltapulseR: %llu\r\n", gDeltaPulseL, gDeltaPulseR);
 
 	if(mode == 0)
 	{
@@ -1272,7 +1305,8 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	gCurveThresholdHigh = 900;
 	gCurveThresholdLow = 100;
 	mStraightTime = 0.8;
-	mColorWidth = 40;
+	mColorWidth = 100;
+	mColorCount = 0.05;
 }
 ColorAccessing::~ColorAccessing()
 {

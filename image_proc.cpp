@@ -8,7 +8,7 @@ ImageProc gImageProc;
 
 /* ここから　2014年実装 */
 // 実行速度：0.22~0.24sec
-int ImageProc::howColorGap(IplImage* src)
+int ImageProc::howColorGap(IplImage* src, double *counter)
 {
 	if(src == NULL)//カメラが死んでる場合
 	{
@@ -84,7 +84,6 @@ int ImageProc::howColorGap(IplImage* src)
 	// double distance = sqrt( (max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y) );
 	double distance = max_y-min_y;
 
-	Debug::print(LOG_SUMMARY,"ditance = %f\r\n", distance);
 	/////////////////////////////////////////////////////////
 
 	for(int y=0; y<240;y++)
@@ -110,13 +109,13 @@ int ImageProc::howColorGap(IplImage* src)
 	int gX = moments.m10 / moments.m00;										//重心X位置計算
 	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
-	Debug::print(LOG_SUMMARY, "color = %f%% ", ((double)count / (240*320)));	//ずれをコンソール表示
 
 	if(count > 240*320*AREA_THRESHOLD)	//閾値0.05%に変更．2014/06/14 みなと
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
-			Debug::print(LOG_SUMMARY, "gap = %d\n", x_gap);
+			Debug::print(LOG_SUMMARY, "Detecting: distance= %f\n", distance);
+			*counter = (double)count / (240*320);
 
 			// もし30%以上が赤でうめつくされていたら．
 			// かつ y range = 200以上
@@ -124,7 +123,7 @@ int ImageProc::howColorGap(IplImage* src)
 
 			if ( count > 240*320*0.3 && distance > DISTANCE_THRESHOLD ) 
 			{
-				Debug::print(LOG_SUMMARY, "Goal is detected! count = %f, distance = %f > %f  \n", count, distance, DISTANCE_THRESHOLD);
+				Debug::print(LOG_SUMMARY, "***Goal is detected!***\n");
 				x_gap = INT_MIN;	//ゴール判定
 			}
 		}
@@ -515,7 +514,8 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 		/* ここから　2014年6月オープンラボ前に実装 */
 		else if(args[1].compare("color") == 0)
 		{
-			howColorGap(gCameraCapture.getFrame());
+			double count;
+			howColorGap(gCameraCapture.getFrame(), &count);
 			return true;
 		}
 		/* ここまで　2014年6月オープンラボ前に実装 */

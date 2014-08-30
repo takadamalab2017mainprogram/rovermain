@@ -139,7 +139,8 @@ class ColorAccessing : public TaskBase
 	int mCurrentMotorPower;
 	int actCount;
 	double mStraightTime;
-	int mColorWidth;
+	int mColorWidth; //中心からの赤色のずれ
+	double mColorCount; //赤色の割合
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;

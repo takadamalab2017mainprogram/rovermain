@@ -18,7 +18,7 @@ class ImageProc : public TaskBase
 protected:
 	virtual bool onCommand(const std::vector<std::string> args);
 public:
-	int howColorGap(IplImage* pImage);//画像中心から特定の色重心がどれだけずれているか
+	int howColorGap(IplImage* pImage, double* count);//画像中心から特定の色重心がどれだけずれているか
 	bool isParaExist(IplImage* pImage);//画像内にパラシュートが存在するか確認する
 	bool isWadachiExist(IplImage* pImage);//轍事前検知
 	bool isSky(IplImage* pImage);//空の割合が一定以上なら真
