@@ -140,6 +140,8 @@ class ColorAccessing : public TaskBase
 	int actCount;
 	double mStraightTime;
 	int mColorWidth;
+	double mProcessFrequency;
+	double mProcessFrequencyForGyro;
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;

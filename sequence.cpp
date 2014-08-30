@@ -857,7 +857,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CHECKING:
-		if(Time::dt(time,mLastUpdateTime) > 1.0)
+		// 最後の行動が直進だったら，Gyroの補正を考慮してちょっと待ってから処理を開始する．
+		if( ( Time::dt(time,mLastUpdateTime) > mProcessFrequency && !mIsLastActionStraight ) || ( Time::dt(time,mLastUpdateTime) > mProcessFrequencyForGyro && mIsLastActionStraight ) )
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
 			
@@ -1132,6 +1133,16 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 			mColorWidth = atoi(args[2].c_str());
 			return true;
 		}
+		else if ( args[1].compare("pf") == 0 )
+		{
+			mProcessFrequency = atof( args[2].c_str() );
+			return true;
+		}
+		else if ( args[1].compare("pfg") == 0 )
+		{
+			mProcessFrequencyForGyro = atof( args[2].c_str() );
+			return true;
+		}
 	}
 	else if(args.size() == 5)
 	{
@@ -1174,10 +1185,13 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		return true;
 	}
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	Debug::print(LOG_SUMMARY, "pf/pfg [value]  : process frequency / process frequency for gyro\r\n");
 	Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
 	Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
 	Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
 	Debug::print(LOG_SUMMARY, "color width is %d\r\n", mColorWidth);
+	Debug::print(LOG_SUMMARY, "process frequency is %f\r\n", mProcessFrequency);
+	Debug::print(LOG_SUMMARY, "process frequency for gyro is %f\r\n", mProcessFrequencyForGyro);
 
 	Debug::print(LOG_PRINT, "detecting setmode [ON/OFF]: set detecting mode\r\n\
 detecting reset           : reset detecting retry count\r\n\
@@ -1273,6 +1287,8 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	gCurveThresholdLow = 100;
 	mStraightTime = 0.8;
 	mColorWidth = 40;
+	mProcessFrequency = 1.0;
+	mProcessFrequencyForGyro = 2.0;
 }
 ColorAccessing::~ColorAccessing()
 {
