@@ -953,6 +953,8 @@ bool EncoderMonitoring::onInit(const struct timespec& time)
 	mCurrentMaxPulse = 0;
 	mPrevDeltaPulseL = 0;
 	mPrevDeltaPulseR = 0;
+	gMotorDrive.getDeltaPulseL();//パルスは差分なので取得してリセットしておく
+	gMotorDrive.getDeltaPulseR();
 	return true;
 }
 void EncoderMonitoring::onUpdate(const struct timespec& time)
@@ -1175,7 +1177,7 @@ bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long
 	}
 	return ret;
 }
-EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(),mLastUpdateTime(),mStoredPulse(2500),mUpdateTimer(30),mThresholdPulse(1000),mIgnoredDeltaUpperPulse(1500),mIgnoredDeltaLowerPulse(800),mUpperThreshold(3200),mLowerThreshold(1500),mIsPrint(false)
+EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(),mLastUpdateTime(),mStoredPulse(2500),mUpdateTimer(30),mThresholdPulse(1000),mIgnoredDeltaUpperPulse(1500),mIgnoredDeltaLowerPulse(800),mUpperThreshold(3000),mLowerThreshold(1500),mIsPrint(false)
 {
 	setName("monitoring");
 	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
@@ -1183,4 +1185,3 @@ EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(),mLastUpdateTime(),m
 EncoderMonitoring::~EncoderMonitoring()
 {
 }
-
