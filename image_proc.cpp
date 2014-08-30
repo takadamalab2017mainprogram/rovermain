@@ -32,6 +32,7 @@ int ImageProc::howColorGap(IplImage* src)
 	int MIN_S = mSMinThreshold;		//S < 255
 	int MIN_V = mVMinThreshold;		//V < 255
 	double DISTANCE_THRESHOLD = mDistanceThreshold;
+	double AREA_THRESHOLD = mMinAreaThreshold;
 	////////////////////////////
 
 	input_img = cv::cvarrToMat(src);						//カメラのストリーミング先を設定
@@ -111,7 +112,7 @@ int ImageProc::howColorGap(IplImage* src)
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
 	Debug::print(LOG_SUMMARY, "color = %f%% ", ((double)count / (240*320)));	//ずれをコンソール表示
 
-	if(count > 240*320*0.0005)	//閾値0.05%に変更．2014/06/14 みなと
+	if(count > 240*320*AREA_THRESHOLD)	//閾値0.05%に変更．2014/06/14 みなと
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
@@ -140,6 +141,28 @@ int ImageProc::howColorGap(IplImage* src)
 	}
 
 	return x_gap;	//中心からのX位置のずれを返す
+
+	//////////赤味がけるアルゴリズム　現地で必要になった時用//
+	//////////使用時は正しい位置に挿入すること////////////////
+	//for(int y=0; y<240;y++)
+	//{
+	//	for(int x=0; x<320; x++)
+	//	{
+	//		int a = smooth_img.step*y+(x*3);		//参照番号を設定
+	//		if(smooth_img.data[a] >= 0+10)
+	//			smooth_img.data[a] -= 10;	//B
+	//		else
+	//			smooth_img.data[a] = 0;
+	//		if(smooth_img.data[a+1] >= 0+10)
+	//			smooth_img.data[a+1] -= 10;	//G
+	//		else
+	//			smooth_img.data[a+1] = 0;
+	//		if(smooth_img.data[a+2] <= 255-20)
+	//			smooth_img.data[a+2] += 20;	//R
+	//		else
+	//			smooth_img.data[a+2] = 255;
+	//	}
+	//}
 }
 /* ここまで　2014年実装 */
 bool ImageProc::isParaExist(IplImage* src)
@@ -516,12 +539,30 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 			mVMinThreshold = atoi ( args[2].c_str() );
 			return true;
 		}
+		else if ( args[1].compare ("setarea") == 0 )
+		{
+			mMinAreaThreshold = atof ( args[2].c_str() );
+			return true;
+		}
+		else if ( args[1].compare ("setdist") == 0 )
+		{
+			mDistanceThreshold = atof ( args[2].c_str() );
+			return true;
+		}
 
 		return false;
 	}
 
 	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
-	Debug::print(LOG_SUMMARY, "image [setH/setS/setV] val : set threshold\r\n");
+	Debug::print(LOG_SUMMARY, "image [setH/setS/setV/setdist/setarea] val : set threshold\r\n");
+	// 閾値一覧
+	Debug::print(LOG_SUMMARY, "H Max Threshold : %d\r\n", mHMaxThreshold);
+	Debug::print(LOG_SUMMARY, "H Min Threshold : %d\r\n", mHMinThreshold);
+	Debug::print(LOG_SUMMARY, "S Min Threshold : %d\r\n", mSMinThreshold);
+	Debug::print(LOG_SUMMARY, "V Min Threshold : %d\r\n", mVMinThreshold);
+	Debug::print(LOG_SUMMARY, "Distance Threshold : %f\r\n", mDistanceThreshold);
+	Debug::print(LOG_SUMMARY, "Area Threshold : %f\r\n", mMinAreaThreshold);
+
 	return true;
 }
 void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度は使用しない
@@ -666,7 +707,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 	cvReleaseImage(&pHsv);
 }
 
-ImageProc::ImageProc() : mHMinThreshold(5),  mHMaxThreshold(175), mSMinThreshold(170), mVMinThreshold(60), mDistanceThreshold(200.0)
+ImageProc::ImageProc() : mHMinThreshold(5),  mHMaxThreshold(175), mSMinThreshold(170), mVMinThreshold(60), mDistanceThreshold(200.0), mMinAreaThreshold(0.0005)
 {
 	setName("image");
 	setPriority(UINT_MAX,UINT_MAX);
