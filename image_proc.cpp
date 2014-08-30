@@ -114,7 +114,7 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
-			Debug::print(LOG_SUMMARY, "Detecting: distance= %f\n", distance);
+			Debug::print(LOG_SUMMARY, "Detecting: distance= %f\r\n", distance);
 			*counter = (double)count / (240*320);
 
 			// もし30%以上が赤でうめつくされていたら．
@@ -123,19 +123,19 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 
 			if ( count > 240*320*0.3 && distance > DISTANCE_THRESHOLD ) 
 			{
-				Debug::print(LOG_SUMMARY, "***Goal is detected!***\n");
+				Debug::print(LOG_SUMMARY, "***Goal is detected!***\r\n");
 				x_gap = INT_MIN;	//ゴール判定
 			}
 		}
 		else
 		{
-			Debug::print(LOG_SUMMARY, "Color is not detected.\n", x_gap);
+			Debug::print(LOG_SUMMARY, "Color is not detected.\r\n", x_gap);
 			x_gap = INT_MAX;
 		}
 	}
 	else //2014/06/13修正． みなと
 	{
-		Debug::print(LOG_SUMMARY, "Color is not detected.\n", x_gap);
+		Debug::print(LOG_SUMMARY, "Color is not detected.\r\n", x_gap);
 		x_gap = INT_MAX;
 	}
 

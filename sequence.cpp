@@ -859,24 +859,24 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 					nextState();
 				}
 				else if ( count < mColorCount ) {
-					Debug::print(LOG_SUMMARY, "Detecting: FAR count:%f%%\n", count);
+					Debug::print(LOG_SUMMARY, "Detecting: FAR count:%f%%\r\n", count);
 					if ( x_pos < -mColorWidth )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\n", x_pos);
+					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(0,mMotorPower);
 						mIsLastActionStraight = false;
 					}
 					else if ( mColorWidth < x_pos )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\n", x_pos);
+					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(mMotorPower,0);
 						mIsLastActionStraight = false;
 					}
 					else if ( -mColorWidth <= x_pos && x_pos <= mColorWidth )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\n", x_pos);
+					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_LONG;
 						gMotorDrive.startPID(0,mMotorPower);
 						mIsLastActionStraight = true;
@@ -885,24 +885,24 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 					}
 				}
 				else if( count > mColorCount ) {
-					Debug::print(LOG_SUMMARY, "Detecting: NEAR count:%f\n", count);
+					Debug::print(LOG_SUMMARY, "Detecting: NEAR count:%f\r\n", count);
 					if ( x_pos < -mColorWidth+50 )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\n", x_pos);
+					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(0,mMotorPower);
 						mIsLastActionStraight = false;
 					}
 					else if ( mColorWidth-50 < x_pos )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\n", x_pos);
+					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(mMotorPower,0);
 						mIsLastActionStraight = false;
 					}
 					else if ( -mColorWidth+50 <= x_pos && x_pos <= mColorWidth-50 )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\n", x_pos);
+					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_LONG;
 						gMotorDrive.startPID(0,mMotorPower);
 						mIsLastActionStraight = true;
