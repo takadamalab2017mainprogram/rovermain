@@ -1113,9 +1113,9 @@ monitoring set timer [second]     : set update timer[s]\r\n\
 monitoring set stored [pulse]     : set StoredPulse\r\n\
 monitoring set threpulse [pulse]  : set Threshold Pulse\r\n\
 monitoring set deltaupper [pulse] : set IgnoredDeltaUpperPulse\r\n\
-monitoring set deltalower [pulse] : set umIgnoredDeltaLowerPulse\r\n\
-monitoring set upper [pulse]      : set mUpperThreshold\r\n\
-monitoring set lower [pulse]      : set mLowerThreshold\r\n\
+monitoring set deltalower [pulse] : set IgnoredDeltaLowerPulse\r\n\
+monitoring set upper [pulse]      : set UpperThreshold\r\n\
+monitoring set lower [pulse]      : set LowerThreshold\r\n\
 monitoring print                  : switch print\r\n\
 monitoring show                   : show each value\r\n");
 	return true;
