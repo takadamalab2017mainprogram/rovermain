@@ -453,13 +453,12 @@ bool Navigating::onInit(const struct timespec& time)
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gStabiServo.setRunMode(true);
+	gEncoderMonitoringState.setRunMode(true);
 	
 	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 
 	mLastNaviMoveCheckTime = time;
 	mLastPos.clear();
-	mPrevDeltaPulseL = 0;
-	mPrevDeltaPulseR = 0;
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
@@ -509,12 +508,6 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	//エンコーダの値によるスタック判定処理
-	if(Time::dt(time,mLastEncoderCheckTime) > 1 && (distance > NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD))
-	{
-		chechStuckByEncoder(time, currentPos);
-	}
-
 	//数秒たっていなければ処理を返す
 	if(Time::dt(time,mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastNaviMoveCheckTime = time;
@@ -529,14 +522,14 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//轍回避中
 	}
-	else if(isStuckByGPS())//スタック判定
+	else if(isStuckByGPS())//GPSスタック判定
 	{
 		if(!gEscapingRandomState.isActive())
 		{
 			gEscapingByStabiState.setRunMode(true);
 		}
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n",currentPos.x,currentPos.y);
-		gBuzzer.start(20, 20, 8);
+		gBuzzer.start(20, 10, 8);
 
 		if(gEscapingByStabiState.isActive())		//EscapingByStabi中
 		{
@@ -571,7 +564,8 @@ void Navigating::onUpdate(const struct timespec& time)
 			gEscapingRandomState.setRunMode(false);
 			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
 			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-			gBuzzer.start(80, 20, 3);
+			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
+			gBuzzer.start(40,10,3);
 		}
 		else
 		{
@@ -634,37 +628,6 @@ bool Navigating::isStuckByGPS() const
 
 	return VECTOR3::calcDistanceXY(averagePos1,averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
-void Navigating::chechStuckByEncoder(const struct timespec& time, VECTOR3 currentPos)
-{
-	mLastEncoderCheckTime = time;
-
-	//エンコーダパルスの差分値の取得
-	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
-	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
-
-	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//既にスタック判定中である
-	{
-		mPrevDeltaPulseL = 0;//リセット
-		mPrevDeltaPulseR = 0;
-		return;
-	}
-
-	//Debug::print(LOG_SUMMARY, "NAVIGATING: Encoder Pulse(LEFT RIGHT)= (%llu %llu)\r\n", deltaPulseL, deltaPulseR);//パルスの出力
-
-	//前回が閾値以上で、今回が閾値以下ならスタック判定する
-	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
-	{
-		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
-		{
-			//スタック判定
-			gBuzzer.start(200, 50 ,3);
-			Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by pulse count(%llu %llu) at (%f %f)\r\n",deltaPulseL,deltaPulseR,currentPos.x,currentPos.y);
-			gEscapingByStabiState.setRunMode(true);
-		}
-	}
-	mPrevDeltaPulseL = deltaPulseL;
-	mPrevDeltaPulseR = deltaPulseR;
-}
 void Navigating::navigationMove(double distance) const
 {
 	//過去の座標の平均値を計算する
@@ -687,7 +650,11 @@ void Navigating::navigationMove(double distance) const
 
 	//新しい速度を計算
 	double speed = MOTOR_MAX_POWER;
-	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;//接近したら速度を落とす
+	if(distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)
+	{
+		speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;	//接近したら速度を落とす
+		gEncoderMonitoringState.setRunMode(false);		//エンコーダによるスタック判定をOFF
+	}
 
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n",mLastPos.size(),averagePos.x,averagePos.y,currentPos.x,currentPos.y);
 	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n",distance * DEGREE_2_METER,deltaDirection,deltaDirection > 0 ? "LEFT" : "RIGHT");
@@ -857,7 +824,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CHECKING:
-		if(Time::dt(time,mLastUpdateTime) > 1.0)
+		// 最後の行動が直進だったら，Gyroの補正を考慮してちょっと待ってから処理を開始する．
+		if( ( Time::dt(time,mLastUpdateTime) > mProcessFrequency && !mIsLastActionStraight ) || ( Time::dt(time,mLastUpdateTime) > mProcessFrequencyForGyro && mIsLastActionStraight ) )
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
 			
@@ -1165,6 +1133,16 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 			mColorWidth = atoi(args[2].c_str());
 			return true;
 		}
+		else if ( args[1].compare("pf") == 0 )
+		{
+			mProcessFrequency = atof( args[2].c_str() );
+			return true;
+		}
+		else if ( args[1].compare("pfg") == 0 )
+		{
+			mProcessFrequencyForGyro = atof( args[2].c_str() );
+			return true;
+		}
 	}
 	else if(args.size() == 5)
 	{
@@ -1207,10 +1185,13 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		return true;
 	}
 	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+	Debug::print(LOG_SUMMARY, "pf/pfg [value]  : process frequency / process frequency for gyro\r\n");
 	Debug::print(LOG_SUMMARY, "threshold straight : %llu %llu\r\n", gStraightThresholdLow,gStraightThresholdHigh);
 	Debug::print(LOG_SUMMARY, "threshold rotation : %llu %llu\r\n", gRotationThresholdLow,gRotationThresholdHigh);
 	Debug::print(LOG_SUMMARY, "threshold curve    : %llu %llu\r\n", gCurveThresholdLow,gCurveThresholdHigh);
 	Debug::print(LOG_SUMMARY, "color width is %d\r\n", mColorWidth);
+	Debug::print(LOG_SUMMARY, "process frequency is %f\r\n", mProcessFrequency);
+	Debug::print(LOG_SUMMARY, "process frequency for gyro is %f\r\n", mProcessFrequencyForGyro);
 
 	Debug::print(LOG_PRINT, "detecting setmode [ON/OFF]: set detecting mode\r\n\
 detecting reset           : reset detecting retry count\r\n\
@@ -1307,6 +1288,9 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	mStraightTime = 0.8;
 	mColorWidth = 100;
 	mColorCount = 0.05;
+	mProcessFrequency = 1.0;
+	mProcessFrequencyForGyro = 2.0;
+	mTryCount = 3;
 }
 ColorAccessing::~ColorAccessing()
 {

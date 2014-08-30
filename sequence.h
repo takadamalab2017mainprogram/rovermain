@@ -87,7 +87,6 @@ class Navigating : public TaskBase
 {
 private:
 	struct timespec mLastNaviMoveCheckTime;	 //前回のGPSによるスタック判定とナビゲーション処理のチェック時刻
-	struct timespec mLastEncoderCheckTime;	 //前回のエンコーダチェック時刻
 	struct timespec mEscapingRandomStartTime;//EscapingRandomの開始時刻
 
 	//ゴール位置
@@ -97,9 +96,6 @@ private:
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
 
-	//前回のパルス数
-	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
-
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -107,7 +103,6 @@ protected:
 
 	void navigationMove(double distance) const; //通常時の移動処理
 	bool isStuckByGPS() const;//スタック判定(GPS)
-	void chechStuckByEncoder(const struct timespec& time, VECTOR3 currentPos);//スタック判定チェック(エンコーダ)
 	bool removeError();//異常値の除去
 
 	//次の状態に移行
@@ -141,6 +136,8 @@ class ColorAccessing : public TaskBase
 	double mStraightTime;
 	int mColorWidth; //中心からの赤色のずれ
 	double mColorCount; //赤色の割合
+	double mProcessFrequency;
+	double mProcessFrequencyForGyro;
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;
