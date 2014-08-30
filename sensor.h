@@ -147,6 +147,10 @@ public:
 	double getAx();
 	double getAy();
 	double getAz();
+	
+	double getTheta(); //XY
+	double getPsi(); //YZ
+	double getPhi(); //XZ
 
 	AccelerationSensor();
 	~AccelerationSensor();
