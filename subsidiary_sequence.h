@@ -185,6 +185,34 @@ public:
 	~MovementLogging();
 };
 
+class EncoderMonitoring : public TaskBase
+{
+	struct timespec mLastSamplingTime;			//パルス数をサンプリングした時刻を保存
+	struct timespec mLastUpdateTime;			//閾値を更新した時刻を保存
+	
+	unsigned long long mStoredPulse;			//一定時間内のパルス最大値(これを閾値に使用)
+	unsigned long long mCurrentMaxPulse;		//現在の期間内のパルス最大値
+	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;//前回のパルス数
+	
+	unsigned int mUpdateTimer;					//閾値を更新する間隔(秒)
+	unsigned long long mThresholdPulse;			//mStoredPulseからこの値を引いた値が閾値になる
+	unsigned long long mIgnoredDeltaUpperPulse;	//この値分以上パルスが増えた場合は閾値を更新しない
+	unsigned long long mIgnoredDeltaLowerPulse;	//この値分以上パルスが減った場合は閾値を更新しない
+	unsigned long long mUpperThreshold;			//閾値の上限
+	unsigned long long mLowerThreshold;			//閾値の下限
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string> args);
+
+	//閾値を更新する
+	virtual void updateThreshold();
+	virtual bool removeError(unsigned long long pulseL, unsigned long long pulseR);					//パルス数の異常値を除去 true: 異常値を検出
+public:
+	EncoderMonitoring();
+	~EncoderMonitoring();
+};
+
 extern Escaping gEscapingState;
 extern Waking gWakingState;
 extern Turning gTurningState;
@@ -195,3 +223,4 @@ extern EscapingByStabi gEscapingByStabiState;
 extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern MovementLogging gMovementLoggingState;
+extern EncoderMonitoring gEncoderMonitoringState;
