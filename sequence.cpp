@@ -1289,6 +1289,7 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	mColorWidth = 40;
 	mProcessFrequency = 1.0;
 	mProcessFrequencyForGyro = 2.0;
+	mTryCount = 3;
 }
 ColorAccessing::~ColorAccessing()
 {
