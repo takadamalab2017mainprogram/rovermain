@@ -200,6 +200,7 @@ class EncoderMonitoring : public TaskBase
 	unsigned long long mIgnoredDeltaLowerPulse;	//この値分以上パルスが減った場合は閾値を更新しない
 	unsigned long long mUpperThreshold;			//閾値の上限
 	unsigned long long mLowerThreshold;			//閾値の下限
+	bool mIsPrint;								//trueなら1秒ごとにパルス数を表示する
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);

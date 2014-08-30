@@ -972,7 +972,9 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 
 	//エンコーダパルスの差分値の取得
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
-	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
+	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
+
+	if(mIsPrint) Debug::print(LOG_SUMMARY, "EncoderMonitoring: current pulse count(%llu %llu)\r\n",deltaPulseL,deltaPulseR);
 	
 	//外れ値は無視する
 	if(removeError(deltaPulseL,deltaPulseR))
@@ -983,16 +985,16 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 	}
 	
 	//閾値の計算
-	unsigned long long pulse_threshold = std::max(mStoredPulse - mThresholdPulse, (unsigned long long)0);
+	unsigned long long pulse_threshold = std::min(mStoredPulse - mThresholdPulse, mUpperThreshold);
 	
 	//スタックチェック．前回が閾値以上で，今回が閾値以下ならスタック判定する
 	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//前回のパルス数が閾値以上
 	{
-		if(deltaPulseL < pulse_threshold && deltaPulseR < pulse_threshold)			//今回のパルス数が閾値以下
+		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//今回のパルス数が閾値以下
 		{
 			//スタック判定
 			gBuzzer.start(80, 10 ,6);
-			Debug::print(LOG_SUMMARY, "EncoderMonitoring: STUCK detected by pulse count(%llu %llu). Threshold: \r\n",deltaPulseL,deltaPulseR,pulse_threshold);
+			Debug::print(LOG_SUMMARY, "EncoderMonitoring: STUCK detected by pulse count(%llu %llu). Threshold:%llu\r\n",deltaPulseL,deltaPulseR,pulse_threshold);
 			gEscapingByStabiState.setRunMode(true);
 			setRunMode(false);
 			return;
@@ -1019,11 +1021,11 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 }
 bool EncoderMonitoring::onCommand(const std::vector<std::string> args)
 {
-	if(!gEncoderMonitoringState.isActive())
-	{
-		Debug::print(LOG_PRINT,"EncoderMonitoring is not active\r\n");
-		return true;
-	}
+	//if(!gEncoderMonitoringState.isActive())
+	//{
+	//	Debug::print(LOG_PRINT,"EncoderMonitoring is not active\r\n");
+	//	return true;
+	//}
 
 	if(args.size() == 2)
 	{
@@ -1032,6 +1034,13 @@ bool EncoderMonitoring::onCommand(const std::vector<std::string> args)
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
 			gMotorDrive.drive(0,0);
 			gEncoderMonitoringState.setRunMode(false);
+			return true;
+		}
+		else if(args[1].compare("print") == 0)
+		{
+			mIsPrint = !mIsPrint;
+			if(mIsPrint) Debug::print(LOG_PRINT,"Print ON!\r\n");
+			else Debug::print(LOG_PRINT,"Print OFF!\r\n");
 			return true;
 		}
 		else if(args[1].compare("show") == 0)
@@ -1044,7 +1053,8 @@ ThresholdPulse        : %llu\r\n\
 IgnoredDeltaUpperPulse: %llu\r\n\
 IgnoredDeltaLowerPulse: %llu\r\n\
 UpperThreshold        : %llu\r\n\
-LowerThreshold        : %llu\r\n",mStoredPulse,mUpdateTimer,mThresholdPulse,mIgnoredDeltaUpperPulse,mIgnoredDeltaLowerPulse,mUpperThreshold,mLowerThreshold);
+LowerThreshold        : %llu\r\n",mUpdateTimer,mStoredPulse,mThresholdPulse,mIgnoredDeltaUpperPulse,mIgnoredDeltaLowerPulse,mUpperThreshold,mLowerThreshold);
+			return true;
 		}
 	}
 	else if(args.size() == 4)
@@ -1104,6 +1114,7 @@ monitoring set deltaupper [pulse] : set IgnoredDeltaUpperPulse\r\n\
 monitoring set deltalower [pulse] : set umIgnoredDeltaLowerPulse\r\n\
 monitoring set upper [pulse]      : set mUpperThreshold\r\n\
 monitoring set lower [pulse]      : set mLowerThreshold\r\n\
+monitoring print                  : switch print\r\n\
 monitoring show                   : show each value\r\n");
 	return true;
 }
@@ -1122,19 +1133,19 @@ void EncoderMonitoring::updateThreshold()
 	}
 	
 	//あまりにも大きく閾値が更新される場合は無視する
-	if((mStoredPulse - mCurrentMaxPulse) >= mIgnoredDeltaLowerPulse) 
+	if((mStoredPulse >= mCurrentMaxPulse) && (mStoredPulse - mCurrentMaxPulse) >= mIgnoredDeltaLowerPulse) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. %llu >= mIgnoredDeltaLowerPulse(%llu))\r\n",(mStoredPulse - mCurrentMaxPulse),mIgnoredDeltaLowerPulse);
 		return;
 	}
-	else if((mCurrentMaxPulse - mStoredPulse) >= mIgnoredDeltaUpperPulse) 
+	else if((mStoredPulse < mCurrentMaxPulse) && (mCurrentMaxPulse - mStoredPulse) >= mIgnoredDeltaUpperPulse) 
 	{
-		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. %llu >= mIgnoredDeltaLowerPulse(%llu))\r\n",(mCurrentMaxPulse - mStoredPulse),mIgnoredDeltaUpperPulse);
+		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. %llu >= mIgnoredDeltaUpperPulse(%llu))\r\n",(mCurrentMaxPulse - mStoredPulse),mIgnoredDeltaUpperPulse);
 		return;
 	}
 	
 	mStoredPulse = mCurrentMaxPulse;
-	Debug::print(LOG_SUMMARY,"EncoderMonitoring: StoredPulse is updated!\r\n");
+	Debug::print(LOG_SUMMARY,"EncoderMonitoring: StoredPulse is updated! -> %llu\r\n",mStoredPulse);
 }
 bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long pulseR)
 {
@@ -1164,7 +1175,7 @@ bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long
 	}
 	return ret;
 }
-EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(),mLastUpdateTime(),mStoredPulse(2500),mUpdateTimer(30),mThresholdPulse(1000),mIgnoredDeltaUpperPulse(1500),mIgnoredDeltaLowerPulse(800),mUpperThreshold(3200),mLowerThreshold(1500)
+EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(),mLastUpdateTime(),mStoredPulse(2500),mUpdateTimer(30),mThresholdPulse(1000),mIgnoredDeltaUpperPulse(1500),mIgnoredDeltaLowerPulse(800),mUpperThreshold(3200),mLowerThreshold(1500),mIsPrint(false)
 {
 	setName("monitoring");
 	setPriority(UINT_MAX,TASK_INTERVAL_SEQUENCE);
