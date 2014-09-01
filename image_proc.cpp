@@ -32,7 +32,8 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	int MIN_S = mSMinThreshold;		//S < 255
 	int MIN_V = mVMinThreshold;		//V < 255
 	double DISTANCE_THRESHOLD = mDistanceThreshold;
-	double AREA_THRESHOLD = mMinAreaThreshold;
+	double FIND_AREA_THRESHOLD = mFindAreaThreshold;
+	double GOAL_AREA_THRESHOLD = mGoalAreaThreshold;
 	////////////////////////////
 
 	input_img = cv::cvarrToMat(src);						//カメラのストリーミング先を設定
@@ -55,7 +56,7 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
 			if(( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
 				min_x = x;
-				min_y = y;
+				min_y = y; 
 				break;
 			}
 		}
@@ -110,18 +111,14 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
 
-	if(count > 240*320*AREA_THRESHOLD)	//閾値0.05%に変更．2014/06/14 みなと
+	if(count > 240*320*FIND_AREA_THRESHOLD)	//閾値0.05%に変更．2014/06/14 みなと
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: distance= %f\r\n", distance);
 			*counter = (double)count / (240*320);
 
-			// もし30%以上が赤でうめつくされていたら．
-			// かつ y range = 200以上
-			// 今のところこの値は適当
-
-			if ( count > 240*320*0.3 && distance > DISTANCE_THRESHOLD ) 
+			if ( count > 240*320*GOAL_AREA_THRESHOLD && distance > DISTANCE_THRESHOLD ) 
 			{
 				Debug::print(LOG_SUMMARY, "***Goal is detected!***\r\n");
 				x_gap = INT_MIN;	//ゴール判定
@@ -539,9 +536,14 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 			mVMinThreshold = atoi ( args[2].c_str() );
 			return true;
 		}
-		else if ( args[1].compare ("setarea") == 0 )
+		else if ( args[1].compare ("setfindarea") == 0 )
 		{
-			mMinAreaThreshold = atof ( args[2].c_str() );
+			mFindAreaThreshold = atof ( args[2].c_str() );
+			return true;
+		}
+		else if ( args[1].compare ("setgoalarea") == 0 )
+		{
+			mGoalAreaThreshold = atof ( args[2].c_str() );
 			return true;
 		}
 		else if ( args[1].compare ("setdist") == 0 )
@@ -553,15 +555,16 @@ bool ImageProc::onCommand(const std::vector<std::string> args)
 		return false;
 	}
 
-	Debug::print(LOG_SUMMARY, "image [predict/exit/sky/para]  : test program\r\n");
-	Debug::print(LOG_SUMMARY, "image [setH/setS/setV/setdist/setarea] val : set threshold\r\n");
+	Debug::print(LOG_SUMMARY, "image [color/predict/exit/sky/para]  : test program\r\n");
+	Debug::print(LOG_SUMMARY, "image [setH/setS/setV/setdist/setfindarea/setgoalarea] val : set threshold\r\n");
 	// 閾値一覧
 	Debug::print(LOG_SUMMARY, "H Max Threshold : %d\r\n", mHMaxThreshold);
 	Debug::print(LOG_SUMMARY, "H Min Threshold : %d\r\n", mHMinThreshold);
 	Debug::print(LOG_SUMMARY, "S Min Threshold : %d\r\n", mSMinThreshold);
 	Debug::print(LOG_SUMMARY, "V Min Threshold : %d\r\n", mVMinThreshold);
 	Debug::print(LOG_SUMMARY, "Distance Threshold : %f\r\n", mDistanceThreshold);
-	Debug::print(LOG_SUMMARY, "Area Threshold : %f\r\n", mMinAreaThreshold);
+	Debug::print(LOG_SUMMARY, "Find Area Threshold : %f\r\n", mFindAreaThreshold);
+	Debug::print(LOG_SUMMARY, "Goal Area Threshold : %f\r\n", mGoalAreaThreshold);
 
 	return true;
 }
@@ -707,7 +710,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 	cvReleaseImage(&pHsv);
 }
 
-ImageProc::ImageProc() : mHMinThreshold(5),  mHMaxThreshold(175), mSMinThreshold(170), mVMinThreshold(60), mDistanceThreshold(200.0), mMinAreaThreshold(0.0005)
+ImageProc::ImageProc() : mHMinThreshold(5),  mHMaxThreshold(175), mSMinThreshold(170), mVMinThreshold(60), mDistanceThreshold(200.0), mFindAreaThreshold(0.0005), mGoalAreaThreshold(0.3)
 {
 	setName("image");
 	setPriority(UINT_MAX,UINT_MAX);

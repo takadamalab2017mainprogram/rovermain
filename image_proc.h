@@ -13,7 +13,8 @@ class ImageProc : public TaskBase
 	unsigned int mSMinThreshold;
 	unsigned int mVMinThreshold;
 	double mDistanceThreshold;
-	double mMinAreaThreshold;
+	double mFindAreaThreshold;
+	double mGoalAreaThreshold;
 	
 protected:
 	virtual bool onCommand(const std::vector<std::string> args);
