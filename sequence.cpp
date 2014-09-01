@@ -778,7 +778,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	mCurrentMotorPower = 40;
 	actCount = 0;
 	gThresholdHigh = 900;
-	gThresholdLow = 100;
+	gThresholdLow = 200;
 	gPastDeltaPulseL = 0;
 	gPastDeltaPulseR = 0;
 	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
@@ -1279,12 +1279,12 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-	gStraightThresholdHigh = 900;
-	gStraightThresholdLow = 100;
-	gRotationThresholdHigh = 900;
-	gRotationThresholdLow = 100;
-	gCurveThresholdHigh = 900;
-	gCurveThresholdLow = 100;
+	gStraightThresholdHigh = 2000;
+	gStraightThresholdLow = 1000;
+	gRotationThresholdHigh = 500;
+	gRotationThresholdLow = 200;
+	gCurveThresholdHigh = 300;
+	gCurveThresholdLow = 200;
 	mStraightTime = 0.8;
 	mColorWidth = 100;
 	mColorCount = 0.05;
