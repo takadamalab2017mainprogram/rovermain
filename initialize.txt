@@ -1,0 +1,22 @@
+testing
+detecting setmode ON 
+navigating 35.674638 139.522828
+motor p 0.004 0.0 0.0
+motor r 100 90
+image setH 5 160
+image setS 100
+image setV 0
+image setdist 200.0
+image setarea 0.0005
+gyro calib 0.304365 -0.643921 0.222596
+detecting threshold straight high 2000
+detecting threshold straight low 1000
+detecting threshold rotation high 500
+detecting threshold rotation low 200
+detecting threshold curve high 300
+detecting threshold curve low 200
+detecting colorwidth 100
+detecting pf 1.0
+detecting pfg 2.0
+monitoring set upper 3000
+
