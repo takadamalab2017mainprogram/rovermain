@@ -21,7 +21,7 @@ private:
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 	virtual void onUpdate(const struct timespec& time);
 	virtual void restart();
 
@@ -59,7 +59,7 @@ private:
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	//サーボを指定されたangle[0-SERVO_MAX_RANGE]になるように制御を開始する
 	//(※2014verはSoftware PWM使用のため細かい角度の調整は難しい)
@@ -84,7 +84,7 @@ private:
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	//サーボを指定されたangle[0-1]になるように制御を開始する
 	void start(double angle);
@@ -105,7 +105,7 @@ private:
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 public:
 	void setState(bool sleep);

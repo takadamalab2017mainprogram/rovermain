@@ -12,7 +12,7 @@ class Testing : public TaskBase
 {
 protected:
 	virtual bool onInit(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	//次の状態に移行
 	void nextState();
@@ -103,7 +103,7 @@ private:
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	void navigationMove(double distance) const; //通常時の移動処理
 	bool isStuckByGPS() const;//スタック判定(GPS)
@@ -156,7 +156,7 @@ class ColorAccessing : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	void nextState();	//次の状態に移行
 	void prevState();	//前の状態に移行

@@ -386,7 +386,7 @@ int ImageProc::wadachiExiting(IplImage* pImage)
 		}
 	}
 }
-bool ImageProc::onCommand(const std::vector<std::string> args)
+bool ImageProc::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{

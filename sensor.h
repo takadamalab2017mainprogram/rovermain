@@ -33,7 +33,7 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 
 	//コマンドを処理する
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	//最後にアップデートされた気圧を返す
 	int get();
@@ -62,7 +62,7 @@ protected:
 	//現在の座標をアップデートする
 	virtual void onUpdate(const struct timespec& time);
 	//コマンドを処理する
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 public:
 	//現在の座標を取得する(falseを返した場合は場所が不明)
@@ -99,7 +99,7 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 
 	//コマンドを処理する
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	//最後にアップデートされたデータを返す
 	bool getRVel(VECTOR3& vel);
@@ -140,7 +140,7 @@ protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	//最後にアップデートされたデータを返す
 	bool getAccel(VECTOR3& acc);
@@ -167,7 +167,7 @@ protected:
 	//センサの使用を終了する
 	virtual void onClean();
 	//コマンドを処理する
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 public:
 	//現在の明るさを取得する
@@ -181,7 +181,7 @@ public:
 class WebCamera : public TaskBase
 {
 protected:
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 	virtual void onClean();
 public:
 	void start(const char* filename = NULL);
@@ -205,7 +205,7 @@ protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	bool ping();//距離センサーに計測を指示する
 
@@ -231,7 +231,7 @@ class CameraCapture : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 	virtual void onUpdate(const struct timespec& time);
 
 	void verifyCamera(bool reinitialize = true);

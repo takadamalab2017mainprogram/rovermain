@@ -52,7 +52,7 @@ bool Testing::onInit(const struct timespec& time)
 
 	return true;
 }
-bool Testing::onCommand(const std::vector<std::string> args)
+bool Testing::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{
@@ -695,7 +695,7 @@ void Navigating::navigationMove(double distance) const
 	//方向と速度を変更
 	gMotorDrive.drivePID(deltaDirection ,speed);
 }
-bool Navigating::onCommand(const std::vector<std::string> args)
+bool Navigating::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 1)
 	{
@@ -1090,7 +1090,7 @@ void ColorAccessing::setMotorPower(int mode)
 	mCurrentMotorPower = mMotorPower;
 	Debug::print(LOG_SUMMARY, "motorpower : %d\r\n", mMotorPower);
 }
-bool ColorAccessing::onCommand(const std::vector<std::string> args)
+bool ColorAccessing::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{

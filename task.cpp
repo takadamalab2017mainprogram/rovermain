@@ -1,6 +1,9 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <ctype.h>
+#include <string.h>
+#include <stdio.h>
 #include "utils.h"
 #include "task.h"
 
@@ -252,7 +255,7 @@ void TaskManager::setRunMode(bool running)
 bool TaskManager::executeFile(const char* path)
 {
     Debug::print(LOG_SUMMARY, "Reading %s...", path);
-    std::ifstream ifs( path, ios::in );
+    std::ifstream ifs( path );
     if(ifs.good())
     {
         Debug::print(LOG_SUMMARY, "OK\r\nExecuting Commands...\r\n");
@@ -355,13 +358,13 @@ bool TaskManager::onCommand(const std::vector<std::string>& args)
         if(args[0].compare("start") == 0)
         {
             bool result = false;
-            for(int i = 1; i < args.size(); ++i)
+            for(int i = 1; i < (int)args.size(); ++i)
                 if(setRunModeByCommand(args[i], true))result = true;
             return result;
         }else if(args[0].compare("stop") == 0)
         {
             bool result = false;
-            for(int i = 1; i < args.size(); ++i)
+            for(int i = 1; i < (int)args.size(); ++i)
                 if(setRunModeByCommand(args[i], false))result = true;
             return result;
         }
@@ -372,7 +375,7 @@ bool TaskManager::onCommand(const std::vector<std::string>& args)
         if(args[0].compare("alias") == 0 && args[1].compare("alias") != 0)
         {
             std::string cmd;
-            for(int i = 2; i < args.size();++i)
+            for(int i = 2; i < (int)args.size();++i)
             {
                 cmd.append(args[i]);
                 cmd.append(" ");

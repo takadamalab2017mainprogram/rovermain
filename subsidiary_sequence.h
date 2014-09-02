@@ -17,7 +17,7 @@ class WadachiPredicting : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	bool isWorking(const struct timespec& time);//éñëOåüímìÆçÏíÜÇ©î€Ç©
 	WadachiPredicting();
@@ -58,7 +58,7 @@ class EscapingByStabi : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	unsigned int getTryCount();
 	EscapingByStabi();
@@ -177,7 +177,7 @@ class MovementLogging : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	void write(const std::string& filename,const char* fmt, ... );
 public:
