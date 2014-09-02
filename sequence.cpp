@@ -877,7 +877,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 					else if ( -mColorWidth <= x_pos && x_pos <= mColorWidth )
 					{
 					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\r\n", x_pos);
-						mCurStep = STEP_STOPPING_LONG;
+						mCurStep = STEP_STOPPING_VERYLONG;
 						gMotorDrive.startPID(0,mMotorPower);
 						mIsLastActionStraight = true;
 						mAngleOnBegin = gGyroSensor.getRz();
@@ -983,7 +983,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_STOPPING_LONG:
-		if(Time::dt(time,mLastUpdateTime) > mStraightTime){//1.5
+		if(Time::dt(time,mLastUpdateTime) > mStraightTime ){//1.5
+			mCurStep = STEP_DEACCELERATE;
+		}
+		break;
+	case STEP_STOPPING_VERYLONG:
+		if ( Time::dt ( time, mLastUpdateTime ) > mStraightTimeFromFar )
+		{
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
@@ -1126,6 +1132,11 @@ bool ColorAccessing::onCommand(const std::vector<std::string> args)
 		else if(args[1].compare("straighttime") == 0)
 		{
 			mStraightTime = atof(args[2].c_str());
+			return true;
+		}
+		else if (args[1].compare("straighttimef") == 0)
+		{
+			mStraightTimeFromFar = atof(args[2].c_str());
 			return true;
 		}
 		else if(args[1].compare("colorwidth") == 0)
@@ -1286,6 +1297,7 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	gCurveThresholdHigh = 300;
 	gCurveThresholdLow = 200;
 	mStraightTime = 0.8;
+	mStraightTimeFromFar = 2.3;
 	mColorWidth = 100;
 	mColorCount = 0.05;
 	mProcessFrequency = 1.0;

@@ -121,7 +121,18 @@ class ColorAccessing : public TaskBase
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
-	enum STEP{STEP_STARTING, STEP_TURNING, STEP_STOPPING_FAST, STEP_STOPPING_LONG, STEP_CHECKING, STEP_DEACCELERATE, STEP_GO_BACK, STEP_CHANGE_OF_DIRECTION, STEP_LEAVING};
+	enum STEP{
+		STEP_STARTING, 
+		STEP_TURNING, 
+		STEP_STOPPING_FAST, 
+		STEP_STOPPING_LONG, 
+		STEP_STOPPING_VERYLONG,
+		STEP_CHECKING, 
+		STEP_DEACCELERATE, 
+		STEP_GO_BACK, 
+		STEP_CHANGE_OF_DIRECTION, 
+		STEP_LEAVING
+	};
 	enum STEP mCurStep;
     double mAngleOnBegin;
     bool mIsLastActionStraight;
@@ -134,6 +145,7 @@ class ColorAccessing : public TaskBase
 	int mCurrentMotorPower;
 	int actCount;
 	double mStraightTime;
+	double mStraightTimeFromFar;
 	int mColorWidth; //中心からの赤色のずれ
 	double mColorCount; //赤色の割合
 	double mProcessFrequency;
