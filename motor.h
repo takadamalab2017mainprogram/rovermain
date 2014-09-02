@@ -118,7 +118,7 @@ protected:
 		virtual void onUpdate(const struct timespec& time);
 
 		//コマンド受付
-		virtual bool onCommand(const std::vector<std::string> args);
+		virtual bool onCommand(const std::vector<std::string>& args);
 
 		void updatePIDState(double p,double i,double d);
 		void updatePIDMove();

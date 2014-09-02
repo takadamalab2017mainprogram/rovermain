@@ -17,7 +17,7 @@ class ImageProc : public TaskBase
 	double mGoalAreaThreshold;
 	
 protected:
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	int howColorGap(IplImage* pImage, double* count);//画像中心から特定の色重心がどれだけずれているか
 	bool isParaExist(IplImage* pImage);//画像内にパラシュートが存在するか確認する

@@ -107,7 +107,7 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 		break;
 	}
 }
-bool WadachiPredicting::onCommand(const std::vector<std::string> args)
+bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{
@@ -360,7 +360,7 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 	}
 	mFlag = !mFlag;
 }
-bool EscapingByStabi::onCommand(const std::vector<std::string> args)
+bool EscapingByStabi::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{
@@ -853,7 +853,7 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	mPrevDeltaPulseL = deltaPulseL;
 	mPrevDeltaPulseR = deltaPulseR;
 }
-bool MovementLogging::onCommand(const std::vector<std::string> args)
+bool MovementLogging::onCommand(const std::vector<std::string>& args)
 {
 	if(!gMovementLoggingState.isActive())
 	{

@@ -19,7 +19,7 @@ void Buzzer::onClean()
 {
 	digitalWrite(mPin, LOW);
 }
-bool Buzzer::onCommand(const std::vector<std::string> args)
+bool Buzzer::onCommand(const std::vector<std::string>& args)
 {
 	int period, on_period, off_period, count;
 	switch(args.size())
@@ -166,7 +166,7 @@ void ParaServo::onClean()
 {
 	stop();
 }
-bool ParaServo::onCommand(const std::vector<std::string> args)
+bool ParaServo::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() >= 2)
 	{
@@ -258,7 +258,7 @@ void StabiServo::onClean()
 {
 	stop();
 }
-bool StabiServo::onCommand(const std::vector<std::string> args)
+bool StabiServo::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() >= 2)
 	{
@@ -333,7 +333,7 @@ void XBeeSleep::onClean()
 {
 	digitalWrite(mPin, LOW);
 }
-bool XBeeSleep::onCommand(const std::vector<std::string> args)
+bool XBeeSleep::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{

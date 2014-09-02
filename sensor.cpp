@@ -158,7 +158,7 @@ void PressureSensor::onUpdate(const struct timespec& time)
 	}
 }
 
-bool PressureSensor::onCommand(const std::vector<std::string> args)
+bool PressureSensor::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())return false;
 	Debug::print(LOG_SUMMARY, "Pressure: %d\r\n",mPressure);
@@ -244,7 +244,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		}
 	}
 }
-bool GPSSensor::onCommand(const std::vector<std::string> args)
+bool GPSSensor::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())return false;
 
@@ -413,7 +413,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 		mLastSampleTime = time;
 	}
 }
-bool GyroSensor::onCommand(const std::vector<std::string> args)
+bool GyroSensor::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
 	{
@@ -564,7 +564,7 @@ void AccelerationSensor::onUpdate(const struct timespec& time)
   mAccel.y = y / 64.0f;
   mAccel.z = z / 64.0f;
 }
-bool AccelerationSensor::onCommand(const std::vector<std::string> args)
+bool AccelerationSensor::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())
 	{
@@ -628,7 +628,7 @@ bool LightSensor::onInit(const struct timespec& time)
 void LightSensor::onClean()
 {
 }
-bool LightSensor::onCommand(const std::vector<std::string> args)
+bool LightSensor::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())return false;
 	if(get())Debug::print(LOG_SUMMARY,"light is high\r\n");
@@ -652,7 +652,7 @@ LightSensor::~LightSensor()
 // Webカメラ
 ///////////////////////////////////////////////
 
-bool WebCamera::onCommand(const std::vector<std::string> args)
+bool WebCamera::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())return false;
 	if(args.size() >= 2)
@@ -790,7 +790,7 @@ void DistanceSensor::onUpdate(const struct timespec& time)
 {
 
 }
-bool DistanceSensor::onCommand(const std::vector<std::string> args)
+bool DistanceSensor::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())return false;
 	if(args.size() == 1)
@@ -852,7 +852,7 @@ void CameraCapture::onClean()
 	cvReleaseCapture(&mpCapture);
 	mpCapture = NULL;
 }
-bool CameraCapture::onCommand(const std::vector<std::string> args)
+bool CameraCapture::onCommand(const std::vector<std::string>& args)
 {
 	if(!isActive())return false;
 	if(args.size() == 2)

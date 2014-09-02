@@ -295,7 +295,7 @@ void MotorDrive::drivePID(double angle,int power)
 	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
 	mDriveMode = DRIVE_PID;
 }
-bool MotorDrive::onCommand(const std::vector<std::string> args)
+bool MotorDrive::onCommand(const std::vector<std::string>& args)
 {
 	int size = args.size();
 	if(size == 1)
