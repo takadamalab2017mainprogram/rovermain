@@ -56,6 +56,8 @@ bool parseInitializer()
 		while(!ifs.eof() && !ifs.fail() && !ifs.bad())
 		{
 			std::getline(ifs,str);
+			if(str[0] == '/' && str[1] == '/') continue;//initialize.txtのうち"//"で始まる行は無視
+
 			pTaskMan->command(str);
 		}
 		return true;

@@ -3,6 +3,7 @@ detecting setmode ON
 navigating 35.674638 139.522828
 motor p 0.004 0.0 0.0
 motor r 100 90
+//*** parameter ***
 image setH 5 160
 image setS 100
 image setV 0
@@ -19,6 +20,7 @@ detecting colorwidth 100
 detecting pf 1.0
 detecting pfg 2.0
 monitoring set upper 3000
+//*** alias ***
 alias ww motor w
 alias hh motor h
 alias detect start detecting
