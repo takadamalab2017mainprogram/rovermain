@@ -858,25 +858,26 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 					if(mIsGPS) Debug::print(LOG_SUMMARY, "Detecting: Control Finish at (%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
 					nextState();
 				}
-				else if ( count < mColorCount ) {
+				else if ( count < mColorCount ) // もし，コーンから遠かったら 
+				{
 					Debug::print(LOG_SUMMARY, "Detecting: FAR count:%f%%\r\n", count);
 					if ( x_pos < -mColorWidth )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\r\n", x_pos);
+						Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(0,mMotorPower);
 						mIsLastActionStraight = false;
 					}
 					else if ( mColorWidth < x_pos )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\r\n", x_pos);
+						Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(mMotorPower,0);
 						mIsLastActionStraight = false;
 					}
 					else if ( -mColorWidth <= x_pos && x_pos <= mColorWidth )
 					{
-					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\r\n", x_pos);
+						Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_VERYLONG;
 						gMotorDrive.startPID(0,mMotorPower);
 						mIsLastActionStraight = true;
@@ -885,7 +886,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 						actCount = 0;
 					}
 				}
-				else if( count > mColorCount ) {
+				else if( count > mColorCount ) // もし，コーンに近かったら 
+				{
 					Debug::print(LOG_SUMMARY, "Detecting: NEAR count:%f\r\n", count);
 					if ( x_pos < -mColorWidth+20 )
 					{
@@ -935,8 +937,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
                         gMotorDrive.drive(mMotorPower,0);
                     }
                 }
-                //前回の行動が直進以外なら
-				else
+				else //前回の行動が直進以外なら
                 {
                 	double diff = GyroSensor::normalize(gGyroSensor.getRz() - mAngleOnBegin);
 
@@ -971,26 +972,29 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_TURNING:
-		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
+		if(Time::dt(time,mLastUpdateTime) > 0.5)
+		{
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
 			setMotorPower(100);
 		}
 		break;
 	case STEP_STOPPING_FAST:
-		if(Time::dt(time,mLastUpdateTime) > 0.5){//0.5
+		if(Time::dt(time,mLastUpdateTime) > 0.5)
+		{
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_STARTING;
 			setMotorPower(-100);
 		}
 		break;
 	case STEP_STOPPING_LONG:
-		if(Time::dt(time,mLastUpdateTime) > mStraightTime ){//1.5
+		if(Time::dt(time,mLastUpdateTime) > mStraightTime)
+		{
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
 	case STEP_STOPPING_VERYLONG:
-		if ( Time::dt ( time, mLastUpdateTime ) > mStraightTimeFromFar )
+		if(Time::dt(time,mLastUpdateTime) > mStraightTimeFromFar)
 		{
 			mCurStep = STEP_DEACCELERATE;
 		}
@@ -1154,14 +1158,14 @@ bool ColorAccessing::onCommand(const std::vector<std::string>& args)
 			mColorWidth = atoi(args[2].c_str());
 			return true;
 		}
-		else if ( args[1].compare("pf") == 0 )
+		else if(args[1].compare("pf") == 0)
 		{
-			mProcessFrequency = atof( args[2].c_str() );
+			mProcessFrequency = atof(args[2].c_str());
 			return true;
 		}
-		else if ( args[1].compare("pfg") == 0 )
+		else if(args[1].compare("pfg") == 0)
 		{
-			mProcessFrequencyForGyro = atof( args[2].c_str() );
+			mProcessFrequencyForGyro = atof(args[2].c_str());
 			return true;
 		}
 	}
