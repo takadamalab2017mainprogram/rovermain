@@ -272,6 +272,10 @@ void MotorDrive::drive(int powerL, int powerR)
 
 	mAngle = 0;
 }
+void MotorDrive::drive(int power)
+{
+	drive(power,power);
+}
 
 void MotorDrive::set(double p,double i,double d)
 {

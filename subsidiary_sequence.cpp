@@ -57,7 +57,7 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
 			mCurStep = STEP_STOPPING;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 		}
 		break;
 	case STEP_STOPPING:
@@ -142,7 +142,7 @@ bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWARD;
-	gMotorDrive.drive(-100,-100);
+	gMotorDrive.drive(-100);
 	gCameraCapture.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	mEscapingTriedCount = 0;
@@ -166,7 +166,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
 			mCurStep = STEP_AFTER_BACKWARD;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 			gCameraCapture.startWarming();
 		}
 		break;
@@ -200,7 +200,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			//画像撮影動作を行う
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 			gCameraCapture.startWarming();
 		}
 		break;
@@ -231,7 +231,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		//画像処理の結果、直進する必要があった場合
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
-			gMotorDrive.drive(-100,-100);
+			gMotorDrive.drive(-100);
 			mCurStep = STEP_BACKWARD;
 			mLastUpdateTime = time;
 		}
@@ -242,7 +242,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		{
 			gCameraCapture.startWarming();
 			mCurStep = STEP_BACKWARD;
-			gMotorDrive.drive(-100,-100);
+			gMotorDrive.drive(-100);
 			mLastUpdateTime = time;
 		}
 		break;
@@ -279,13 +279,13 @@ void Escaping::stuckMoveRandom()
 		//その場回転を行う
 		Debug::print(LOG_SUMMARY, "Escaping(random): turning\r\n");
 		mCurRandomStep = RANDOM_STEP_FORWARD;
-		gMotorDrive.drive(100,100);
+		gMotorDrive.drive(100);
 		break;
 	case RANDOM_STEP_FORWARD:
 		//前進を行う
 		Debug::print(LOG_SUMMARY, "Escaping(random): forward\r\n");
 		mCurRandomStep = RANDOM_STEP_BACKWARD;
-		gMotorDrive.drive(-100,-100);
+		gMotorDrive.drive(-100);
 		break;
 	}
 }
@@ -331,7 +331,7 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 	
 	mLastUpdateTime = time;
 	gStabiServo.setRunMode(true);
-	//gMotorDrive.drive(20,20);
+	//gMotorDrive.drive(20);
 	mFlag = false;
 	mTryCount = 0;
 	return true;
@@ -344,12 +344,12 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 
 	if(!mFlag)
 	{
-		gMotorDrive.drive(0,0);
+		gMotorDrive.drive(0);
 		gStabiServo.start(mAngle);
 	}
 	else
 	{
-		gMotorDrive.drive(100,100);
+		gMotorDrive.drive(100);
 		gStabiServo.start(STABI_BASE_ANGLE);
 		mTryCount++;
 
@@ -371,7 +371,7 @@ bool EscapingByStabi::onCommand(const std::vector<std::string>& args)
 		}
 		if(args[1].compare("stop") == 0)
 		{
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 			Debug::print(LOG_SUMMARY, "Escaping By Stabi Finished!\r\n");
 			gEscapingByStabiState.setRunMode(false);
 			return true;
@@ -411,7 +411,7 @@ bool EscapingRandom::onInit(const struct timespec& time)
 	gStabiServo.setRunMode(true);
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWARD;
-	gMotorDrive.drive(-100,-100);
+	gMotorDrive.drive(-100);
 	return true;
 }
 void EscapingRandom::onUpdate(const struct timespec& time)
@@ -434,7 +434,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		{
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(100,100);
+			gMotorDrive.drive(100);
 			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
 		}
 		break;
@@ -444,7 +444,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		{
 			mCurStep = STEP_BACKWARD;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(-100,-100);
+			gMotorDrive.drive(-100);
 			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
 		}
 		break;
@@ -465,7 +465,7 @@ bool Waking::onInit(const struct timespec& time)
 	mCurStep = STEP_START;
 
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(mStartPower,mStartPower);		//モータ出力
+	gMotorDrive.drive(mStartPower);		//モータ出力
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -475,7 +475,7 @@ bool Waking::onInit(const struct timespec& time)
 }
 void Waking::onClean()
 {
-	gMotorDrive.drive(0,0);
+	gMotorDrive.drive(0);
 }
 void Waking::onUpdate(const struct timespec& time)
 {
@@ -488,7 +488,7 @@ void Waking::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 			setRunMode(false);
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 		}
 		if(gAccelerationSensor.getPhi() < mAngleThreshold)	//角度が一定以下になったら着地と判定(加速度センサを採用)
 		{
@@ -496,12 +496,12 @@ void Waking::onUpdate(const struct timespec& time)
 			gBuzzer.start(30,20,2);
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 		}
 
 		//回転した角度に応じてモータの出力を変化させる
 		//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
-		//gMotorDrive.drive(power,power);
+		//gMotorDrive.drive(power);
 		break;
 
 	double dt;
@@ -511,7 +511,7 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 		}
 		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断(ジャイロを採用)
 		{
@@ -530,12 +530,12 @@ void Waking::onUpdate(const struct timespec& time)
 			gBuzzer.start(30,20,2);
             mLastUpdateTime = time;
             mCurStep = STEP_VERIFY;
-            gMotorDrive.drive(0, 0);
+            gMotorDrive.drive(0);
         }
 		else
 		{
 			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2で割る*/)), 0);
-			gMotorDrive.drive(tmp_power, tmp_power);
+			gMotorDrive.drive(tmp_power);
 		}
 		break;
 
@@ -558,7 +558,7 @@ void Waking::onUpdate(const struct timespec& time)
 			mCurStep = STEP_START;
 			mAngleOnBegin = gGyroSensor.getRvx();
 			power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//試行回数ごとにモータ出力を上げる
-			gMotorDrive.drive(power,power);
+			gMotorDrive.drive(power);
 
 			if(++mWakeRetryCount > WAKING_RETRY_COUNT)
 			{
@@ -662,7 +662,7 @@ void Turning::onUpdate(const struct timespec& time)
 	if(Time::dt(time,mLastUpdateTime) >= 5 || turnedAngle > 15)
 	{
 		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
-		gMotorDrive.drive(0,0);
+		gMotorDrive.drive(0);
 		setRunMode(false);
 	}else
 	{
@@ -856,7 +856,7 @@ bool MovementLogging::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	mLastUpdateTime = time;
-	gMotorDrive.drive(100,100);
+	gMotorDrive.drive(100);
 	return true;
 }
 void MovementLogging::onUpdate(const struct timespec& time)
@@ -935,7 +935,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		if(args[1].compare("stop") == 0)
 		{
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 			gMovementLoggingState.setRunMode(false);
 			return true;
 		}
@@ -1103,7 +1103,7 @@ bool EncoderMonitoring::onCommand(const std::vector<std::string>& args)
 		if(args[1].compare("stop") == 0)
 		{
 			Debug::print(LOG_PRINT,"Command Executed!\r\n");
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 			gEncoderMonitoringState.setRunMode(false);
 			return true;
 		}

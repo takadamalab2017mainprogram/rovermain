@@ -400,7 +400,7 @@ void Separating::onUpdate(const struct timespec& time)
 		if(!gTurningState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
-			gMotorDrive.drive(100,100);
+			gMotorDrive.drive(100);
 			mLastUpdateTime = time;
 			mCurStep = STEP_GO_FORWARD;
 		}
@@ -408,7 +408,7 @@ void Separating::onUpdate(const struct timespec& time)
 	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
 		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
-			gMotorDrive.drive(0,0);
+			gMotorDrive.drive(0);
 			nextState();
 		}
 		break;
@@ -470,7 +470,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//ゴールが設定されていないため移動できない
 		Debug::print(LOG_SUMMARY, "NAVIGATING : Please set goal!\r\n");
-		gMotorDrive.drive(0,0);
+		gMotorDrive.drive(0);
 		nextState();
 		return;
 	}
@@ -501,7 +501,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	if(distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD)
 	{
 		//ゴール判定
-		gMotorDrive.drive(0,0);
+		gMotorDrive.drive(0);
 		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 		Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n",currentPos.x,currentPos.y);
 		nextState();
@@ -723,8 +723,8 @@ void Navigating::nextState()
 		gTestingState.setRunMode(true);
 		gPictureTakingState.setRunMode(true);
 	
-		gMotorDrive.drive(0,0);//念のため2回
-		gMotorDrive.drive(0,0);
+		gMotorDrive.drive(0);//念のため2回
+		gMotorDrive.drive(0);
 	
 		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "Goal!\r\n");
@@ -976,7 +976,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	case STEP_TURNING:
 		if(Time::dt(time,mLastUpdateTime) > 0.5)
 		{
-			gMotorDrive.drive(0, 0);
+			gMotorDrive.drive(0);
 			mCurStep = STEP_STARTING;
 			setMotorPower(100);
 		}
@@ -984,7 +984,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	case STEP_STOPPING_FAST:
 		if(Time::dt(time,mLastUpdateTime) > 0.5)
 		{
-			gMotorDrive.drive(0, 0);
+			gMotorDrive.drive(0);
 			mCurStep = STEP_STARTING;
 			setMotorPower(-100);
 		}
@@ -1008,13 +1008,13 @@ void ColorAccessing::onUpdate(const struct timespec& time)
             mLastUpdateTime = time;
             mCurStep = STEP_STARTING;
             
-            gMotorDrive.drive(0, 0);
+            gMotorDrive.drive(0);
 			setMotorPower(0);
         }
 		else
 		{
 			int tmp_power = std::max((int)((1 - dt / DEACCELERATE_DURATION) * (20 / 2/*2で割る*/)), 0);	//ToDo: 20を変数に置き換える
-			gMotorDrive.drive(tmp_power, tmp_power);
+			gMotorDrive.drive(tmp_power);
 		}
 		break;
 	case STEP_GO_BACK:	//バックする
@@ -1023,7 +1023,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 			gBuzzer.start(100);
 			Debug::print(LOG_SUMMARY, "Detecting: CHANGE_OF_DIRECTION start!\r\n");
 			mCurStep = STEP_CHANGE_OF_DIRECTION;
-			gMotorDrive.drive(0, 0);
+			gMotorDrive.drive(0);
 			gTurningState.setRunMode(true);
 		}
 		break;
@@ -1032,7 +1032,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		{
 			gBuzzer.start(100);
 			Debug::print(LOG_SUMMARY, "Detecting: TURNING Finished!\r\n");
-			gMotorDrive.drive(100,100);
+			gMotorDrive.drive(100);
 			mLastUpdateTime = time;
 			mCurStep = STEP_LEAVING;
 		}
@@ -1234,8 +1234,8 @@ void ColorAccessing::nextState()
 	gTestingState.setRunMode(true);
 	gPictureTakingState.setRunMode(true);
 	
-	gMotorDrive.drive(0,0);//念のため2回
-	gMotorDrive.drive(0,0);
+	gMotorDrive.drive(0);//念のため2回
+	gMotorDrive.drive(0);
 	
 	Debug::print(LOG_SUMMARY, "Detecting Finish! ");
 	Time::showNowTime();
@@ -1266,7 +1266,7 @@ bool ColorAccessing::timeCheck(const struct timespec& time)
 		
 		Debug::print(LOG_SUMMARY, "Detecting: GO_BACK start!\r\n");
 		mCurStep = STEP_GO_BACK;
-		gMotorDrive.drive(-100, -100);
+		gMotorDrive.drive(-100);
 		mLastUpdateTime = time;
 		gBuzzer.start(10,5,8);
 	}
