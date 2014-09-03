@@ -1021,7 +1021,7 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		mLastUpdateTime = time;
 	}
 }
-bool EncoderMonitoring::onCommand(const std::vector<std::string> args)
+bool EncoderMonitoring::onCommand(const std::vector<std::string>& args)
 {
 	//if(!gEncoderMonitoringState.isActive())
 	//{

@@ -204,7 +204,7 @@ class EncoderMonitoring : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string> args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	//è‡’l‚ğXV‚·‚é
 	virtual void updateThreshold();

@@ -110,7 +110,7 @@ bool TaskManager::command(const std::string& arg)
     std::string arg_mod(arg);
     
     //文字列の下処理
-    std::transform(arg_mod.begin(), arg_mod.end(), arg_mod.begin(), toLower<char>);//全て小文字に変換
+    //std::transform(arg_mod.begin(), arg_mod.end(), arg_mod.begin(), toLower<char>);//全て小文字に変換
 #ifdef USE_ALIAS
     applyAlias(arg_mod);//Aliasを適用
 #endif

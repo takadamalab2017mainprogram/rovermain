@@ -24,3 +24,4 @@ alias hh motor h
 alias detect start detecting
 alias navi start navigating
 alias setgoal navigating here
+alias setstabi stabiservo 0.7
