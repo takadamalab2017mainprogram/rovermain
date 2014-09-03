@@ -30,9 +30,7 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	// H <= mHMinThreshold, mHMaxThreshold <= H
 	// mSMinThreshold <= S <= 255
 	// mVMinThreshold <= V <= 255
-	double DISTANCE_THRESHOLD = mDistanceThreshold;
-	double FIND_AREA_THRESHOLD = mFindAreaThreshold;
-	double GOAL_AREA_THRESHOLD = mGoalAreaThreshold;
+	//if distance >= mDistanceThreshold and area >= mGoalAreaThreshold then goal;
 	////////////////////////////
 
 	input_img = cv::cvarrToMat(src);						//カメラのストリーミング先を設定
@@ -128,14 +126,15 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
 
-	if(count > 240*320*FIND_AREA_THRESHOLD)
+	if(count > 240*320*mFindAreaThreshold)
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: distance= %f\r\n", distance);
+
 			*counter = (double)count / (240*320);
 
-			if (count > 240*320*GOAL_AREA_THRESHOLD && distance > DISTANCE_THRESHOLD)
+			if (count > 240*320*mGoalAreaThreshold && distance > mDistanceThreshold)
 			{
 				Debug::print(LOG_SUMMARY, "***Goal is detected!***\r\n");
 				x_gap = INT_MIN;	//ゴール判定
