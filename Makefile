@@ -1,4 +1,4 @@
-TARGET = out 
+TARGET = ../out 
 
 COMPILER_ROOT = ./compiler
 CXX = $(COMPILER_ROOT)/bin/arm-linux-gnueabihf-g++

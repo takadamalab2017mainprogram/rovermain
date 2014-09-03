@@ -880,27 +880,28 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 						mCurStep = STEP_STOPPING_VERYLONG;
 						gMotorDrive.startPID(0,mMotorPower);
 						mIsLastActionStraight = true;
+						mIsStraightTimeLong = true;
 						mAngleOnBegin = gGyroSensor.getRz();
 						actCount = 0;
 					}
 				}
 				else if( count > mColorCount ) {
 					Debug::print(LOG_SUMMARY, "Detecting: NEAR count:%f\r\n", count);
-					if ( x_pos < -mColorWidth+50 )
+					if ( x_pos < -mColorWidth+20 )
 					{
 					Debug::print(LOG_SUMMARY, "Detecting: turn LEFT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(0,mMotorPower);
 						mIsLastActionStraight = false;
 					}
-					else if ( mColorWidth-50 < x_pos )
+					else if ( mColorWidth-20 < x_pos )
 					{
 					Debug::print(LOG_SUMMARY, "Detecting: turn RIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_FAST;
 						gMotorDrive.drive(mMotorPower,0);
 						mIsLastActionStraight = false;
 					}
-					else if ( -mColorWidth+50 <= x_pos && x_pos <= mColorWidth-50 )
+					else if ( -mColorWidth+20 <= x_pos && x_pos <= mColorWidth-20 )
 					{
 					Debug::print(LOG_SUMMARY, "Detecting: go STRAIGHT <- pos= %d\r\n", x_pos);
 						mCurStep = STEP_STOPPING_LONG;
@@ -908,6 +909,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 						mIsLastActionStraight = true;
 						mAngleOnBegin = gGyroSensor.getRz();
 						actCount = 0;
+						mIsStraightTimeLong =false;
 					}
 				}
 				mTryCount = 0;
@@ -1069,8 +1071,16 @@ void ColorAccessing::setMotorPower(int mode)
 
 	if(mode == 0)
 	{
-		gThresholdHigh = gStraightThresholdHigh;
-		gThresholdLow = gStraightThresholdLow;
+		if ( mIsStraightTimeLong)
+		{
+			gThresholdHigh = gStraightThresholdHigh*mStraightTimeFromFar/0.8;
+			gThresholdLow = gStraightThresholdLow*mStraightTimeFromFar/0.8;
+		}
+		else
+		{
+			gThresholdHigh = gStraightThresholdHigh;
+			gThresholdLow = gStraightThresholdLow;	
+		}
 	}
 	else
 	{
@@ -1299,10 +1309,11 @@ ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCoun
 	mStraightTime = 0.8;
 	mStraightTimeFromFar = 2.3;
 	mColorWidth = 100;
-	mColorCount = 0.05;
+	mColorCount = 0.04;
 	mProcessFrequency = 1.0;
 	mProcessFrequencyForGyro = 2.0;
 	mTryCount = 3;
+	mIsStraightTimeLong = false;
 }
 ColorAccessing::~ColorAccessing()
 {

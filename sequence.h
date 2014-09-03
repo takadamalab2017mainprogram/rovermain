@@ -146,6 +146,7 @@ class ColorAccessing : public TaskBase
 	int actCount;
 	double mStraightTime;
 	double mStraightTimeFromFar;
+	bool mIsStraightTimeLong;
 	int mColorWidth; //中心からの赤色のずれ
 	double mColorCount; //赤色の割合
 	double mProcessFrequency;
