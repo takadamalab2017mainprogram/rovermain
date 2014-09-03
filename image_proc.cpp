@@ -27,10 +27,9 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	cv::Moments moments;										//重心計算用
 
 	//////////threshold//////////
-	int MIN_H = mHMinThreshold;		//H < 180
-	int MAX_H = mHMaxThreshold;
-	int MIN_S = mSMinThreshold;		//S < 255
-	int MIN_V = mVMinThreshold;		//V < 255
+	// H <= mHMinThreshold, mHMaxThreshold <= H
+	// mSMinThreshold <= S <= 255
+	// mVMinThreshold <= V <= 255
 	double DISTANCE_THRESHOLD = mDistanceThreshold;
 	double FIND_AREA_THRESHOLD = mFindAreaThreshold;
 	double GOAL_AREA_THRESHOLD = mGoalAreaThreshold;
@@ -53,11 +52,19 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	{
 		for(int x=0; x<320; x++)
 		{
-			int a = hsv_img.step*y+(x*3);					//参照番号を設定
-			if(( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
-				min_x = x;
-				min_y = y; 
-				break;
+			int a = hsv_img.step*y+(x*3);//参照番号を設定
+
+			if(hsv_img.data[a] <= mHMinThreshold || mHMaxThreshold <= hsv_img.data[a])
+			{
+				if(mSMinThreshold <= hsv_img.data[a+1])
+				{
+					if(mVMinThreshold <= hsv_img.data[a+2])
+					{
+						min_x = x;
+						min_y = y;
+						break;
+					}
+				}
 			}
 		}
 		if ( min_x != -1 && min_y != -1 )
@@ -69,11 +76,19 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	{
 		for(int x=320-1; x>=0; x--)
 		{
-			int a = hsv_img.step*y+(x*3);					//参照番号を設定
-			if(( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
-				max_x = x;
-				max_y = y;
-				break;
+			int a = hsv_img.step*y+(x*3);//参照番号を設定
+			
+			if(hsv_img.data[a] <= mHMinThreshold || mHMaxThreshold <= hsv_img.data[a])
+			{
+				if(mSMinThreshold <= hsv_img.data[a+1])
+				{
+					if(mVMinThreshold <= hsv_img.data[a+2])
+					{
+						max_x = x;
+						max_y = y;
+						break;
+					}
+				}
 			}
 		}
 		if ( max_x != -1 && max_y != -1 )
@@ -82,7 +97,6 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 		}
 	}
 
-	// double distance = sqrt( (max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y) );
 	double distance = max_y-min_y;
 
 	/////////////////////////////////////////////////////////
@@ -93,7 +107,10 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 		{
 			int a = hsv_img.step*y+(x*3);					//参照番号を設定
 			//閾値によって抽出色以外を黒に
-			if(!( (hsv_img.data[a] <=MIN_H || MAX_H <= hsv_img.data[a] ) && hsv_img.data[a+1] >=MIN_S && hsv_img.data[a+2] >= MIN_V )){//s100/v100
+			if(!((hsv_img.data[a] <= mHMinThreshold || mHMaxThreshold <= hsv_img.data[a]) 
+				&& hsv_img.data[a+1] >= mSMinThreshold
+				&& hsv_img.data[a+2] >= mVMinThreshold))
+			{
 				hsv_color_img.data[a] = 0;		//H値 (0-180)
 				hsv_color_img.data[a+1] = 0;	//S値 (0-255)
 				hsv_color_img.data[a+2] = 0;	//V値 (0-255)
@@ -111,14 +128,14 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
 
-	if(count > 240*320*FIND_AREA_THRESHOLD)	//閾値0.05%に変更．2014/06/14 みなと
+	if(count > 240*320*FIND_AREA_THRESHOLD)
 	{
 		if(-160 < x_gap && x_gap < 160)
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: distance= %f\r\n", distance);
 			*counter = (double)count / (240*320);
 
-			if ( count > 240*320*GOAL_AREA_THRESHOLD && distance > DISTANCE_THRESHOLD ) 
+			if (count > 240*320*GOAL_AREA_THRESHOLD && distance > DISTANCE_THRESHOLD)
 			{
 				Debug::print(LOG_SUMMARY, "***Goal is detected!***\r\n");
 				x_gap = INT_MIN;	//ゴール判定
