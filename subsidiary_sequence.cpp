@@ -775,15 +775,15 @@ bool SensorLogging::onInit(const struct timespec& time)
 	write(mFilenameGPS,"Log started\r\n");
 	write(mFilenameGyro,"Log started\r\n");
 	write(mFilenamePressure,"Log started\r\n");
-	write(mFilenameEncoder,"Log started\r\n");
+	//write(mFilenameEncoder,"Log started\r\n");
 
 	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	mLastUpdateTime = time;
-	mLastEncL = gMotorDrive.getL();
-	mLastEncR = gMotorDrive.getR();
+	//mLastEncL = gMotorDrive.getL();
+	//mLastEncR = gMotorDrive.getR();
 	return true;
 }
 void SensorLogging::onUpdate(const struct timespec& time)
@@ -804,12 +804,12 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		if(gPressureSensor.isActive())write(mFilenamePressure,"%d\r\n",gPressureSensor.get());
 		else write(mFilenamePressure,"unavailable\r\n");
 
-		if(gMotorDrive.isActive())
-		{
-			write(mFilenameEncoder,"%llu,%llu\r\n",gMotorDrive.getL() - mLastEncL,gMotorDrive.getR() - mLastEncR);
-			mLastEncL = gMotorDrive.getL();
-			mLastEncR = gMotorDrive.getR();
-		}else write(mFilenameEncoder,"unavailable\r\n");
+		//if(gMotorDrive.isActive())
+		//{
+		//	write(mFilenameEncoder,"%llu,%llu\r\n",gMotorDrive.getL() - mLastEncL,gMotorDrive.getR() - mLastEncR);
+		//	mLastEncL = gMotorDrive.getL();
+		//	mLastEncR = gMotorDrive.getR();
+		//}else write(mFilenameEncoder,"unavailable\r\n");
 	}
 }
 void SensorLogging::write(const std::string& filename, const char* fmt, ... )
@@ -835,8 +835,8 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameGyro.c_str());
 	Filename("log_pressure",".txt").get(mFilenamePressure);
 	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenamePressure.c_str());
-	Filename("log_encoder",".txt").get(mFilenameEncoder);
-	Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
+	//Filename("log_encoder_by_sensorlogging",".txt").get(mFilenameEncoder);
+	//Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
 }
 SensorLogging::~SensorLogging()
 {

@@ -781,8 +781,10 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gThresholdLow = 200;
 	gPastDeltaPulseL = 0;
 	gPastDeltaPulseR = 0;
-	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
-	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
+	gMotorDrive.getDeltaPulseL();
+	gMotorDrive.getDeltaPulseR();
+	gDeltaPulseL = 0;
+	gDeltaPulseR = 0;
 	mIsGPS = false;
 	return true;
 }
