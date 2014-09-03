@@ -8,7 +8,7 @@ image setH 5 160
 image setS 100
 image setV 0
 image setdist 200.0
-image setarea 0.0005
+image setfindarea 0.0005
 gyro calib 0.304365 -0.643921 0.222596
 detecting threshold straight high 2000
 detecting threshold straight low 1000
