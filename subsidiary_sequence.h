@@ -88,9 +88,14 @@ class Waking : public TaskBase
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;
+	int mStartPower;				//起き上がり開始時のモータ出力量
+	double mAngleThreshold;			//起き上がり完了とする角度(ZX)
+	void setPower(int p);
+	void setAngle(double a);
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
 	virtual void onClean();
 public:
 	Waking();

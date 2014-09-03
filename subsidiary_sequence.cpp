@@ -463,8 +463,9 @@ bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	mCurStep = STEP_START;
+
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(18,18);
+	gMotorDrive.drive(mStartPower,mStartPower);		//モータ出力
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -487,19 +488,20 @@ void Waking::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 			setRunMode(false);
+			gMotorDrive.drive(0,0);
 		}
-		if(abs(gGyroSensor.getRvx()) < WAKING_THRESHOLD)//角速度が一定以下になったら着地と判定
+		if(gAccelerationSensor.getPhi() < mAngleThreshold)	//角度が一定以下になったら着地と判定(加速度センサを採用)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
+			gBuzzer.start(30,20,2);
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0,0);
-			gCameraCapture.startWarming();
 		}
 
 		//回転した角度に応じてモータの出力を変化させる
-		power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
-		gMotorDrive.drive(power,power);
+		//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
+		//gMotorDrive.drive(power,power);
 		break;
 
 	case STEP_START:
@@ -509,68 +511,109 @@ void Waking::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0,0);
-			gCameraCapture.startWarming();
 		}
-		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断
+		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断(ジャイロを採用)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
+			gBuzzer.start(30,20,2);
 			mLastUpdateTime = time;
 			mCurStep = STEP_STOP;
 		}
 		break;
 
 	case STEP_VERIFY:
-		//起き上がりが成功したか否かをカメラ画像で検証
-		//加速度使う．
-		if(Time::dt(time,mLastUpdateTime) > 3)
+		//起き上がりが成功したか否かを加速度センサで検証
+		if(Time::dt(time,mLastUpdateTime) <= 3)	//ローバの姿勢が安定するまで一定時間待つ
 		{
-			// IplImage* pCaptureFrame = gCameraCapture.getFrame();
-			// gCameraCapture.save(NULL,pCaptureFrame);
-			// if(gImageProc.isSky(pCaptureFrame))
-			// {
-			// 	mLastUpdateTime = time;
-			// 	mCurStep = STEP_START;
-			// 	mAngleOnBegin = gGyroSensor.getRvx();
-			// 	gMotorDrive.drive(50,50);
+			return;
+		}
 
-			// 	if(++mWakeRetryCount > WAKING_RETRY_COUNT)
-			// 	{
-			// 		Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
-			// 		setRunMode(false);
-			// 		return;
-			// 	}
-			// 	Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d)\r\n",mWakeRetryCount,WAKING_RETRY_COUNT);
-			// }else
-			// {
-			// 	Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
-			// 	setRunMode(false);
-			// }
-			if(gAccelerationSensor.getAz()>0.0)
+		if(gAccelerationSensor.getAz() > 0.0)
+		{
+			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
+			gBuzzer.start(30,20,4);
+			setRunMode(false);
+		}
+		else
+		{
+			mLastUpdateTime = time;
+			mCurStep = STEP_START;
+			mAngleOnBegin = gGyroSensor.getRvx();
+			power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//試行回数ごとにモータ出力を上げる
+			gMotorDrive.drive(power,power);
+
+			if(++mWakeRetryCount > WAKING_RETRY_COUNT)
 			{
-				Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
+				Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
 				setRunMode(false);
+				return;
 			}
-			else
-			{
-				mLastUpdateTime = time;
-				mCurStep = STEP_START;
-				mAngleOnBegin = gGyroSensor.getRvx();
-				gMotorDrive.drive(50,50);
-
-				if(++mWakeRetryCount > WAKING_RETRY_COUNT)
-				{
-					Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
-					setRunMode(false);
-					return;
-				}
-				Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d)\r\n",mWakeRetryCount,WAKING_RETRY_COUNT);
-			}
-
+			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %d\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
 		}
 		break;
 	}
 }
-Waking::Waking() : mWakeRetryCount(0)
+bool Waking::onCommand(const std::vector<std::string>& args)
+{
+	if(args.size() == 4)
+	{
+		if(args[1].compare("set") == 0)
+		{
+			if(args[2].compare("power") == 0)//mStartPower
+			{
+				setPower(atoi(args[3].c_str()));
+				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
+				return true;
+			}
+			else if(args[2].compare("angle") == 0)//mAngleThreshold
+			{
+				setAngle(atof(args[3].c_str()));
+				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
+				return true;
+			}
+		}
+	}
+	else if(args.size() == 2)
+	{
+		if(args[1].compare("show") == 0)
+		{
+			Debug::print(LOG_SUMMARY, "mStartPower: %d\r\n", mStartPower);
+			Debug::print(LOG_SUMMARY, "mAngleThreshold: %f\r\n", mAngleThreshold);
+			return true;
+		}
+	}
+	Debug::print(LOG_SUMMARY, "waking set power [1-100]: set start motor power\r\n\
+waking set angle [0-180]: set AngleThreshold\r\n\
+waking show             : show parameters\r\n");
+	return false;
+}
+void Waking::setPower(int p)
+{
+	if(p >= MOTOR_MAX_POWER)
+	{
+		mStartPower = MOTOR_MAX_POWER;
+		return;
+	}
+	else if(p < 1)
+	{
+		mStartPower = 1;
+		return;
+	}
+	mStartPower = p;
+}
+void Waking::setAngle(double a)
+{
+	if(a >= 180)
+	{
+		mAngleThreshold = 180;
+	}
+	else if(a < 0)
+	{
+		mAngleThreshold = 0;
+	}
+	mAngleThreshold = a;
+}
+Waking::Waking() : mWakeRetryCount(0),mStartPower(45),mAngleThreshold(70)
 {
 	setName("waking");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
