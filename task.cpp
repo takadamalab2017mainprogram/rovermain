@@ -174,7 +174,11 @@ void TaskManager::enumTasks()
 
 void TaskManager::update()
 {
-    struct timespec newTime = {clock()};
+	struct timespec newTime;
+	if(clock_gettime(CLOCK_MONOTONIC_RAW,&newTime) != 0)
+	{
+		Debug::print(LOG_DETAIL, "FAILED to get time!\r\n");
+	}
 
     //タスクのupdate処理を実行
     std::vector<TaskBase*>::iterator it = mTasks.begin();
