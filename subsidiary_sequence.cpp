@@ -504,6 +504,7 @@ void Waking::onUpdate(const struct timespec& time)
 		//gMotorDrive.drive(power,power);
 		break;
 
+	double dt;
 	case STEP_START:
 		if(Time::dt(time,mLastUpdateTime) > 0.5)//一定時間回転が検知されない場合→回転不可能と判断
 		{
@@ -517,13 +518,30 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			gBuzzer.start(30,20,2);
 			mLastUpdateTime = time;
-			mCurStep = STEP_STOP;
+			mCurStep = STEP_DEACCELERATE;
+		}
+		break;
+
+	case STEP_DEACCELERATE:	//ゆっくり減速する
+		dt = Time::dt(time, mLastUpdateTime);
+        if(dt > mDeaccelerateDuration)
+        {
+			Debug::print(LOG_SUMMARY, "Waking Deaccelerate finished!\r\n");
+			gBuzzer.start(30,20,2);
+            mLastUpdateTime = time;
+            mCurStep = STEP_VERIFY;
+            gMotorDrive.drive(0, 0);
+        }
+		else
+		{
+			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2で割る*/)), 0);
+			gMotorDrive.drive(tmp_power, tmp_power);
 		}
 		break;
 
 	case STEP_VERIFY:
 		//起き上がりが成功したか否かを加速度センサで検証
-		if(Time::dt(time,mLastUpdateTime) <= 3)	//ローバの姿勢が安定するまで一定時間待つ
+		if(Time::dt(time,mLastUpdateTime) <= 2.5)	//ローバの姿勢が安定するまで一定時間待つ
 		{
 			return;
 		}
@@ -571,6 +589,12 @@ bool Waking::onCommand(const std::vector<std::string>& args)
 				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
 				return true;
 			}
+			else if(args[2].compare("d_time") == 0)//mDeaccelerateDuration
+			{
+				mDeaccelerateDuration = atof(args[3].c_str());
+				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
+				return true;
+			}
 		}
 	}
 	else if(args.size() == 2)
@@ -579,11 +603,13 @@ bool Waking::onCommand(const std::vector<std::string>& args)
 		{
 			Debug::print(LOG_SUMMARY, "mStartPower: %d\r\n", mStartPower);
 			Debug::print(LOG_SUMMARY, "mAngleThreshold: %f\r\n", mAngleThreshold);
+			Debug::print(LOG_SUMMARY, "mDeaccelerateDuration: %f\r\n", mDeaccelerateDuration);
 			return true;
 		}
 	}
 	Debug::print(LOG_SUMMARY, "waking set power [1-100]: set start motor power\r\n\
 waking set angle [0-180]: set AngleThreshold\r\n\
+waking set d_time [time]: set mDeaccelerateDuration\r\n\
 waking show             : show parameters\r\n");
 	return false;
 }
@@ -613,7 +639,7 @@ void Waking::setAngle(double a)
 	}
 	mAngleThreshold = a;
 }
-Waking::Waking() : mWakeRetryCount(0),mStartPower(45),mAngleThreshold(70)
+Waking::Waking() : mWakeRetryCount(0),mStartPower(45),mAngleThreshold(70),mDeaccelerateDuration(0.5)
 {
 	setName("waking");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

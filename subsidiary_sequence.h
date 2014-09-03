@@ -84,12 +84,14 @@ public:
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;//行動開始時刻
-	enum STEP{STEP_START,STEP_STOP,STEP_VERIFY};
+	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY};
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;
 	int mStartPower;				//起き上がり開始時のモータ出力量
 	double mAngleThreshold;			//起き上がり完了とする角度(ZX)
+	double mDeaccelerateDuration;	//減速に要する時間
+
 	void setPower(int p);
 	void setAngle(double a);
 protected:
