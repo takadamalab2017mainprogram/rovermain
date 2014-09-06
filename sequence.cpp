@@ -1003,7 +1003,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		break;
 	case STEP_DEACCELERATE:	//ゆっくり減速する
 		dt = Time::dt(time, mLastUpdateTime);
-        if(dt > DEACCELERATE_DURATION)
+        if(dt > mDeaccelerateDuration)
         {
             mLastUpdateTime = time;
             mCurStep = STEP_STARTING;
@@ -1013,7 +1013,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
         }
 		else
 		{
-			int tmp_power = std::max((int)((1 - dt / DEACCELERATE_DURATION) * (20 / 2/*2で割る*/)), 0);	//ToDo: 20を変数に置き換える
+			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (20 / 2/*2で割る*/)), 0);	//ToDo: 20を変数に置き換える
 			gMotorDrive.drive(tmp_power);
 		}
 		break;
@@ -1171,6 +1171,18 @@ bool ColorAccessing::onCommand(const std::vector<std::string>& args)
 			return true;
 		}
 	}
+	else if(args.size() == 4)
+	{
+		if(args[1].compare("set") == 0)
+		{
+			if(args[2].compare("d_time") == 0)//mDeaccelerateDuration
+			{
+				mDeaccelerateDuration = atof(args[3].c_str());
+				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
+				return true;
+			}
+		}
+	}
 	else if(args.size() == 5)
 	{
 		if(args[1].compare("threshold") == 0)
@@ -1220,9 +1232,10 @@ bool ColorAccessing::onCommand(const std::vector<std::string>& args)
 	Debug::print(LOG_SUMMARY, "process frequency is %f\r\n", mProcessFrequency);
 	Debug::print(LOG_SUMMARY, "process frequency for gyro is %f\r\n", mProcessFrequencyForGyro);
 
-	Debug::print(LOG_PRINT, "detecting setmode [ON/OFF]: set detecting mode\r\n\
-detecting reset           : reset detecting retry count\r\n\
-detecting setmode         : show detecting mode state\r\n");
+	Debug::print(LOG_PRINT, "detecting set d_time [time]: set mDeaccelerateDuration\r\n\
+detecting reset            : reset detecting retry count\r\n\
+detecting setmode [ON/OFF] : set detecting mode\r\n\
+detecting setmode          : show detecting mode state\r\n");
 	return true;
 }
 //次の状態に移行
@@ -1302,7 +1315,7 @@ bool ColorAccessing::getIsDetectingExecute()
 {
 	return mIsDetectingExecute;
 }
-ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCount(0)
+ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCount(0), mDeaccelerateDuration(0.5)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);

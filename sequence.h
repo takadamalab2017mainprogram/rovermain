@@ -117,7 +117,6 @@ public:
 /* ここから　2014年6月オープンラボ前に実装 */
 class ColorAccessing : public TaskBase
 {
-	const static double DEACCELERATE_DURATION = 0.5;
 	struct timespec mLastUpdateTime;//前回のチェック時刻
 	struct timespec mStartTime;		//状態開始時刻
 	
@@ -141,6 +140,7 @@ class ColorAccessing : public TaskBase
 	bool mIsDetectingExecute;//falseならdetectingは実施せずGPSですぐにゴール判定する(2nd flight 高速度賞狙い)
     int mTryCount;
 	unsigned int mDetectingRetryCount;		//一定時間経過してナビからやり直した回数
+	double mDeaccelerateDuration;
 	int mMotorPower;
 	int mCurrentMotorPower;
 	int actCount;
