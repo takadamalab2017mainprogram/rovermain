@@ -792,8 +792,6 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 {
 	if(gAvoidingState.isActive())return;
 
-	//gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
-
 	// Debug::print(LOG_SUMMARY, "accel = %f\r\n",gAccelerationSensor.getAz());
 
 	if ( gAccelerationSensor.getAz() < -0.3 && !gWakingState.isActive() && mCurStep != STEP_GO_BACK)
@@ -819,6 +817,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(!gWakingState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Checking started\r\n");
+			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 			mCurStep = STEP_CHECKING;
 			mLastUpdateTime = time;
 			gCameraCapture.startWarming();
@@ -992,12 +991,14 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	case STEP_STOPPING_LONG:
 		if(Time::dt(time,mLastUpdateTime) > mStraightTime)
 		{
+			gStabiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
 	case STEP_STOPPING_VERYLONG:
 		if(Time::dt(time,mLastUpdateTime) > mStraightTimeFromFar)
 		{
+			gStabiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
