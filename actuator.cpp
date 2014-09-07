@@ -49,7 +49,7 @@ bool Buzzer::onCommand(const std::vector<std::string>& args)
 			}
 			break;
 			
-		case 3:									//buzzer [period] [count]
+		case 3:										//buzzer [period] [count]
 			Debug::print(LOG_PRINT,"Start Command Executed!\r\n");
 			period = atoi(args[1].c_str());
 			count  = atoi(args[2].c_str());

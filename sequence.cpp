@@ -533,7 +533,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 		if(gEscapingByStabiState.isActive())		//EscapingByStabi中
 		{
-			if(gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_COUNT_THRESHOLD)
+			if(gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_MAX_COUNT)
 			{
 				//EscapingRandomに移行
 				gEscapingByStabiState.setRunMode(false);
@@ -558,14 +558,21 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
 		{
-			//ローバーがひっくり返っている可能性があるため、しばらく前進する
-			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-			gEscapingByStabiState.setRunMode(false);
-			gEscapingRandomState.setRunMode(false);
-			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
-			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
-			gBuzzer.start(40,10,3);
+			if(gEscapingByStabiState.isActive() && gEscapingByStabiState.getTryCount() < ESCAPING_BY_STABI_MIN_COUNT)//少なくとも何回かは芋虫動作をする
+			{
+				//スタック脱出処理続行
+			}
+			else 
+			{
+				//ローバーがひっくり返っている可能性があるため、しばらく前進する
+				gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
+				gEscapingByStabiState.setRunMode(false);
+				gEscapingRandomState.setRunMode(false);
+				gStabiServo.start(STABI_BASE_ANGLE);		//スタビを通常の状態に戻す
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
+				gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
+				gBuzzer.start(20,10,3);
+			}
 		}
 		else
 		{
