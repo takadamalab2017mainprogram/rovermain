@@ -293,7 +293,7 @@ stabiservo stop           : stop servo\r\n");
 }
 void StabiServo::start(double angle)
 {
-	if(angle > 1)angle = 1;
+	if(angle > 0.88)angle = 0.88;
 	else if(angle < 0)angle = 0;
 
 	pwmWrite (mPin, SERVO_BASE_VALUE + angle * SERVO_MOVABLE_RANGE);
