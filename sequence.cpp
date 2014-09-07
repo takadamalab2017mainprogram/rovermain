@@ -490,7 +490,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			Time::showNowTime();//制御開始時刻をログに出力
 			Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n",currentPos.x,currentPos.y);
 			gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
-			gPredictingState.setRunMode(true);
+			//gPredictingState.setRunMode(true);
 			mLastNaviMoveCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
