@@ -28,6 +28,7 @@ detecting threshold curve low 200
 detecting colorwidth 100
 detecting pf 1.0
 detecting pfg 2.0
+detecting set waittime 1.0
 monitoring set upper 3000
 //
 //

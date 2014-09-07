@@ -127,7 +127,9 @@ class ColorAccessing : public TaskBase
 		STEP_STOPPING_LONG, 
 		STEP_STOPPING_VERYLONG,
 		STEP_CHECKING, 
-		STEP_DEACCELERATE, 
+		STEP_DEACCELERATE,
+		STEP_WAIT_FIRST,
+		STEP_WAIT_SECOND,
 		STEP_GO_BACK, 
 		STEP_CHANGE_OF_DIRECTION, 
 		STEP_LEAVING
@@ -151,6 +153,8 @@ class ColorAccessing : public TaskBase
 	double mColorCount; //赤色の割合
 	double mProcessFrequency;
 	double mProcessFrequencyForGyro;
+	
+	double mWaitTime;		//待機時間
 
 	unsigned long long gDeltaPulseL;
 	unsigned long long gDeltaPulseR;

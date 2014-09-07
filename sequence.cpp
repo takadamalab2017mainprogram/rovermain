@@ -989,16 +989,16 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_STOPPING_LONG:
+		gStabiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 		if(Time::dt(time,mLastUpdateTime) > mStraightTime)
 		{
-			gStabiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
 	case STEP_STOPPING_VERYLONG:
+		gStabiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 		if(Time::dt(time,mLastUpdateTime) > mStraightTimeFromFar)
 		{
-			gStabiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
@@ -1007,7 +1007,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
         if(dt > mDeaccelerateDuration)
         {
             mLastUpdateTime = time;
-            mCurStep = STEP_STARTING;
+            mCurStep = STEP_WAIT_FIRST;
             
             gMotorDrive.drive(0);
 			setMotorPower(0);
@@ -1016,6 +1016,20 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		{
 			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (20 / 2/*2で割る*/)), 0);	//ToDo: 20を変数に置き換える
 			gMotorDrive.drive(tmp_power);
+		}
+		break;
+	case STEP_WAIT_FIRST:
+		if(Time::dt(time,mLastUpdateTime) > (mWaitTime / 2))
+		{
+			gStabiServo.start((STABI_BASE_ANGLE + STABI_WAKING_ANGLE) / 2);	//中間の角度
+			mCurStep = STEP_WAIT_SECOND;
+		}
+		break;
+	case STEP_WAIT_SECOND:
+		if(Time::dt(time,mLastUpdateTime) > mWaitTime)
+		{
+			mLastUpdateTime = time;
+			mCurStep = STEP_STARTING;
 		}
 		break;
 	case STEP_GO_BACK:	//バックする
@@ -1182,6 +1196,12 @@ bool ColorAccessing::onCommand(const std::vector<std::string>& args)
 				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
 				return true;
 			}
+			else if(args[2].compare("waittime") == 0)//mWaitTime
+			{
+				mWaitTime = atof(args[3].c_str());
+				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
+				return true;
+			}
 		}
 	}
 	else if(args.size() == 5)
@@ -1233,10 +1253,11 @@ bool ColorAccessing::onCommand(const std::vector<std::string>& args)
 	Debug::print(LOG_SUMMARY, "process frequency is %f\r\n", mProcessFrequency);
 	Debug::print(LOG_SUMMARY, "process frequency for gyro is %f\r\n", mProcessFrequencyForGyro);
 
-	Debug::print(LOG_PRINT, "detecting set d_time [time]: set mDeaccelerateDuration\r\n\
-detecting reset            : reset detecting retry count\r\n\
-detecting setmode [ON/OFF] : set detecting mode\r\n\
-detecting setmode          : show detecting mode state\r\n");
+	Debug::print(LOG_PRINT, "detecting set d_time [time]   : set mDeaccelerateDuration\r\n\
+detecting set waittime [time] : set waittime\r\n\
+detecting reset               : reset detecting retry count\r\n\
+detecting setmode [ON/OFF]    : set detecting mode\r\n\
+detecting setmode             : show detecting mode state\r\n");
 	return true;
 }
 //次の状態に移行
@@ -1316,7 +1337,7 @@ bool ColorAccessing::getIsDetectingExecute()
 {
 	return mIsDetectingExecute;
 }
-ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCount(0), mDeaccelerateDuration(0.5)
+ColorAccessing::ColorAccessing() :mIsDetectingExecute(true), mDetectingRetryCount(0), mDeaccelerateDuration(0.5), mWaitTime(0.5)
 {
 	setName("detecting");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
