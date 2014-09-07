@@ -44,7 +44,8 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.7;	//通常時のスタビ角度
 const static double STABI_FOLD_ANGLE = 0.0;	//収納時のスタビ角度
-
+const static double STABI_WAKING_ANGLE = 0.85; //起き上がり用のスたビの角度
+ 
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
 

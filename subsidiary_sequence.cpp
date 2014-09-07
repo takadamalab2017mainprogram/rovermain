@@ -352,7 +352,7 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 		gMotorDrive.drive(100);
 		gStabiServo.start(STABI_BASE_ANGLE);
 		mTryCount++;
-
+		
 		if(mTryCount % 5 == 0)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping TryCount: %d\r\n", mTryCount);
@@ -471,10 +471,13 @@ bool Waking::onInit(const struct timespec& time)
 	gStabiServo.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
+
+	gStabiServo.start(STABI_WAKING_ANGLE);
 	return true;
 }
 void Waking::onClean()
 {
+
 	gMotorDrive.drive(0);
 }
 void Waking::onUpdate(const struct timespec& time)
@@ -497,6 +500,7 @@ void Waking::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0);
+
 		}
 
 		//回転した角度に応じてモータの出力を変化させる
@@ -551,6 +555,7 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
 			gBuzzer.start(30,20,4);
 			setRunMode(false);
+			gStabiServo.start(STABI_BASE_ANGLE); // 起き上がり成功したらスタビをベースの角度に戻す
 		}
 		else
 		{
