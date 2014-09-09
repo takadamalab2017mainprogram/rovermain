@@ -153,6 +153,7 @@ class ColorAccessing : public TaskBase
 	double mColorCount; //赤色の割合
 	double mProcessFrequency;
 	double mProcessFrequencyForGyro;
+	double mCalcedStabiAngle;
 	
 	double mWaitTime;		//待機時間
 
@@ -177,6 +178,7 @@ protected:
 	void prevState();	//前の状態に移行
 
 	void setMotorPower(int mode);
+	void setHorizontalStabiAngle();
 	
 	//ColorAccessingを開始してからの経過時間を確認
 	//一定時間以上経過している場合はしばらく直進して距離を取った後Navigatingからやり直す

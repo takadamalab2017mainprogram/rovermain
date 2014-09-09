@@ -793,6 +793,7 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gDeltaPulseL = 0;
 	gDeltaPulseR = 0;
 	mIsGPS = false;
+	mCalcedStabiAngle = STABI_BASE_ANGLE;
 	return true;
 }
 void ColorAccessing::onUpdate(const struct timespec& time)
@@ -824,7 +825,8 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if(!gWakingState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Checking started\r\n");
-			gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+			//gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+			setHorizontalStabiAngle();
 			mCurStep = STEP_CHECKING;
 			mLastUpdateTime = time;
 			gCameraCapture.startWarming();
@@ -1069,6 +1071,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 
 	//ColorAccessingを開始してからの経過時間を確認
 	if(mCurStep != STEP_GO_BACK && mCurStep != STEP_CHANGE_OF_DIRECTION && mCurStep != STEP_LEAVING)
+
 	{
 		bool retry_flag = timeCheck(time);
 		if(!retry_flag)
@@ -1078,6 +1081,37 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 	}
 }
+void ColorAccessing::setHorizontalStabiAngle()
+{
+	gStabiServo.start(mCalcedStabiAngle);
+
+	double az = gAccelerationSensor.getAz();
+	double ay = gAccelerationSensor.getAy();
+
+	//while ( az < 0.9 )
+	{
+		 if ( az < 0 )
+		{
+			// 何もしない
+		}
+		else if ( ( ( az < 0.88 || 0.94 < az ) && ay < 0  ) || ay < -0.5 )
+		{
+			mCalcedStabiAngle += 0.02;
+
+			if (mCalcedStabiAngle>1)
+				mCalcedStabiAngle = 1.0;
+		}
+		else if (  ( az < 0.88 || 0.98 < az ) && ay >= 0 )
+		{
+			mCalcedStabiAngle -= 0.02;
+			if (mCalcedStabiAngle<0)
+				mCalcedStabiAngle = 0.0;
+		}
+		gStabiServo.start(mCalcedStabiAngle);
+	}
+
+}
+
 //モータの出力設定
 void ColorAccessing::setMotorPower(int mode)
 {
