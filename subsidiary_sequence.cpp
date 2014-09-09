@@ -571,7 +571,7 @@ void Waking::onUpdate(const struct timespec& time)
 				setRunMode(false);
 				return;
 			}
-			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %d\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
+			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
 		}
 		break;
 	}
