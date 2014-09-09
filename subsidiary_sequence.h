@@ -69,7 +69,7 @@ class EscapingRandom : public TaskBase
 {
 	struct timespec mLastUpdateTime;//‘O‰ñ‚Ìs“®‚©‚ç‚Ì•Ï‰»ŠÔ
 
-	enum STEP{STEP_BACKWARD = 0, STEP_TURN, STEP_FORWARD};
+	enum STEP{STEP_TURN = 0, STEP_FORWARD};
 	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);

@@ -410,24 +410,24 @@ bool EscapingRandom::onInit(const struct timespec& time)
 	Time::showNowTime();
 	gStabiServo.setRunMode(true);
 	mLastUpdateTime = time;
-	mCurStep = STEP_BACKWARD;
-	gMotorDrive.drive(-100);
+	mCurStep = STEP_TURN;
+	gMotorDrive.drive(100,-100);
 	return true;
 }
 void EscapingRandom::onUpdate(const struct timespec& time)
 {
 	switch(mCurStep)
 	{
-	case STEP_BACKWARD:
-		//バックを行う
-		if(Time::dt(time,mLastUpdateTime) >= 3)
-		{
-			mCurStep = STEP_TURN;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(100,-100);
-			gStabiServo.start(0);					//スタビたたむ
-		}
-		break;
+	//case STEP_BACKWARD:
+	//	//バックを行う
+	//	if(Time::dt(time,mLastUpdateTime) >= 3)
+	//	{
+	//		mCurStep = STEP_TURN;
+	//		mLastUpdateTime = time;
+	//		gMotorDrive.drive(100,-100);
+	//		gStabiServo.start(0);					//スタビたたむ
+	//	}
+	//	break;
 	case STEP_TURN:
 		//その場回転を行う
 		if(Time::dt(time,mLastUpdateTime) >= 3)
@@ -442,9 +442,9 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		//前進を行う
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
-			mCurStep = STEP_BACKWARD;
+			mCurStep = STEP_TURN;
 			mLastUpdateTime = time;
-			gMotorDrive.drive(-100);
+			gMotorDrive.drive(100,-100);
 			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
 		}
 		break;

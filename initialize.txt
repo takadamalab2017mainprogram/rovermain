@@ -43,4 +43,6 @@ alias wake start waking^
 alias setgoal navigating here
 alias setstabi stabiservo 0.7
 alias wadachistart escapingbystabi start
+alias imomusi escapingbystabi start
+alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
