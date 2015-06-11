@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "motor.h"
 #include "sensor.h"
+#include "actuator.h"
 
 MotorDrive gMotorDrive;
 
@@ -361,6 +362,30 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 				setRatio(atoi(args[2].c_str()),atoi(args[3].c_str()));
 				return true;
 			}
+		}else if(args[1].compare("go") == 0)
+		{
+			//前進withスタビ
+			gStabiServo.start(0);
+			drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
+			return true;
+			
+		}else if(args[1].compare("back") == 0)
+		{
+			//後退with転倒防止byスタビ
+			//スタビ展開
+			gStabiServo.start(1);
+
+			//待機
+			
+
+			//後退
+			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
+
+			return true;
+			
+		}else if(args[1].compare("stop"))
+		{
+			//ストップ with　スタビ
 		}else
 		{
 			if(size == 3)
