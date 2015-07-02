@@ -25,8 +25,9 @@ const static int PIN_BUZZER = 12;			//ブザー
 const static int PIN_XBEE_SLEEP = 13;		//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;		//Cdsセンサピン
 const static int PIN_PARA_SERVO = 6;		//パラシュートサーボピン
-const static int PIN_STABI_SERVO = 1;       //スタビサーボピン
+const static int PIN_STABI_SERVO = 1;	//スタビサーボピン
 const static int PIN_DISTANCE = 8;	//距離センサー(ピン番号は適当)
+const static int PIN_CAMERA = 27;	//カメラサーボピン
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
