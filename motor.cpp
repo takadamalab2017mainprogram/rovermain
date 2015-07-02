@@ -167,6 +167,9 @@ bool MotorDrive::onInit(const struct timespec& time)
 	//ジャイロを使うように設定
 	gGyroSensor.setRunMode(true);
 
+	//スタビ使用指定　仲田
+	gStabiServo.setRunMode(true);
+
 	//初期化
     if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
 	{
@@ -376,7 +379,6 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 			gStabiServo.start(1);
 
 			//待機
-			
 
 			//後退
 			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
@@ -386,6 +388,9 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		}else if(args[1].compare("stop"))
 		{
 			//ストップ with　スタビ
+			gStabiServo.start(1);
+			drive(0,0);
+			return true;
 		}else
 		{
 			if(size == 3)
@@ -401,7 +406,8 @@ motor p            : pid start\r\n\
 motor p [angle]    : pid start with angle to move\r\n\
 motor p [P] [I] [D]: set pid params\r\n\
 motor r [l] [r]    : set motor ratio\r\n\
-motor [l] [r]      : drive motor by specified ratio\r\n");
+motor [l] [r]      : drive motor by specified ratio\r\n
+motor [go/back/stop]: move with front stabi\r\n");
 	return true;
 }
 unsigned long long MotorDrive::getL()
