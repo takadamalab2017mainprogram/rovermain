@@ -309,7 +309,9 @@ void StabiServo::close()
 	pwmWrite(mPin, SERVO_BASE_VALUE);
 	Debug::print(LOG_DETAIL,"StabiServo Close!\r\n");
 }
-StabiServo::StabiServo() : mPin(PIN_STABI_SERVO)
+//StabiServo::StabiServo() : mPin(PIN_STABI_SERVO)
+//２７番ピンテスト(PIN_CAMERA = 27) 仲田
+StabiServo::StabiServo() : mPin(PIN_CAMERA)
 {
 	setName("stabiservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
