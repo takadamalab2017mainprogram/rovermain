@@ -371,6 +371,7 @@ cameraservo stop           : stop servo\r\n");
 }
 void CameraServo::start(double angle)
 {
+	//カメラサーボの可動域わからんので予防として[0.4,0.6]としておく　仲田
 	if(angle > 0.6)angle = 0.6;
 	else if(angle < 0.4)angle = 0.4;
 
