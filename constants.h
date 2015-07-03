@@ -15,9 +15,9 @@
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A = 5;		//モータPWM Right
+const static int PIN_PWM_A = 5;				//モータPWM Right
 const static int PIN_PWM_B = 4;
-const static int PIN_PULSE_A = 7;	//モータエンコーダ Right
+const static int PIN_PULSE_A = 7;			//モータエンコーダ Right
 const static int PIN_PULSE_B = 0;
 const static int PIN_INVERT_MOTOR_A = 3;	//モータ反転ピン Right
 const static int PIN_INVERT_MOTOR_B = 2;
@@ -25,9 +25,9 @@ const static int PIN_BUZZER = 12;			//ブザー
 const static int PIN_XBEE_SLEEP = 13;		//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;		//Cdsセンサピン
 const static int PIN_PARA_SERVO = 6;		//パラシュートサーボピン
-const static int PIN_STABI_SERVO = 1;	//スタビサーボピン
-const static int PIN_DISTANCE = 8;	//距離センサー(ピン番号は適当)
-const static int PIN_CAMERA = 27;	//カメラサーボピン
+const static int PIN_STABI_SERVO = 1;		//スタビサーボピン
+const static int PIN_CAMERA_SERVO = 24;		//カメラサーボピン
+const static int PIN_DISTANCE = 8;			//距離センサー(ピン番号は適当)
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;

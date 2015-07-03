@@ -309,14 +309,90 @@ void StabiServo::close()
 	pwmWrite(mPin, SERVO_BASE_VALUE);
 	Debug::print(LOG_DETAIL,"StabiServo Close!\r\n");
 }
-//StabiServo::StabiServo() : mPin(PIN_STABI_SERVO)
-//２７番ピンテスト(PIN_CAMERA = 27) 仲田
-StabiServo::StabiServo() : mPin(PIN_CAMERA)
+StabiServo::StabiServo() : mPin(PIN_STABI_SERVO)
 {
 	setName("stabiservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
 StabiServo::~StabiServo()
+{
+}
+
+//////////////////////////////////////////////
+// CameraServo
+//////////////////////////////////////////////
+
+bool CameraServo::onInit(const struct timespec& time)
+{
+	pinMode(mPin, PWM_OUTPUT);
+
+	pwmSetMode(PWM_MODE_MS);
+	pwmSetRange(9000);
+	pwmSetClock(32);
+
+	return true;
+}
+void CameraServo::onClean()
+{
+	stop();
+}
+bool CameraServo::onCommand(const std::vector<std::string>& args)
+{
+	if(args.size() >= 2)
+	{
+		if(args[1].compare("stop") == 0)
+		{
+			stop();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}else if(args[1].compare("close") == 0)
+		{
+			close();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}else
+		{
+			//角度指定
+			float period = 0;
+			if(args.size() == 2)
+			{
+				period = atof(args[1].c_str());
+			}
+			start(period);
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+	}else
+	{
+		Debug::print(LOG_PRINT,"cameraservo [0-1]          : set servo angle\r\n\
+cameraservo stop           : stop servo\r\n");
+	}
+	return true;
+}
+void CameraServo::start(double angle)
+{
+	if(angle > 0.6)angle = 0.6;
+	else if(angle < 0.4)angle = 0.4;
+
+	pwmWrite (mPin, SERVO_BASE_VALUE + angle * SERVO_MOVABLE_RANGE);
+	Debug::print(LOG_DETAIL,"CameraServo Start (%f)!\r\n",angle);
+}
+void CameraServo::stop()
+{
+	pwmWrite (mPin, 0);
+	Debug::print(LOG_DETAIL,"CameraServo Stop!\r\n");
+}
+void CameraServo::close()
+{
+	pwmWrite(mPin, SERVO_BASE_VALUE);
+	Debug::print(LOG_DETAIL,"CameraServo Close!\r\n");
+}
+CameraServo::CameraServo() : mPin(PIN_STABI_SERVO)
+{
+	setName("cameraservo");
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
+}
+CameraServo::~CameraServo()
 {
 }
 
@@ -372,4 +448,5 @@ XBeeSleep::~XBeeSleep()
 Buzzer gBuzzer;
 ParaServo gParaServo;
 StabiServo gStabiServo;
+CameraServo gCameraServo;
 XBeeSleep gXbeeSleep;

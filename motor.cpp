@@ -350,13 +350,11 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 			//スタビ展開
 			gStabiServo.start(1);
 
-			//待機
-
 			//後退
 			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
 
 			return true;
-		}else if(args[1].compare("stop"))
+		}else if(args[1].compare("stop")==0)
 		{
 			//ストップ with　スタビ
 			gStabiServo.start(1);
@@ -404,8 +402,7 @@ motor p            : pid start\r\n\
 motor p [angle]    : pid start with angle to move\r\n\
 motor p [P] [I] [D]: set pid params\r\n\
 motor r [l] [r]    : set motor ratio\r\n\
-motor [l] [r]      : drive motor by specified ratio\r\n
-motor [go/back/stop]: move with front stabi\r\n");
+motor [l] [r]      : drive motor by specified ratio\r\n");
 	return true;
 }
 unsigned long long MotorDrive::getL()

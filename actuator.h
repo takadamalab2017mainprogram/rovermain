@@ -97,6 +97,27 @@ public:
 	~StabiServo();
 };
 
+// カメラサーボ制御クラス(ハードウェアPWMを使う)　仲田
+class CameraServo : public TaskBase
+{
+private:
+	int mPin;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string>& args);
+public:
+	//サーボを指定されたangle[0-1]になるように制御を開始する
+	void start(double angle);
+	//サーボの制御を終了する
+	void stop();
+	//サーボをしまう
+	void close();
+
+	CameraServo();
+	~CameraServo();
+};
+
 // XBeeスリープ制御クラス
 class XBeeSleep : public TaskBase
 {
