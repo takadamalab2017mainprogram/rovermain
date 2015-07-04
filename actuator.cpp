@@ -388,7 +388,7 @@ void CameraServo::close()
 	pwmWrite(mPin, SERVO_BASE_VALUE);
 	Debug::print(LOG_DETAIL,"CameraServo Close!\r\n");
 }
-CameraServo::CameraServo() : mPin(PIN_STABI_SERVO)
+CameraServo::CameraServo() : mPin(PIN_CAMERA_SERVO)
 {
 	setName("cameraservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
