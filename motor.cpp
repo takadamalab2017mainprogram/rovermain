@@ -341,23 +341,19 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		}else if(args[1].compare("go") == 0)
 		{
 			//前進withスタビ
-			gStabiServo.start(0);
+			gStabiServo.start(0.5);
 			drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
 			return true;
 		}else if(args[1].compare("back") == 0)
 		{
-			//後退with転倒防止byスタビ
-			//スタビ展開
-			gStabiServo.start(1);
-
-			//後退
+			//後退withスタビ
+			gStabiServo.start(0.8);
 			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
-
 			return true;
 		}else if(args[1].compare("stop")==0)
 		{
-			//ストップ with　スタビ
-			gStabiServo.start(1);
+			//ストップwithスタビ
+			gStabiServo.start(0.2);
 			drive(0,0);
 			return true;
 		}else if(args[1].compare("p") == 0)
