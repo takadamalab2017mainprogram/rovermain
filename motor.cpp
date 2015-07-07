@@ -347,7 +347,7 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		}else if(args[1].compare("back") == 0)
 		{
 			//後退withスタビ
-			gStabiServo.start(0.8);
+			gStabiServo.start(0.7);
 			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
 			return true;
 		}else if(args[1].compare("stop")==0)
