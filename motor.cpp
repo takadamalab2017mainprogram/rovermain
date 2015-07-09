@@ -267,6 +267,7 @@ double MotorDrive::getPowerR()
 	return mMotorR.getPower();
 }
 
+//high-ballチームは回路の都合上、モーターの回転の向きが従来と逆になります
 void MotorDrive::drive(int powerL, int powerR)
 {
 	mDriveMode = DRIVE_RATIO;
