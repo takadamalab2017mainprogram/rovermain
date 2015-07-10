@@ -272,14 +272,15 @@ void MotorDrive::drive(int powerL, int powerR)
 {
 	mDriveMode = DRIVE_RATIO;
 	Debug::print(LOG_DETAIL,"Motor ratio: %d %d\r\n",powerL,powerR);
-    mMotorL.set(mRatioL * powerL / MOTOR_MAX_POWER);
-    mMotorR.set(-mRatioR * powerR / MOTOR_MAX_POWER);
+    mMotorL.set(mRatioL * -powerL / MOTOR_MAX_POWER);
+    mMotorR.set(-mRatioR * -powerR / MOTOR_MAX_POWER);
 
 	mAngle = 0;
 }
 void MotorDrive::drive(int power)
 {
-	drive(power,power);
+	//highball回路の都合で出力逆向きにしてます
+	drive(-power,-power);
 }
 
 void MotorDrive::set(double p,double i,double d)
