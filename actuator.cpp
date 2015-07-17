@@ -410,6 +410,7 @@ bool SoftCameraServo::onInit(const struct timespec& time)
 		Debug::print(LOG_PRINT,"SoftCameraServoError: wiringPi setup failed...\n");
 	}
 
+	//pinMode(mPin, OUTPUT); //ピンを出力モードにするっぽい
 	softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
 	return true;
 }
@@ -484,7 +485,7 @@ void SoftCameraServo::moveHold()
 }
 SoftCameraServo::SoftCameraServo() : mPin(PIN_CAMERA_SERVO_SOFT)
 {
-	setName("cameraservo");
+	setName("softcameraservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
 SoftCameraServo::~SoftCameraServo()

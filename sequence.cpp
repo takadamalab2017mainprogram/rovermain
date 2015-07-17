@@ -50,6 +50,9 @@ bool Testing::onInit(const struct timespec& time)
 	gStabiServo.stop();
 	gBuzzer.start(200);
 
+	gSoftCameraServo.setRunMode(true);
+	//gCameraServo.setRunMode(true);
+
 	return true;
 }
 bool Testing::onCommand(const std::vector<std::string>& args)

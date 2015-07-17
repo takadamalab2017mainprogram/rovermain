@@ -176,4 +176,5 @@ extern Buzzer gBuzzer;
 extern ParaServo gParaServo;
 extern StabiServo gStabiServo;
 extern XBeeSleep gXbeeSleep;
-
+extern SoftCameraServo gSoftCameraServo;
+//extern CameraServo gCameraServo
