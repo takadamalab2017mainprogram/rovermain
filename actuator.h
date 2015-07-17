@@ -98,7 +98,6 @@ public:
 };
 
 // カメラサーボ制御クラス(ハードウェアPWMを使う)　仲田
-/*
 class CameraServo : public TaskBase
 {
 private:
@@ -118,7 +117,6 @@ public:
 	CameraServo();
 	~CameraServo();
 };
-*/
 
 //カメラサーボ制御クラス(ソフトPWM)
 //ParaServoの丸移しです
@@ -177,4 +175,4 @@ extern ParaServo gParaServo;
 extern StabiServo gStabiServo;
 extern XBeeSleep gXbeeSleep;
 extern SoftCameraServo gSoftCameraServo;
-//extern CameraServo gCameraServo
+extern CameraServo gCameraServo

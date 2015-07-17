@@ -51,7 +51,7 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.start(200);
 
 	gSoftCameraServo.setRunMode(true);
-	//gCameraServo.setRunMode(true);
+	gCameraServo.setRunMode(true);
 
 	return true;
 }

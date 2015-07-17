@@ -322,7 +322,6 @@ StabiServo::~StabiServo()
 // CameraServo (hard pwm)
 // 24ピンの問題でうごかねーんだ
 //////////////////////////////////////////////
-/*
 bool CameraServo::onInit(const struct timespec& time)
 {
 	pinMode(mPin, PWM_OUTPUT);
@@ -397,7 +396,6 @@ CameraServo::CameraServo() : mPin(PIN_CAMERA_SERVO)
 CameraServo::~CameraServo()
 {
 }
-*/
 
 //////////////////////////////////////////////
 // SoftCameraServo(Software PWM)
@@ -544,6 +542,6 @@ XBeeSleep::~XBeeSleep()
 Buzzer gBuzzer;
 ParaServo gParaServo;
 StabiServo gStabiServo;
-//CameraServo gCameraServo;
+CameraServo gCameraServo;
 SoftCameraServo gSoftCameraServo;
 XBeeSleep gXbeeSleep;
