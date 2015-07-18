@@ -328,12 +328,18 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		}else if(args[1].compare("a") == 0)
 		{
 			//左折
-			drive(0,MOTOR_MAX_POWER * 0.7);
+			//drive(0,MOTOR_MAX_POWER * 0.7);
+			drive(0,MOTOR_MAX_POWER * 0.3); //審査会用チューニング
+			//drive(0,-MOTOR_MAX_POWER * 0.7); //左右逆転問題対策
+			//gStabiServo.start(0.2); //左折withスタビ動作
 			return true;
 		}else if(args[1].compare("d") == 0)
 		{
 			//右折
-			drive(MOTOR_MAX_POWER * 0.7,0);
+			//drive(MOTOR_MAX_POWER * 0.7,0);
+			drive(MOTOR_MAX_POWER * 0.3,0); //審査会チューニング
+			//drive(-MOTOR_MAX_POWER * 0.7,0); //左右逆転問題対策
+			//gStabiServo.start(0.2); //右折withスタビ動作
 			return true;
 		}else if(args[1].compare("h") == 0)
 		{
@@ -344,13 +350,15 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		{
 			//前進withスタビ
 			gStabiServo.start(0.2);
-			drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
+			//drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
+			drive(MOTOR_MAX_POWER*0.2,MOTOR_MAX_POWER*0.2); //審査会用チューニング
 			return true;
 		}else if(args[1].compare("back") == 0)
 		{
 			//後退withスタビ
 			gStabiServo.start(0.65);
-			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
+			//drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
+			drive(-MOTOR_MAX_POWER*0.2,-MOTOR_MAX_POWER*0.2); //審査会用チューニング
 			return true;
 		}else if(args[1].compare("stop")==0)
 		{
