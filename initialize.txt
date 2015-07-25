@@ -2,7 +2,7 @@ testing
 detecting setmode ON
 navigating 40.862905 -119.135297
 motor p 0.004 0.0 0.0
-motor r 100 90
+motor r 50 45
 //
 // ------------------- notes -------------------
 //
@@ -46,3 +46,5 @@ alias wadachistart escapingbystabi start
 alias imomusi escapingbystabi start
 alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
+alias bsopen backstabiservo 0
+alias bsclose backstabiservo 0

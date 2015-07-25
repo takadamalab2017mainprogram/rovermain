@@ -32,6 +32,7 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
+	gBackStabiServo.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
@@ -51,7 +52,7 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.start(200);
 
 	gSoftCameraServo.setRunMode(true);
-	gCameraServo.setRunMode(true);
+	//gCameraServo.setRunMode(true);
 
 	return true;
 }
