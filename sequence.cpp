@@ -331,6 +331,9 @@ bool Separating::onInit(const struct timespec& time)
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
 
+	//backstabi
+	gBackStabiServo.moveHold();
+
 	return true;
 }
 void Separating::onUpdate(const struct timespec& time)
@@ -362,7 +365,7 @@ void Separating::onUpdate(const struct timespec& time)
 			gParaServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
-			gWakingState.setRunMode(true);
+			gWakingState.setRunMode(true); ///ここに起き上がり subseuence の　waking に書いている
 		}
 		break;
 	case STEP_PRE_PARA_JUDGE:

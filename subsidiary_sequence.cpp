@@ -471,8 +471,17 @@ bool Waking::onInit(const struct timespec& time)
 	gStabiServo.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
+	//backstabi 追加 backstabiを下ろす
 
-	gStabiServo.start(STABI_WAKING_ANGLE);
+	gBackStabiServo.moveRelease();  //
+
+	//softcameraservo 追加 とりあいず　うこがないで
+	gSoftCameraServo.moveHold();
+
+	//前stabi とりあいず　stop
+	gStabiServo.stop();
+	
+	//去年のやつ＞＞gStabiServo.start(STABI_WAKING_ANGLE);
 	return true;
 }
 void Waking::onClean()
@@ -517,7 +526,7 @@ void Waking::onUpdate(const struct timespec& time)
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0);
 		}
-		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断(ジャイロを採用)
+		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断(ジャイロを採用) waking_threshold =200
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			gBuzzer.start(30,20,2);
@@ -555,7 +564,14 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
 			gBuzzer.start(30,20,4);
 			setRunMode(false);
-			gStabiServo.start(STABI_BASE_ANGLE); // 起き上がり成功したらスタビをベースの角度に戻す
+
+
+			//起き上がったら、前stabi を下ろす
+			gStabiServo.start(STABI_WAKING_ANGLE);
+			//去年＞＞gStabiServo.start(STABI_BASE_ANGLE); // 起き上がり成功したらスタビをベースの角度に戻す
+
+			gSoftCameraServo.moveRelease();
+
 		}
 		else
 		{
