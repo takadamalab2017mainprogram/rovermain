@@ -319,6 +319,274 @@ StabiServo::~StabiServo()
 }
 
 //////////////////////////////////////////////
+// CameraServo (hard pwm)
+// 24ピンの問題でうごかねーんだ
+//////////////////////////////////////////////
+/*
+bool CameraServo::onInit(const struct timespec& time)
+{
+	pinMode(mPin, PWM_OUTPUT);
+
+	pwmSetMode(PWM_MODE_MS);
+	pwmSetRange(9000);
+	pwmSetClock(32);
+
+	return true;
+}
+void CameraServo::onClean()
+{
+	stop();
+}
+bool CameraServo::onCommand(const std::vector<std::string>& args)
+{
+	if(args.size() >= 2)
+	{
+		if(args[1].compare("stop") == 0)
+		{
+			stop();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}else if(args[1].compare("close") == 0)
+		{
+			close();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}else
+		{
+			//角度指定
+			float period = 0;
+			if(args.size() == 2)
+			{
+				period = atof(args[1].c_str());
+			}
+			start(period);
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+	}else
+	{
+		Debug::print(LOG_PRINT,"cameraservo [0-1]          : set servo angle\r\n\
+cameraservo stop           : stop servo\r\n");
+	}
+	return true;
+}
+void CameraServo::start(double angle)
+{
+	//カメラサーボの可動域わからんので予防として[0.4,0.6]としておく　仲田
+	if(angle > 0.6)angle = 0.6;
+	else if(angle < 0.4)angle = 0.4;
+
+	pwmWrite (mPin, SERVO_BASE_VALUE + angle * SERVO_MOVABLE_RANGE);
+	Debug::print(LOG_DETAIL,"CameraServo Start (%f)!\r\n",angle);
+}
+void CameraServo::stop()
+{
+	pwmWrite (mPin, 0);
+	Debug::print(LOG_DETAIL,"CameraServo Stop!\r\n");
+}
+void CameraServo::close()
+{
+	pwmWrite(mPin, SERVO_BASE_VALUE);
+	Debug::print(LOG_DETAIL,"CameraServo Close!\r\n");
+}
+CameraServo::CameraServo() : mPin(PIN_CAMERA_SERVO)
+{
+	setName("cameraservo");
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
+}
+CameraServo::~CameraServo()
+{
+}
+*/
+
+//////////////////////////////////////////////
+// SoftCameraServo(Software PWM)
+//////////////////////////////////////////////
+
+bool SoftCameraServo::onInit(const struct timespec& time)
+{
+	if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
+	{
+		Debug::print(LOG_PRINT,"SoftCameraServoError: wiringPi setup failed...\n");
+	}
+
+	//pinMode(mPin, OUTPUT); //ピンを出力モードにするっぽい
+	softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
+	return true;
+}
+void SoftCameraServo::onClean()
+{
+	stop();
+}
+bool SoftCameraServo::onCommand(const std::vector<std::string>& args)
+{
+	if(args.size() >= 2)
+	{
+		if(args[1].compare("stop") == 0)
+		{
+			stop();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+		else
+		{
+			//角度指定
+			int period = 0;
+			if(args.size() == 2)
+			{
+				period = atof(args[1].c_str());
+			}
+			start(period);
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+	}
+	else
+	{
+		Debug::print(LOG_PRINT,"cameraservo [0 or %d-%d]\t: set servo position\r\n\
+cameraservo stop\t\t: stop servo\r\n", SERVO_MIN_RANGE ,SERVO_MAX_RANGE);
+	}
+	return true;
+}
+void SoftCameraServo::start(int angle)
+{
+	//範囲のチェック
+	if(angle >= SERVO_MAX_RANGE)
+	{
+		angle = SERVO_MAX_RANGE;
+	}
+	else if(angle <= 0)
+	{
+		angle = 0;
+	}
+	else if(angle < SERVO_MIN_RANGE)
+	{
+		angle = SERVO_MIN_RANGE;
+	}
+
+	softPwmWrite(mPin, angle);			//void softPwmWrite (int pin, int value);
+	Debug::print(LOG_PRINT,"SoftCameraServo Start (%d)!\r\n",angle);
+}
+void SoftCameraServo::start(POSITION p)
+{
+	start((int)p);
+}
+void SoftCameraServo::stop()
+{
+	softPwmWrite (mPin, 0);
+}
+void SoftCameraServo::moveRelease()
+{
+	start(POSITION_RELEASE);
+}
+void SoftCameraServo::moveHold()
+{
+	start(POSITION_HOLD);
+}
+SoftCameraServo::SoftCameraServo() : mPin(PIN_CAMERA_SERVO_SOFT)
+{
+	setName("softcameraservo");
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
+}
+SoftCameraServo::~SoftCameraServo()
+{
+}
+
+//////////////////////////////////////////////
+// BackStabiServo(Software PWM)
+//////////////////////////////////////////////
+
+bool BackStabiServo::onInit(const struct timespec& time)
+{
+	if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
+	{
+		Debug::print(LOG_PRINT,"BackStabiServoError: wiringPi setup failed...\n");
+	}
+
+	softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
+	//SERVO_RANGE　各種の定数はactuator.h 中
+	return true;
+}
+void BackStabiServo::onClean()
+{
+	stop();
+}
+bool BackStabiServo::onCommand(const std::vector<std::string>& args)
+{
+	if(args.size() >= 2)
+	{
+		if(args[1].compare("stop") == 0)
+		{
+			stop();
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+		else
+		{
+			//角度指定
+			int period = 0;
+			if(args.size() == 2)
+			{
+				period = atof(args[1].c_str());
+			}
+			start(period);
+			Debug::print(LOG_PRINT,"Command Executed!\r\n");
+			return true;
+		}
+	}
+	else
+	{
+		Debug::print(LOG_PRINT,"frontstabiservo [0 or %d-%d]\t: set servo position\r\n\
+frontstabiservo stop\t\t: stop servo\r\n", SERVO_MIN_RANGE ,SERVO_MAX_RANGE);
+	}
+	return true;
+}
+void BackStabiServo::start(int angle)
+{
+	//範囲のチェック
+	if(angle >= SERVO_MAX_RANGE)
+	{
+		angle = SERVO_MAX_RANGE;
+	}
+	else if(angle <= 0)
+	{
+		angle = 0;
+	}
+	else if(angle < SERVO_MIN_RANGE)
+	{
+		angle = SERVO_MIN_RANGE;
+	}
+
+	softPwmWrite(mPin, angle);			//void softPwmWrite (int pin, int value);
+	Debug::print(LOG_PRINT,"BackStabiServo Start (%d)!\r\n",angle);
+}
+void BackStabiServo::start(POSITION p)
+{
+	start((int)p);
+}
+void BackStabiServo::stop()
+{
+	softPwmWrite (mPin, 0);
+}
+void BackStabiServo::moveRelease()
+{
+	start(POSITION_RELEASE);
+}
+void BackStabiServo::moveHold()
+{
+	start(POSITION_HOLD);
+}
+BackStabiServo::BackStabiServo() : mPin(PIN_FRONT_STABI_SERVO)
+{
+	setName("backstabiservo");
+	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
+}
+BackStabiServo::~BackStabiServo()
+{
+}
+
+
+//////////////////////////////////////////////
 // XBee Sleep
 //////////////////////////////////////////////
 
@@ -370,4 +638,8 @@ XBeeSleep::~XBeeSleep()
 Buzzer gBuzzer;
 ParaServo gParaServo;
 StabiServo gStabiServo;
+BackStabiServo gBackStabiServo;
+//CameraServo gCameraServo;
+SoftCameraServo gSoftCameraServo;
+
 XBeeSleep gXbeeSleep;

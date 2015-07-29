@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "motor.h"
 #include "sensor.h"
+#include "actuator.h"
 
 MotorDrive gMotorDrive;
 
@@ -166,6 +167,9 @@ bool MotorDrive::onInit(const struct timespec& time)
 	//ジャイロを使うように設定
 	gGyroSensor.setRunMode(true);
 
+	//スタビ使用指定　仲田
+	gStabiServo.setRunMode(true);
+
 	//初期化
     if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
 	{
@@ -263,18 +267,20 @@ double MotorDrive::getPowerR()
 	return mMotorR.getPower();
 }
 
+//high-ballチームは回路の都合上、モーターの回転の向きが従来と逆になります
 void MotorDrive::drive(int powerL, int powerR)
 {
 	mDriveMode = DRIVE_RATIO;
 	Debug::print(LOG_DETAIL,"Motor ratio: %d %d\r\n",powerL,powerR);
-    mMotorL.set(mRatioL * powerL / MOTOR_MAX_POWER);
-    mMotorR.set(-mRatioR * powerR / MOTOR_MAX_POWER);
+    mMotorL.set(mRatioL * -powerL / MOTOR_MAX_POWER);
+    mMotorR.set(-mRatioR * -powerR / MOTOR_MAX_POWER);
 
 	mAngle = 0;
 }
 void MotorDrive::drive(int power)
 {
-	drive(power,power);
+	//highball回路の都合で出力逆向きにしてます
+	drive(-power,-power);
 }
 
 void MotorDrive::set(double p,double i,double d)
@@ -322,16 +328,42 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		}else if(args[1].compare("a") == 0)
 		{
 			//左折
-			drive(0,MOTOR_MAX_POWER * 0.7);
+			//drive(0,MOTOR_MAX_POWER * 0.7);
+			drive(0,MOTOR_MAX_POWER * 0.3); //審査会用チューニング
+			//drive(0,-MOTOR_MAX_POWER * 0.7); //左右逆転問題対策
+			//gStabiServo.start(0.2); //左折withスタビ動作
 			return true;
 		}else if(args[1].compare("d") == 0)
 		{
 			//右折
-			drive(MOTOR_MAX_POWER * 0.7,0);
+			//drive(MOTOR_MAX_POWER * 0.7,0);
+			drive(MOTOR_MAX_POWER * 0.3,0); //審査会チューニング
+			//drive(-MOTOR_MAX_POWER * 0.7,0); //左右逆転問題対策
+			//gStabiServo.start(0.2); //右折withスタビ動作
 			return true;
 		}else if(args[1].compare("h") == 0)
 		{
 			//停止
+			drive(0,0);
+			return true;
+		}else if(args[1].compare("go") == 0)
+		{
+			//前進withスタビ
+			gStabiServo.start(0.2);
+			//drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
+			drive(MOTOR_MAX_POWER*0.2,MOTOR_MAX_POWER*0.2); //審査会用チューニング
+			return true;
+		}else if(args[1].compare("back") == 0)
+		{
+			//後退withスタビ
+			gStabiServo.start(0.65);
+			//drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
+			drive(-MOTOR_MAX_POWER*0.2,-MOTOR_MAX_POWER*0.2); //審査会用チューニング
+			return true;
+		}else if(args[1].compare("stop")==0)
+		{
+			//ストップwithスタビ
+			gStabiServo.start(0.65);
 			drive(0,0);
 			return true;
 		}else if(args[1].compare("p") == 0)

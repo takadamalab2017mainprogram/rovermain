@@ -32,6 +32,7 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
+	gBackStabiServo.setRunMode(true);
 	gXbeeSleep.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
@@ -49,6 +50,9 @@ bool Testing::onInit(const struct timespec& time)
 
 	gStabiServo.stop();
 	gBuzzer.start(200);
+
+	gSoftCameraServo.setRunMode(true);
+	//gCameraServo.setRunMode(true);
 
 	return true;
 }
@@ -319,6 +323,9 @@ bool Separating::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	
+	gBackStabiServo.setRunMode(true);
+	gSoftCameraServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
@@ -326,6 +333,10 @@ bool Separating::onInit(const struct timespec& time)
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
+
+	gSoftCameraServo.moveHold();
+	//backstabi
+	gBackStabiServo.moveHold();
 
 	return true;
 }
@@ -358,7 +369,7 @@ void Separating::onUpdate(const struct timespec& time)
 			gParaServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
-			gWakingState.setRunMode(true);
+			gWakingState.setRunMode(true); ///ここに起き上がり subseuence の　waking に書いている
 		}
 		break;
 	case STEP_PRE_PARA_JUDGE:
