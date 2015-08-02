@@ -13,130 +13,130 @@
 #include "motor.h"
 #include "image_proc.h"
 
-Escaping gEscapingState;
-EscapingRandom gEscapingRandomState;
-EscapingByStabi gEscapingByStabiState;
+//Escaping gEscapingState;
+//EscapingRandom gEscapingRandomState;
+//EscapingByStabi gEscapingByStabiState;
 Waking gWakingState;
 Turning gTurningState;
-Avoiding gAvoidingState;
-WadachiPredicting gPredictingState;
+//Avoiding gAvoidingState;
+//WadachiPredicting gPredictingState;
 PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 MovementLogging gMovementLoggingState;
 EncoderMonitoring gEncoderMonitoringState;
 
-bool WadachiPredicting::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gCameraCapture.startWarming();
-
-	return true;
-}
-void WadachiPredicting::onUpdate(const struct timespec& time)
-{
-	if(gAvoidingState.isActive())return;
-	if(!mIsAvoidingEnable)
-	{
-		if(Time::dt(time,mLastUpdateTime) >= 2.5)
-		{
-			mLastUpdateTime = time;
-			IplImage* pImage = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL,pImage);
-			if(!gImageProc.isWadachiExist(pImage))return;
-			//“Q‚ðŽ–‘OŒŸ’m‚µ‚½
-			gCameraCapture.startWarming();
-		}
-		return;
-	}
-
-	switch(mCurStep)
-	{
-	case STEP_RUNNING:
-		if(Time::dt(time,mLastUpdateTime) > 60)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
-			mCurStep = STEP_STOPPING;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(0);
-		}
-		break;
-	case STEP_STOPPING:
-		if(Time::dt(time,mLastUpdateTime) > 3)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Waking started\r\n");
-			mCurStep = STEP_WAKING;
-			mLastUpdateTime = time;
-			gWakingState.setRunMode(true);
-		}
-		break;
-	case STEP_WAKING:
-		if(!gWakingState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Checking started\r\n");
-			mCurStep = STEP_CHECKING;
-			mLastUpdateTime = time;
-			gCameraCapture.startWarming();
-		}
-		break;
-	case STEP_CHECKING:
-		if(Time::dt(time,mLastUpdateTime) > 3)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Avoiding started\r\n");
-			mLastUpdateTime = time;
-			IplImage* pImage = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL,pImage);
-			if(gImageProc.isWadachiExist(pImage))
-			{
-				//“Q‚ðŽ–‘OŒŸ’m‚µ‚½
-				gAvoidingState.setRunMode(true);
-				mCurStep = STEP_AVOIDING;
-			}else
-			{
-				mCurStep = STEP_RUNNING;
-				gMotorDrive.startPID(0,MOTOR_MAX_POWER);
-			}
-		}
-		break;
-	case STEP_AVOIDING:
-		if(!gAvoidingState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Avoiding finished\r\n");
-			mCurStep = STEP_RUNNING;
-			mLastUpdateTime = time;
-		}
-		break;
-	}
-}
-bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
-{
-	if(args.size() == 2)
-	{
-		if(args[1].compare("enable") == 0)
-		{
-			mIsAvoidingEnable = true;
-			return true;
-		}
-		if(args[1].compare("disable") == 0)
-		{
-			mIsAvoidingEnable = false;
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
-	return false;
-}
-bool WadachiPredicting::isWorking(const struct timespec& time)
-{
-	return mIsAvoidingEnable && (mCurStep != STEP_RUNNING || (mCurStep == STEP_RUNNING && Time::dt(time,mLastUpdateTime) < 6));
-}
-WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false),mCurStep(STEP_RUNNING)
-{
-	setName("predicting");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-WadachiPredicting::~WadachiPredicting()
-{
-}
+//bool WadachiPredicting::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	gCameraCapture.startWarming();
+//
+//	return true;
+//}
+//void WadachiPredicting::onUpdate(const struct timespec& time)
+//{
+//	if(gAvoidingState.isActive())return;
+//	if(!mIsAvoidingEnable)
+//	{
+//		if(Time::dt(time,mLastUpdateTime) >= 2.5)
+//		{
+//			mLastUpdateTime = time;
+//			IplImage* pImage = gCameraCapture.getFrame();
+//			gCameraCapture.save(NULL,pImage);
+//			if(!gImageProc.isWadachiExist(pImage))return;
+//			//“Q‚ðŽ–‘OŒŸ’m‚µ‚½
+//			gCameraCapture.startWarming();
+//		}
+//		return;
+//	}
+//
+//	switch(mCurStep)
+//	{
+//	case STEP_RUNNING:
+//		if(Time::dt(time,mLastUpdateTime) > 60)
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
+//			mCurStep = STEP_STOPPING;
+//			mLastUpdateTime = time;
+//			gMotorDrive.drive(0);
+//		}
+//		break;
+//	case STEP_STOPPING:
+//		if(Time::dt(time,mLastUpdateTime) > 3)
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Waking started\r\n");
+//			mCurStep = STEP_WAKING;
+//			mLastUpdateTime = time;
+//			gWakingState.setRunMode(true);
+//		}
+//		break;
+//	case STEP_WAKING:
+//		if(!gWakingState.isActive())
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Checking started\r\n");
+//			mCurStep = STEP_CHECKING;
+//			mLastUpdateTime = time;
+//			gCameraCapture.startWarming();
+//		}
+//		break;
+//	case STEP_CHECKING:
+//		if(Time::dt(time,mLastUpdateTime) > 3)
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Avoiding started\r\n");
+//			mLastUpdateTime = time;
+//			IplImage* pImage = gCameraCapture.getFrame();
+//			gCameraCapture.save(NULL,pImage);
+//			if(gImageProc.isWadachiExist(pImage))
+//			{
+//				//“Q‚ðŽ–‘OŒŸ’m‚µ‚½
+//				gAvoidingState.setRunMode(true);
+//				mCurStep = STEP_AVOIDING;
+//			}else
+//			{
+//				mCurStep = STEP_RUNNING;
+//				gMotorDrive.startPID(0,MOTOR_MAX_POWER);
+//			}
+//		}
+//		break;
+//	case STEP_AVOIDING:
+//		if(!gAvoidingState.isActive())
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Avoiding finished\r\n");
+//			mCurStep = STEP_RUNNING;
+//			mLastUpdateTime = time;
+//		}
+//		break;
+//	}
+//}
+//bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
+//{
+//	if(args.size() == 2)
+//	{
+//		if(args[1].compare("enable") == 0)
+//		{
+//			mIsAvoidingEnable = true;
+//			return true;
+//		}
+//		if(args[1].compare("disable") == 0)
+//		{
+//			mIsAvoidingEnable = false;
+//			return true;
+//		}
+//	}
+//	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+//	return false;
+//}
+//bool WadachiPredicting::isWorking(const struct timespec& time)
+//{
+//	return mIsAvoidingEnable && (mCurStep != STEP_RUNNING || (mCurStep == STEP_RUNNING && Time::dt(time,mLastUpdateTime) < 6));
+//}
+//WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false),mCurStep(STEP_RUNNING)
+//{
+//	setName("predicting");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//WadachiPredicting::~WadachiPredicting()
+//{
+//}
 
 bool Escaping::onInit(const struct timespec& time)
 {
@@ -471,6 +471,8 @@ bool Waking::onInit(const struct timespec& time)
 	gStabiServo.setRunMode(true);
 	mAngleOnBegin = gGyroSensor.getRz();
 	mWakeRetryCount = 0;
+	gBackStabiServo.setRunMode(true);
+	gSoftCameraServo.setRunMode(true);
 	//backstabi ’Ç‰Á backstabi‚ð‰º‚ë‚·
 
 	gBackStabiServo.moveRelease();  //
@@ -669,125 +671,125 @@ Waking::~Waking()
 {
 }
 
-bool Turning::onInit(const struct timespec& time)
-{
-	mTurnPower = 0;
-	gGyroSensor.setRunMode(true);
-	mAngle = gGyroSensor.getRz();
-	mLastUpdateTime = time;
-	return true;
-}
-void Turning::onUpdate(const struct timespec& time)
-{
-	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
-	if(Time::dt(time,mLastUpdateTime) >= 5 || turnedAngle > 15)
-	{
-		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
-		gMotorDrive.drive(0);
-		setRunMode(false);
-	}else
-	{
-		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
-		else gMotorDrive.drive(mTurnPower,-mTurnPower);
-		if(turnedAngle < 5)mTurnPower += 0.1;
-	}
-}
-void Turning::setDirection(bool left)
-{
-	mIsTurningLeft = left;
-}
-Turning::Turning()
-{
-	setName("turning");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-Turning::~Turning()
-{
-}
+//bool Turning::onInit(const struct timespec& time)
+//{
+//	mTurnPower = 0;
+//	gGyroSensor.setRunMode(true);
+//	mAngle = gGyroSensor.getRz();
+//	mLastUpdateTime = time;
+//	return true;
+//}
+//void Turning::onUpdate(const struct timespec& time)
+//{
+//	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
+//	if(Time::dt(time,mLastUpdateTime) >= 5 || turnedAngle > 15)
+//	{
+//		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
+//		gMotorDrive.drive(0);
+//		setRunMode(false);
+//	}else
+//	{
+//		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
+//		else gMotorDrive.drive(mTurnPower,-mTurnPower);
+//		if(turnedAngle < 5)mTurnPower += 0.1;
+//	}
+//}
+//void Turning::setDirection(bool left)
+//{
+//	mIsTurningLeft = left;
+//}
+//Turning::Turning()
+//{
+//	setName("turning");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//Turning::~Turning()
+//{
+//}
+//
+//bool Avoiding::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	if(!gEscapingState.isActive())gMotorDrive.drive(0,50);
+//	mAngle = gGyroSensor.getRz();
+//	mCurStep = STEP_TURN;
+//	return true;
+//}
+//void Avoiding::onUpdate(const struct timespec& time)
+//{
+//	if(gEscapingState.isActive())
+//	{
+//		Debug::print(LOG_SUMMARY, "Avoiding: Escaping is already running. Avoiding Canceled!\r\n");
+//		setRunMode(false);
+//	}
+//	switch(mCurStep)
+//	{
+//	case STEP_TURN:
+//		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 45)
+//		{
+//			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
+//			mLastUpdateTime = time;
+//			gMotorDrive.startPID(10,MOTOR_MAX_POWER);
+//			mCurStep = STEP_FORWARD;
+//		}
+//		break;
+//	case STEP_FORWARD:
+//		if(Time::dt(time,mLastUpdateTime) > 4)
+//		{
+//			Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
+//			setRunMode(false);
+//		}
+//		break;
+//	}
+//}
+//Avoiding::Avoiding()
+//{
+//	setName("avoiding");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//Avoiding::~Avoiding()
+//{
+//}
 
-bool Avoiding::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	if(!gEscapingState.isActive())gMotorDrive.drive(0,50);
-	mAngle = gGyroSensor.getRz();
-	mCurStep = STEP_TURN;
-	return true;
-}
-void Avoiding::onUpdate(const struct timespec& time)
-{
-	if(gEscapingState.isActive())
-	{
-		Debug::print(LOG_SUMMARY, "Avoiding: Escaping is already running. Avoiding Canceled!\r\n");
-		setRunMode(false);
-	}
-	switch(mCurStep)
-	{
-	case STEP_TURN:
-		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 45)
-		{
-			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
-			mLastUpdateTime = time;
-			gMotorDrive.startPID(10,MOTOR_MAX_POWER);
-			mCurStep = STEP_FORWARD;
-		}
-		break;
-	case STEP_FORWARD:
-		if(Time::dt(time,mLastUpdateTime) > 4)
-		{
-			Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
-			setRunMode(false);
-		}
-		break;
-	}
-}
-Avoiding::Avoiding()
-{
-	setName("avoiding");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-Avoiding::~Avoiding()
-{
-}
-
-bool PictureTaking::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gCameraCapture.setRunMode(true);
-	gBuzzer.setRunMode(true);
-	gWakingState.setRunMode(true);
-	mStepCount = 0;
-	return true;
-}
-void PictureTaking::onUpdate(const struct timespec& time)
-{
-	if(gWakingState.isActive())return;
-	if(Time::dt(time,mLastUpdateTime) > 1)
-	{
-		mLastUpdateTime = time;
-		++mStepCount;
-		gBuzzer.start(mStepCount > 25 ? 30 : 10);
-
-		if(mStepCount == 25)
-		{
-			gCameraCapture.startWarming();
-		}
-		if(mStepCount >= 30)
-		{
-			Debug::print(LOG_SUMMARY, "Say cheese!\r\n");
-			setRunMode(false);
-			gBuzzer.start(300);
-			gCameraCapture.save();
-		}
-	}
-}
-PictureTaking::PictureTaking() : mStepCount(0)
-{
-	setName("kinen");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-PictureTaking::~PictureTaking()
-{
-}
+//bool PictureTaking::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	gCameraCapture.setRunMode(true);
+//	gBuzzer.setRunMode(true);
+//	gWakingState.setRunMode(true);
+//	mStepCount = 0;
+//	return true;
+//}
+//void PictureTaking::onUpdate(const struct timespec& time)
+//{
+//	if(gWakingState.isActive())return;
+//	if(Time::dt(time,mLastUpdateTime) > 1)
+//	{
+//		mLastUpdateTime = time;
+//		++mStepCount;
+//		gBuzzer.start(mStepCount > 25 ? 30 : 10);
+//
+//		if(mStepCount == 25)
+//		{
+//			gCameraCapture.startWarming();
+//		}
+//		if(mStepCount >= 30)
+//		{
+//			Debug::print(LOG_SUMMARY, "Say cheese!\r\n");
+//			setRunMode(false);
+//			gBuzzer.start(300);
+//			gCameraCapture.save();
+//		}
+//	}
+//}
+//PictureTaking::PictureTaking() : mStepCount(0)
+//{
+//	setName("kinen");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//PictureTaking::~PictureTaking()
+//{
+//}
 
 bool SensorLogging::onInit(const struct timespec& time)
 {
