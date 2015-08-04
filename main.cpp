@@ -78,11 +78,7 @@ int main(int argc, char** argv)
 //	Debug::print(LOG_SUMMARY, "constant test: %f",ConstantManager::get()[TEST_CONSTANT0_STR]);
 //
 	Time::showNowTime();
-<<<<<<< HEAD
 	Debug::print(LOG_SUMMARY,"2015 Takadama-lab ARLISS\r\n** HIGHBALL Team ***\r\n");
-=======
-	Debug::print(LOG_SUMMARY,"2014 Takadama-lab ARLISS\r\n*** MINERVA Team ***\r\n");
->>>>>>> d2497b7258357d4906f61456b2017d56f036f850
 
 	//キーボードによる終了を阻止
 	if(!(setSighandle(SIGINT) && setSighandle(SIGQUIT)))

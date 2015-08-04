@@ -47,11 +47,7 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.7;	//通常時のスタビ角度
 const static double STABI_FOLD_ANGLE = 0.0;	//収納時のスタビ角度
-<<<<<<< HEAD
 const static double STABI_WAKING_ANGLE = 0.2; //起き上がり用のスたビの角度
-=======
-const static double STABI_WAKING_ANGLE = 0.85; //起き上がり用のスたビの角度
->>>>>>> d2497b7258357d4906f61456b2017d56f036f850
  
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
@@ -88,11 +84,7 @@ const static unsigned int COLOR_ACCESSING_ABORT_TIME = 300;//0mゴール検知�
 const static unsigned int COLOR_ACCESSING_MAX_RETRY_COUNT = 5;//この回数以上DetectingからNavigating復帰を繰り返したらその場でゴール判定して停止する
 
 const static double WAKING_THRESHOLD = 200;
-<<<<<<< HEAD
 const static unsigned int WAKING_RETRY_COUNT = 10;
-=======
-const static unsigned int WAKING_RETRY_COUNT = 5;
->>>>>>> d2497b7258357d4906f61456b2017d56f036f850
 
 //////////////////////////////////////////////
 //タスク系設定
@@ -116,7 +108,4 @@ const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
 //////////////////////////////////////////////
 const static double DEGREE_2_METER = 111111.111111;//これを度に掛けるとメートルに変換できる
 const static char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt";
-<<<<<<< HEAD
 
-=======
->>>>>>> d2497b7258357d4906f61456b2017d56f036f850
