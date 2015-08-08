@@ -191,7 +191,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 	}
 
 	//座標を更新するように設定(一応2回書き込み)
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05); 
+	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 
 	//バージョン情報を表示
@@ -205,7 +205,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 void GPSSensor::onClean()
 {
 	//動作を停止するコマンドを発行
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x06); 
+	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x06);
 
 	close(mFileHandle);
 }
@@ -301,6 +301,17 @@ GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0),mIsNewData(false)
 GPSSensor::~GPSSensor()
 {
 }
+GPSSensor::sendState()
+{
+	if(mSatelites < 4)
+	{
+		system("~/home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps "+ mSatelites + " 0 0 0")
+	}
+	else
+	{
+		system("~/home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps "+ mSatelites + " " + mPos.x + " " + mPos.y + " " + mPos.z);//衛星数 x座標 Y座標 Z座標
+	}
+}
 
 void  GPSSensor::sendState()
  {
@@ -326,7 +337,7 @@ bool GyroSensor::onInit(const struct timespec& time)
 	mRVel.x = mRVel.y = mRVel.z = 0;
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
 	memset(&mLastSampleTime,0,sizeof(mLastSampleTime));
-	
+
 	if((mFileHandle = wiringPiI2CSetup(0x6b)) == -1)
 	{
 		Debug::print(LOG_SUMMARY,"Failed to setup Gyro Sensor\r\n");
@@ -412,7 +423,7 @@ void GyroSensor::onUpdate(const struct timespec& time)
 
 		++data_samples;
 	}
-	
+
 	//データが来ていたら現在の角速度と角度を更新
 	if(data_samples != 0)
 	{
@@ -761,7 +772,7 @@ void* DistanceSensor::waitingThread(void* arg)
 				parent.mIsCalculating = false;
 				parent.mLastDistance = -1;
 				break;
-			}	
+			}
 		}while(digitalRead(PIN_DISTANCE) == LOW);
 		parent.mLastSampleTime = newTime;
 		do
