@@ -359,8 +359,8 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 			//前進withスタビ
 			gStabiServo.start(0.8);
 			gBackStabiServo.moveGo();
-			drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
-			
+			//drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
+			startPID(0,MOTOR_MAX_POWER);
 			//startPID(0,MOTOR_MAX_POWER*0.7);//8-9 PID 制御　モータードライバー回路の都合により マイナスつけたよ
 			// 8-9 PID制御のためコメントアウト　　drive(MOTOR_MAX_POWER*0.7,MOTOR_MAX_POWER*0.7); 
 			return true;

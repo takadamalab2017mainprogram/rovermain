@@ -465,7 +465,7 @@ bool Waking::onInit(const struct timespec& time)
 	mCurStep = STEP_START;
 
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(-mStartPower);	//8-9 chou ãƒžã‚¤ãƒŠã‚¹ã«ã—ãŸ	//ƒ‚[ƒ^o—Í
+	gMotorDrive.drive(-mStartPower);	//8-9 chou ãƒžã‚¤ãƒŠã‚¹ã«ã—ã?//ƒ‚[ƒ^o—Í
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -573,7 +573,7 @@ if(dt > mDeaccelerateDuration)
 		{
 			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
 			gBuzzer.start(30,20,4);
-			setRunMode(false);
+			
 			gBackStabiServo.moveRelease();
 
 			//‹N‚«ã‚ª‚Á‚½‚çA‘Ostabi ‚ð‰º‚ë‚·
@@ -581,7 +581,8 @@ if(dt > mDeaccelerateDuration)
 			gStabiServo.start(STABI_BASE_ANGLE); // ‹N‚«ã‚ª‚è¬Œ÷‚µ‚½‚çƒXƒ^ƒr‚ðƒx[ƒX‚ÌŠp“x‚É–ß‚·
 
 			gSoftCameraServo.moveRelease();
-
+			mLastUpdateTime = time;
+			mCurStep = STEP_LAST;
 		}
 		else
 		{
@@ -603,6 +604,16 @@ if(dt > mDeaccelerateDuration)
 			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
 		}
 		break;
+
+	case STEP_LAST:
+		if((Time::dt(time,mLastUpdateTime) >0.5)
+		{gSoftCameraServo.start(15));}
+
+		if((Time::dt(time,mLastUpdateTime) >1.0)
+		{gSoftCameraServo.stop();
+		setRunMode(false);
+		}
+			
 	}
 }
 bool Waking::onCommand(const std::vector<std::string>& args)

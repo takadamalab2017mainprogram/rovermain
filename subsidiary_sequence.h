@@ -84,7 +84,7 @@
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;//çsìÆäJénéûçè
-	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY};
+	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY,STEP_LAST};
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;

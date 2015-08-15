@@ -141,12 +141,12 @@ protected:
 
 	//サーボを指定されたangle[0-SERVO_MAX_RANGE]になるように制御を開始する
 	//(※2014verはSoftware PWM使用のため細かい角度の調整は難しい)
-	virtual void start(int angle);
-	virtual void start(POSITION p);
+	
 public:
 	//サーボの制御を終了する
 	void stop();
-
+	virtual void start(int angle);
+	virtual void start(POSITION p);
 	void moveRelease();//パラシュート切り離し
 	void moveHold();//ピンが刺さった状態の位置に移動
 
