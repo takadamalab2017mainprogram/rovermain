@@ -33,7 +33,7 @@ bool Testing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	gBackStabiServo.setRunMode(true);
-	gXbeeSleep.setRunMode(true);
+//	gXbeeSleep.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
@@ -48,7 +48,7 @@ bool Testing::onInit(const struct timespec& time)
 
 	gSerialCommand.setRunMode(true);
 
-	gStabiServo.stop();
+	//gStabiServo.stop();
 	gBuzzer.start(200);
 
 	gSoftCameraServo.setRunMode(true);
@@ -206,6 +206,7 @@ bool Falling::onInit(const struct timespec& time)
 	Debug::print(LOG_SUMMARY, "Falling... ");
 	Time::showNowTime();
 	
+        mOnInit=true;	
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
@@ -223,13 +224,28 @@ bool Falling::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
+	gBackStabiServo.setRunMode(true);
+	gSoftCameraServo.setRunMode(true);
+
 	gParaServo.moveHold();
 	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納状態で固定
+	gBackStabiServo.moveHold();
+	gSoftCameraServo.moveHold();
 
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
 {
+
+
+
+if(mOnInit){
+gParaServo.moveHold();
+        gStabiServo.start(STABI_FOLD_ANGLE);            //スタビを格納状態で固定
+        gBackStabiServo.moveHold();
+        gSoftCameraServo.moveHold();
+mOnInit=false;
+}
 	//初回のみ気圧を取得
 	if(mLastPressure == 0)mLastPressure = gPressureSensor.get();
 
@@ -323,14 +339,17 @@ bool Separating::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+gBackStabiServo.setRunMode(true);
+gSoftCameraServo.setRunMode(true);
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+	// 8-5 gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動　気球試験コメントアウト
+	gStabiServo.start(STABI_FOLD_ANGLE);
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
-
+	gSoftCameraServo.moveHold();
 	//backstabi
 	gBackStabiServo.moveHold();
 
@@ -366,8 +385,11 @@ void Separating::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true); ///ここに起き上がり subseuence の　waking に書いている
+			
 		}
+		
 		break;
+
 	case STEP_PRE_PARA_JUDGE:
 		//起き上がり動作を実行し、画像処理を行う前に1秒待機して画像のブレを防止する
 		if(gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
@@ -375,11 +397,11 @@ void Separating::onUpdate(const struct timespec& time)
 		{
 			//次状態に遷移
 			mLastUpdateTime = time;
-			mCurStep = STEP_PARA_JUDGE;
+			mCurStep = STEP_GO_FORWARD;
 			gCameraCapture.startWarming();
 		}
 		break;
-	case STEP_PARA_JUDGE:
+/*	case STEP_PARA_JUDGE:
 		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
 		if(Time::dt(time,mLastUpdateTime) > 2)
 		{
@@ -411,7 +433,7 @@ void Separating::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_GO_FORWARD;
 		}
-		break;
+		break;*/
 	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
 		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
@@ -427,7 +449,7 @@ void Separating::nextState()
 	gBuzzer.start(100);
 
 	//次の状態を設定
-	gTesting.setRunMode(true);
+	gTestingState.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Separating Finished!\r\n");
 }

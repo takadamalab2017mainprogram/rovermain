@@ -131,7 +131,7 @@ private:
 	const static int SERVO_RANGE = 100;		//そのうちconstants.hに移す
 
 	//POSITION_RELEASE: ピンが抜ける位置, POSITION_HOLD: ピンが刺さった状態の位置
-	enum POSITION {POSITION_RELEASE = 25, POSITION_HOLD = 25};
+	enum POSITION {POSITION_RELEASE = 25, POSITION_HOLD =6};
 
 	int mPin;
 protected:
@@ -163,7 +163,7 @@ private:
 	const static int SERVO_RANGE = 100;		//そのうちconstants.hに移す
 
 	//POSITION_RELEASE: ピンが抜ける位置, POSITION_HOLD: ピンが刺さった状態の位置
-	enum POSITION {POSITION_RELEASE = 25, POSITION_HOLD = 6};
+	enum POSITION {POSITION_RELEASE = 14, POSITION_HOLD = 25,POSITION_GO=6};
 
 	int mPin;
 protected:
@@ -181,7 +181,7 @@ public:
 
 	void moveRelease();//パラシュート切り離し
 	void moveHold();//ピンが刺さった状態の位置に移動
-
+	void moveGo();
 	BackStabiServo();
 	~BackStabiServo();
 };

@@ -576,6 +576,10 @@ void BackStabiServo::moveHold()
 {
 	start(POSITION_HOLD);
 }
+void BackStabiServo::moveGo()
+{
+	start(POSITION_GO);
+}
 BackStabiServo::BackStabiServo() : mPin(PIN_FRONT_STABI_SERVO)
 {
 	setName("backstabiservo");
@@ -590,7 +594,7 @@ BackStabiServo::~BackStabiServo()
 // XBee Sleep
 //////////////////////////////////////////////
 
-bool XBeeSleep::onInit(const struct timespec& time)
+/*bool XBeeSleep::onInit(const struct timespec& time)
 {
 	mPin = PIN_XBEE_SLEEP;
 	pinMode(mPin, OUTPUT);
@@ -633,7 +637,7 @@ XBeeSleep::XBeeSleep() : mPin(PIN_XBEE_SLEEP)
 }
 XBeeSleep::~XBeeSleep()
 {
-}
+}*/
 
 Buzzer gBuzzer;
 ParaServo gParaServo;
@@ -642,4 +646,4 @@ BackStabiServo gBackStabiServo;
 //CameraServo gCameraServo;
 SoftCameraServo gSoftCameraServo;
 
-XBeeSleep gXbeeSleep;
+//XBeeSleep gXbeeSleep;

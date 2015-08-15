@@ -12,15 +12,15 @@
 #include "actuator.h"
 #include "motor.h"
 #include "image_proc.h"
-
+#include "constants.h"
 //Escaping gEscapingState;
 //EscapingRandom gEscapingRandomState;
 //EscapingByStabi gEscapingByStabiState;
 Waking gWakingState;
-Turning gTurningState;
+//Turning gTurningState;
 //Avoiding gAvoidingState;
 //WadachiPredicting gPredictingState;
-PictureTaking gPictureTakingState;
+//PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 MovementLogging gMovementLoggingState;
 EncoderMonitoring gEncoderMonitoringState;
@@ -137,7 +137,7 @@ EncoderMonitoring gEncoderMonitoringState;
 //WadachiPredicting::~WadachiPredicting()
 //{
 //}
-
+/*
 bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -458,14 +458,14 @@ EscapingRandom::EscapingRandom()
 EscapingRandom::~EscapingRandom()
 {
 }
-
+*/
 bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	mCurStep = STEP_START;
 
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(mStartPower);		//モータ出力
+	gMotorDrive.drive(-mStartPower);	//8-9 chou 繝槭う繝翫せ縺ｫ縺励◆	//モータ出力
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -475,15 +475,16 @@ bool Waking::onInit(const struct timespec& time)
 	gSoftCameraServo.setRunMode(true);
 	//backstabi 追加 backstabiを下ろす
 
-	gBackStabiServo.moveRelease();  //
+	gBackStabiServo.moveHold();  //
 
 	//softcameraservo 追加 とりあいず　うこがないで
 	gSoftCameraServo.moveHold();
 
 	//前stabi とりあいず　stop
-	gStabiServo.stop();
+	//8-9 gStabiServo.stop();
 	
-	//去年のやつ＞＞gStabiServo.start(STABI_WAKING_ANGLE);
+	//8-9 comment out gStabiServo.start(STABI_FOLD_ANGLE);
+	gStabiServo.start(0.2);//8-9
 	return true;
 }
 void Waking::onClean()
@@ -533,13 +534,18 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			gBuzzer.start(30,20,2);
 			mLastUpdateTime = time;
+			//gStabiServo.start(0.2);
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
 
 	case STEP_DEACCELERATE:	//ゆっくり減速する
 		dt = Time::dt(time, mLastUpdateTime);
-        if(dt > mDeaccelerateDuration)
+        
+
+		//gStabiServo.start(0.2);//8-9
+		//gBackStabiServo.moveRelease();
+if(dt > mDeaccelerateDuration)
         {
 			Debug::print(LOG_SUMMARY, "Waking Deaccelerate finished!\r\n");
 			gBuzzer.start(30,20,2);
@@ -550,11 +556,13 @@ void Waking::onUpdate(const struct timespec& time)
 		else
 		{
 			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2で割る*/)), 0);
+			
+			tmp_power=-tmp_power;
 			gMotorDrive.drive(tmp_power);
 		}
 		break;
 
-	case STEP_VERIFY:
+	case STEP_VERIFY:	
 		//起き上がりが成功したか否かを加速度センサで検証
 		if(Time::dt(time,mLastUpdateTime) <= 2.5)	//ローバの姿勢が安定するまで一定時間待つ
 		{
@@ -566,21 +574,24 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
 			gBuzzer.start(30,20,4);
 			setRunMode(false);
-
+			gBackStabiServo.moveRelease();
 
 			//起き上がったら、前stabi を下ろす
-			gStabiServo.start(STABI_WAKING_ANGLE);
-			//去年＞＞gStabiServo.start(STABI_BASE_ANGLE); // 起き上がり成功したらスタビをベースの角度に戻す
+			//gStabiServo.start(STABI_WAKING_ANGLE);
+			gStabiServo.start(STABI_BASE_ANGLE); // 起き上がり成功したらスタビをベースの角度に戻す
 
 			gSoftCameraServo.moveRelease();
 
 		}
 		else
 		{
+			gBackStabiServo.moveHold();
+			//8-9 gStabiServo.start(STABI_FOLD_ANGLE);
 			mLastUpdateTime = time;
 			mCurStep = STEP_START;
 			mAngleOnBegin = gGyroSensor.getRvx();
 			power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//試行回数ごとにモータ出力を上げる
+			power=-power;
 			gMotorDrive.drive(power);
 
 			if(++mWakeRetryCount > WAKING_RETRY_COUNT)
@@ -662,7 +673,7 @@ void Waking::setAngle(double a)
 	}
 	mAngleThreshold = a;
 }
-Waking::Waking() : mWakeRetryCount(0),mStartPower(45),mAngleThreshold(70),mDeaccelerateDuration(0.5)
+Waking::Waking() : mWakeRetryCount(0),mStartPower(100),mAngleThreshold(70),mDeaccelerateDuration(1.0)
 {
 	setName("waking");
 	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
@@ -1057,12 +1068,12 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 	mLastSamplingTime = time;
 	
 	//スタック判定中ならreturn
-	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
+/*	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 	{
 		mPrevDeltaPulseL = 0;
 		mPrevDeltaPulseR = 0;
 		return;
-	}
+	}*/
 
 	//エンコーダパルスの差分値の取得
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
@@ -1089,7 +1100,7 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 			//スタック判定
 			gBuzzer.start(80, 10 ,6);
 			Debug::print(LOG_SUMMARY, "EncoderMonitoring: STUCK detected by pulse count(%llu %llu). Threshold:%llu\r\n",deltaPulseL,deltaPulseR,pulse_threshold);
-			gEscapingByStabiState.setRunMode(true);
+			//gEscapingByStabiState.setRunMode(true);
 			setRunMode(false);
 			return;
 		}
