@@ -280,7 +280,7 @@ void MotorDrive::drive(int powerL, int powerR)
 void MotorDrive::drive(int power)
 {
 	//highball回路の都合で出力逆向きにしてます
-	drive(-power,-power);
+	drive(-power,-power);　//drive(L, R)で符号逆転するのだからこれはダメ
 }
 
 void MotorDrive::set(double p,double i,double d)

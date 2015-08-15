@@ -5,6 +5,7 @@
 #include <opencv/cvaux.h>
 #include <opencv/highgui.h>
 #include <stdarg.h>
+#include <cstdlib> //空撮のためにsystem関数使うのに必要
 #include "sequence.h"
 #include "utils.h"
 #include "serial_command.h"
@@ -40,7 +41,7 @@ bool Testing::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
-	gWebCamera.setRunMode(true);
+	gWebCamera.setRunMode(true); //去年のカメラプログラム？(TBC)外していいんじゃない（ログが邪魔
 	//gDistanceSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 
@@ -226,6 +227,9 @@ bool Falling::onInit(const struct timespec& time)
 	gParaServo.moveHold();
 	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納状態で固定
 
+	//空撮開始処理(端末で空撮用コマンドを実行)
+	std::system("python ../high-ball-server/video/record.py aerialvideo");
+
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
@@ -323,6 +327,25 @@ bool Separating::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+
+	//録画停止処理　pid(process id)指定してkill
+	//pid読み込む
+	ifstream ifs("/home/pi/highball--server/video/video_pid");	
+	string str, command;
+	if(ifs.good())
+	{
+		//pidファイルが読み込めた
+		
+		//pid指定して空撮処理をkill
+		//kill -9 [pid]
+		getline(ifs, str);
+		command = "kill -9 " + str;
+		system(command.c_str());
+	}else
+	{
+		//pidファイルが無い
+		Debug::print(LOG_SUMMARY, "pid file does not exist.");
+	}
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
