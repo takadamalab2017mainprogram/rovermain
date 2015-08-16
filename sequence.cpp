@@ -5,7 +5,6 @@
 #include <opencv/cvaux.h>
 #include <opencv/highgui.h>
 #include <stdarg.h>
-#include <cstdlib> //空撮のためにsystem関数使うのに必要
 #include "sequence.h"
 #include "utils.h"
 #include "serial_command.h"
