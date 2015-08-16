@@ -504,6 +504,7 @@ bool BackStabiServo::onInit(const struct timespec& time)
 	}
 
 	softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
+	//SERVO_RANGE　各種の定数はactuator.h 中
 	return true;
 }
 void BackStabiServo::onClean()
@@ -577,7 +578,7 @@ void BackStabiServo::moveHold()
 }
 BackStabiServo::BackStabiServo() : mPin(PIN_FRONT_STABI_SERVO)
 {
-	setName("frontstabiservo");
+	setName("backstabiservo");
 	setPriority(TASK_PRIORITY_ACTUATOR,UINT_MAX);
 }
 BackStabiServo::~BackStabiServo()
@@ -640,4 +641,5 @@ StabiServo gStabiServo;
 BackStabiServo gBackStabiServo;
 //CameraServo gCameraServo;
 SoftCameraServo gSoftCameraServo;
+
 XBeeSleep gXbeeSleep;

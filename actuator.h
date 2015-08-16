@@ -131,7 +131,7 @@ private:
 	const static int SERVO_RANGE = 100;		//そのうちconstants.hに移す
 
 	//POSITION_RELEASE: ピンが抜ける位置, POSITION_HOLD: ピンが刺さった状態の位置
-	enum POSITION {POSITION_RELEASE = 25, POSITION_HOLD = 6};
+	enum POSITION {POSITION_RELEASE = 25, POSITION_HOLD = 25};
 
 	int mPin;
 protected:
@@ -186,27 +186,27 @@ public:
 	~BackStabiServo();
 };
 
-// XBeeスリープ制御クラス
-class XBeeSleep : public TaskBase
-{
-private:
-	int mPin;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string>& args);
-
-public:
-	void setState(bool sleep);
-
-	XBeeSleep();
-	~XBeeSleep();
-};
+//// XBeeスリープ制御クラス
+//class XBeeSleep : public TaskBase
+//{
+//private:
+//	int mPin;
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onClean();
+//	virtual bool onCommand(const std::vector<std::string>& args);
+//
+//public:
+//	void setState(bool sleep);
+//
+//	XBeeSleep();
+//	~XBeeSleep();
+//};
 
 extern Buzzer gBuzzer;
 extern ParaServo gParaServo;
 extern StabiServo gStabiServo;
-extern BackStabiServo gFrontStabiServo;
-extern XBeeSleep gXbeeSleep;
+extern BackStabiServo gBackStabiServo;
+//extern XBeeSleep gXbeeSleep;
 extern SoftCameraServo gSoftCameraServo;
 //extern CameraServo gCameraServo
