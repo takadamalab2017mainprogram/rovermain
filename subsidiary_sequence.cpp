@@ -43,7 +43,7 @@ EncoderMonitoring gEncoderMonitoringState;
 //			IplImage* pImage = gCameraCapture.getFrame();
 //			gCameraCapture.save(NULL,pImage);
 //			if(!gImageProc.isWadachiExist(pImage))return;
-//			//“Q‚ğ–‘OŒŸ’m‚µ‚½
+//			//ï¿½Qï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½
 //			gCameraCapture.startWarming();
 //		}
 //		return;
@@ -87,7 +87,7 @@ EncoderMonitoring gEncoderMonitoringState;
 //			gCameraCapture.save(NULL,pImage);
 //			if(gImageProc.isWadachiExist(pImage))
 //			{
-//				//“Q‚ğ–‘OŒŸ’m‚µ‚½
+//				//ï¿½Qï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½
 //				gAvoidingState.setRunMode(true);
 //				mCurStep = STEP_AVOIDING;
 //			}else
@@ -160,7 +160,7 @@ void Escaping::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWARD:
-		//ƒoƒbƒN‚ğs‚¤
+		//ï¿½oï¿½bï¿½Nï¿½ï¿½sï¿½ï¿½
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
@@ -171,12 +171,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_AFTER_BACKWARD:
-		//Ä‹N“®–h~‚Ì‚½‚ß‘Ò‹@
+		//ï¿½Ä‹Nï¿½ï¿½ï¿½hï¿½~ï¿½Ì‚ï¿½ï¿½ß‘Ò‹@
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			if(mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
 			{
-				//ƒ‰ƒ“ƒ_ƒ€ˆÚs
+				//ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½Ús
 				Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_RANDOM;
@@ -185,19 +185,19 @@ void Escaping::onUpdate(const struct timespec& time)
 			}
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
-			//‹N‚«ã‚ª‚è“®ì‚ğs‚¤
+			//ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½è“®ï¿½ï¿½ï¿½sï¿½ï¿½
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			if(gImageProc.isSky(pImage))gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
-		//‰æ‘œB‰e—p‚É‹N‚«ã‚ª‚è“®ì‚ğs‚¢A”•b‘Ò‹@‚·‚é
-		if(gWakingState.isActive())mLastUpdateTime = time;//‹N‚«ã‚ª‚è“®ì’†‚Í‘Ò‹@‚·‚é
-		if(Time::dt(time,mLastUpdateTime) > 2)//‹N‚«ã‚ª‚èŠ®—¹ŒãAˆê’èŠÔ‚ªŒo‰ß‚µ‚Ä‚¢‚½‚ç
+		//ï¿½æ‘œï¿½Bï¿½eï¿½pï¿½É‹Nï¿½ï¿½ï¿½ã‚ªï¿½è“®ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½bï¿½Ò‹@ï¿½ï¿½ï¿½ï¿½
+		if(gWakingState.isActive())mLastUpdateTime = time;//ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½è“®ï¿½ì’†ï¿½Í‘Ò‹@ï¿½ï¿½ï¿½ï¿½
+		if(Time::dt(time,mLastUpdateTime) > 2)//ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½èŠ®ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½èï¿½Ô‚ï¿½ï¿½oï¿½ß‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
-			//‰æ‘œB‰e“®ì‚ğs‚¤
+			//ï¿½æ‘œï¿½Bï¿½eï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0);
@@ -205,7 +205,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA:
-		//‰æ‘œˆ—‚ğs‚¢A¡Œã‚Ìs“®‚ğŒˆ’è‚·‚é
+		//ï¿½æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½Ìsï¿½ï¿½ï¿½ï¿½ï¿½è‚·ï¿½ï¿½
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
@@ -218,7 +218,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//ï¿½æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ÌŒï¿½ï¿½ÊAï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -228,7 +228,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_FORWARD:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA’¼i‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//ï¿½æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ÌŒï¿½ï¿½ÊAï¿½ï¿½ï¿½iï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100);
@@ -237,7 +237,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN_HERE:
-		//‰æ‘œˆ—‚ÌŒ‹‰ÊA‚»‚Ìê‰ñ“]‚·‚é•K—v‚ª‚ ‚Á‚½ê‡
+		//ï¿½æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ÌŒï¿½ï¿½ÊAï¿½ï¿½ï¿½Ìï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -247,13 +247,13 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_RANDOM:
-		//ƒ‰ƒ“ƒ_ƒ€“®ì
+		//ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(Time::dt(time,mLastUpdateTime) >= 5)
 		{
 			++mEscapingTriedCount;
 			if(mEscapingTriedCount > ESCAPING_MAX_RANDOM_ESCAPING_COUNT)
 			{
-				//ƒ‰ƒ“ƒ_ƒ€ˆÚs
+				//ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½Ús
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_BACKWARD;
 				break;
@@ -270,19 +270,19 @@ void Escaping::stuckMoveRandom()
 	switch(mCurRandomStep)
 	{
 	case RANDOM_STEP_BACKWARD:
-		//ƒoƒbƒN‚ğs‚¤
+		//ï¿½oï¿½bï¿½Nï¿½ï¿½sï¿½ï¿½
 		Debug::print(LOG_SUMMARY, "Escaping(random): backward\r\n");
 		mCurRandomStep = RANDOM_STEP_TURN;
 		gMotorDrive.drive(100,-100);
 		break;
 	case RANDOM_STEP_TURN:
-		//‚»‚Ìê‰ñ“]‚ğs‚¤
+		//ï¿½ï¿½ï¿½Ìï¿½ï¿½]ï¿½ï¿½sï¿½ï¿½
 		Debug::print(LOG_SUMMARY, "Escaping(random): turning\r\n");
 		mCurRandomStep = RANDOM_STEP_FORWARD;
 		gMotorDrive.drive(100);
 		break;
 	case RANDOM_STEP_FORWARD:
-		//‘Oi‚ğs‚¤
+		//ï¿½Oï¿½iï¿½ï¿½sï¿½ï¿½
 		Debug::print(LOG_SUMMARY, "Escaping(random): forward\r\n");
 		mCurRandomStep = RANDOM_STEP_BACKWARD;
 		gMotorDrive.drive(-100);
@@ -308,7 +308,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 			gTurningState.setDirection(true);
 			mCurStep = STEP_CAMERA_TURN_HERE;
 			break;
-		default://ƒJƒƒ‰g‚¦‚È‚©‚Á‚½
+		default://ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½
 			mCurStep = STEP_RANDOM;
 			mCurRandomStep = RANDOM_STEP_FORWARD;
 			break;
@@ -419,33 +419,33 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	//case STEP_BACKWARD:
-	//	//ƒoƒbƒN‚ğs‚¤
+	//	//ï¿½oï¿½bï¿½Nï¿½ï¿½sï¿½ï¿½
 	//	if(Time::dt(time,mLastUpdateTime) >= 3)
 	//	{
 	//		mCurStep = STEP_TURN;
 	//		mLastUpdateTime = time;
 	//		gMotorDrive.drive(100,-100);
-	//		gStabiServo.start(0);					//ƒXƒ^ƒr‚½‚½‚Ş
+	//		gStabiServo.start(0);					//ï¿½Xï¿½^ï¿½rï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	//	}
 	//	break;
 	case STEP_TURN:
-		//‚»‚Ìê‰ñ“]‚ğs‚¤
+		//ï¿½ï¿½ï¿½Ìï¿½ï¿½]ï¿½ï¿½sï¿½ï¿½
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100);
-			gStabiServo.start(STABI_BASE_ANGLE);	//ƒXƒ^ƒrL‚Î‚·
+			gStabiServo.start(STABI_BASE_ANGLE);	//ï¿½Xï¿½^ï¿½rï¿½Lï¿½Î‚ï¿½
 		}
 		break;
 	case STEP_FORWARD:
-		//‘Oi‚ğs‚¤
+		//ï¿½Oï¿½iï¿½ï¿½sï¿½ï¿½
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_TURN;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100,-100);
-			gStabiServo.start(STABI_BASE_ANGLE);	//ƒXƒ^ƒrL‚Î‚·
+			gStabiServo.start(STABI_BASE_ANGLE);	//ï¿½Xï¿½^ï¿½rï¿½Lï¿½Î‚ï¿½
 		}
 		break;
 	}
@@ -465,7 +465,7 @@ bool Waking::onInit(const struct timespec& time)
 	mCurStep = STEP_START;
 
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(-mStartPower);	//8-9 chou ãƒã‚¤ãƒŠã‚¹ã«ã—ã?//ƒ‚[ƒ^o—Í
+	gMotorDrive.drive(-mStartPower);	//8-9 chou ãƒã‚¤ãƒŠã‚¹ã«ã—ï¿½?//ï¿½ï¿½ï¿½[ï¿½^ï¿½oï¿½ï¿½
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -473,14 +473,14 @@ bool Waking::onInit(const struct timespec& time)
 	mWakeRetryCount = 0;
 	gBackStabiServo.setRunMode(true);
 	gSoftCameraServo.setRunMode(true);
-	//backstabi ’Ç‰Á backstabi‚ğ‰º‚ë‚·
+	//backstabi ï¿½Ç‰ï¿½ backstabiï¿½ï¿½ï¿½ë‚·
 
 	gBackStabiServo.moveHold();  //
 
-	//softcameraservo ’Ç‰Á ‚Æ‚è‚ ‚¢‚¸@‚¤‚±‚ª‚È‚¢‚Å
+	//softcameraservo ï¿½Ç‰ï¿½ ï¿½Æ‚è‚ ï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½
 	gSoftCameraServo.moveHold();
 
-	//‘Ostabi ‚Æ‚è‚ ‚¢‚¸@stop
+	//ï¿½Ostabi ï¿½Æ‚è‚ ï¿½ï¿½ï¿½ï¿½ï¿½@stop
 	//8-9 gStabiServo.stop();
 	
 	//8-9 comment out gStabiServo.start(STABI_FOLD_ANGLE);
@@ -496,124 +496,125 @@ void Waking::onUpdate(const struct timespec& time)
 {
 	double power;
 	const static double WAKING_THRESHOLD = 200;
-	switch(mCurStep)//‹N‚«ã‚ª‚èŠJn‚ªŒŸ’m‚³‚ê‚½ê‡
+	switch(mCurStep)//ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ê‚½ï¿½ê‡
 	{
-	case STEP_STOP:
-		if(Time::dt(time,mLastUpdateTime) > 2)//2•b‚Ü‚í‚µ‚Ä‚à’…’n‚ªŒŸ’m‚³‚ê‚È‚¢ê‡‚Í‚ ‚«‚ç‚ß‚é
-		{
-			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
-			setRunMode(false);
-			gMotorDrive.drive(0);
-		}
-		if(gAccelerationSensor.getPhi() < mAngleThreshold)	//Šp“x‚ªˆê’èˆÈ‰º‚É‚È‚Á‚½‚ç’…’n‚Æ”»’è(‰Á‘¬“xƒZƒ“ƒT‚ğÌ—p)
-		{
-			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
-			gBuzzer.start(30,20,2);
-			mLastUpdateTime = time;
-			mCurStep = STEP_VERIFY;
-			gMotorDrive.drive(0);
-
-		}
-
-		//‰ñ“]‚µ‚½Šp“x‚É‰‚¶‚Äƒ‚[ƒ^‚Ìo—Í‚ğ•Ï‰»‚³‚¹‚é
-		//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
-		//gMotorDrive.drive(power);
-		break;
-
-	double dt;
-	case STEP_START:
-		if(Time::dt(time,mLastUpdateTime) > 0.5)//ˆê’èŠÔ‰ñ“]‚ªŒŸ’m‚³‚ê‚È‚¢ê‡¨‰ñ“]•s‰Â”\‚Æ”»’f
-		{
-			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
-			mLastUpdateTime = time;
-			mCurStep = STEP_VERIFY;
-			gMotorDrive.drive(0);
-		}
-		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//‰ñ“]‚ªŒŸ’m‚³‚ê‚½ê‡¨‹N‚«ã‚ª‚èŠJn‚µ‚½‚Æ”»’f(ƒWƒƒƒCƒ‚ğÌ—p) waking_threshold =200
-		{
-			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
-			gBuzzer.start(30,20,2);
-			mLastUpdateTime = time;
-			//gStabiServo.start(0.2);
-			mCurStep = STEP_DEACCELERATE;
-		}
-		break;
-
-	case STEP_DEACCELERATE:	//‚ä‚Á‚­‚èŒ¸‘¬‚·‚é
-		dt = Time::dt(time, mLastUpdateTime);
-        
-
-		//gStabiServo.start(0.2);//8-9
-		//gBackStabiServo.moveRelease();
-if(dt > mDeaccelerateDuration)
-        {
-			Debug::print(LOG_SUMMARY, "Waking Deaccelerate finished!\r\n");
-			gBuzzer.start(30,20,2);
-            mLastUpdateTime = time;
-            mCurStep = STEP_VERIFY;
-            gMotorDrive.drive(0);
-        }
-		else
-		{
-			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2‚ÅŠ„‚é*/)), 0);
-			
-			tmp_power=-tmp_power;
-			gMotorDrive.drive(tmp_power);
-		}
-		break;
-
-	case STEP_VERIFY:	
-		//‹N‚«ã‚ª‚è‚ª¬Œ÷‚µ‚½‚©”Û‚©‚ğ‰Á‘¬“xƒZƒ“ƒT‚ÅŒŸØ
-		if(Time::dt(time,mLastUpdateTime) <= 2.5)	//ƒ[ƒo‚Ìp¨‚ªˆÀ’è‚·‚é‚Ü‚Åˆê’èŠÔ‘Ò‚Â
-		{
-			return;
-		}
-
-		if(gAccelerationSensor.getAz() > 0.0)
-		{
-			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
-			gBuzzer.start(30,20,4);
-			
-			gBackStabiServo.moveRelease();
-
-			//‹N‚«ã‚ª‚Á‚½‚çA‘Ostabi ‚ğ‰º‚ë‚·
-			//gStabiServo.start(STABI_WAKING_ANGLE);
-			gStabiServo.start(STABI_BASE_ANGLE); // ‹N‚«ã‚ª‚è¬Œ÷‚µ‚½‚çƒXƒ^ƒr‚ğƒx[ƒX‚ÌŠp“x‚É–ß‚·
-
-			gSoftCameraServo.moveRelease();
-			mLastUpdateTime = time;
-			mCurStep = STEP_LAST;
-		}
-		else
-		{
-			gBackStabiServo.moveHold();
-			//8-9 gStabiServo.start(STABI_FOLD_ANGLE);
-			mLastUpdateTime = time;
-			mCurStep = STEP_START;
-			mAngleOnBegin = gGyroSensor.getRvx();
-			power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//s‰ñ”‚²‚Æ‚Éƒ‚[ƒ^o—Í‚ğã‚°‚é
-			power=-power;
-			gMotorDrive.drive(power);
-
-			if(++mWakeRetryCount > WAKING_RETRY_COUNT)
+		case STEP_STOP:
+			if(Time::dt(time,mLastUpdateTime) > 2)//2ï¿½bï¿½Ü‚í‚µï¿½Ä‚ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½
 			{
-				Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+				Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 				setRunMode(false);
+				gMotorDrive.drive(0);
+			}
+			if(gAccelerationSensor.getPhi() < mAngleThreshold)	//ï¿½pï¿½xï¿½ï¿½ï¿½ï¿½ï¿½È‰ï¿½ï¿½É‚È‚ï¿½ï¿½ï¿½ï¿½ç’…ï¿½nï¿½Æ”ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Zï¿½ï¿½ï¿½Tï¿½ï¿½Ì—p)
+			{
+				Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
+				gBuzzer.start(30,20,2);
+				mLastUpdateTime = time;
+				mCurStep = STEP_VERIFY;
+				gMotorDrive.drive(0);
+
+			}
+
+			//ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½xï¿½É‰ï¿½ï¿½ï¿½ï¿½Äƒï¿½ï¿½[ï¿½^ï¿½Ìoï¿½Í‚ï¿½Ï‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
+			//gMotorDrive.drive(power);
+			break;
+
+		double dt;
+		case STEP_START:
+			if(Time::dt(time,mLastUpdateTime) > 0.5)//ï¿½ï¿½èï¿½Ô‰ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ï¿½ï¿½]ï¿½sï¿½Â”\ï¿½Æ”ï¿½ï¿½f
+			{
+				Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
+				mLastUpdateTime = time;
+				mCurStep = STEP_VERIFY;
+				gMotorDrive.drive(0);
+			}
+			if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ê‚½ï¿½ê‡ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½ï¿½Æ”ï¿½ï¿½f(ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Ì—p) waking_threshold =200
+			{
+				Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
+				gBuzzer.start(30,20,2);
+				mLastUpdateTime = time;
+				//gStabiServo.start(0.2);
+				mCurStep = STEP_DEACCELERATE;
+			}
+			break;
+
+		case STEP_DEACCELERATE:	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½èŒ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			dt = Time::dt(time, mLastUpdateTime);
+
+
+			//gStabiServo.start(0.2);//8-9
+			//gBackStabiServo.moveRelease();
+		if(dt > mDeaccelerateDuration)
+			{
+				Debug::print(LOG_SUMMARY, "Waking Deaccelerate finished!\r\n");
+				gBuzzer.start(30,20,2);
+				mLastUpdateTime = time;
+				mCurStep = STEP_VERIFY;
+				gMotorDrive.drive(0);
+			}
+			else
+			{
+				int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2ï¿½ÅŠï¿½ï¿½ï¿½*/)), 0);
+
+				tmp_power=-tmp_power;
+				gMotorDrive.drive(tmp_power);
+			}
+			break;
+
+		case STEP_VERIFY:	
+			//ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½è‚ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Zï¿½ï¿½ï¿½Tï¿½ÅŒï¿½ï¿½ï¿½
+			if(Time::dt(time,mLastUpdateTime) <= 2.5)	//ï¿½ï¿½ï¿½[ï¿½oï¿½Ìpï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚·ï¿½ï¿½Ü‚Åˆï¿½èï¿½Ô‘Ò‚ï¿½
+			{
 				return;
 			}
-			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
-		}
-		break;
 
-	case STEP_LAST:
-		if((Time::dt(time,mLastUpdateTime) >0.5)
-		{gSoftCameraServo.start(15));}
+			if(gAccelerationSensor.getAz() > 0.0)
+			{
+				Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
+				gBuzzer.start(30,20,4);
 
-		if((Time::dt(time,mLastUpdateTime) >1.0)
-		{gSoftCameraServo.stop();
-		setRunMode(false);
-		}
-			
+				gBackStabiServo.moveRelease();
+
+				//ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Ostabi ï¿½ï¿½ï¿½ë‚·
+				//gStabiServo.start(STABI_WAKING_ANGLE);
+				gStabiServo.start(STABI_BASE_ANGLE); // ï¿½Nï¿½ï¿½ï¿½ã‚ªï¿½è¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½^ï¿½rï¿½ï¿½xï¿½[ï¿½Xï¿½ÌŠpï¿½xï¿½É–ß‚ï¿½
+
+				gSoftCameraServo.moveRelease();
+				mLastUpdateTime = time;
+				mCurStep = STEP_LAST;
+			}
+			else
+			{
+				gBackStabiServo.moveHold();
+				//8-9 gStabiServo.start(STABI_FOLD_ANGLE);
+				mLastUpdateTime = time;
+				mCurStep = STEP_START;
+				mAngleOnBegin = gGyroSensor.getRvx();
+				power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//ï¿½ï¿½ï¿½sï¿½ñ”‚ï¿½ï¿½Æ‚Éƒï¿½ï¿½[ï¿½^ï¿½oï¿½Í‚ï¿½ã‚°ï¿½ï¿½
+				power=-power;
+				gMotorDrive.drive(power);
+
+				if(++mWakeRetryCount > WAKING_RETRY_COUNT)
+				{
+					Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+					setRunMode(false);
+					return;
+				}
+				Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
+			}
+			break;
+
+		case STEP_LAST:
+			if(Time::dt(time,mLastUpdateTime) >0.5)
+			{
+				gSoftCameraServo.start(15);
+			}
+			if(Time::dt(time,mLastUpdateTime) >1.0)
+			{
+				gSoftCameraServo.stop();
+				setRunMode(false);
+			}
 	}
 }
 bool Waking::onCommand(const std::vector<std::string>& args)
@@ -837,7 +838,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 	{
 		mLastUpdateTime = time;
 
-		//ƒƒO‚ğ•Û‘¶
+		//ï¿½ï¿½ï¿½Oï¿½ï¿½Û‘ï¿½
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
 		if(gGPSSensor.isActive())write(mFilenameGPS,"%f,%f,%f\r\n",vec.x,vec.y,vec.z);
@@ -912,7 +913,7 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	}
 	mLastUpdateTime = time;
 
-	//‰Á‘¬“x‚ÌƒƒO‚ğ•Û‘¶
+	//ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Ìƒï¿½ï¿½Oï¿½ï¿½Û‘ï¿½
 	if(gAccelerationSensor.isActive())
 	{
 		write(mFilenameAcceleration,"%f,%f,%f\r\n",gAccelerationSensor.getAx(),gAccelerationSensor.getAy(),gAccelerationSensor.getAz());
@@ -928,8 +929,8 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	//ƒGƒ“ƒR[ƒ_‚ÌƒƒO‚ğ•Û‘¶
-	//ƒŒƒVƒI”ä‚ª•ÏX‚³‚ê‚½‚çlog‚É”½‰f‚·‚é
+	//ï¿½Gï¿½ï¿½ï¿½Rï¿½[ï¿½_ï¿½Ìƒï¿½ï¿½Oï¿½ï¿½Û‘ï¿½
+	//ï¿½ï¿½ï¿½Vï¿½Iï¿½ä‚ªï¿½ÏXï¿½ï¿½ï¿½ê‚½ï¿½ï¿½logï¿½É”ï¿½ï¿½fï¿½ï¿½ï¿½ï¿½
 	if(gMotorDrive.getPowerL() != mPrevPowerL || gMotorDrive.getPowerR() != mPrevPowerR)
 	{
 		mPrevPowerL = gMotorDrive.getPowerL();
@@ -938,11 +939,11 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY,	"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
 	}
 
-	//ƒGƒ“ƒR[ƒ_ƒpƒ‹ƒX‚Ì·•ª’l‚Ìæ“¾
+	//ï¿½Gï¿½ï¿½ï¿½Rï¿½[ï¿½_ï¿½pï¿½ï¿½ï¿½Xï¿½Ìï¿½ï¿½ï¿½ï¿½lï¿½Ìæ“¾
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
 	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
 
-	//‰ñ“]”‚ÉŠ·Z
+	//ï¿½ï¿½]ï¿½ï¿½ï¿½ÉŠï¿½ï¿½Z
 	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
 	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
 
@@ -952,15 +953,15 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	}
 	write(mFilenameEncoder,	 	 "Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
 
-	//ƒXƒ^ƒbƒN”»’è‚ÌƒeƒXƒg
-	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//‘O‰ñ‚Ìƒpƒ‹ƒX”‚ªè‡’lˆÈã
+	//ï¿½Xï¿½^ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½Ìƒeï¿½Xï¿½g
+	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//ï¿½Oï¿½ï¿½Ìƒpï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½è‡’lï¿½Èï¿½
 	{
-		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//¡‰ñ‚Ìƒpƒ‹ƒX”‚ªè‡’lˆÈ‰º
+		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//ï¿½ï¿½ï¿½ï¿½Ìƒpï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½è‡’lï¿½È‰ï¿½
 		{
 			write(mFilenameEncoder,		"Stuck detected!");
 			if(mBuzzerFlag)
 			{
-				gBuzzer.start(200, 50 ,3);		//ƒXƒ^ƒbƒN”»’è(‰¹‚ğ–Â‚ç‚·‚Ì‚İ)
+				gBuzzer.start(200, 50 ,3);		//ï¿½Xï¿½^ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Â‚ç‚·ï¿½Ì‚ï¿½)
 			}
 		}
 	}
@@ -986,7 +987,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		}
 		else if(args[1].compare("buzzer") == 0)
 		{
-			mBuzzerFlag = !mBuzzerFlag;	//flag‚ÌØ‚è‘Ö‚¦
+			mBuzzerFlag = !mBuzzerFlag;	//flagï¿½ÌØ‚ï¿½Ö‚ï¿½
 			if(mBuzzerFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Buzzer(ON)\r\n");
@@ -999,7 +1000,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		}
 		else if(args[1].compare("print") == 0)
 		{
-			mPrintFlag = !mPrintFlag;	//flag‚ÌØ‚è‘Ö‚¦
+			mPrintFlag = !mPrintFlag;	//flagï¿½ÌØ‚ï¿½Ö‚ï¿½
 			if(mPrintFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Print(ON)\r\n");
@@ -1067,18 +1068,18 @@ bool EncoderMonitoring::onInit(const struct timespec& time)
 	mCurrentMaxPulse = 0;
 	mPrevDeltaPulseL = 0;
 	mPrevDeltaPulseR = 0;
-	gMotorDrive.getDeltaPulseL();//ƒpƒ‹ƒX‚Í·•ª‚È‚Ì‚Åæ“¾‚µ‚ÄƒŠƒZƒbƒg‚µ‚Ä‚¨‚­
+	gMotorDrive.getDeltaPulseL();//ï¿½pï¿½ï¿½ï¿½Xï¿½Íï¿½ï¿½ï¿½ï¿½È‚Ì‚Åæ“¾ï¿½ï¿½ï¿½Äƒï¿½ï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 	gMotorDrive.getDeltaPulseR();
 	return true;
 }
 void EncoderMonitoring::onUpdate(const struct timespec& time)
 {
-	//ŠÔ‚ªŒo‰ß‚µ‚Ä‚¢‚È‚¯‚ê‚Îˆ—‚ğ•Ô‚·
+	//ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½oï¿½ß‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Îï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
 	if(Time::dt(time,mLastSamplingTime) < 1) return;
 
 	mLastSamplingTime = time;
 	
-	//ƒXƒ^ƒbƒN”»’è’†‚È‚çreturn
+	//ï¿½Xï¿½^ï¿½bï¿½Nï¿½ï¿½ï¿½è’†ï¿½È‚ï¿½return
 /*	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 	{
 		mPrevDeltaPulseL = 0;
@@ -1086,13 +1087,13 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		return;
 	}*/
 
-	//ƒGƒ“ƒR[ƒ_ƒpƒ‹ƒX‚Ì·•ª’l‚Ìæ“¾
+	//ï¿½Gï¿½ï¿½ï¿½Rï¿½[ï¿½_ï¿½pï¿½ï¿½ï¿½Xï¿½Ìï¿½ï¿½ï¿½ï¿½lï¿½Ìæ“¾
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
 	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
 
 	if(mIsPrint) Debug::print(LOG_SUMMARY, "EncoderMonitoring: current pulse count(%llu %llu)\r\n",deltaPulseL,deltaPulseR);
 	
-	//ŠO‚ê’l‚Í–³‹‚·‚é
+	//ï¿½Oï¿½ï¿½lï¿½Í–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if(removeError(deltaPulseL,deltaPulseR))
 	{
 		mPrevDeltaPulseL = 0;
@@ -1100,15 +1101,15 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		return;
 	}
 	
-	//è‡’l‚ÌŒvZ
+	//è‡’lï¿½ÌŒvï¿½Z
 	unsigned long long pulse_threshold = std::min(mStoredPulse - mThresholdPulse, mUpperThreshold);
 	
-	//ƒXƒ^ƒbƒNƒ`ƒFƒbƒND‘O‰ñ‚ªè‡’lˆÈã‚ÅC¡‰ñ‚ªè‡’lˆÈ‰º‚È‚çƒXƒ^ƒbƒN”»’è‚·‚é
-	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//‘O‰ñ‚Ìƒpƒ‹ƒX”‚ªè‡’lˆÈã
+	//ï¿½Xï¿½^ï¿½bï¿½Nï¿½`ï¿½Fï¿½bï¿½Nï¿½Dï¿½Oï¿½ï¿½è‡’lï¿½Èï¿½ÅCï¿½ï¿½ï¿½ï¿½è‡’lï¿½È‰ï¿½ï¿½È‚ï¿½Xï¿½^ï¿½bï¿½Nï¿½ï¿½ï¿½è‚·ï¿½ï¿½
+	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//ï¿½Oï¿½ï¿½Ìƒpï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½è‡’lï¿½Èï¿½
 	{
-		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//¡‰ñ‚Ìƒpƒ‹ƒX”‚ªè‡’lˆÈ‰º
+		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//ï¿½ï¿½ï¿½ï¿½Ìƒpï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½è‡’lï¿½È‰ï¿½
 		{
-			//ƒXƒ^ƒbƒN”»’è
+			//ï¿½Xï¿½^ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
 			gBuzzer.start(80, 10 ,6);
 			Debug::print(LOG_SUMMARY, "EncoderMonitoring: STUCK detected by pulse count(%llu %llu). Threshold:%llu\r\n",deltaPulseL,deltaPulseR,pulse_threshold);
 			//gEscapingByStabiState.setRunMode(true);
@@ -1117,17 +1118,17 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		}
 	}
 	
-	//‘O‰ñ‚Ìƒpƒ‹ƒX‚ÌXV
+	//ï¿½Oï¿½ï¿½Ìƒpï¿½ï¿½ï¿½Xï¿½ÌXï¿½V
 	mPrevDeltaPulseL = deltaPulseL;
 	mPrevDeltaPulseR = deltaPulseR;
 	
-	//mCurrentMaxPulse‚æ‚è‘å‚«‚¯‚ê‚ÎmCurrentMaxPulse‚ğXV‚·‚é
+	//mCurrentMaxPulseï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½mCurrentMaxPulseï¿½ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½
 	if(std::max(deltaPulseL,deltaPulseR) > mCurrentMaxPulse)
 	{
 		mCurrentMaxPulse = std::max(deltaPulseL,deltaPulseR);
 	}
 	
-	//è‡’l‚ÌXV
+	//è‡’lï¿½ÌXï¿½V
 	if(Time::dt(time,mLastUpdateTime) >= mUpdateTimer)
 	{
 		updateThreshold();
@@ -1236,7 +1237,7 @@ monitoring show                   : show each value\r\n");
 }
 void EncoderMonitoring::updateThreshold()
 {
-	//ƒpƒ‹ƒX”‚ª‚ ‚Ü‚è‚É‚à¬‚³‚¢(or‘å‚«‚¢)ê‡‚Í–³‹‚·‚é
+	//ï¿½pï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(orï¿½å‚«ï¿½ï¿½)ï¿½ê‡ï¿½Í–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if(mCurrentMaxPulse <= mLowerThreshold)
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. mCurrentMaxPulse(%llu) <= mLowerThreshold(%llu)\r\n",mCurrentMaxPulse,mLowerThreshold);
@@ -1248,7 +1249,7 @@ void EncoderMonitoring::updateThreshold()
 		return;
 	}
 	
-	//‚ ‚Ü‚è‚É‚à‘å‚«‚­è‡’l‚ªXV‚³‚ê‚éê‡‚Í–³‹‚·‚é
+	//ï¿½ï¿½ï¿½Ü‚ï¿½É‚ï¿½å‚«ï¿½ï¿½è‡’lï¿½ï¿½ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Í–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if((mStoredPulse >= mCurrentMaxPulse) && (mStoredPulse - mCurrentMaxPulse) >= mIgnoredDeltaLowerPulse) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. %llu >= mIgnoredDeltaLowerPulse(%llu))\r\n",(mStoredPulse - mCurrentMaxPulse),mIgnoredDeltaLowerPulse);
@@ -1266,7 +1267,7 @@ void EncoderMonitoring::updateThreshold()
 bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long pulseR)
 {
 	bool ret = false;
-	//L‚ğƒ`ƒFƒbƒN
+	//Lï¿½ï¿½`ï¿½Fï¿½bï¿½N
 	if(pulseL == 0) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: [ERROR] Left pulse is zero...\r\n");
@@ -1278,7 +1279,7 @@ bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long
 		ret = true;
 	}
 	
-	//R‚ğƒ`ƒFƒbƒN
+	//Rï¿½ï¿½`ï¿½Fï¿½bï¿½N
 	if(pulseR == 0)
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: [ERROR] Right pulse is zero...\r\n");
