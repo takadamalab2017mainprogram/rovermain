@@ -14,6 +14,8 @@
 #include "image_proc.h"
 #include "subsidiary_sequence.h"
 
+using namespace std;
+
 Testing gTestingState;
 Waiting gWaitingState;
 Falling gFallingState;
