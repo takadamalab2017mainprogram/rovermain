@@ -43,6 +43,7 @@ public:
 class Falling : public TaskBase
 {
 private:
+	bool mOnInit;//能代
 	struct timespec mStartTime;//状態開始時刻
 	struct timespec mLastCheckTime;//前回のチェック時刻
 	int mLastPressure;//前回の気圧
@@ -68,7 +69,7 @@ private:
 	struct timespec mLastUpdateTime;//前回サーボの向きを更新した時間
 	bool mCurServoState;			//現在のサーボの向き(true = 1,false = 0)
 	unsigned int mServoCount;		//サーボの向きを変更した回数
-	enum STEP{STEP_SEPARATE = 0, STEP_PRE_PARA_JUDGE,STEP_PARA_JUDGE,STEP_PARA_DODGE,STEP_GO_FORWARD};
+	enum STEP{STEP_SEPARATE = 0,STEP_PRE_PARA_JUDGE,STEP_GO_FORWARD};
 	enum STEP mCurStep;
 
 protected:

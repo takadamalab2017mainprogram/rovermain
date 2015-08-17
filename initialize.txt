@@ -2,7 +2,7 @@ testing
 detecting setmode ON
 navigating 40.862905 -119.135297
 motor p 0.004 0.0 0.0
-motor r 50 45
+motor r 100 90
 //
 // ------------------- notes -------------------
 //

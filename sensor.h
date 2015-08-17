@@ -54,6 +54,7 @@ private:
 	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
 
 	void showState();//補足した衛星数と座標を表示
+	void sendState();//GPSを送信　８－７村上
 protected:
 	//GPSを初期化
 	virtual bool onInit(const struct timespec& time);

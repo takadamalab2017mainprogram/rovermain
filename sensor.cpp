@@ -241,6 +241,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		{
 			mLastCheckTime = time;
 			showState();
+			sendState();//座標を送信 8-7 村上
 		}
 	}
 }
@@ -251,6 +252,7 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	if(args.size() == 1)
 	{
 		showState();
+		sendState();//座標を送信
 		return true;
 	}
 	else if(args.size() == 2)
@@ -299,6 +301,21 @@ GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0),mIsNewData(false)
 GPSSensor::~GPSSensor()
 {
 }
+
+void  GPSSensor::sendState()
+ {
+	char send_gps_string[256];
+ 	if(mSatelites < 4)
+ 	{
+		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d 0 0 0",mSatelites);
+ 	}
+
+ 	else
+ 	{
+		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d %f %f %f ",mSatelites, mPos.x, mPos.y, mPos.z);//衛星数 x座標 Y座標 Z座標
+ 	}
+	system(send_gps_string);
+ }
 
 //////////////////////////////////////////////
 // Gyro Sensor

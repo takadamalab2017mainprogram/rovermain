@@ -84,7 +84,7 @@
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;//行動開始時刻
-	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY};
+	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY,STEP_LAST};
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;
@@ -104,7 +104,7 @@ public:
 	~Waking();
 };
 
-//ローバーのその場回転
+/*//ローバーのその場回転
 //完了するとタスクが終了します
 class Turning : public TaskBase
 {
@@ -137,7 +137,7 @@ public:
 
 	Avoiding();
 	~Avoiding();
-};
+};*/
 
 //記念撮影
 class PictureTaking : public TaskBase
@@ -221,14 +221,14 @@ public:
 	~EncoderMonitoring();
 };
 
-extern Escaping gEscapingState;
+//extern Escaping gEscapingState;
 extern Waking gWakingState;
-extern Turning gTurningState;
-extern Avoiding gAvoidingState;
-extern WadachiPredicting gPredictingState;
-extern EscapingRandom gEscapingRandomState;
-extern EscapingByStabi gEscapingByStabiState;
-extern PictureTaking gPictureTakingState;
+//extern Turning gTurningState;
+//extern Avoiding gAvoidingState;
+//extern WadachiPredicting gPredictingState;
+//extern EscapingRandom gEscapingRandomState;
+//extern EscapingByStabi gEscapingByStabiState;
+//extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern MovementLogging gMovementLoggingState;
 extern EncoderMonitoring gEncoderMonitoringState;
