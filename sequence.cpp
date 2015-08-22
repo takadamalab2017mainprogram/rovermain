@@ -235,7 +235,7 @@ bool Falling::onInit(const struct timespec& time)
 	gSoftCameraServo.moveHold();
 
 	//空撮開始処理(端末から、バックグラウンド処理で空撮用コマンドを実行)
-	Debug::print(LOG_SUMMARY, "start aerial recording\r\n");
+	Debug::print(LOG_SUMMARY, "Start aerial recording\r\n");
 	std::system("python ../high-ball-server/video/record.py aerialvideo &");
 
 	return true;
@@ -350,7 +350,7 @@ gSoftCameraServo.setRunMode(true);
 
 	//録画停止処理　pid(process id)指定してkill
 	//pid読み込む
-	ifstream ifs("/home/pi/highball--server/video/video_pid");	
+	ifstream ifs("/home/pi/high-ball-server/video/video_pid");	
 	string str, command;
 	if(ifs.good())
 	{
@@ -361,11 +361,11 @@ gSoftCameraServo.setRunMode(true);
 		getline(ifs, str);
 		command = "kill -9 " + str;
 		system(command.c_str());
-		Debug::print(LOG_SUMMARY, "aerial recording finished\r\n");
+		Debug::print(LOG_SUMMARY, "Aerial recording finished\r\n");
 	}else
 	{
 		//pidファイルが無い
-		Debug::print(LOG_SUMMARY, "pid file does not exist.");
+		Debug::print(LOG_SUMMARY, "Pid file does not exist\r\n");
 	}
 
 	mLastUpdateTime = time;
