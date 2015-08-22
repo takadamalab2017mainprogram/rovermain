@@ -301,7 +301,8 @@ GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0),mIsNewData(false)
 GPSSensor::~GPSSensor()
 {
 }
-GPSSensor::sendState()
+//二重定義っぽい（要・村上君に確認
+/*GPSSensor::sendState()
 {
 	if(mSatelites < 4)
 	{
@@ -311,7 +312,7 @@ GPSSensor::sendState()
 	{
 		system("~/home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps "+ mSatelites + " " + mPos.x + " " + mPos.y + " " + mPos.z);//衛星数 x座標 Y座標 Z座標
 	}
-}
+}*/
 
 void  GPSSensor::sendState()
  {

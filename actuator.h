@@ -53,7 +53,8 @@ private:
 	const static int SERVO_RANGE = 100;		//そのうちconstants.hに移す
 
 	//POSITION_RELEASE: ピンが抜ける位置, POSITION_HOLD: ピンが刺さった状態の位置
-	enum POSITION {POSITION_RELEASE = 25, POSITION_HOLD = 6};
+	//2015 high-ballバージョン
+	enum POSITION {POSITION_RELEASE = 6, POSITION_HOLD = 25};
 
 	int mPin;
 protected:
