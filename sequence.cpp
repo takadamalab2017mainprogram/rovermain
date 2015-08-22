@@ -234,8 +234,8 @@ bool Falling::onInit(const struct timespec& time)
 	gBackStabiServo.moveHold();
 	gSoftCameraServo.moveHold();
 
-	//空撮開始処理(端末で空撮用コマンドを実行)
-	std::system("python ../high-ball-server/video/record.py aerialvideo");
+	//空撮開始処理(端末から、バックグラウンド処理で空撮用コマンドを実行)
+	std::system("python ../high-ball-server/video/record.py aerialvideo &");
 
 	return true;
 }
