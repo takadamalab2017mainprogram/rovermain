@@ -368,6 +368,9 @@ gSoftCameraServo.setRunMode(true);
 		Debug::print(LOG_SUMMARY, "Pid file does not exist\r\n");
 	}
 
+	//動画配信開始
+	system("python /home/pi/high-ball-server/websocket_upload/websocket_sendvideo_mp.py &");
+
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
 	// 8-5 gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動　気球試験コメントアウト
