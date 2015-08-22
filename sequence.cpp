@@ -235,6 +235,7 @@ bool Falling::onInit(const struct timespec& time)
 	gSoftCameraServo.moveHold();
 
 	//空撮開始処理(端末から、バックグラウンド処理で空撮用コマンドを実行)
+	Debug::print(LOG_SUMMARY, "start aerial recording\r\n");
 	std::system("python ../high-ball-server/video/record.py aerialvideo &");
 
 	return true;
@@ -360,6 +361,7 @@ gSoftCameraServo.setRunMode(true);
 		getline(ifs, str);
 		command = "kill -9 " + str;
 		system(command.c_str());
+		Debug::print(LOG_SUMMARY, "aerial recording finished\r\n");
 	}else
 	{
 		//pidファイルが無い
