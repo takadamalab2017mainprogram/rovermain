@@ -5,7 +5,8 @@
 
 //本番はコメントアウトすること！！（Ctrl-Cによるプログラム終了が無効になります）
 #define _DEBUG 1
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 //詳細なログ表示が必要な場合はつかってください
 //#define _LOG_DETAIL 1
 
@@ -38,6 +39,10 @@ const static double MOTOR_MAX_POWER_CHANGE =(double)5;//モータ出力の最大
 //エンコーダ関連 ※モータを変えたらここも変えてください。
 const static int RESOLVING_POWER = 32;		//モータの分解能
 const static int GEAR_RATIO = 29;			//モータのギア比
+const static double DISTANCE_PER_ROTATION = 0.14 * M_PI; //m8-24 chou pose_detector 関連
+const static double DISTANCE_BETWEEN_TIRES = 0.20; //m
+
+
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔

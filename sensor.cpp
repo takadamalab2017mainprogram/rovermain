@@ -179,14 +179,14 @@ PressureSensor::~PressureSensor()
 }
 
 //////////////////////////////////////////////
-// GPS Sensor
+// GPS Sensor 8-24 chou ガイヤバージョン
 //////////////////////////////////////////////
 bool GPSSensor::onInit(const struct timespec& time)
 {
 	mLastCheckTime = time;
-	if((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
+	if ((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
 	{
-		Debug::print(LOG_SUMMARY,"Failed to setup GPS Sensor\r\n");
+		Debug::print(LOG_SUMMARY, "Failed to setup GPS Sensor\r\n");
 		return false;
 	}
 
@@ -195,7 +195,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 
 	//バージョン情報を表示
-	Debug::print(LOG_SUMMARY,"GPS Firmware Version:%d\r\n",wiringPiI2CReadReg8(mFileHandle, 0x03));
+	Debug::print(LOG_SUMMARY, "GPS Firmware Version:%d\r\n", wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
 	mIsNewData = false;
@@ -212,57 +212,74 @@ void GPSSensor::onClean()
 void GPSSensor::onUpdate(const struct timespec& time)
 {
 	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
-	if(status & 0x06)// Found Position
+	if (status & 0x06)// Found Position
 	{
 		//座標を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
 
 		//経度
 		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07);
-		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = read / 10000000.0;
+		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = read / 10000000.0;
 
 		//緯度
 		read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B);
-		if(read ==  (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
+		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
 
 		//高度
 		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21);
-		if(read == (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
+		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
+
+		//Ground course
+		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 35);
+		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 35))mGpsCourse = read / 10.0f;
+
+		//Ground speed
+		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 31);
+		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 31))mGpsSpeed = read / 100.0f;
 
 		//新しいデータが届いたことを記録する
-		if(status & 0x01)mIsNewData = true;
+		if (status & 0x01)mIsNewData = true;
 	}
 	//衛星個数を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
-	if(wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
+	if (wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
 
-	if(mIsLogger)
+	if(mSatelites > 0)
+	{
+		//Time
+		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 39);
+		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 39))mGpsTime = read;
+	}
+
+
+	if (mIsLogger)
 	{
 		//1秒ごとにGPS座標を表示する
-		if(Time::dt(time,mLastCheckTime) > 1)
+		if (Time::dt(time, mLastCheckTime) > 1)
 		{
 			mLastCheckTime = time;
 			showState();
-			sendState();//座標を送信 8-7 村上
+			//sendState();//座標を送信 8-7 村上 (前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
 		}
 	}
 }
 bool GPSSensor::onCommand(const std::vector<std::string>& args)
 {
-	if(!isActive())return false;
+	if (!isActive())return false;
 
-	if(args.size() == 1)
+	if (args.size() == 1)
 	{
 		showState();
-		sendState();//座標を送信
+		sendState();//座標を送信(前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
 		return true;
 	}
-	else if(args.size() == 2)
+	else if (args.size() == 2)
 	{
-		if(args[1].compare("start") == 0)
+		if (args[1].compare("start") == 0)
 		{
 			mIsLogger = true;
 			Debug::print(LOG_SUMMARY, "GPS logger start!\r\n");
 			return true;
-		}else if(args[1].compare("stop") == 0)
+		}
+		else if (args[1].compare("stop") == 0)
 		{
 			mIsLogger = false;
 			Debug::print(LOG_SUMMARY, "GPS logger stop!\r\n");
@@ -276,27 +293,39 @@ gps stop : GPS logger stop\r\n");
 }
 bool GPSSensor::get(VECTOR3& pos, bool disableNewFlag)
 {
-	if(mSatelites >= 4)//3D fix
+	if (mSatelites >= 4 && !(mPos.x == 0 && mPos.y == 0 && mPos.z == 0))//3D fix
 	{
-		if(!disableNewFlag)mIsNewData = false;//データを取得したことを記録
+		if (!disableNewFlag)mIsNewData = false;//データを取得したことを記録
 		pos = mPos;//引数のposに代入
 		return true;
 	}
 	return false;//Invalid Position
 }
-bool GPSSensor::isNewPos()
+bool GPSSensor::isNewPos() const
 {
 	return mIsNewData;
 }
-void GPSSensor::showState()
+int GPSSensor::getTime() const
 {
-	if(mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n",mSatelites);
-	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f\r\n",mSatelites,mPos.x,mPos.y,mPos.z);
+	return mGpsTime;
 }
-GPSSensor::GPSSensor() : mFileHandle(-1),mPos(),mSatelites(0),mIsNewData(false)
+float GPSSensor::getCourse() const
+{
+	return GyroSensor::normalize(mGpsCourse);
+}
+float GPSSensor::getSpeed() const
+{
+	return mGpsSpeed;
+}
+void GPSSensor::showState() const
+{
+	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
+	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
+}
+GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
 {
 	setName("gps");
-	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_SENSOR);
+	setPriority(TASK_PRIORITY_SENSOR, TASK_INTERVAL_SENSOR);
 }
 GPSSensor::~GPSSensor()
 {
@@ -335,7 +364,7 @@ void  GPSSensor::sendState()
 
 bool GyroSensor::onInit(const struct timespec& time)
 {
-	mRVel.x = mRVel.y = mRVel.z = 0;
+	mRVel.x = mRVel.y = mRVel.z = 0; 
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
 	memset(&mLastSampleTime,0,sizeof(mLastSampleTime));
 

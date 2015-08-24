@@ -20,6 +20,7 @@ Testing gTestingState;
 Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
+PoseDetecting gPoseDetecting;
 //Navigating gNavigatingState;
 //ColorAccessing gColorAccessingState;
 
@@ -345,8 +346,9 @@ bool Separating::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-gBackStabiServo.setRunMode(true);
-gSoftCameraServo.setRunMode(true);
+	gBackStabiServo.setRunMode(true);
+	gSoftCameraServo.setRunMode(true);
+	gPoseDetecting.setRunMode(true);//方向角度検知　８－２４　ちょう
 
 	//録画停止処理　pid(process id)指定してkill
 	//pid読み込む
@@ -371,6 +373,7 @@ gSoftCameraServo.setRunMode(true);
 	//動画配信開始
 	system("python /home/pi/high-ball-server/websocket_upload/websocket_sendvideo_mp.py &");
 
+
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
 	// 8-5 gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動　気球試験コメントアウト
@@ -386,6 +389,8 @@ gSoftCameraServo.setRunMode(true);
 }
 void Separating::onUpdate(const struct timespec& time)
 {
+	//gpsYawLPF を送信する 8-24 chou
+	 gPoseDetecting.sendYawLPF(); //8-24 chou
 	switch(mCurStep)
 	{
 	case STEP_SEPARATE:
