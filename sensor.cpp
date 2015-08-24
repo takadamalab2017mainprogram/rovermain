@@ -22,6 +22,7 @@ WebCamera gWebCamera;
 DistanceSensor gDistanceSensor;
 CameraCapture gCameraCapture;
 AccelerationSensor gAccelerationSensor;
+PoseDetecting gPoseDetecting;
 //
 //// I2C definitions
 //
@@ -257,7 +258,9 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		{
 			mLastCheckTime = time;
 			showState();
-			//sendState();//座標を送信 8-7 村上 (前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+			//sendState(); //座標を送信 8-7 村上 (前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+			gPoseDetecting.sendYowLPF(); //方角情報を送信
+			
 		}
 	}
 }
@@ -268,7 +271,7 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	if (args.size() == 1)
 	{
 		showState();
-		sendState();//座標を送信(前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+		//sendState();//座標を送信(前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
 		return true;
 	}
 	else if (args.size() == 2)
