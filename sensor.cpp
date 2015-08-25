@@ -13,6 +13,7 @@
 #include <sys/ioctl.h>
 #include "sensor.h"
 #include "utils.h"
+#include "pose_detector.h"
 
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
@@ -22,7 +23,7 @@ WebCamera gWebCamera;
 DistanceSensor gDistanceSensor;
 CameraCapture gCameraCapture;
 AccelerationSensor gAccelerationSensor;
-PoseDetecting gPoseDetecting;
+
 //
 //// I2C definitions
 //
@@ -251,15 +252,15 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	}
 
 
-	if (mIsLogger)
+	if (mIsLogger) //常にfalseっぽい
 	{
 		//1秒ごとにGPS座標を表示する
 		if (Time::dt(time, mLastCheckTime) > 1)
 		{
 			mLastCheckTime = time;
 			showState();
-			//sendState(); //座標を送信 8-7 村上 (前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
-			gPoseDetecting.sendYowLPF(); //方角情報を送信
+			sendState(); //座標を送信 8-7 村上 (前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+			//gPoseDetecting.sendYawLPF(); //方角情報を送信
 			
 		}
 	}
@@ -271,7 +272,9 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	if (args.size() == 1)
 	{
 		showState();
-		//sendState();//座標を送信(前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+		sendState(); //座標を送信(前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+		//gPoseDetecting.sendYawLPF(); //方角情報を送信
+
 		return true;
 	}
 	else if (args.size() == 2)
@@ -349,14 +352,15 @@ GPSSensor::~GPSSensor()
 void  GPSSensor::sendState()
  {
 	char send_gps_string[256];
+
  	if(mSatelites < 4)
  	{
-		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d 0 0 0",mSatelites);
+		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d 0 0 0 %f",mSatelites, gPoseDetecting.getYawLPF());
  	}
 
  	else
  	{
-		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d %f %f %f ",mSatelites, mPos.x, mPos.y, mPos.z);//衛星数 x座標 Y座標 Z座標
+		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d %f %f %f %f",mSatelites, mPos.x, mPos.y, mPos.z, gPoseDetecting.getYawLPF());//衛星数 x座標 Y座標 Z座標 方角
  	}
 	system(send_gps_string);
  }

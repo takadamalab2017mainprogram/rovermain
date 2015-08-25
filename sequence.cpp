@@ -13,6 +13,7 @@
 #include "motor.h"
 #include "image_proc.h"
 #include "subsidiary_sequence.h"
+//#include "pose_detector"
 
 using namespace std;
 
@@ -20,7 +21,6 @@ Testing gTestingState;
 Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
-PoseDetecting gPoseDetecting;
 //Navigating gNavigatingState;
 //ColorAccessing gColorAccessingState;
 
@@ -243,16 +243,13 @@ bool Falling::onInit(const struct timespec& time)
 }
 void Falling::onUpdate(const struct timespec& time)
 {
-
-
-
-if(mOnInit){
-gParaServo.moveHold();
-        gStabiServo.start(STABI_FOLD_ANGLE);            //スタビを格納状態で固定
-        gBackStabiServo.moveHold();
-        gSoftCameraServo.moveHold();
-mOnInit=false;
-}
+	if(mOnInit){
+		gParaServo.moveHold();
+		gStabiServo.start(STABI_FOLD_ANGLE);            //スタビを格納状態で固定
+		gBackStabiServo.moveHold();
+		gSoftCameraServo.moveHold();
+		mOnInit=false;
+	}
 	//初回のみ気圧を取得
 	if(mLastPressure == 0)mLastPressure = gPressureSensor.get();
 
