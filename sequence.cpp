@@ -388,8 +388,6 @@ bool Separating::onInit(const struct timespec& time)
 }
 void Separating::onUpdate(const struct timespec& time)
 {
-	//gpsYawLPF を送信する 8-24 chou
-	 gPoseDetecting.sendYawLPF(); //8-24 chou
 	switch(mCurStep)
 	{
 	case STEP_SEPARATE:

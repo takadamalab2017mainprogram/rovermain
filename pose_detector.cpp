@@ -291,12 +291,3 @@ PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVeloc
 PoseDetecting::~PoseDetecting()
 {
 }
-
-//使い方：ローバ操作中に毎秒サーバに送るなど
-void PoseDetecting::sendYawLPF()
-{
-	char send_yaw_string[256];
-	double YawLPF = getYawLPF();
-	sprintf(send_yaw_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py yaw %f",YawLPF); //
-	system(send_yaw_string);
-}

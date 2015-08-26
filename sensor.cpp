@@ -262,8 +262,6 @@ void GPSSensor::onUpdate(const struct timespec& time)
 			mLastCheckTime = time;
 			showState();
 			sendState(); //座標を送信 8-7 村上
-			//gPoseDetecting.sendYawLPF(); //方角情報を送信
-			
 		}
 	}
 }
@@ -275,7 +273,6 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	{
 		showState();
 		sendState(); //座標を送信
-		//gPoseDetecting.sendYawLPF(); //方角情報を送信
 
 		return true;
 	}

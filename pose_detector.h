@@ -46,8 +46,6 @@ public:
 	//absoluteをtrueにすると今向いている方位(GPS基準)を返す
 	double getYaw(bool absolute = false, bool flipfix = true) const;
 	double getYawLPF(bool absolute = true/*8-24 chou trueにした*/, bool flipfix = true) const;
-	//8-24 chou 方向角度を送信する関数
-	void sendYawLPF();
 
 	//Velocity using encoder
 	double getVelocity() const;
