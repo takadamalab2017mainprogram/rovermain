@@ -13,7 +13,7 @@
 #include "motor.h"
 #include "image_proc.h"
 #include "subsidiary_sequence.h"
-//#include "pose_detector"
+#include "pose_detector.h"
 
 using namespace std;
 
@@ -56,6 +56,8 @@ bool Testing::onInit(const struct timespec& time)
 
 	gSoftCameraServo.setRunMode(true);
 	//gCameraServo.setRunMode(true);
+
+	gPoseDetecting.setRunMode(true);
 
 	return true;
 }

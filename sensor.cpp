@@ -23,7 +23,6 @@ WebCamera gWebCamera;
 DistanceSensor gDistanceSensor;
 CameraCapture gCameraCapture;
 AccelerationSensor gAccelerationSensor;
-
 //
 //// I2C definitions
 //
@@ -196,12 +195,15 @@ bool GPSSensor::onInit(const struct timespec& time)
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 
+	//方角取得用
+	gPoseDetecting.setRunMode(true);
+
 	//バージョン情報を表示
 	Debug::print(LOG_SUMMARY, "GPS Firmware Version:%d\r\n", wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
 	mIsNewData = false;
-	mIsLogger = false;
+	mIsLogger = true; //20150825変更false->true村上
 	return true;
 }
 void GPSSensor::onClean()
@@ -259,7 +261,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		{
 			mLastCheckTime = time;
 			showState();
-			sendState(); //座標を送信 8-7 村上 (前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+			sendState(); //座標を送信 8-7 村上
 			//gPoseDetecting.sendYawLPF(); //方角情報を送信
 			
 		}
@@ -272,7 +274,7 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	if (args.size() == 1)
 	{
 		showState();
-		sendState(); //座標を送信(前バージョンには含まれるのでコメントアウトして追記しときます　8-24 仲田)
+		sendState(); //座標を送信
 		//gPoseDetecting.sendYawLPF(); //方角情報を送信
 
 		return true;
@@ -325,8 +327,8 @@ float GPSSensor::getSpeed() const
 }
 void GPSSensor::showState() const
 {
-	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
-	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
+	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\nYaw: %f\r\n", mSatelites, gPoseDetecting.getYawLPF());
+	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed, gPoseDetecting.getYawLPF());
 }
 GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
 {
@@ -336,18 +338,6 @@ GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(fals
 GPSSensor::~GPSSensor()
 {
 }
-//二重定義っぽい（要・村上君に確認
-/*GPSSensor::sendState()
-{
-	if(mSatelites < 4)
-	{
-		system("~/home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps "+ mSatelites + " 0 0 0")
-	}
-	else
-	{
-		system("~/home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps "+ mSatelites + " " + mPos.x + " " + mPos.y + " " + mPos.z);//衛星数 x座標 Y座標 Z座標
-	}
-}*/
 
 void  GPSSensor::sendState()
  {

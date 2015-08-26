@@ -296,7 +296,7 @@ PoseDetecting::~PoseDetecting()
 void PoseDetecting::sendYawLPF()
 {
 	char send_yaw_string[256];
-	double YawLPF =this.getYawLPF();
+	double YawLPF = getYawLPF();
 	sprintf(send_yaw_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py yaw %f",YawLPF); //
 	system(send_yaw_string);
 }
