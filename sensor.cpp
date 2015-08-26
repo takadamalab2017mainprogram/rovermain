@@ -203,7 +203,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 
 	mPos.x = mPos.y = mPos.z = 0;
 	mIsNewData = false;
-	mIsLogger = true; //20150825変更false->true村上
+	mIsLogger = false; //20150826仲田 testingに入ったらtrueにする
 	return true;
 }
 void GPSSensor::onClean()
@@ -254,7 +254,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	}
 
 
-	if (mIsLogger) //常にfalseっぽい
+	if (mIsLogger) //testingに入ったら開始
 	{
 		//1秒ごとにGPS座標を表示する
 		if (Time::dt(time, mLastCheckTime) > 1)
@@ -326,6 +326,18 @@ void GPSSensor::showState() const
 {
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\nYaw: %f\r\n", mSatelites, gPoseDetecting.getYawLPF());
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed, gPoseDetecting.getYawLPF());
+}
+void GPSSensor::setMIsLogger(bool logging){
+	//mIsLoggerをセットしてログで知らせる
+	mIslogger = logging;
+	if(mIsLogger)
+	{
+		Debug::print(LOG_SUMMARY, "GPS logger start!\r\n");
+	}
+	else
+	{
+		Debug::print(LOG_SUMMARY, "GPS logger stop!\r\n");
+	}
 }
 GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
 {

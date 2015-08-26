@@ -59,6 +59,8 @@ bool Testing::onInit(const struct timespec& time)
 
 	gPoseDetecting.setRunMode(true);
 
+	gGPSSensor.setMIsLogger(true);
+
 	return true;
 }
 bool Testing::onCommand(const std::vector<std::string>& args)
