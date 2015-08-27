@@ -2,6 +2,7 @@
 #include "sensor.h"
 #include "motor.h"
 
+
 PoseDetecting gPoseDetecting;
 
 bool PoseDetecting::onInit(const struct timespec& time)
@@ -15,6 +16,7 @@ bool PoseDetecting::onInit(const struct timespec& time)
 	mLastEncL = gMotorDrive.getL();
 	mLastEncR = gMotorDrive.getR();
 	mLastGpsSampleTime = 0;
+	mIsInitializedAngle = false;
 
 	return true;
 }
@@ -27,28 +29,40 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 	mLastUpdatedTime = newTime;
 
 	//get gyro and accel using kalman-filter
+	VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI);
 	VECTOR3 accelRaw;
-	gAccelerationSensor.getAccel(accelRaw);
-	VECTOR3 accel(-accel.x, -accel.y, accel.z);
-	VECTOR3 accelAngle(
+	bool useAccel = gAccelerationSensor.getAccel(accelRaw);
+	VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z);
+	if(isIllegalAccel(accel))useAccel = false;
+
+	if(useAccel)
+	{
+		VECTOR3 accelAngle(
 			atan2f(accel.y, sqrt(accel.x*accel.x + accel.z*accel.z)),
 			atan2f(accel.x, sqrt(accel.y*accel.y + accel.z*accel.z)),
 			atan2f(sqrt(accel.x*accel.x + accel.y*accel.y), accel.z)
 			);
-
-	//VECTOR3 gyroRaw(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI);
-	/*VECTOR3 gyro(
-			std::get<0>(mKalmanGyro).update(accelAngle.x, gyroRaw.x, dt),
-			std::get<1>(mKalmanGyro).update(accelAngle.y, gyroRaw.y, dt),
-			std::get<2>(mKalmanGyro).update(accelAngle.z, gyroRaw.z, dt)
-			);*/
-	VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI);
+		//gyro = VECTOR3(
+		//	std::get<0>(mKalmanGyro).update(accelAngle.x, gyro.x, dt),
+		//	std::get<1>(mKalmanGyro).update(accelAngle.y, gyro.y, dt),
+		//	std::get<2>(mKalmanGyro).update(accelAngle.z, gyro.z, dt)
+		//	);
+		if(!mIsInitializedAngle)
+		{
+			mEstimatedAngle = mEstimatedAngleWithLPF = QUATERNION(accelAngle);
+			mIsInitializedAngle = true;
+		}
+	}
+	else
+	{
+		//set zero to disable accel
+		accel = VECTOR3();
+	}
 
 	//update IMU
 	updateUsingIMU(dt, gyro.x, gyro.y, gyro.z, accel.x, accel.y, accel.z);
 	mEstimatedAngleWithLPF = mEstimatedAngleWithLPF * (1 - mAngleLPFCoeff) + mEstimatedAngle * mAngleLPFCoeff;
 
-	//ジャイロ値取得
 	if(gMotorDrive.isActive())
 	{
 		if(dt > 0)
@@ -91,8 +105,11 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 bool PoseDetecting::onCommand(const std::vector<std::string>& args)
 {
 	VECTOR3 angle = getEulerZYX();
+	VECTOR3 accel;
+	gAccelerationSensor.getAccel(accel);
+
 	Debug::print(LOG_PRINT, "EulerZYX: (%.3f, %.3f, %.3f)\r\n", angle.x, angle.y, angle.z);
-	Debug::print(LOG_PRINT, "(Flip, Lie): (%s, %s) Velocity: %f GpsAngle: %.3f\r\n", isFlip() ? "y" : "n", isLie() ? "y" : "n", getVelocity(), mEstimatedRelativeGpsCourse);
+	Debug::print(LOG_PRINT, "(Flip, Lie, IllAcc): (%s, %s, %s) Velocity: %f GpsAngle: %.3f\r\n", isFlip() ? "y" : "n", isLie() ? "y" : "n", isIllegalAccel(accel) ? "y" : "n", getVelocity(), mEstimatedRelativeGpsCourse);
 	Debug::print(LOG_PRINT, "YawAngle: %.3f(%.3f)\r\n", getYaw(true, true), getYaw(true, false));
 
 	if(args.size() == 3)
@@ -129,8 +146,14 @@ bool PoseDetecting::onCommand(const std::vector<std::string>& args)
 		}
 		if(args[1].compare("angle") == 0)
 		{
-			mGpsCoeff = atof(args[2].c_str());
-			Debug::print(LOG_PRINT, "Angle LPF coeff: %f\r\n", mGpsCoeff);
+			mAngleLPFCoeff = atof(args[2].c_str());
+			Debug::print(LOG_PRINT, "Angle LPF coeff: %f\r\n", mAngleLPFCoeff);
+			return true;
+		}
+		if(args[1].compare("accelrange") == 0)
+		{
+			mAccelUsableRange = atof(args[2].c_str());
+			Debug::print(LOG_PRINT, "accel range: %f\r\n", mAccelUsableRange);
 			return true;
 		}
 	}
@@ -138,6 +161,7 @@ bool PoseDetecting::onCommand(const std::vector<std::string>& args)
 	{
 		Debug::print(LOG_PRINT, "Usage:\r\n");
 		Debug::print(LOG_PRINT, " %s {accel, enc, gps, angle} [coeff] : set coeff [0-1]\r\n", args[0].c_str());
+		Debug::print(LOG_PRINT, " %s accelrange [coeff] : set acceptable acceleration range [0-1]\r\n", args[0].c_str());
 		Debug::print(LOG_PRINT, " %s {flip, lie} [coeff] : set threshold [0-90]\r\n", args[0].c_str());
 		return true;
 	}
@@ -181,18 +205,18 @@ double PoseDetecting::getPitch() const
 	VECTOR3 ypr = getEulerZYX();
 	return GyroSensor::normalize(ypr.y);
 }
-double PoseDetecting::getYaw(bool absolute, bool flipfix) const /////<<<<getYaw から方向の角度を得る
+double PoseDetecting::getYaw(bool absolute, bool flipfix) const
 {
 	VECTOR3 ypr = getEulerZYX();
 	double z = ypr.z + (absolute ? mEstimatedRelativeGpsCourse : 0);
-	//if(flipfix && isFlipCoord())z += 180;
+	if(flipfix && isFlipCoord())z += 180;
 	return GyroSensor::normalize(z);
 }
 double PoseDetecting::getYawLPF(bool absolute, bool flipfix) const
 {
 	VECTOR3 ypr = getEulerZYXLPF();
 	double z = ypr.z + (absolute ? mEstimatedRelativeGpsCourse : 0);
-	//if(flipfix && isFlipCoord())z += 180;
+	if(flipfix && isFlipCoord())z += 180;
 	return GyroSensor::normalize(z);
 }
 double PoseDetecting::getVelocity() const
@@ -219,6 +243,11 @@ bool PoseDetecting::isLie() const
 	double lieAngle = GyroSensor::normalize(asin(qLeft.z) * 180 / M_PI);
 	return abs(lieAngle) > mLieThreshold && abs(lieAngle) < 180 - mLieThreshold;
 }
+bool PoseDetecting::isIllegalAccel(const VECTOR3& accel) const
+{
+	double accelPow = sqrt(accel.x*accel.x + accel.y*accel.y + accel.z*accel.z);
+	return accelPow < 1 - mAccelUsableRange || accelPow > 1 + mAccelUsableRange;
+}
 // Ref: http://www.olliw.eu/2013/imu-data-fusing/
 void PoseDetecting::updateUsingIMU(double dt, double gx, double gy, double gz, double ax, double ay, double az)
 {
@@ -235,9 +264,7 @@ void PoseDetecting::updateUsingIMU(double dt, double gx, double gy, double gz, d
 
 	// Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
 	if(!(ax == 0 && ay == 0 && ay == 0)) {
-		VECTOR3 accel;
-		gAccelerationSensor.getAccel(accel);
-
+		VECTOR3 accel(ax, ay, az);
 		// Normalise accelerometer measurement
 		accel = accel.normalize();
 
@@ -257,10 +284,10 @@ void PoseDetecting::updateUsingIMU(double dt, double gx, double gy, double gz, d
 		q3q3 = q3 * q3;
 
 		// Gradient decent algorithm corrective step
-		sQuat.w = _4q0 * q2q2 + _2q2 * ax + _4q0 * q1q1 - _2q1 * ay;
-		sQuat.x = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2q2 + _4q1 * az;
-		sQuat.y = 4.0f * q0q0 * q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2q2 + _4q2 * az;
-		sQuat.z = 4.0f * q1q1 * q3 - _2q1 * ax + 4.0f * q2q2 * q3 - _2q2 * ay;
+		sQuat.w = _4q0 * q2q2 + _2q2 * accel.x + _4q0 * q1q1 - _2q1 * accel.y;
+		sQuat.x = _4q1 * q3q3 - _2q3 * accel.x + 4.0f * q0q0 * q1 - _2q0 * accel.y - _4q1 + _8q1 * q1q1 + _8q1 * q2q2 + _4q1 * accel.z;
+		sQuat.y = 4.0f * q0q0 * q2 + _2q0 * accel.x + _4q2 * q3q3 - _2q3 * accel.y - _4q2 + _8q2 * q1q1 + _8q2 * q2q2 + _4q2 * accel.z;
+		sQuat.z = 4.0f * q1q1 * q3 - _2q1 * accel.x + 4.0f * q2q2 * q3 - _2q2 * accel.y;
 		sQuat = sQuat.normalize();
 
 		// Apply feedback step
@@ -282,7 +309,7 @@ double PoseDetecting::calcEncAngle(long long left, long long right)
 	return rotation;
 }
 
-PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVelocity(0), mLastEncL(0), mLastEncR(0), mAccelCoeff(0.2), mEncCoeff(0.05), mGpsCoeff(0.1), mAngleLPFCoeff(0.1), mFlipThreshold(60), mLieThreshold(30)
+PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVelocity(0), mLastEncL(0), mLastEncR(0), mAccelCoeff(0.3), mEncCoeff(0.05), mGpsCoeff(0.1), mAngleLPFCoeff(0.3), mAccelUsableRange(0.3), mFlipThreshold(60), mLieThreshold(60)
 {
 	setName("pose");
 	setPriority(TASK_PRIORITY_SENSOR + 1,TASK_INTERVAL_SENSOR);
@@ -291,3 +318,4 @@ PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVeloc
 PoseDetecting::~PoseDetecting()
 {
 }
+

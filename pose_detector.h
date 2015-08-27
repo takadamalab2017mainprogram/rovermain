@@ -12,11 +12,13 @@ class PoseDetecting : public TaskBase
 {
 private:
 	QUATERNION mEstimatedAngle, mEstimatedAngleWithLPF;
-	//std::tuple<KalmanFilter, KalmanFilter, KalmanFilter> mKalmanGyro; 8-24 chou 
+	std::tuple<KalmanFilter, KalmanFilter, KalmanFilter> mKalmanGyro;
 	double mEstimatedRelativeGpsCourse, mEstimatedVelocity;
 	long long mLastEncL, mLastEncR;
+	bool mIsInitializedAngle;
 	double mAccelCoeff, mEncCoeff, mGpsCoeff;
 	double mAngleLPFCoeff;
+	double mAccelUsableRange;
 	double mFlipThreshold, mLieThreshold;
 
 	VECTOR3 mLastGpsPos;
@@ -55,6 +57,8 @@ public:
 	bool isFlipCoord() const;
 	//横転を検知
 	bool isLie() const;
+	
+	bool isIllegalAccel(const VECTOR3& accel) const;
 
 	//エンコーダの値から方向転換量を取得
 	static double calcEncAngle(long long left, long long right);
