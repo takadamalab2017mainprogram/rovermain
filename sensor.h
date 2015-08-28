@@ -78,7 +78,7 @@ public:
 	int getTime() const;
 	float getCourse() const;
 	float getSpeed() const;
-	void setMisLogger(bool logging); //mIsLoggerを切り替える testing入ったら呼び出す
+	void setMIsLogger(bool logging); //mIsLoggerを切り替える testing入ったら呼び出す
 
 	GPSSensor();
 	~GPSSensor();
