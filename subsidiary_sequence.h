@@ -8,84 +8,83 @@
 #include "utils.h"
 
 //轍事前検知動作
-class WadachiPredicting : public TaskBase
-{
-	struct timespec mLastUpdateTime;//前回のチェック時刻
-	bool mIsAvoidingEnable;
-	enum STEP{STEP_RUNNING, STEP_STOPPING, STEP_WAKING, STEP_CHECKING, STEP_AVOIDING};
-	enum STEP mCurStep;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-public:
-	bool isWorking(const struct timespec& time);//事前検知動作中か否か
-	WadachiPredicting();
-	~WadachiPredicting();
-};
-
-//轍脱出動作
-//このタスクが有効の間はナビゲーションしません
-class Escaping : public TaskBase
-{
-	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-
-	enum STEP{STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_CAMERA_TURN_HERE, STEP_RANDOM};
-	enum STEP mCurStep;
-	enum RANDOM_STEP{RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD};
-	enum RANDOM_STEP mCurRandomStep;
-	unsigned int mEscapingTriedCount;//カメラ脱出を試行した回数
-	double mAngle;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onClean();
-	virtual void onUpdate(const struct timespec& time);
-
-	void stuckMoveRandom();//スタック時の移動処理
-	void stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
-public:
-	Escaping();
-	~Escaping();
-};
-
-//轍脱出脱出（スタビ使用ver）
-class EscapingByStabi : public TaskBase
-{	
-	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-	bool mFlag;
-	unsigned int mTryCount;
-	double mAngle;// 芋虫走行中のスタビ角度 
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-public:
-	unsigned int getTryCount();
-	EscapingByStabi();
-	~EscapingByStabi();
-};
-//轍脱出脱出（旧ランダム）
-class EscapingRandom : public TaskBase
-{
-	struct timespec mLastUpdateTime;//前回の行動からの変化時間
-
-	enum STEP{STEP_TURN = 0, STEP_FORWARD};
-	enum STEP mCurStep;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-
-public:
-	EscapingRandom();
-	~EscapingRandom();
-};
+//class WadachiPredicting : public TaskBase
+//{
+//	struct timespec mLastUpdateTime;//前回のチェック時刻
+//	bool mIsAvoidingEnable;
+//	enum STEP{STEP_RUNNING, STEP_STOPPING, STEP_WAKING, STEP_CHECKING, STEP_AVOIDING};
+//	enum STEP mCurStep;
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onUpdate(const struct timespec& time);
+//	virtual bool onCommand(const std::vector<std::string>& args);
+//public:
+//	bool isWorking(const struct timespec& time);//事前検知動作中か否か
+//	WadachiPredicting();
+//	~WadachiPredicting();
+//};
+//
+////轍脱出動作
+////このタスクが有効の間はナビゲーションしません
+//class Escaping : public TaskBase
+//{
+//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+//
+//	enum STEP{STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_CAMERA_TURN_HERE, STEP_RANDOM};
+//	enum STEP mCurStep;
+//	enum RANDOM_STEP{RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD};
+//	enum RANDOM_STEP mCurRandomStep;
+//	unsigned int mEscapingTriedCount;//カメラ脱出を試行した回数
+//	double mAngle;
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onClean();
+//	virtual void onUpdate(const struct timespec& time);
+//
+//	void stuckMoveRandom();//スタック時の移動処理
+//	void stuckMoveCamera(IplImage* pImage);//カメラを用いたスタック時の移動処理
+//public:
+//	Escaping();
+//	~Escaping();
+//};
+//
+////轍脱出脱出（スタビ使用ver）
+//class EscapingByStabi : public TaskBase
+//{	
+//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+//	bool mFlag;
+//	unsigned int mTryCount;
+//	double mAngle;// 芋虫走行中のスタビ角度 
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onUpdate(const struct timespec& time);
+//	virtual bool onCommand(const std::vector<std::string>& args);
+//public:
+//	unsigned int getTryCount();
+//	EscapingByStabi();
+//	~EscapingByStabi();
+//};
+////轍脱出脱出（旧ランダム）
+//class EscapingRandom : public TaskBase
+//{
+//	struct timespec mLastUpdateTime;//前回の行動からの変化時間
+//
+//	enum STEP{STEP_TURN = 0, STEP_FORWARD};
+//	enum STEP mCurStep;
+//protected:
+//	virtual bool onInit(const struct timespec& time);
+//	virtual void onUpdate(const struct timespec& time);
+//public:
+//	EscapingRandom();
+//	~EscapingRandom();
+//};
 
 //ローバーの姿勢制御
 //姿勢制御が完了するとタスクが終了します
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;//行動開始時刻
-	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY};
+	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY,STEP_LAST};
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;
@@ -105,7 +104,7 @@ public:
 	~Waking();
 };
 
-//ローバーのその場回転
+/*//ローバーのその場回転
 //完了するとタスクが終了します
 class Turning : public TaskBase
 {
@@ -138,7 +137,7 @@ public:
 
 	Avoiding();
 	~Avoiding();
-};
+};*/
 
 //記念撮影
 class PictureTaking : public TaskBase
@@ -222,14 +221,14 @@ public:
 	~EncoderMonitoring();
 };
 
-extern Escaping gEscapingState;
+//extern Escaping gEscapingState;
 extern Waking gWakingState;
-extern Turning gTurningState;
-extern Avoiding gAvoidingState;
-extern WadachiPredicting gPredictingState;
-extern EscapingRandom gEscapingRandomState;
-extern EscapingByStabi gEscapingByStabiState;
-extern PictureTaking gPictureTakingState;
+//extern Turning gTurningState;
+//extern Avoiding gAvoidingState;
+//extern WadachiPredicting gPredictingState;
+//extern EscapingRandom gEscapingRandomState;
+//extern EscapingByStabi gEscapingByStabiState;
+//extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern MovementLogging gMovementLoggingState;
 extern EncoderMonitoring gEncoderMonitoringState;

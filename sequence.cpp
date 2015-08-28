@@ -13,6 +13,9 @@
 #include "motor.h"
 #include "image_proc.h"
 #include "subsidiary_sequence.h"
+#include "pose_detector.h"
+
+using namespace std;
 
 Testing gTestingState;
 Waiting gWaitingState;
@@ -33,14 +36,14 @@ bool Testing::onInit(const struct timespec& time)
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
 	gBackStabiServo.setRunMode(true);
-	gXbeeSleep.setRunMode(true);
+//	gXbeeSleep.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
-	gWebCamera.setRunMode(true);
+	gWebCamera.setRunMode(true); //去年のカメラプログラム？(TBC)外していいんじゃない（ログが邪魔
 	//gDistanceSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 
@@ -52,7 +55,12 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.start(200);
 
 	gSoftCameraServo.setRunMode(true);
-	
+	//gCameraServo.setRunMode(true);
+
+	gPoseDetecting.setRunMode(true);
+
+	gGPSSensor.setMIsLogger(true);
+
 	return true;
 }
 
@@ -220,6 +228,7 @@ bool Falling::onInit(const struct timespec& time)
 	Debug::print(LOG_SUMMARY, "Falling... ");
 	Time::showNowTime();
 	
+        mOnInit=true;	
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
@@ -237,19 +246,29 @@ bool Falling::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
 	gStabiServo.setRunMode(true);
-	gSoftCameraServo.setRunMode(true);
 	gBackStabiServo.setRunMode(true);
-
+	gSoftCameraServo.setRunMode(true);
 
 	gParaServo.moveHold();
 	gStabiServo.start(STABI_FOLD_ANGLE);		//スタビを格納状態で固定
-	gSoftCameraServo.moveHold();
 	gBackStabiServo.moveHold();
+	gSoftCameraServo.moveHold();
+
+	//空撮開始処理(端末から、バックグラウンド処理で空撮用コマンドを実行)
+	Debug::print(LOG_SUMMARY, "Start aerial recording\r\n");
+	std::system("python ../high-ball-server/video/record.py aerialvideo &");
 
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
 {
+	if(mOnInit){
+		gParaServo.moveHold();
+		gStabiServo.start(STABI_FOLD_ANGLE);            //スタビを格納状態で固定
+		gBackStabiServo.moveHold();
+		gSoftCameraServo.moveHold();
+		mOnInit=false;
+	}
 	//初回のみ気圧を取得
 	if(mLastPressure == 0)mLastPressure = gPressureSensor.get();
 
@@ -343,16 +362,44 @@ bool Separating::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	
 	gBackStabiServo.setRunMode(true);
 	gSoftCameraServo.setRunMode(true);
+	gPoseDetecting.setRunMode(true);//方向角度検知　８－２４　ちょう
+
+	//録画停止処理　pid(process id)指定してkill
+	//pid読み込む
+	ifstream ifs("/home/pi/high-ball-server/video/video_pid");	
+	string str, command;
+	if(ifs.good())
+	{
+		//pidファイルが読み込めた
+		
+		//pid指定して空撮処理をkill
+		//kill -9 [pid]
+		getline(ifs, str);
+		command = "kill -9 " + str;
+		system(command.c_str());
+		Debug::print(LOG_SUMMARY, "Aerial recording finished\r\n");
+	}else
+	{
+		//pidファイルが無い
+		Debug::print(LOG_SUMMARY, "Pid file does not exist\r\n");
+	}
+
+	//動画配信開始
+	system("python /home/pi/high-ball-server/websocket_upload/websocket_sendvideo_mp.py &");
+
 
 	mLastUpdateTime = time;
 	gParaServo.moveHold();
-	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+	// 8-5 gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動　気球試験コメントアウト
+	gStabiServo.start(STABI_FOLD_ANGLE);
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
+	gSoftCameraServo.moveHold();
+	//backstabi
+	gBackStabiServo.moveHold();
 
 	gSoftCameraServo.moveHold();
 	//backstabi
@@ -390,8 +437,11 @@ void Separating::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true); ///ここに起き上がり subseuence の　waking に書いている
+			
 		}
+		
 		break;
+
 	case STEP_PRE_PARA_JUDGE:
 		//起き上がり動作を実行し、画像処理を行う前に1秒待機して画像のブレを防止する
 		if(gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
@@ -403,40 +453,39 @@ void Separating::onUpdate(const struct timespec& time)
 			gCameraCapture.startWarming();
 		}
 		break;
-		//画像認識削除
-	//case STEP_PARA_JUDGE:
-	//	//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
-	//	if(Time::dt(time,mLastUpdateTime) > 2)
-	//	{
-	//		//パラシュートの存在チェックを行う
-	//		IplImage* pImage = gCameraCapture.getFrame();
-	//		if(gImageProc.isParaExist(pImage))
-	//		{
-	//			//回避動作に遷移
-	//			gBuzzer.start(20, 20, 5);
-	//			mCurStep = STEP_PARA_DODGE;
-	//			mLastUpdateTime = time;
-	//			gTurningState.setRunMode(true);
-	//			Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
-	//		}else
-	//		{
-	//			//次状態(ナビ)に遷移
-	//			Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
-	//			nextState();
-	//		}
-	//		//パラ検知に用いた画像を保存する
-	//		gCameraCapture.save(NULL, pImage);
-	//	}
-	//	break;
-	//case STEP_PARA_DODGE:
-	//	if(!gTurningState.isActive())
-	//	{
-	//		Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
-	//		gMotorDrive.drive(100);
-	//		mLastUpdateTime = time;
-	//		mCurStep = STEP_GO_FORWARD;
-	//	}
-	//	break;
+/*	case STEP_PARA_JUDGE:
+		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
+		if(Time::dt(time,mLastUpdateTime) > 2)
+		{
+			//パラシュートの存在チェックを行う
+			IplImage* pImage = gCameraCapture.getFrame();
+			if(gImageProc.isParaExist(pImage))
+			{
+				//回避動作に遷移
+				gBuzzer.start(20, 20, 5);
+				mCurStep = STEP_PARA_DODGE;
+				mLastUpdateTime = time;
+				gTurningState.setRunMode(true);
+				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
+			}else
+			{
+				//次状態(ナビ)に遷移
+				Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
+				nextState();
+			}
+			//パラ検知に用いた画像を保存する
+			gCameraCapture.save(NULL, pImage);
+		}
+		break;
+	case STEP_PARA_DODGE:
+		if(!gTurningState.isActive())
+		{
+			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
+			gMotorDrive.drive(100);
+			mLastUpdateTime = time;
+			mCurStep = STEP_GO_FORWARD;
+		}
+		break;*/
 	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
 		if(Time::dt(time,mLastUpdateTime) > 3)
 		{
@@ -493,7 +542,7 @@ Separating::~Separating()
 //	mLastPos.clear();
 //	return true;
 //}
-//void Navigating::onUpdate(const struct timespec& time)
+////void Navigating::onUpdate(const struct timespec& time)
 //{
 //	VECTOR3 currentPos;
 //
@@ -1432,4 +1481,4 @@ Separating::~Separating()
 //ColorAccessing::~ColorAccessing()
 //{
 //}
-///* ここまで　2014年実装 */
+/* ここまで　2014年実装 */

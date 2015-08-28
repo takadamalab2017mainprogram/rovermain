@@ -46,5 +46,5 @@ alias wadachistart escapingbystabi start
 alias imomusi escapingbystabi start
 alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
-alias bsopen backstabiservo 0
-alias bsclose backstabiservo 0
+alias bsopen backstabiservo 19
+alias bsclose backstabiservo 6

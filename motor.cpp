@@ -223,13 +223,21 @@ void MotorDrive::updatePIDMove()
 	if(mControlPower > 0)
 	{
 		//左に曲がる
-		mMotorL.set(mRatioL * drivePowerRatio);
-		mMotorR.set(-mRatioR * controlRatio * drivePowerRatio);
+		//mMotorL.set(mRatioL * drivePowerRatio); //去年の
+		//mMotorR.set(-mRatioR * controlRatio * drivePowerRatio); //去年の
+
+		//2015 highball版
+		mMotorL.set(-mRatioL * controlRatio * drivePowerRatio);
+		mMotorR.set(mRatioR * drivePowerRatio);
 	}else
 	{
 		//右に曲がる
-		mMotorL.set(mRatioL * controlRatio * drivePowerRatio);
-		mMotorR.set(-mRatioR * drivePowerRatio);
+		//mMotorL.set(mRatioL * controlRatio * drivePowerRatio); //去年の
+		//mMotorR.set(-mRatioR * drivePowerRatio);
+
+		//2015 highball版
+		mMotorL.set(-mRatioL * drivePowerRatio);
+		mMotorR.set(mRatioR * controlRatio * drivePowerRatio);
 	}
 }
 
@@ -280,7 +288,7 @@ void MotorDrive::drive(int powerL, int powerR)
 void MotorDrive::drive(int power)
 {
 	//highball回路の都合で出力逆向きにしてます
-	drive(-power,-power);
+	drive(-power,-power); //drive(L, R)で符号逆転するのだからこれはダメ
 }
 
 void MotorDrive::set(double p,double i,double d)
@@ -299,7 +307,7 @@ void MotorDrive::startPID(double angle,int power)
 	mControlPower = 0;
 }
 void MotorDrive::drivePID(double angle,int power)
-{
+{       //power = -power; //8-9 chou IPD制御　の試し ダメだった
 	mAngle = GyroSensor::normalize(angle + mAngle);
 	mDrivePower = std::max(std::min(power,MOTOR_MAX_POWER),0);
 	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
@@ -329,7 +337,7 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		{
 			//左折
 			//drive(0,MOTOR_MAX_POWER * 0.7);
-			drive(0,MOTOR_MAX_POWER * 0.3); //審査会用チューニング
+			drive(0,MOTOR_MAX_POWER * 0.5); //審査会用チューニング
 			//drive(0,-MOTOR_MAX_POWER * 0.7); //左右逆転問題対策
 			//gStabiServo.start(0.2); //左折withスタビ動作
 			return true;
@@ -337,7 +345,7 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		{
 			//右折
 			//drive(MOTOR_MAX_POWER * 0.7,0);
-			drive(MOTOR_MAX_POWER * 0.3,0); //審査会チューニング
+			drive(MOTOR_MAX_POWER * 0.5,0); //審査会チューニング
 			//drive(-MOTOR_MAX_POWER * 0.7,0); //左右逆転問題対策
 			//gStabiServo.start(0.2); //右折withスタビ動作
 			return true;
@@ -349,21 +357,26 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		}else if(args[1].compare("go") == 0)
 		{
 			//前進withスタビ
-			gStabiServo.start(0.2);
+			gStabiServo.start(0.8);
+			gBackStabiServo.moveGo();
 			//drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
-			drive(MOTOR_MAX_POWER*0.2,MOTOR_MAX_POWER*0.2); //審査会用チューニング
+			startPID(0,MOTOR_MAX_POWER);
+			//startPID(0,MOTOR_MAX_POWER*0.7);//8-9 PID 制御　モータードライバー回路の都合により マイナスつけたよ
+			// 8-9 PID制御のためコメントアウト　　drive(MOTOR_MAX_POWER*0.7,MOTOR_MAX_POWER*0.7); 
 			return true;
 		}else if(args[1].compare("back") == 0)
 		{
 			//後退withスタビ
-			gStabiServo.start(0.65);
+			gBackStabiServo.moveRelease();
+			gStabiServo.start(0.2);
 			//drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
-			drive(-MOTOR_MAX_POWER*0.2,-MOTOR_MAX_POWER*0.2); //審査会用チューニング
+			drive(-MOTOR_MAX_POWER*0.7,-MOTOR_MAX_POWER*0.7); //能代用チューニング
 			return true;
 		}else if(args[1].compare("stop")==0)
 		{
 			//ストップwithスタビ
-			gStabiServo.start(0.65);
+			gBackStabiServo.moveRelease();
+			gStabiServo.start(0.8);
 			drive(0,0);
 			return true;
 		}else if(args[1].compare("p") == 0)

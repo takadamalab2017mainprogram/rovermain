@@ -10,6 +10,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <time.h> //8-24chou
 #include <map>
 #include "constants.h"
 
@@ -40,12 +41,34 @@ public:
 	Debug();
 };
 
+//class time
+//{
+//public:
+//	//時間の変化量を計算(秒)
+//	static double dt(const struct timespec& now,const struct timespec& last);
+//
+//	//現在時刻をログに出力する
+//	static void shownowtime();
+//}; 8-24 chou
+
+/*
+ * Timespec 8-24 chou
+ */
+#ifndef __timespec_defined
+#define __timespec_defined
+struct timespec {
+  time_t  tv_sec;   // Seconds
+  long    tv_nsec;  // Nanoseconds
+};
+#endif
+
 class Time
 {
 public:
-	//時間の変化量を計算(秒)
-	static double dt(const struct timespec& now,const struct timespec& last);
-
+    //時間の変化量を計算(秒)
+    static double dt(const struct timespec& now,const struct timespec& last);
+	//現在時刻を取得
+    static void get(struct timespec& time);
 	//現在時刻をログに出力する
 	static void showNowTime();
 };
@@ -85,6 +108,20 @@ public:
 
 	~ConstantManager();
 };
+///////8-24 chou
+class KalmanFilter
+{
+private:
+	float mQAngle, mQBias, mRAngle;
+	float mXAngle, mXBias;
+	float mP[2][2];
+public:
+	float update(float newAngle, float newRate, float dt);
+
+	KalmanFilter();
+	virtual ~KalmanFilter();
+};
+
 
 class VECTOR3
 {
@@ -113,4 +150,51 @@ public:
 	static double calcAngleXY(const VECTOR3& current,const VECTOR3& target);
 	//2点間の距離を計算
 	static double calcDistanceXY(const VECTOR3& current,const VECTOR3& target);
+
+	VECTOR3 normalize() const;//8-24 chou
 };
+
+//3Dの角度を扱うときに便利なクラス
+// 参考: https://svn.code.sf.net/p/irrlicht/code/trunk/include/quaternion.h
+class QUATERNION
+{
+public:
+	double x, y, z, w;
+
+	//単位クォータニオンを生成
+	QUATERNION();
+	
+	//各要素の値で初期化
+	QUATERNION(double x, double y, double z, double w);
+
+	//オイラー角で初期化
+	QUATERNION(double x, double y, double z);
+	QUATERNION(VECTOR3 v);
+
+	QUATERNION operator+() const;
+	QUATERNION operator-() const;
+	QUATERNION& operator+=(const QUATERNION& q);
+	QUATERNION& operator-=(const QUATERNION& q);
+	QUATERNION operator+(const QUATERNION& q) const;
+	QUATERNION operator-(const QUATERNION& q) const;
+	QUATERNION& operator*=(const QUATERNION& q);
+	QUATERNION operator*(const QUATERNION& q) const;
+	QUATERNION& operator*=(const double q);
+	QUATERNION operator*(const double q) const;
+
+	bool operator==(const QUATERNION& q)const;
+	bool operator!=(const QUATERNION& q)const;
+
+	//ある軸周りに回転させたクォータニオンを取得
+	QUATERNION& fromAngleAxis(double angle, const VECTOR3& axis);
+	//ある軸周りの回転角度を導出
+	double toAngleAxis(VECTOR3& v) const;
+	void toEulerXYZ(VECTOR3& euler) const;
+	void toEulerZYX(VECTOR3& euler) const;
+	double getRoll() const;
+	double getPitch() const;
+	double getYaw() const;
+	QUATERNION normalize() const;
+	QUATERNION inverse() const;
+};
+

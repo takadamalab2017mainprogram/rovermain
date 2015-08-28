@@ -12,132 +12,132 @@
 #include "actuator.h"
 #include "motor.h"
 #include "image_proc.h"
-
-Escaping gEscapingState;
-EscapingRandom gEscapingRandomState;
-EscapingByStabi gEscapingByStabiState;
+#include "constants.h"
+//Escaping gEscapingState;
+//EscapingRandom gEscapingRandomState;
+//EscapingByStabi gEscapingByStabiState;
 Waking gWakingState;
-Turning gTurningState;
-Avoiding gAvoidingState;
-WadachiPredicting gPredictingState;
-PictureTaking gPictureTakingState;
+//Turning gTurningState;
+//Avoiding gAvoidingState;
+//WadachiPredicting gPredictingState;
+//PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 MovementLogging gMovementLoggingState;
 EncoderMonitoring gEncoderMonitoringState;
 
-bool WadachiPredicting::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gCameraCapture.startWarming();
-
-	return true;
-}
-void WadachiPredicting::onUpdate(const struct timespec& time)
-{
-	if(gAvoidingState.isActive())return;
-	if(!mIsAvoidingEnable)
-	{
-		if(Time::dt(time,mLastUpdateTime) >= 2.5)
-		{
-			mLastUpdateTime = time;
-			IplImage* pImage = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL,pImage);
-			if(!gImageProc.isWadachiExist(pImage))return;
-			//轍を事前検知した
-			gCameraCapture.startWarming();
-		}
-		return;
-	}
-
-	switch(mCurStep)
-	{
-	case STEP_RUNNING:
-		if(Time::dt(time,mLastUpdateTime) > 60)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
-			mCurStep = STEP_STOPPING;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(0);
-		}
-		break;
-	case STEP_STOPPING:
-		if(Time::dt(time,mLastUpdateTime) > 3)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Waking started\r\n");
-			mCurStep = STEP_WAKING;
-			mLastUpdateTime = time;
-			gWakingState.setRunMode(true);
-		}
-		break;
-	case STEP_WAKING:
-		if(!gWakingState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Checking started\r\n");
-			mCurStep = STEP_CHECKING;
-			mLastUpdateTime = time;
-			gCameraCapture.startWarming();
-		}
-		break;
-	case STEP_CHECKING:
-		if(Time::dt(time,mLastUpdateTime) > 3)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Avoiding started\r\n");
-			mLastUpdateTime = time;
-			IplImage* pImage = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL,pImage);
-			if(gImageProc.isWadachiExist(pImage))
-			{
-				//轍を事前検知した
-				gAvoidingState.setRunMode(true);
-				mCurStep = STEP_AVOIDING;
-			}else
-			{
-				mCurStep = STEP_RUNNING;
-				gMotorDrive.startPID(0,MOTOR_MAX_POWER);
-			}
-		}
-		break;
-	case STEP_AVOIDING:
-		if(!gAvoidingState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Avoiding finished\r\n");
-			mCurStep = STEP_RUNNING;
-			mLastUpdateTime = time;
-		}
-		break;
-	}
-}
-bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
-{
-	if(args.size() == 2)
-	{
-		if(args[1].compare("enable") == 0)
-		{
-			mIsAvoidingEnable = true;
-			return true;
-		}
-		if(args[1].compare("disable") == 0)
-		{
-			mIsAvoidingEnable = false;
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
-	return false;
-}
-bool WadachiPredicting::isWorking(const struct timespec& time)
-{
-	return mIsAvoidingEnable && (mCurStep != STEP_RUNNING || (mCurStep == STEP_RUNNING && Time::dt(time,mLastUpdateTime) < 6));
-}
-WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false),mCurStep(STEP_RUNNING)
-{
-	setName("predicting");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-WadachiPredicting::~WadachiPredicting()
-{
-}
-
+//bool WadachiPredicting::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	gCameraCapture.startWarming();
+//
+//	return true;
+//}
+//void WadachiPredicting::onUpdate(const struct timespec& time)
+//{
+//	if(gAvoidingState.isActive())return;
+//	if(!mIsAvoidingEnable)
+//	{
+//		if(Time::dt(time,mLastUpdateTime) >= 2.5)
+//		{
+//			mLastUpdateTime = time;
+//			IplImage* pImage = gCameraCapture.getFrame();
+//			gCameraCapture.save(NULL,pImage);
+//			if(!gImageProc.isWadachiExist(pImage))return;
+//			//?Q???O???m????
+//			gCameraCapture.startWarming();
+//		}
+//		return;
+//	}
+//
+//	switch(mCurStep)
+//	{
+//	case STEP_RUNNING:
+//		if(Time::dt(time,mLastUpdateTime) > 60)
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
+//			mCurStep = STEP_STOPPING;
+//			mLastUpdateTime = time;
+//			gMotorDrive.drive(0);
+//		}
+//		break;
+//	case STEP_STOPPING:
+//		if(Time::dt(time,mLastUpdateTime) > 3)
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Waking started\r\n");
+//			mCurStep = STEP_WAKING;
+//			mLastUpdateTime = time;
+//			gWakingState.setRunMode(true);
+//		}
+//		break;
+//	case STEP_WAKING:
+//		if(!gWakingState.isActive())
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Checking started\r\n");
+//			mCurStep = STEP_CHECKING;
+//			mLastUpdateTime = time;
+//			gCameraCapture.startWarming();
+//		}
+//		break;
+//	case STEP_CHECKING:
+//		if(Time::dt(time,mLastUpdateTime) > 3)
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Avoiding started\r\n");
+//			mLastUpdateTime = time;
+//			IplImage* pImage = gCameraCapture.getFrame();
+//			gCameraCapture.save(NULL,pImage);
+//			if(gImageProc.isWadachiExist(pImage))
+//			{
+//				//?Q???O???m????
+//				gAvoidingState.setRunMode(true);
+//				mCurStep = STEP_AVOIDING;
+//			}else
+//			{
+//				mCurStep = STEP_RUNNING;
+//				gMotorDrive.startPID(0,MOTOR_MAX_POWER);
+//			}
+//		}
+//		break;
+//	case STEP_AVOIDING:
+//		if(!gAvoidingState.isActive())
+//		{
+//			Debug::print(LOG_SUMMARY, "Predicting: Avoiding finished\r\n");
+//			mCurStep = STEP_RUNNING;
+//			mLastUpdateTime = time;
+//		}
+//		break;
+//	}
+//}
+//bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
+//{
+//	if(args.size() == 2)
+//	{
+//		if(args[1].compare("enable") == 0)
+//		{
+//			mIsAvoidingEnable = true;
+//			return true;
+//		}
+//		if(args[1].compare("disable") == 0)
+//		{
+//			mIsAvoidingEnable = false;
+//			return true;
+//		}
+//	}
+//	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
+//	return false;
+//}
+//bool WadachiPredicting::isWorking(const struct timespec& time)
+//{
+//	return mIsAvoidingEnable && (mCurStep != STEP_RUNNING || (mCurStep == STEP_RUNNING && Time::dt(time,mLastUpdateTime) < 6));
+//}
+//WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false),mCurStep(STEP_RUNNING)
+//{
+//	setName("predicting");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//WadachiPredicting::~WadachiPredicting()
+//{
+//}
+/*
 bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -160,7 +160,7 @@ void Escaping::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWARD:
-		//バックを行う
+		//?o?b?N??s??
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
@@ -171,12 +171,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_AFTER_BACKWARD:
-		//再起動防止のため待機
+		//??N???h?~??????@
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			if(mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
 			{
-				//ランダム移行
+				//?????_????s
 				Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_RANDOM;
@@ -185,19 +185,19 @@ void Escaping::onUpdate(const struct timespec& time)
 			}
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
-			//起き上がり動作を行う
+			//?N???オ?蓮???s??
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			if(gImageProc.isSky(pImage))gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
-		//画像撮影用に起き上がり動作を行い、数秒待機する
-		if(gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
-		if(Time::dt(time,mLastUpdateTime) > 2)//起き上がり完了後、一定時間が経過していたら
+		//???B?e?p??N???オ?蓮???s???A???b??@????
+		if(gWakingState.isActive())mLastUpdateTime = time;//?N???オ?蓮?????@????
+		if(Time::dt(time,mLastUpdateTime) > 2)//?N???オ??????A??莞????o??????????
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
-			//画像撮影動作を行う
+			//???B?e?????s??
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0);
@@ -205,7 +205,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA:
-		//画像処理を行い、今後の行動を決定する
+		//????????s???A?????s????????
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
@@ -218,7 +218,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		//画像処理の結果、回転する必要があった場合
+		//???????????A??]????K?v??????????
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -228,7 +228,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_FORWARD:
-		//画像処理の結果、直進する必要があった場合
+		//???????????A???i????K?v??????????
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100);
@@ -237,7 +237,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN_HERE:
-		//画像処理の結果、その場回転する必要があった場合
+		//???????????A??????]????K?v??????????
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -247,13 +247,13 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_RANDOM:
-		//ランダム動作
+		//?????_??????
 		if(Time::dt(time,mLastUpdateTime) >= 5)
 		{
 			++mEscapingTriedCount;
 			if(mEscapingTriedCount > ESCAPING_MAX_RANDOM_ESCAPING_COUNT)
 			{
-				//ランダム移行
+				//?????_????s
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_BACKWARD;
 				break;
@@ -270,19 +270,19 @@ void Escaping::stuckMoveRandom()
 	switch(mCurRandomStep)
 	{
 	case RANDOM_STEP_BACKWARD:
-		//バックを行う
+		//?o?b?N??s??
 		Debug::print(LOG_SUMMARY, "Escaping(random): backward\r\n");
 		mCurRandomStep = RANDOM_STEP_TURN;
 		gMotorDrive.drive(100,-100);
 		break;
 	case RANDOM_STEP_TURN:
-		//その場回転を行う
+		//??????]??s??
 		Debug::print(LOG_SUMMARY, "Escaping(random): turning\r\n");
 		mCurRandomStep = RANDOM_STEP_FORWARD;
 		gMotorDrive.drive(100);
 		break;
 	case RANDOM_STEP_FORWARD:
-		//前進を行う
+		//?O?i??s??
 		Debug::print(LOG_SUMMARY, "Escaping(random): forward\r\n");
 		mCurRandomStep = RANDOM_STEP_BACKWARD;
 		gMotorDrive.drive(-100);
@@ -308,7 +308,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 			gTurningState.setDirection(true);
 			mCurStep = STEP_CAMERA_TURN_HERE;
 			break;
-		default://カメラ使えなかった
+		default://?J?????g?????????
 			mCurStep = STEP_RANDOM;
 			mCurRandomStep = RANDOM_STEP_FORWARD;
 			break;
@@ -419,33 +419,33 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	//case STEP_BACKWARD:
-	//	//バックを行う
+	//	//?o?b?N??s??
 	//	if(Time::dt(time,mLastUpdateTime) >= 3)
 	//	{
 	//		mCurStep = STEP_TURN;
 	//		mLastUpdateTime = time;
 	//		gMotorDrive.drive(100,-100);
-	//		gStabiServo.start(0);					//スタビたたむ
+	//		gStabiServo.start(0);					//?X?^?r??????
 	//	}
 	//	break;
 	case STEP_TURN:
-		//その場回転を行う
+		//??????]??s??
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100);
-			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
+			gStabiServo.start(STABI_BASE_ANGLE);	//?X?^?r?L???
 		}
 		break;
 	case STEP_FORWARD:
-		//前進を行う
+		//?O?i??s??
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_TURN;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100,-100);
-			gStabiServo.start(STABI_BASE_ANGLE);	//スタビ伸ばす
+			gStabiServo.start(STABI_BASE_ANGLE);	//?X?^?r?L???
 		}
 		break;
 	}
@@ -458,14 +458,14 @@ EscapingRandom::EscapingRandom()
 EscapingRandom::~EscapingRandom()
 {
 }
-
+*/
 bool Waking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	mCurStep = STEP_START;
 
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(mStartPower);		//モータ出力
+	gMotorDrive.drive(-mStartPower);	//8-9 chou マイナスにし??//???[?^?o??
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -473,17 +473,18 @@ bool Waking::onInit(const struct timespec& time)
 	mWakeRetryCount = 0;
 	gBackStabiServo.setRunMode(true);
 	gSoftCameraServo.setRunMode(true);
+	//backstabi ??? backstabi????
 
-	//backstabi 追加 backstabiを下ろす
+	gBackStabiServo.moveHold();  //
 
-	gBackStabiServo.moveHold();
-
-	//softcameraservo 追加 とりあいず　うこがないで
+	//softcameraservo ??? ????????@???????????
 	gSoftCameraServo.moveHold();
 
-	//前stabi とりあいず　stop
-	gStabiServo.stop();
-	gStabiServo.start(STABI_WAKING_ANGLE);
+	//?Ostabi ????????@stop
+	//8-9 gStabiServo.stop();
+	
+	//8-9 comment out gStabiServo.start(STABI_FOLD_ANGLE);
+	gStabiServo.start(0.2);//8-9
 	return true;
 }
 void Waking::onClean()
@@ -495,112 +496,125 @@ void Waking::onUpdate(const struct timespec& time)
 {
 	double power;
 	const static double WAKING_THRESHOLD = 200;
-	switch(mCurStep)//起き上がり開始が検知された場合
+	switch(mCurStep)//?N???オ??J?n?????m??????
 	{
-	case STEP_STOP:
-		if(Time::dt(time,mLastUpdateTime) > 2)//2秒まわしても着地が検知されない場合はあきらめる
-		{
-			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
-			setRunMode(false);
-			gMotorDrive.drive(0);
-		}
-		if(gAccelerationSensor.getPhi() < mAngleThreshold)	//角度が一定以下になったら着地と判定(加速度センサを採用)
-		{
-			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
-			gBuzzer.start(30,20,2);
-			mLastUpdateTime = time;
-			mCurStep = STEP_VERIFY;
-			gMotorDrive.drive(0);
-
-		}
-
-		//回転した角度に応じてモータの出力を変化させる
-		//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
-		//gMotorDrive.drive(power);
-		break;
-
-	double dt;
-	case STEP_START:
-		if(Time::dt(time,mLastUpdateTime) > 0.5)//一定時間回転が検知されない場合→回転不可能と判断
-		{
-			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
-			mLastUpdateTime = time;
-			mCurStep = STEP_VERIFY;
-			gMotorDrive.drive(0);
-		}
-		if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//回転が検知された場合→起き上がり開始したと判断(ジャイロを採用) waking_threshold =200
-		{
-			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
-			
-			gBuzzer.start(30,20,2);
-			mLastUpdateTime = time;
-			mCurStep = STEP_DEACCELERATE;
-					}
-		break;
-
-	case STEP_DEACCELERATE:	//ゆっくり減速する
-		dt = Time::dt(time, mLastUpdateTime);
-//if (dt>0.7){
-//gBackStabiServo.moveRelease();
-//}
-        if(dt > mDeaccelerateDuration)
-        {
-			Debug::print(LOG_SUMMARY, "Waking Deaccelerate finished!\r\n");
-			gBuzzer.start(30,20,2);
-            mLastUpdateTime = time;
-	//gBackStabiServo.moveRelease();
-            mCurStep = STEP_VERIFY;
-            gMotorDrive.drive(0);
-        }
-		else
-		{
-
-			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2で割る*/)), 0);
-			gMotorDrive.drive(tmp_power);
-		}
-		break;
-
-	case STEP_VERIFY:
-		//起き上がりが成功したか否かを加速度センサで検証
-		if(Time::dt(time,mLastUpdateTime) <= 2.5)	//ローバの姿勢が安定するまで一定時間待つ
-		{
-			return;
-		}
-
-		if(gAccelerationSensor.getAz() > 0.0)
-		{
-			Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
-			gBuzzer.start(30,20,4);
-			setRunMode(false);
-			gBackStabiServo.moveRelease();
-
-			//起き上がったら、前stabi を下ろす
-			//chou---gStabiServo.start(STABI_WAKING_ANGLE);
-			gStabiServo.start(STABI_BASE_ANGLE); // 起き上がり成功したらスタビをベースの角度に戻す
-
-			gSoftCameraServo.moveRelease();
-
-		}
-		else
-		{
-			//gBackStabiServo.moveRelease();
-			gBackStabiServo.moveHold();
-			gStabiServo.start(STABI_WAKING_ANGLE);
-			mLastUpdateTime = time;
-			mCurStep = STEP_START;
-			mAngleOnBegin = gGyroSensor.getRvx();
-			power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//試行回数ごとにモータ出力を上げる
-			gMotorDrive.drive(power);
-
-			if(++mWakeRetryCount > WAKING_RETRY_COUNT)
+		case STEP_STOP:
+			if(Time::dt(time,mLastUpdateTime) > 2)//2?b????????n?????m?????????????????
 			{
-				Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+				Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 				setRunMode(false);
+				gMotorDrive.drive(0);
+			}
+			if(gAccelerationSensor.getPhi() < mAngleThreshold)	//?p?x????????????????n?????(?????x?Z???T???p)
+			{
+				Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
+				gBuzzer.start(30,20,2);
+				mLastUpdateTime = time;
+				mCurStep = STEP_VERIFY;
+				gMotorDrive.drive(0);
+
+			}
+
+			//??]?????p?x?????????[?^??o???ω???????
+			//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
+			//gMotorDrive.drive(power);
+			break;
+
+		double dt;
+		case STEP_START:
+			if(Time::dt(time,mLastUpdateTime) > 0.5)//??莞???]?????m????????????]?s??\????f
+			{
+				Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
+				mLastUpdateTime = time;
+				mCurStep = STEP_VERIFY;
+				gMotorDrive.drive(0);
+			}
+			if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//??]?????m?????????N???オ??J?n????????f(?W???C?????p) waking_threshold =200
+			{
+				Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
+				gBuzzer.start(30,20,2);
+				mLastUpdateTime = time;
+				//gStabiServo.start(0.2);
+				mCurStep = STEP_DEACCELERATE;
+			}
+			break;
+
+		case STEP_DEACCELERATE:	//??????茸??????
+			dt = Time::dt(time, mLastUpdateTime);
+
+
+			//gStabiServo.start(0.2);//8-9
+			//gBackStabiServo.moveRelease();
+		if(dt > mDeaccelerateDuration)
+			{
+				Debug::print(LOG_SUMMARY, "Waking Deaccelerate finished!\r\n");
+				gBuzzer.start(30,20,2);
+				mLastUpdateTime = time;
+				mCurStep = STEP_VERIFY;
+				gMotorDrive.drive(0);
+			}
+			else
+			{
+				int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2?????*/)), 0);
+
+				tmp_power=-tmp_power;
+				gMotorDrive.drive(tmp_power);
+			}
+			break;
+
+		case STEP_VERIFY:	
+			//?N???オ?肪???????????????????x?Z???T?????
+			if(Time::dt(time,mLastUpdateTime) <= 2.5)	//???[?o??p?????????????莞????
+			{
 				return;
 			}
-			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
-		}
-		break;
+
+			if(gAccelerationSensor.getAz() > 0.0)
+			{
+				Debug::print(LOG_SUMMARY,"Waking Successed!\r\n");
+				gBuzzer.start(30,20,4);
+
+				gBackStabiServo.moveRelease();
+
+				//?N???オ??????A?Ostabi ????
+				//gStabiServo.start(STABI_WAKING_ANGLE);
+				gStabiServo.start(STABI_BASE_ANGLE); // ?N???オ?萬????????X?^?r??x?[?X??p?x????
+
+				gSoftCameraServo.moveRelease();
+				mLastUpdateTime = time;
+				mCurStep = STEP_LAST;
+			}
+			else
+			{
+				gBackStabiServo.moveHold();
+				//8-9 gStabiServo.start(STABI_FOLD_ANGLE);
+				mLastUpdateTime = time;
+				mCurStep = STEP_START;
+				mAngleOnBegin = gGyroSensor.getRvx();
+				power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//???s?????????[?^?o???グ??
+				power=-power;
+				gMotorDrive.drive(power);
+
+				if(++mWakeRetryCount > WAKING_RETRY_COUNT)
+				{
+					Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+					setRunMode(false);
+					return;
+				}
+				Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n",mWakeRetryCount,WAKING_RETRY_COUNT,power);
+			}
+			break;
+
+		case STEP_LAST:
+			if(Time::dt(time,mLastUpdateTime) >0.5)
+			{
+				gSoftCameraServo.start(15);
+			}
+			if(Time::dt(time,mLastUpdateTime) >1.0)
+			{
+				gSoftCameraServo.stop();
+				setRunMode(false);
+			}
 	}
 }
 bool Waking::onCommand(const std::vector<std::string>& args)
@@ -680,125 +694,125 @@ Waking::~Waking()
 {
 }
 
-bool Turning::onInit(const struct timespec& time)
-{
-	mTurnPower = 0;
-	gGyroSensor.setRunMode(true);
-	mAngle = gGyroSensor.getRz();
-	mLastUpdateTime = time;
-	return true;
-}
-void Turning::onUpdate(const struct timespec& time)
-{
-	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
-	if(Time::dt(time,mLastUpdateTime) >= 5 || turnedAngle > 15)
-	{
-		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
-		gMotorDrive.drive(0);
-		setRunMode(false);
-	}else
-	{
-		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
-		else gMotorDrive.drive(mTurnPower,-mTurnPower);
-		if(turnedAngle < 5)mTurnPower += 0.1;
-	}
-}
-void Turning::setDirection(bool left)
-{
-	mIsTurningLeft = left;
-}
-Turning::Turning()
-{
-	setName("turning");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-Turning::~Turning()
-{
-}
+//bool Turning::onInit(const struct timespec& time)
+//{
+//	mTurnPower = 0;
+//	gGyroSensor.setRunMode(true);
+//	mAngle = gGyroSensor.getRz();
+//	mLastUpdateTime = time;
+//	return true;
+//}
+//void Turning::onUpdate(const struct timespec& time)
+//{
+//	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
+//	if(Time::dt(time,mLastUpdateTime) >= 5 || turnedAngle > 15)
+//	{
+//		Debug::print(LOG_SUMMARY, "Turning: Detected turning\r\n");
+//		gMotorDrive.drive(0);
+//		setRunMode(false);
+//	}else
+//	{
+//		if(mIsTurningLeft)gMotorDrive.drive(-mTurnPower,mTurnPower);
+//		else gMotorDrive.drive(mTurnPower,-mTurnPower);
+//		if(turnedAngle < 5)mTurnPower += 0.1;
+//	}
+//}
+//void Turning::setDirection(bool left)
+//{
+//	mIsTurningLeft = left;
+//}
+//Turning::Turning()
+//{
+//	setName("turning");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//Turning::~Turning()
+//{
+//}
+//
+//bool Avoiding::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	if(!gEscapingState.isActive())gMotorDrive.drive(0,50);
+//	mAngle = gGyroSensor.getRz();
+//	mCurStep = STEP_TURN;
+//	return true;
+//}
+//void Avoiding::onUpdate(const struct timespec& time)
+//{
+//	if(gEscapingState.isActive())
+//	{
+//		Debug::print(LOG_SUMMARY, "Avoiding: Escaping is already running. Avoiding Canceled!\r\n");
+//		setRunMode(false);
+//	}
+//	switch(mCurStep)
+//	{
+//	case STEP_TURN:
+//		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 45)
+//		{
+//			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
+//			mLastUpdateTime = time;
+//			gMotorDrive.startPID(10,MOTOR_MAX_POWER);
+//			mCurStep = STEP_FORWARD;
+//		}
+//		break;
+//	case STEP_FORWARD:
+//		if(Time::dt(time,mLastUpdateTime) > 4)
+//		{
+//			Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
+//			setRunMode(false);
+//		}
+//		break;
+//	}
+//}
+//Avoiding::Avoiding()
+//{
+//	setName("avoiding");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//Avoiding::~Avoiding()
+//{
+//}
 
-bool Avoiding::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	if(!gEscapingState.isActive())gMotorDrive.drive(0,50);
-	mAngle = gGyroSensor.getRz();
-	mCurStep = STEP_TURN;
-	return true;
-}
-void Avoiding::onUpdate(const struct timespec& time)
-{
-	if(gEscapingState.isActive())
-	{
-		Debug::print(LOG_SUMMARY, "Avoiding: Escaping is already running. Avoiding Canceled!\r\n");
-		setRunMode(false);
-	}
-	switch(mCurStep)
-	{
-	case STEP_TURN:
-		if(Time::dt(time,mLastUpdateTime) > 5 || abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle)) > 45)
-		{
-			Debug::print(LOG_SUMMARY, "Avoiding: forwarding\r\n");
-			mLastUpdateTime = time;
-			gMotorDrive.startPID(10,MOTOR_MAX_POWER);
-			mCurStep = STEP_FORWARD;
-		}
-		break;
-	case STEP_FORWARD:
-		if(Time::dt(time,mLastUpdateTime) > 4)
-		{
-			Debug::print(LOG_SUMMARY, "Avoiding: finished\r\n");
-			setRunMode(false);
-		}
-		break;
-	}
-}
-Avoiding::Avoiding()
-{
-	setName("avoiding");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-Avoiding::~Avoiding()
-{
-}
-
-bool PictureTaking::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gCameraCapture.setRunMode(true);
-	gBuzzer.setRunMode(true);
-	gWakingState.setRunMode(true);
-	mStepCount = 0;
-	return true;
-}
-void PictureTaking::onUpdate(const struct timespec& time)
-{
-	if(gWakingState.isActive())return;
-	if(Time::dt(time,mLastUpdateTime) > 1)
-	{
-		mLastUpdateTime = time;
-		++mStepCount;
-		gBuzzer.start(mStepCount > 25 ? 30 : 10);
-
-		if(mStepCount == 25)
-		{
-			gCameraCapture.startWarming();
-		}
-		if(mStepCount >= 30)
-		{
-			Debug::print(LOG_SUMMARY, "Say cheese!\r\n");
-			setRunMode(false);
-			gBuzzer.start(300);
-			gCameraCapture.save();
-		}
-	}
-}
-PictureTaking::PictureTaking() : mStepCount(0)
-{
-	setName("kinen");
-	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
-}
-PictureTaking::~PictureTaking()
-{
-}
+//bool PictureTaking::onInit(const struct timespec& time)
+//{
+//	mLastUpdateTime = time;
+//	gCameraCapture.setRunMode(true);
+//	gBuzzer.setRunMode(true);
+//	gWakingState.setRunMode(true);
+//	mStepCount = 0;
+//	return true;
+//}
+//void PictureTaking::onUpdate(const struct timespec& time)
+//{
+//	if(gWakingState.isActive())return;
+//	if(Time::dt(time,mLastUpdateTime) > 1)
+//	{
+//		mLastUpdateTime = time;
+//		++mStepCount;
+//		gBuzzer.start(mStepCount > 25 ? 30 : 10);
+//
+//		if(mStepCount == 25)
+//		{
+//			gCameraCapture.startWarming();
+//		}
+//		if(mStepCount >= 30)
+//		{
+//			Debug::print(LOG_SUMMARY, "Say cheese!\r\n");
+//			setRunMode(false);
+//			gBuzzer.start(300);
+//			gCameraCapture.save();
+//		}
+//	}
+//}
+//PictureTaking::PictureTaking() : mStepCount(0)
+//{
+//	setName("kinen");
+//	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+//}
+//PictureTaking::~PictureTaking()
+//{
+//}
 
 bool SensorLogging::onInit(const struct timespec& time)
 {
@@ -824,7 +838,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 	{
 		mLastUpdateTime = time;
 
-		//ログを保存
+		//???O????
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
 		if(gGPSSensor.isActive())write(mFilenameGPS,"%f,%f,%f\r\n",vec.x,vec.y,vec.z);
@@ -899,7 +913,7 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	}
 	mLastUpdateTime = time;
 
-	//加速度のログを保存
+	//?????x????O????
 	if(gAccelerationSensor.isActive())
 	{
 		write(mFilenameAcceleration,"%f,%f,%f\r\n",gAccelerationSensor.getAx(),gAccelerationSensor.getAy(),gAccelerationSensor.getAz());
@@ -915,8 +929,8 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	//エンコーダのログを保存
-	//レシオ比が変更されたらlogに反映する
+	//?G???R?[?_????O????
+	//???V?I????X??????log????f????
 	if(gMotorDrive.getPowerL() != mPrevPowerL || gMotorDrive.getPowerR() != mPrevPowerR)
 	{
 		mPrevPowerL = gMotorDrive.getPowerL();
@@ -925,11 +939,11 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY,	"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
 	}
 
-	//エンコーダパルスの差分値の取得
+	//?G???R?[?_?p???X??????l??擾
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
 	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
 
-	//回転数に換算
+	//??]??????Z
 	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
 	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
 
@@ -939,15 +953,15 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	}
 	write(mFilenameEncoder,	 	 "Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
 
-	//スタック判定のテスト
-	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//前回のパルス数が閾値以上
+	//?X?^?b?N?????e?X?g
+	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//?O???p???X?????l???
 	{
-		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//今回のパルス数が閾値以下
+		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//?????p???X?????l???
 		{
 			write(mFilenameEncoder,		"Stuck detected!");
 			if(mBuzzerFlag)
 			{
-				gBuzzer.start(200, 50 ,3);		//スタック判定(音を鳴らすのみ)
+				gBuzzer.start(200, 50 ,3);		//?X?^?b?N????(?????????)
 			}
 		}
 	}
@@ -973,7 +987,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		}
 		else if(args[1].compare("buzzer") == 0)
 		{
-			mBuzzerFlag = !mBuzzerFlag;	//flagの切り替え
+			mBuzzerFlag = !mBuzzerFlag;	//flag??????
 			if(mBuzzerFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Buzzer(ON)\r\n");
@@ -986,7 +1000,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		}
 		else if(args[1].compare("print") == 0)
 		{
-			mPrintFlag = !mPrintFlag;	//flagの切り替え
+			mPrintFlag = !mPrintFlag;	//flag??????
 			if(mPrintFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Print(ON)\r\n");
@@ -1054,32 +1068,32 @@ bool EncoderMonitoring::onInit(const struct timespec& time)
 	mCurrentMaxPulse = 0;
 	mPrevDeltaPulseL = 0;
 	mPrevDeltaPulseR = 0;
-	gMotorDrive.getDeltaPulseL();//パルスは差分なので取得してリセットしておく
+	gMotorDrive.getDeltaPulseL();//?p???X?????????擾??????Z?b?g???????
 	gMotorDrive.getDeltaPulseR();
 	return true;
 }
 void EncoderMonitoring::onUpdate(const struct timespec& time)
 {
-	//時間が経過していなければ処理を返す
+	//??????o???????????????????
 	if(Time::dt(time,mLastSamplingTime) < 1) return;
 
 	mLastSamplingTime = time;
 	
-	//スタック判定中ならreturn
-	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
+	//?X?^?b?N???????return
+/*	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 	{
 		mPrevDeltaPulseL = 0;
 		mPrevDeltaPulseR = 0;
 		return;
-	}
+	}*/
 
-	//エンコーダパルスの差分値の取得
+	//?G???R?[?_?p???X??????l??擾
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
 	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
 
 	if(mIsPrint) Debug::print(LOG_SUMMARY, "EncoderMonitoring: current pulse count(%llu %llu)\r\n",deltaPulseL,deltaPulseR);
 	
-	//外れ値は無視する
+	//?O??l?????????
 	if(removeError(deltaPulseL,deltaPulseR))
 	{
 		mPrevDeltaPulseL = 0;
@@ -1087,34 +1101,34 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		return;
 	}
 	
-	//閾値の計算
+	//?l??v?Z
 	unsigned long long pulse_threshold = std::min(mStoredPulse - mThresholdPulse, mUpperThreshold);
 	
-	//スタックチェック．前回が閾値以上で，今回が閾値以下ならスタック判定する
-	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//前回のパルス数が閾値以上
+	//?X?^?b?N?`?F?b?N?D?O???l????C?????l??????X?^?b?N??????
+	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//?O???p???X?????l???
 	{
-		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//今回のパルス数が閾値以下
+		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//?????p???X?????l???
 		{
-			//スタック判定
+			//?X?^?b?N????
 			gBuzzer.start(80, 10 ,6);
 			Debug::print(LOG_SUMMARY, "EncoderMonitoring: STUCK detected by pulse count(%llu %llu). Threshold:%llu\r\n",deltaPulseL,deltaPulseR,pulse_threshold);
-			gEscapingByStabiState.setRunMode(true);
+			//gEscapingByStabiState.setRunMode(true);
 			setRunMode(false);
 			return;
 		}
 	}
 	
-	//前回のパルスの更新
+	//?O???p???X??X?V
 	mPrevDeltaPulseL = deltaPulseL;
 	mPrevDeltaPulseR = deltaPulseR;
 	
-	//mCurrentMaxPulseより大きければmCurrentMaxPulseを更新する
+	//mCurrentMaxPulse?????????mCurrentMaxPulse??X?V????
 	if(std::max(deltaPulseL,deltaPulseR) > mCurrentMaxPulse)
 	{
 		mCurrentMaxPulse = std::max(deltaPulseL,deltaPulseR);
 	}
 	
-	//閾値の更新
+	//?l??X?V
 	if(Time::dt(time,mLastUpdateTime) >= mUpdateTimer)
 	{
 		updateThreshold();
@@ -1223,7 +1237,7 @@ monitoring show                   : show each value\r\n");
 }
 void EncoderMonitoring::updateThreshold()
 {
-	//パルス数があまりにも小さい(or大きい)場合は無視する
+	//?p???X????????????????(or????)???????????
 	if(mCurrentMaxPulse <= mLowerThreshold)
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. mCurrentMaxPulse(%llu) <= mLowerThreshold(%llu)\r\n",mCurrentMaxPulse,mLowerThreshold);
@@ -1235,7 +1249,7 @@ void EncoderMonitoring::updateThreshold()
 		return;
 	}
 	
-	//あまりにも大きく閾値が更新される場合は無視する
+	//???????????l???X?V???????????????
 	if((mStoredPulse >= mCurrentMaxPulse) && (mStoredPulse - mCurrentMaxPulse) >= mIgnoredDeltaLowerPulse) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. %llu >= mIgnoredDeltaLowerPulse(%llu))\r\n",(mStoredPulse - mCurrentMaxPulse),mIgnoredDeltaLowerPulse);
@@ -1253,7 +1267,7 @@ void EncoderMonitoring::updateThreshold()
 bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long pulseR)
 {
 	bool ret = false;
-	//Lをチェック
+	//L??`?F?b?N
 	if(pulseL == 0) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: [ERROR] Left pulse is zero...\r\n");
@@ -1265,7 +1279,7 @@ bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long
 		ret = true;
 	}
 	
-	//Rをチェック
+	//R??`?F?b?N
 	if(pulseR == 0)
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: [ERROR] Right pulse is zero...\r\n");

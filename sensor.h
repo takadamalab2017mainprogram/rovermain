@@ -50,10 +50,14 @@ private:
 	int mFileHandle;//winringPi i2c　のファイルハンドラ
 	VECTOR3 mPos;//座標(経度、緯度、高度)
 	int mSatelites;//補足した衛星の数
+	int mGpsTime;
+	float mGpsSpeed;
+	float mGpsCourse;
 	bool mIsNewData;//新しい座標データがあれば真
 	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
 
-	void showState();//補足した衛星数と座標を表示
+	void showState()const;//補足した衛星数と座標を表示
+	void sendState() ;//GPSを送信　８－７村上
 protected:
 	//GPSを初期化
 	virtual bool onInit(const struct timespec& time);
@@ -70,7 +74,11 @@ public:
 	bool get(VECTOR3& pos, bool disableNewFlag = false);
 
 	//前回の座標取得以降にデータが更新された場合は真
-	bool isNewPos();
+	bool isNewPos() const;
+	int getTime() const;
+	float getCourse() const;
+	float getSpeed() const;
+	void setMIsLogger(bool logging); //mIsLoggerを切り替える testing入ったら呼び出す
 
 	GPSSensor();
 	~GPSSensor();
