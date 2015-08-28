@@ -43,7 +43,7 @@ EncoderMonitoring gEncoderMonitoringState;
 //			IplImage* pImage = gCameraCapture.getFrame();
 //			gCameraCapture.save(NULL,pImage);
 //			if(!gImageProc.isWadachiExist(pImage))return;
-//			//�Q���O���m����
+//			//?Q???O???m????
 //			gCameraCapture.startWarming();
 //		}
 //		return;
@@ -87,7 +87,7 @@ EncoderMonitoring gEncoderMonitoringState;
 //			gCameraCapture.save(NULL,pImage);
 //			if(gImageProc.isWadachiExist(pImage))
 //			{
-//				//�Q���O���m����
+//				//?Q???O???m????
 //				gAvoidingState.setRunMode(true);
 //				mCurStep = STEP_AVOIDING;
 //			}else
@@ -160,7 +160,7 @@ void Escaping::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	case STEP_BACKWARD:
-		//�o�b�N��s��
+		//?o?b?N??s??
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
@@ -171,12 +171,12 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_AFTER_BACKWARD:
-		//�ċN���h�~�̂��ߑҋ@
+		//??N???h?~??????@
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			if(mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
 			{
-				//�����_���ڍs
+				//?????_????s
 				Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_RANDOM;
@@ -185,19 +185,19 @@ void Escaping::onUpdate(const struct timespec& time)
 			}
 			mCurStep = STEP_PRE_CAMERA;
 			mLastUpdateTime = time;
-			//�N���オ�蓮���s��
+			//?N???�I?�@???s??
 			IplImage* pImage = gCameraCapture.getFrame();
 			gCameraCapture.save(NULL,pImage);
 			if(gImageProc.isSky(pImage))gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_PRE_CAMERA:
-		//�摜�B�e�p�ɋN���オ�蓮���s���A���b�ҋ@����
-		if(gWakingState.isActive())mLastUpdateTime = time;//�N���オ�蓮�쒆�͑ҋ@����
-		if(Time::dt(time,mLastUpdateTime) > 2)//�N���オ�芮����A��莞�Ԃ��o�߂��Ă�����
+		//???B?e?p??N???�I?�@???s???A???b??@????
+		if(gWakingState.isActive())mLastUpdateTime = time;//?N???�I?�@?????@????
+		if(Time::dt(time,mLastUpdateTime) > 2)//?N???�I??????A??��????o??????????
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
-			//�摜�B�e�����s��
+			//???B?e?????s??
 			mCurStep = STEP_CAMERA;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(0);
@@ -205,7 +205,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA:
-		//�摜������s���A����̍s�����肷��
+		//????????s???A?????s????????
 		if(Time::dt(time,mLastUpdateTime) >= 2)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
@@ -218,7 +218,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN:
-		//�摜�����̌��ʁA��]����K�v���������ꍇ
+		//???????????A??]????K?v??????????
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -228,7 +228,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_FORWARD:
-		//�摜�����̌��ʁA���i����K�v���������ꍇ
+		//???????????A???i????K?v??????????
 		if(Time::dt(time,mLastUpdateTime) >= 10)
 		{
 			gMotorDrive.drive(-100);
@@ -237,7 +237,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_CAMERA_TURN_HERE:
-		//�摜�����̌��ʁA���̏��]����K�v���������ꍇ
+		//???????????A??????]????K?v??????????
 		if(Time::dt(time,mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 			gCameraCapture.startWarming();
@@ -247,13 +247,13 @@ void Escaping::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_RANDOM:
-		//�����_������
+		//?????_??????
 		if(Time::dt(time,mLastUpdateTime) >= 5)
 		{
 			++mEscapingTriedCount;
 			if(mEscapingTriedCount > ESCAPING_MAX_RANDOM_ESCAPING_COUNT)
 			{
-				//�����_���ڍs
+				//?????_????s
 				mEscapingTriedCount = 0;
 				mCurStep = STEP_BACKWARD;
 				break;
@@ -270,19 +270,19 @@ void Escaping::stuckMoveRandom()
 	switch(mCurRandomStep)
 	{
 	case RANDOM_STEP_BACKWARD:
-		//�o�b�N��s��
+		//?o?b?N??s??
 		Debug::print(LOG_SUMMARY, "Escaping(random): backward\r\n");
 		mCurRandomStep = RANDOM_STEP_TURN;
 		gMotorDrive.drive(100,-100);
 		break;
 	case RANDOM_STEP_TURN:
-		//���̏��]��s��
+		//??????]??s??
 		Debug::print(LOG_SUMMARY, "Escaping(random): turning\r\n");
 		mCurRandomStep = RANDOM_STEP_FORWARD;
 		gMotorDrive.drive(100);
 		break;
 	case RANDOM_STEP_FORWARD:
-		//�O�i��s��
+		//?O?i??s??
 		Debug::print(LOG_SUMMARY, "Escaping(random): forward\r\n");
 		mCurRandomStep = RANDOM_STEP_BACKWARD;
 		gMotorDrive.drive(-100);
@@ -308,7 +308,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 			gTurningState.setDirection(true);
 			mCurStep = STEP_CAMERA_TURN_HERE;
 			break;
-		default://�J�����g���Ȃ�����
+		default://?J?????g?????????
 			mCurStep = STEP_RANDOM;
 			mCurRandomStep = RANDOM_STEP_FORWARD;
 			break;
@@ -419,33 +419,33 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 	switch(mCurStep)
 	{
 	//case STEP_BACKWARD:
-	//	//�o�b�N��s��
+	//	//?o?b?N??s??
 	//	if(Time::dt(time,mLastUpdateTime) >= 3)
 	//	{
 	//		mCurStep = STEP_TURN;
 	//		mLastUpdateTime = time;
 	//		gMotorDrive.drive(100,-100);
-	//		gStabiServo.start(0);					//�X�^�r������
+	//		gStabiServo.start(0);					//?X?^?r??????
 	//	}
 	//	break;
 	case STEP_TURN:
-		//���̏��]��s��
+		//??????]??s??
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100);
-			gStabiServo.start(STABI_BASE_ANGLE);	//�X�^�r�L�΂�
+			gStabiServo.start(STABI_BASE_ANGLE);	//?X?^?r?L???
 		}
 		break;
 	case STEP_FORWARD:
-		//�O�i��s��
+		//?O?i??s??
 		if(Time::dt(time,mLastUpdateTime) >= 3)
 		{
 			mCurStep = STEP_TURN;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100,-100);
-			gStabiServo.start(STABI_BASE_ANGLE);	//�X�^�r�L�΂�
+			gStabiServo.start(STABI_BASE_ANGLE);	//?X?^?r?L???
 		}
 		break;
 	}
@@ -465,7 +465,7 @@ bool Waking::onInit(const struct timespec& time)
 	mCurStep = STEP_START;
 
 	gMotorDrive.setRunMode(true);
-	gMotorDrive.drive(-mStartPower);	//8-9 chou マイナスにし�?//���[�^�o��
+	gMotorDrive.drive(-mStartPower);	//8-9 chou �}�C�i�X�ɂ�??//???[?^?o??
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gStabiServo.setRunMode(true);
@@ -473,14 +473,14 @@ bool Waking::onInit(const struct timespec& time)
 	mWakeRetryCount = 0;
 	gBackStabiServo.setRunMode(true);
 	gSoftCameraServo.setRunMode(true);
-	//backstabi �ǉ� backstabi���낷
+	//backstabi ??? backstabi????
 
 	gBackStabiServo.moveHold();  //
 
-	//softcameraservo �ǉ� �Ƃ肠�����@�������Ȃ���
+	//softcameraservo ??? ????????@???????????
 	gSoftCameraServo.moveHold();
 
-	//�Ostabi �Ƃ肠�����@stop
+	//?Ostabi ????????@stop
 	//8-9 gStabiServo.stop();
 	
 	//8-9 comment out gStabiServo.start(STABI_FOLD_ANGLE);
@@ -496,16 +496,16 @@ void Waking::onUpdate(const struct timespec& time)
 {
 	double power;
 	const static double WAKING_THRESHOLD = 200;
-	switch(mCurStep)//�N���オ��J�n�����m���ꂽ�ꍇ
+	switch(mCurStep)//?N???�I??J?n?????m??????
 	{
 		case STEP_STOP:
-			if(Time::dt(time,mLastUpdateTime) > 2)//2�b�܂킵�Ă���n�����m����Ȃ��ꍇ�͂�����߂�
+			if(Time::dt(time,mLastUpdateTime) > 2)//2?b????????n?????m?????????????????
 			{
 				Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 				setRunMode(false);
 				gMotorDrive.drive(0);
 			}
-			if(gAccelerationSensor.getPhi() < mAngleThreshold)	//�p�x�����ȉ��ɂȂ����璅�n�Ɣ���(�����x�Z���T��̗p)
+			if(gAccelerationSensor.getPhi() < mAngleThreshold)	//?p?x????????????????n?????(?????x?Z???T???p)
 			{
 				Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
 				gBuzzer.start(30,20,2);
@@ -515,21 +515,21 @@ void Waking::onUpdate(const struct timespec& time)
 
 			}
 
-			//��]�����p�x�ɉ����ă��[�^�̏o�͂�ω�������
+			//??]?????p?x?????????[?^??o???��???????
 			//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
 			//gMotorDrive.drive(power);
 			break;
 
 		double dt;
 		case STEP_START:
-			if(Time::dt(time,mLastUpdateTime) > 0.5)//��莞�ԉ�]�����m����Ȃ��ꍇ����]�s�\�Ɣ��f
+			if(Time::dt(time,mLastUpdateTime) > 0.5)//??��???]?????m????????????]?s??\????f
 			{
 				Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
 				mLastUpdateTime = time;
 				mCurStep = STEP_VERIFY;
 				gMotorDrive.drive(0);
 			}
-			if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//��]�����m���ꂽ�ꍇ���N���オ��J�n�����Ɣ��f(�W���C����̗p) waking_threshold =200
+			if(abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//??]?????m?????????N???�I??J?n????????f(?W???C?????p) waking_threshold =200
 			{
 				Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 				gBuzzer.start(30,20,2);
@@ -539,7 +539,7 @@ void Waking::onUpdate(const struct timespec& time)
 			}
 			break;
 
-		case STEP_DEACCELERATE:	//������茸������
+		case STEP_DEACCELERATE:	//??????��??????
 			dt = Time::dt(time, mLastUpdateTime);
 
 
@@ -555,7 +555,7 @@ void Waking::onUpdate(const struct timespec& time)
 			}
 			else
 			{
-				int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2�Ŋ���*/)), 0);
+				int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2?????*/)), 0);
 
 				tmp_power=-tmp_power;
 				gMotorDrive.drive(tmp_power);
@@ -563,8 +563,8 @@ void Waking::onUpdate(const struct timespec& time)
 			break;
 
 		case STEP_VERIFY:	
-			//�N���オ�肪�����������ۂ�������x�Z���T�Ō���
-			if(Time::dt(time,mLastUpdateTime) <= 2.5)	//���[�o�̎p�������肷��܂ň�莞�ԑ҂�
+			//?N???�I?�b???????????????????x?Z???T?????
+			if(Time::dt(time,mLastUpdateTime) <= 2.5)	//???[?o??p?????????????��????
 			{
 				return;
 			}
@@ -576,9 +576,9 @@ void Waking::onUpdate(const struct timespec& time)
 
 				gBackStabiServo.moveRelease();
 
-				//�N���オ������A�Ostabi ���낷
+				//?N???�I??????A?Ostabi ????
 				//gStabiServo.start(STABI_WAKING_ANGLE);
-				gStabiServo.start(STABI_BASE_ANGLE); // �N���オ�萬��������X�^�r��x�[�X�̊p�x�ɖ߂�
+				gStabiServo.start(STABI_BASE_ANGLE); // ?N???�I?��????????X?^?r??x?[?X??p?x????
 
 				gSoftCameraServo.moveRelease();
 				mLastUpdateTime = time;
@@ -591,7 +591,7 @@ void Waking::onUpdate(const struct timespec& time)
 				mLastUpdateTime = time;
 				mCurStep = STEP_START;
 				mAngleOnBegin = gGyroSensor.getRvx();
-				power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//���s�񐔂��ƂɃ��[�^�o�͂�グ��
+				power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//???s?????????[?^?o???�O??
 				power=-power;
 				gMotorDrive.drive(power);
 
@@ -838,7 +838,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 	{
 		mLastUpdateTime = time;
 
-		//���O��ۑ�
+		//???O????
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
 		if(gGPSSensor.isActive())write(mFilenameGPS,"%f,%f,%f\r\n",vec.x,vec.y,vec.z);
@@ -913,7 +913,7 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	}
 	mLastUpdateTime = time;
 
-	//�����x�̃��O��ۑ�
+	//?????x????O????
 	if(gAccelerationSensor.isActive())
 	{
 		write(mFilenameAcceleration,"%f,%f,%f\r\n",gAccelerationSensor.getAx(),gAccelerationSensor.getAy(),gAccelerationSensor.getAz());
@@ -929,8 +929,8 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	//�G���R�[�_�̃��O��ۑ�
-	//���V�I�䂪�ύX���ꂽ��log�ɔ��f����
+	//?G???R?[?_????O????
+	//???V?I????X??????log????f????
 	if(gMotorDrive.getPowerL() != mPrevPowerL || gMotorDrive.getPowerR() != mPrevPowerR)
 	{
 		mPrevPowerL = gMotorDrive.getPowerL();
@@ -939,11 +939,11 @@ void MovementLogging::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY,	"Ratio Power has been changed!(%f, %f)\r\n", mPrevPowerL, mPrevPowerR);
 	}
 
-	//�G���R�[�_�p���X�̍����l�̎擾
+	//?G???R?[?_?p???X??????l??��
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
 	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();	
 
-	//��]���Ɋ��Z
+	//??]??????Z
 	unsigned long long rotationsL = MotorEncoder::convertRotation(deltaPulseL);
 	unsigned long long rotationsR = MotorEncoder::convertRotation(deltaPulseR);
 
@@ -953,15 +953,15 @@ void MovementLogging::onUpdate(const struct timespec& time)
 	}
 	write(mFilenameEncoder,	 	 "Pulse: %llu,%llu, Rotation: %llu,%llu\r\n",deltaPulseL,deltaPulseR,rotationsL,rotationsR);
 
-	//�X�^�b�N����̃e�X�g
-	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//�O��̃p���X����臒l�ȏ�
+	//?X?^?b?N?????e?X?g
+	if(mPrevDeltaPulseL >= STUCK_ENCODER_PULSE_THRESHOLD && mPrevDeltaPulseR >= STUCK_ENCODER_PULSE_THRESHOLD)	//?O???p???X?????l???
 	{
-		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//����̃p���X����臒l�ȉ�
+		if(deltaPulseL < STUCK_ENCODER_PULSE_THRESHOLD && deltaPulseR < STUCK_ENCODER_PULSE_THRESHOLD)			//?????p???X?????l???
 		{
 			write(mFilenameEncoder,		"Stuck detected!");
 			if(mBuzzerFlag)
 			{
-				gBuzzer.start(200, 50 ,3);		//�X�^�b�N����(����炷�̂�)
+				gBuzzer.start(200, 50 ,3);		//?X?^?b?N????(?????????)
 			}
 		}
 	}
@@ -987,7 +987,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		}
 		else if(args[1].compare("buzzer") == 0)
 		{
-			mBuzzerFlag = !mBuzzerFlag;	//flag�̐؂�ւ�
+			mBuzzerFlag = !mBuzzerFlag;	//flag??????
 			if(mBuzzerFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Buzzer(ON)\r\n");
@@ -1000,7 +1000,7 @@ bool MovementLogging::onCommand(const std::vector<std::string>& args)
 		}
 		else if(args[1].compare("print") == 0)
 		{
-			mPrintFlag = !mPrintFlag;	//flag�̐؂�ւ�
+			mPrintFlag = !mPrintFlag;	//flag??????
 			if(mPrintFlag)
 			{
 				Debug::print(LOG_PRINT,"Command Executed! Print(ON)\r\n");
@@ -1068,18 +1068,18 @@ bool EncoderMonitoring::onInit(const struct timespec& time)
 	mCurrentMaxPulse = 0;
 	mPrevDeltaPulseL = 0;
 	mPrevDeltaPulseR = 0;
-	gMotorDrive.getDeltaPulseL();//�p���X�͍����Ȃ̂Ŏ擾���ă��Z�b�g���Ă���
+	gMotorDrive.getDeltaPulseL();//?p???X?????????��??????Z?b?g???????
 	gMotorDrive.getDeltaPulseR();
 	return true;
 }
 void EncoderMonitoring::onUpdate(const struct timespec& time)
 {
-	//���Ԃ��o�߂��Ă��Ȃ���Ώ�����Ԃ�
+	//??????o???????????????????
 	if(Time::dt(time,mLastSamplingTime) < 1) return;
 
 	mLastSamplingTime = time;
 	
-	//�X�^�b�N���蒆�Ȃ�return
+	//?X?^?b?N???????return
 /*	if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 	{
 		mPrevDeltaPulseL = 0;
@@ -1087,13 +1087,13 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		return;
 	}*/
 
-	//�G���R�[�_�p���X�̍����l�̎擾
+	//?G???R?[?_?p???X??????l??��
 	unsigned long long deltaPulseL = gMotorDrive.getDeltaPulseL();
 	unsigned long long deltaPulseR = gMotorDrive.getDeltaPulseR();
 
 	if(mIsPrint) Debug::print(LOG_SUMMARY, "EncoderMonitoring: current pulse count(%llu %llu)\r\n",deltaPulseL,deltaPulseR);
 	
-	//�O��l�͖�������
+	//?O??l?????????
 	if(removeError(deltaPulseL,deltaPulseR))
 	{
 		mPrevDeltaPulseL = 0;
@@ -1101,15 +1101,15 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		return;
 	}
 	
-	//臒l�̌v�Z
+	//?l??v?Z
 	unsigned long long pulse_threshold = std::min(mStoredPulse - mThresholdPulse, mUpperThreshold);
 	
-	//�X�^�b�N�`�F�b�N�D�O��臒l�ȏ�ŁC����臒l�ȉ��Ȃ�X�^�b�N���肷��
-	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//�O��̃p���X����臒l�ȏ�
+	//?X?^?b?N?`?F?b?N?D?O???l????C?????l??????X?^?b?N??????
+	if(mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//?O???p???X?????l???
 	{
-		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//����̃p���X����臒l�ȉ�
+		if(deltaPulseL < pulse_threshold || deltaPulseR < pulse_threshold)			//?????p???X?????l???
 		{
-			//�X�^�b�N����
+			//?X?^?b?N????
 			gBuzzer.start(80, 10 ,6);
 			Debug::print(LOG_SUMMARY, "EncoderMonitoring: STUCK detected by pulse count(%llu %llu). Threshold:%llu\r\n",deltaPulseL,deltaPulseR,pulse_threshold);
 			//gEscapingByStabiState.setRunMode(true);
@@ -1118,17 +1118,17 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 		}
 	}
 	
-	//�O��̃p���X�̍X�V
+	//?O???p???X??X?V
 	mPrevDeltaPulseL = deltaPulseL;
 	mPrevDeltaPulseR = deltaPulseR;
 	
-	//mCurrentMaxPulse���傫�����mCurrentMaxPulse��X�V����
+	//mCurrentMaxPulse?????????mCurrentMaxPulse??X?V????
 	if(std::max(deltaPulseL,deltaPulseR) > mCurrentMaxPulse)
 	{
 		mCurrentMaxPulse = std::max(deltaPulseL,deltaPulseR);
 	}
 	
-	//臒l�̍X�V
+	//?l??X?V
 	if(Time::dt(time,mLastUpdateTime) >= mUpdateTimer)
 	{
 		updateThreshold();
@@ -1237,7 +1237,7 @@ monitoring show                   : show each value\r\n");
 }
 void EncoderMonitoring::updateThreshold()
 {
-	//�p���X�������܂�ɂ������(or�傫��)�ꍇ�͖�������
+	//?p???X????????????????(or????)???????????
 	if(mCurrentMaxPulse <= mLowerThreshold)
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. mCurrentMaxPulse(%llu) <= mLowerThreshold(%llu)\r\n",mCurrentMaxPulse,mLowerThreshold);
@@ -1249,7 +1249,7 @@ void EncoderMonitoring::updateThreshold()
 		return;
 	}
 	
-	//���܂�ɂ�傫��臒l���X�V�����ꍇ�͖�������
+	//???????????l???X?V???????????????
 	if((mStoredPulse >= mCurrentMaxPulse) && (mStoredPulse - mCurrentMaxPulse) >= mIgnoredDeltaLowerPulse) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: threshold update is ignored. %llu >= mIgnoredDeltaLowerPulse(%llu))\r\n",(mStoredPulse - mCurrentMaxPulse),mIgnoredDeltaLowerPulse);
@@ -1267,7 +1267,7 @@ void EncoderMonitoring::updateThreshold()
 bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long pulseR)
 {
 	bool ret = false;
-	//L��`�F�b�N
+	//L??`?F?b?N
 	if(pulseL == 0) 
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: [ERROR] Left pulse is zero...\r\n");
@@ -1279,7 +1279,7 @@ bool EncoderMonitoring::removeError(unsigned long long pulseL,unsigned long long
 		ret = true;
 	}
 	
-	//R��`�F�b�N
+	//R??`?F?b?N
 	if(pulseR == 0)
 	{
 		Debug::print(LOG_SUMMARY,"EncoderMonitoring: [ERROR] Right pulse is zero...\r\n");

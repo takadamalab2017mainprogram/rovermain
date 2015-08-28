@@ -63,6 +63,8 @@ bool Testing::onInit(const struct timespec& time)
 
 	return true;
 }
+
+
 bool Testing::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size() == 2)
@@ -128,7 +130,8 @@ testing sensor                    : check sensor values\r\n");
 Testing::Testing()
 {
 	setName("testing");
-	setPriority(UINT_MAX,UINT_MAX);
+//能代用のため　コメントアウト	setPriority(UINT_MAX,UINT_MAX);
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
 }
 Testing::~Testing()
 {
@@ -152,12 +155,24 @@ bool Waiting::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gLightSensor.setRunMode(true);
+	
 	//gXbeeSleep.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
 	//Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 	gSerialCommand.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトすること
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	
+	gParaServo.setRunMode(true);
+        gStabiServo.setRunMode(true);
+        gSoftCameraServo.setRunMode(true);
+        gBackStabiServo.setRunMode(true);
 
+
+        gParaServo.moveHold();
+        gStabiServo.start(STABI_FOLD_ANGLE);            //スタビを格納状態で固定
+        gSoftCameraServo.moveHold();
+        gBackStabiServo.moveHold();
+	
 	return true;
 }
 void Waiting::nextState()
@@ -382,6 +397,10 @@ bool Separating::onInit(const struct timespec& time)
 	mCurServoState = false;
 	mServoCount = 0;
 	mCurStep = STEP_SEPARATE;
+	gSoftCameraServo.moveHold();
+	//backstabi
+	gBackStabiServo.moveHold();
+
 	gSoftCameraServo.moveHold();
 	//backstabi
 	gBackStabiServo.moveHold();

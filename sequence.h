@@ -10,10 +10,10 @@
 //テスト用状態
 class Testing : public TaskBase
 {
+
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string>& args);
-
 	//次の状態に移行
 	void nextState();
 
