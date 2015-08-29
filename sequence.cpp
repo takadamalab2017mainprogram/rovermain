@@ -401,10 +401,6 @@ bool Separating::onInit(const struct timespec& time)
 	//backstabi
 	gBackStabiServo.moveHold();
 
-	gSoftCameraServo.moveHold();
-	//backstabi
-	gBackStabiServo.moveHold();
-
 	return true;
 }
 void Separating::onUpdate(const struct timespec& time)
