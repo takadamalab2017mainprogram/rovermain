@@ -329,7 +329,7 @@ void GPSSensor::showState() const
 }
 void GPSSensor::setMIsLogger(bool logging){
 	//mIsLoggerをセットしてログで知らせる
-	mIslogger = logging;
+	mIsLogger = logging;
 	if(mIsLogger)
 	{
 		Debug::print(LOG_SUMMARY, "GPS logger start!\r\n");
