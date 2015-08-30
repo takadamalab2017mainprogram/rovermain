@@ -72,7 +72,7 @@ bool Testing::onCommand(const std::vector<std::string>& args)
 		if(args[1].compare("sensor") == 0)
 		{
 			Debug::print(LOG_SUMMARY, "*** Sensor states ***\r\n");
-			
+
 			VECTOR3 vec;
 			gGPSSensor.get(vec);
 			if(gGPSSensor.isActive())Debug::print(LOG_SUMMARY, " GPS      (%f %f %f)\r\n",vec.x,vec.y,vec.z);
@@ -155,13 +155,13 @@ bool Waiting::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gLightSensor.setRunMode(true);
-	
+
 	//gXbeeSleep.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
 	//Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 	gSerialCommand.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトすること
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	
+
 	gParaServo.setRunMode(true);
         gStabiServo.setRunMode(true);
         gSoftCameraServo.setRunMode(true);
@@ -172,7 +172,7 @@ bool Waiting::onInit(const struct timespec& time)
         gStabiServo.start(STABI_FOLD_ANGLE);            //スタビを格納状態で固定
         gSoftCameraServo.moveHold();
         gBackStabiServo.moveHold();
-	
+
 	return true;
 }
 void Waiting::nextState()
@@ -184,7 +184,7 @@ void Waiting::nextState()
 
 	//次の状態を設定
 	gFallingState.setRunMode(true);
-	
+
 	Debug::print(LOG_SUMMARY, "Waiting Finished!\r\n");
 }
 void Waiting::onUpdate(const struct timespec& time)
@@ -227,8 +227,8 @@ bool Falling::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Falling... ");
 	Time::showNowTime();
-	
-        mOnInit=true;	
+
+        mOnInit=true;
 	mStartTime = mLastCheckTime = time;
 	mLastPressure = 0;
 	mContinuousPressureCount = 0;
@@ -330,7 +330,7 @@ void Falling::nextState()
 
 	//次の状態を設定
 	gSeparatingState.setRunMode(true);
-	
+
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
 }
 Falling::Falling() : mLastPressure(0),mLastMotorPulseL(0),mLastMotorPulseR(0),mContinuousPressureCount(0),mCoutinuousGyroCount(0),mContinuousMotorPulseCount(0)
@@ -350,7 +350,7 @@ bool Separating::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Separating... ");
 	Time::showNowTime();
-	
+
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -368,12 +368,12 @@ bool Separating::onInit(const struct timespec& time)
 
 	//録画停止処理　pid(process id)指定してkill
 	//pid読み込む
-	ifstream ifs("/home/pi/high-ball-server/video/video_pid");	
+	ifstream ifs("/home/pi/high-ball-server/video/video_pid");
 	string str, command;
 	if(ifs.good())
 	{
 		//pidファイルが読み込めた
-		
+
 		//pid指定して空撮処理をkill
 		//kill -9 [pid]
 		getline(ifs, str);
@@ -422,7 +422,7 @@ void Separating::onUpdate(const struct timespec& time)
 		{
 			gParaServo.moveHold();
 		}
-		
+
 		++mServoCount;
 		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
 
@@ -433,9 +433,9 @@ void Separating::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true); ///ここに起き上がり subseuence の　waking に書いている
-			
+
 		}
-		
+
 		break;
 
 	case STEP_PRE_PARA_JUDGE:
@@ -498,7 +498,7 @@ void Separating::nextState()
 
 	//次の状態を設定
 	gTestingState.setRunMode(true);
-	
+
 	Debug::print(LOG_SUMMARY, "Separating Finished!\r\n");
 }
 Separating::Separating() : mCurServoState(false),mServoCount(0)
@@ -518,7 +518,7 @@ Separating::~Separating()
 //bool Navigating::onInit(const struct timespec& time)
 //{
 //	Debug::print(LOG_SUMMARY, "Navigating...\r\n");
-//	
+//
 //	//必要なタスクを使用できるようにする
 //	TaskManager::getInstance()->setRunMode(false);
 //	setRunMode(true);
@@ -531,7 +531,7 @@ Separating::~Separating()
 //	gSensorLoggingState.setRunMode(true);
 //	gStabiServo.setRunMode(true);
 //	gEncoderMonitoringState.setRunMode(true);
-//	
+//
 //	gStabiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 //
 //	mLastNaviMoveCheckTime = time;
@@ -571,7 +571,7 @@ Separating::~Separating()
 //			mLastNaviMoveCheckTime = time;
 //		}
 //		mLastPos.push_back(currentPos);
-//	}	
+//	}
 //
 //	//ゴールとの距離を確認
 //	double distance = VECTOR3::calcDistanceXY(currentPos,mGoalPos);
@@ -639,7 +639,7 @@ Separating::~Separating()
 //			{
 //				//スタック脱出処理続行
 //			}
-//			else 
+//			else
 //			{
 //				//ローバーがひっくり返っている可能性があるため、しばらく前進する
 //				gMotorDrive.startPID(0 ,MOTOR_MAX_POWER);
@@ -675,7 +675,7 @@ Separating::~Separating()
 //		++it;
 //	}
 //	average /= mLastPos.size();
-//	
+//
 //	const static double THRESHOLD = 100 / DEGREE_2_METER;
 //	it = mLastPos.begin();
 //	while(it != mLastPos.end())
@@ -806,10 +806,10 @@ Separating::~Separating()
 //		//次の状態を設定
 //		gTestingState.setRunMode(true);
 //		gPictureTakingState.setRunMode(true);
-//	
+//
 //		gMotorDrive.drive(0);//念のため2回
 //		gMotorDrive.drive(0);
-//	
+//
 //		Time::showNowTime();
 //		Debug::print(LOG_SUMMARY, "Goal!\r\n");
 //	}
@@ -837,7 +837,7 @@ Separating::~Separating()
 //{
 //	Debug::print(LOG_SUMMARY, "Start Goal Detecting... ");
 //	Time::showNowTime();
-//	
+//
 //	//必要なタスクを使用できるようにする
 //	TaskManager::getInstance()->setRunMode(false);
 //	setRunMode(true);
@@ -895,7 +895,7 @@ Separating::~Separating()
 //	// 	return;
 //	// }
 //	double dt;
-//	
+//
 //	switch(mCurStep)
 //	{
 //	case STEP_STARTING:
@@ -915,27 +915,27 @@ Separating::~Separating()
 //		if( ( Time::dt(time,mLastUpdateTime) > mProcessFrequency && !mIsLastActionStraight ) || ( Time::dt(time,mLastUpdateTime) > mProcessFrequencyForGyro && mIsLastActionStraight ) )
 //		{
 //			Debug::print(LOG_SUMMARY, "Detecting: Approaching started\r\n");
-//			
+//
 //			//新しい位置を取得できていれば座標を表示する
 //			if(gGPSSensor.get(mCurrentPos,false))
 //			{
 //				mIsGPS = true;	//一度でもGPS座標取得に成功したらtrueに
 //				Debug::print(LOG_SUMMARY, "Detecting: Current Position:(%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);
 //			}
-//			
+//
 //			IplImage* pImage = gCameraCapture.getFrame();
 //			gCameraCapture.save(NULL,pImage);
-//			
+//
 //			if(pImage == NULL)//カメラが死んでるのでその場でゴール判定する
 //			{
 //				Debug::print(LOG_SUMMARY, "Detecting: Camera is not working...\r\n");
 //				nextState();
 //				return;
 //			}
-//			
+//
 //			double count = 0; //画像上の赤色の割合
 //			int x_pos = gImageProc.howColorGap(pImage, &count);
-//			
+//
 //            if( x_pos != INT_MAX )	//色検知したら
 //			{
 //				mLastUpdateTime = time;
@@ -945,7 +945,7 @@ Separating::~Separating()
 //					if(mIsGPS) Debug::print(LOG_SUMMARY, "Detecting: Control Finish at (%f %f)\r\n",mCurrentPos.x,mCurrentPos.y);//制御終了位置の座標を表示
 //					nextState();
 //				}
-//				else if ( count < mColorCount ) // もし，コーンから遠かったら 
+//				else if ( count < mColorCount ) // もし，コーンから遠かったら
 //				{
 //					Debug::print(LOG_SUMMARY, "Detecting: FAR count:%f%%\r\n", count);
 //					if ( x_pos < -mColorWidth )
@@ -973,7 +973,7 @@ Separating::~Separating()
 //						actCount = 0;
 //					}
 //				}
-//				else if( count > mColorCount ) // もし，コーンに近かったら 
+//				else if( count > mColorCount ) // もし，コーンに近かったら
 //				{
 //					Debug::print(LOG_SUMMARY, "Detecting: NEAR count:%f\r\n", count);
 //					if ( x_pos < -mColorWidth+20 )
@@ -1051,7 +1051,7 @@ Separating::~Separating()
 //	                    mTryCount++;
 //                	}
 //                }
-//                
+//
 //                mIsLastActionStraight = false;
 //			}
 //			mLastUpdateTime = time;
@@ -1094,7 +1094,7 @@ Separating::~Separating()
 //        {
 //            mLastUpdateTime = time;
 //            mCurStep = STEP_WAIT_FIRST;
-//            
+//
 //            gMotorDrive.drive(0);
 //			setMotorPower(0);
 //        }
@@ -1194,7 +1194,7 @@ Separating::~Separating()
 //{
 //	gDeltaPulseL = gMotorDrive.getDeltaPulseL();
 //	gDeltaPulseR = gMotorDrive.getDeltaPulseR();
-//	if(gPastDeltaPulseL > 0) 
+//	if(gPastDeltaPulseL > 0)
 //	{
 //		gDeltaPulseL = gPastDeltaPulseL - 800;
 //		gPastDeltaPulseL = 0;
@@ -1218,7 +1218,7 @@ Separating::~Separating()
 //		else
 //		{
 //			gThresholdHigh = gStraightThresholdHigh;
-//			gThresholdLow = gStraightThresholdLow;	
+//			gThresholdLow = gStraightThresholdLow;
 //		}
 //	}
 //	else
@@ -1359,7 +1359,7 @@ Separating::~Separating()
 //					gCurveThresholdLow = atof(args[4].c_str());
 //				}
 //			}
-//		}	
+//		}
 //		return true;
 //	}
 //	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
@@ -1386,10 +1386,10 @@ Separating::~Separating()
 //	//次の状態を設定
 //	gTestingState.setRunMode(true);
 //	gPictureTakingState.setRunMode(true);
-//	
+//
 //	gMotorDrive.drive(0);//念のため2回
 //	gMotorDrive.drive(0);
-//	
+//
 //	Debug::print(LOG_SUMMARY, "Detecting Finish! ");
 //	Time::showNowTime();
 //	Debug::print(LOG_SUMMARY, "Goal!\r\n");
@@ -1402,7 +1402,7 @@ Separating::~Separating()
 //	//前の状態に戻る
 //	gColorAccessingState.setRunMode(false);
 //	gNavigatingState.setRunMode(true);
-//	
+//
 //	Debug::print(LOG_SUMMARY, "Navigating Restart!\r\n");
 //}
 //bool ColorAccessing::timeCheck(const struct timespec& time)
@@ -1411,12 +1411,12 @@ Separating::~Separating()
 //	{
 //		mDetectingRetryCount++;
 //		Debug::print(LOG_SUMMARY, "ColorAccessing Timeout! try count: %d\r\n", mDetectingRetryCount);
-//		
+//
 //		if(mDetectingRetryCount >= COLOR_ACCESSING_MAX_RETRY_COUNT)//一定回数以上ナビ復帰を繰り返した場合はfalse
 //		{
 //			return false;
 //		}
-//		
+//
 //		Debug::print(LOG_SUMMARY, "Detecting: GO_BACK start!\r\n");
 //		mCurStep = STEP_GO_BACK;
 //		gMotorDrive.drive(-100);

@@ -29,10 +29,12 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 	mLastUpdatedTime = newTime;
 
 	//get gyro and accel using kalman-filter
-	VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI);
+	// VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for Gaia Team rover
+	VECTOR3 gyro(-gGyroSensor.getRvx() / 180 * M_PI, -gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for Gaia high-ball Team rover 3
 	VECTOR3 accelRaw;
 	bool useAccel = gAccelerationSensor.getAccel(accelRaw);
-	VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z);
+	// VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for Gaia Team rover
+	VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for high-ball Team rover 3
 	if(isIllegalAccel(accel))useAccel = false;
 
 	if(useAccel)
@@ -297,7 +299,7 @@ void PoseDetecting::updateUsingIMU(double dt, double gx, double gy, double gz, d
 	mEstimatedAngle = QUATERNION(q1, q2, q3, q0);
 	// Integrate rate of change of quaternion to yield quaternion
 	mEstimatedAngle += dotQuat * dt;
-	
+
 	// Normalise quaternion
 	mEstimatedAngle = mEstimatedAngle.normalize();
 }
@@ -318,4 +320,3 @@ PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVeloc
 PoseDetecting::~PoseDetecting()
 {
 }
-
