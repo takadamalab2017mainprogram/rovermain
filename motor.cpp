@@ -246,6 +246,27 @@ void MotorDrive::onUpdate(const struct timespec& time)
 	//最後の出力更新からの経過時間を取得
 	double dt = Time::dt(time,mLastUpdateTime);
 	mLastUpdateTime = time;
+	switch(mStabiScheduledMode)
+	{
+	case MOTOR_GO:
+		if( Time::dt(time,mCommandTime)>3.0)
+		{
+		gBackStabiServo.stop();
+		mStabiScheduledMode=NO_SCHEDULE;
+		}
+		
+		break;
+	case MOTOR_STOP:
+		if(Time::dt(time,mCommandTime)>2.0)
+		{
+		gBackStabiServo.stop();
+		mStabiScheduledMode=NO_SCHEDULE;
+		}
+		break;
+	default:
+		break;
+	}
+
 
 	switch(mDriveMode)
 	{
@@ -313,8 +334,10 @@ void MotorDrive::drivePID(double angle,int power)
 	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
 	mDriveMode = DRIVE_PID;
 }
-bool MotorDrive::onCommand(const std::vector<std::string>& args)
+bool MotorDrive::onCommand(const std::vector<std::string>& args/*oncommand にも時間制御したい　chou 8-28*/)
 {
+
+	
 	int size = args.size();
 	if(size == 1)
 	{
@@ -356,12 +379,14 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 			return true;
 		}else if(args[1].compare("go") == 0)
 		{
+			Time::get(mCommandTime);
+			mStabiScheduledMode=MOTOR_GO;
+
 			//前進withスタビ
 			gStabiServo.start(0.8);
 			gBackStabiServo.moveGo();
-			//drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
-			startPID(0,MOTOR_MAX_POWER);
-			//startPID(0,MOTOR_MAX_POWER*0.7);//8-9 PID 制御　モータードライバー回路の都合により マイナスつけたよ
+			//drive(motor_max_power,motor_max_power);
+			startPID(0,MOTOR_MAX_POWER*0.7);//8-9 PID 制御　モータードライバー回路の都合により マイナスつけたよ
 			// 8-9 PID制御のためコメントアウト　　drive(MOTOR_MAX_POWER*0.7,MOTOR_MAX_POWER*0.7); 
 			return true;
 		}else if(args[1].compare("back") == 0)
@@ -374,10 +399,17 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 			return true;
 		}else if(args[1].compare("stop")==0)
 		{
+			Time::get(mCommandTime);
+			mStabiScheduledMode=MOTOR_STOP;			
 			//ストップwithスタビ
 			gBackStabiServo.moveRelease();
+			//8-27 cho 姿勢が上向きなら、前スタビのちから抜く
+			//gBackStabiServo.stop();
 			gStabiServo.start(0.8);
 			drive(0,0);
+			
+			//if(Time::dt(time,mLastUpdateTime) >0.5)
+			//{gBackStabiServo.stop();}//0.5秒なったら　スタビ停止
 			return true;
 		}else if(args[1].compare("p") == 0)
 		{

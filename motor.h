@@ -96,8 +96,19 @@ private:
 			DRIVE_RATIO, //レシオ指定で制御する
 			DRIVE_PID,//PID制御による角度指定で制御する
 			DRIVE_PID_TURN,
+			DRIVE_GO,
+			DRIVE_BACK,
+			DRIVE_STOP
 		}DRIVE_MODE;
 		DRIVE_MODE mDriveMode;
+
+		typedef enum{
+		MOTOR_GO,
+		MOTOR_BACK,
+		MOTOR_STOP,
+		NO_SCHEDULE
+		}STABI_SCHEDULED_MODE;
+		STABI_SCHEDULED_MODE mStabiScheduledMode;	
 		int mRatioL,mRatioR;//レシオ比
 
 		//PID用パラメータ
@@ -107,10 +118,12 @@ private:
 		double mAngle;//目標角度
 		double mControlPower;//前回の操作量
 		int mDrivePower;//走行速度
-
-		//最後にモータ出力を更新した時刻
+//最後にモータ出力を更新した時刻 
 		struct timespec mLastUpdateTime;
+		struct timespec mCommandTime;
 protected:
+
+
 		//初期化
         virtual bool onInit(const struct timespec& time);
 		virtual void onClean();
@@ -118,7 +131,7 @@ protected:
 		virtual void onUpdate(const struct timespec& time);
 
 		//コマンド受付
-		virtual bool onCommand(const std::vector<std::string>& args);
+		virtual bool onCommand(const std::vector<std::string>& args/*chou 8-28 時間制御したい*/);
 
 		void updatePIDState(double p,double i,double d);
 		void updatePIDMove();
