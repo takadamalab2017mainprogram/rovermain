@@ -256,7 +256,7 @@ bool Falling::onInit(const struct timespec& time)
 
 	//空撮開始処理(端末から、バックグラウンド処理で空撮用コマンドを実行)
 	Debug::print(LOG_SUMMARY, "Start aerial recording\r\n");
-	std::system("python ../high-ball-server/video/record.py aerialvideo &");
+	system("python /home/high-ball-server/video/record.py aerialvideo &");
 
 	return true;
 }
