@@ -96,6 +96,7 @@ private:
 	//ドリフト誤差補正用
 	std::list<VECTOR3> mRVelHistory;//過去の角速度
 	VECTOR3 mRVelOffset;//サンプルあたりのドリフト誤差の推定値
+	double mCutOffThreshold;
 	bool mIsCalculatingOffset;//ドリフト誤差計算中フラグ
 protected:
 	//ジャイロセンサを初期化
@@ -155,7 +156,7 @@ public:
 	double getAx();
 	double getAy();
 	double getAz();
-	
+
 	double getTheta(); //XY
 	double getPsi(); //YZ
 	double getPhi(); //XZ
@@ -261,4 +262,3 @@ extern WebCamera gWebCamera;
 extern DistanceSensor gDistanceSensor;
 extern CameraCapture gCameraCapture;
 extern AccelerationSensor gAccelerationSensor;
-

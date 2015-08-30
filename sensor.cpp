@@ -370,7 +370,7 @@ void  GPSSensor::sendState()
 
 bool GyroSensor::onInit(const struct timespec& time)
 {
-	mRVel.x = mRVel.y = mRVel.z = 0; 
+	mRVel.x = mRVel.y = mRVel.z = 0;
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
 	memset(&mLastSampleTime,0,sizeof(mLastSampleTime));
 
@@ -466,6 +466,11 @@ void GyroSensor::onUpdate(const struct timespec& time)
 		//平均
 		newRv /= data_samples;
 
+		//ドリフト誤差修正 2015/08/30
+		newRv.x = abs(newRv.x) < mCutOffThreshold ? 0 : newRv.x;
+		newRv.y = abs(newRv.y) < mCutOffThreshold ? 0 : newRv.y;
+		newRv.z = abs(newRv.z) < mCutOffThreshold ? 0 : newRv.z;
+
 		//積分
 		if(mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0 )
 		{
@@ -492,7 +497,18 @@ bool GyroSensor::onCommand(const std::vector<std::string>& args)
 			return true;
 		}
 		return false;
-	}else if(args.size() == 5)
+	}
+	else if (args.size() == 3)
+	{
+		if (args[1].compare("cutoff") == 0)
+		{
+			mCutOffThreshold = atof(args[2].c_str());
+			Debug::print(LOG_SUMMARY, "Gyro: cutoff threshold is %f\r\n", mCutOffThreshold);
+			return true;
+		}
+		return false;
+	}
+	else if(args.size() == 5)
 	{
 		if(args[1].compare("calib") == 0)
 		{
@@ -571,7 +587,7 @@ void GyroSensor::normalize(VECTOR3& pos)
 	pos.y = normalize(pos.y);
 	pos.z = normalize(pos.z);
 }
-GyroSensor::GyroSensor() : mFileHandle(-1),mRVel(),mRAngle(),mRVelHistory(),mRVelOffset(),mIsCalculatingOffset(false)
+GyroSensor::GyroSensor() : mFileHandle(-1),mRVel(),mRAngle(),mRVelHistory(),mRVelOffset(), mCutOffThreshold(0.1),mIsCalculatingOffset(false)
 {
 	setName("gyro");
 	setPriority(TASK_PRIORITY_SENSOR,TASK_INTERVAL_GYRO);
