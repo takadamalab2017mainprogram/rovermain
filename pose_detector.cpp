@@ -30,11 +30,33 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 
 	//get gyro and accel using kalman-filter
 	// VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for Gaia Team rover
-	VECTOR3 gyro(-gGyroSensor.getRvx() / 180 * M_PI, -gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for Gaia high-ball Team rover 3
 	VECTOR3 accelRaw;
 	bool useAccel = gAccelerationSensor.getAccel(accelRaw);
 	// VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for Gaia Team rover
-	VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for high-ball Team rover 3
+
+	if (mRoverid == 1)
+	{
+		VECTOR3 gyro(gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for high-ball Team rover 1
+		VECTOR3 accel(-accelRaw.x, -accelRaw.y, accelRaw.z); // for high-ball Team rover 1
+
+	}
+	else if(mRoverid == 2)
+	{
+		VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for high-ball Team rover 2
+		VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for high-ball Team rover 2
+
+	}
+	else if(mRoverid == 3)
+	{
+		VECTOR3 gyro(-gGyroSensor.getRvx() / 180 * M_PI, -gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for high-ball Team rover 3
+		VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for high-ball Team rover 3
+	}
+	else
+	{
+		Debug::print(LOG_SUMMARY,"Please Write Rover ID in initialize.txt \r\n");
+			exit(-1);
+	}
+
 	if(isIllegalAccel(accel))useAccel = false;
 
 	if(useAccel)
@@ -156,6 +178,12 @@ bool PoseDetecting::onCommand(const std::vector<std::string>& args)
 		{
 			mAccelUsableRange = atof(args[2].c_str());
 			Debug::print(LOG_PRINT, "accel range: %f\r\n", mAccelUsableRange);
+			return true;
+		}
+		if(args[1].compare("roverid") == 0)
+		{
+			mRoverid = atoi(args[2].c_str());
+			Debug::print(LOG_PRINT, "Rover ID: %d\r\n", mRoverid);
 			return true;
 		}
 	}
@@ -311,7 +339,19 @@ double PoseDetecting::calcEncAngle(long long left, long long right)
 	return rotation;
 }
 
-PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVelocity(0), mLastEncL(0), mLastEncR(0), mAccelCoeff(0.3), mEncCoeff(0.05), mGpsCoeff(0.1), mAngleLPFCoeff(0.3), mAccelUsableRange(0.3), mFlipThreshold(60), mLieThreshold(60)
+PoseDetecting::PoseDetecting() :
+mEstimatedRelativeGpsCourse(0),
+ mEstimatedVelocity(0),
+ mLastEncL(0),
+ mLastEncR(0),
+ mAccelCoeff(0.3),
+ mEncCoeff(0.05),
+ mGpsCoeff(0.1),
+ mAngleLPFCoeff(0.3),
+ mAccelUsableRange(0.3),
+ mFlipThreshold(60),
+ mLieThreshold(60),
+ mmRoverid(0)
 {
 	setName("pose");
 	setPriority(TASK_PRIORITY_SENSOR + 1,TASK_INTERVAL_SENSOR);
