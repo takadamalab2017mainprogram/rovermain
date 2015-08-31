@@ -261,7 +261,7 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		{
 			mLastCheckTime = time;
 			showState();
-			sendState(); //座標を送信 8-7 村上
+			//sendState(); //座標を送信 8-7 村上
 		}
 	}
 }
@@ -272,7 +272,7 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	if (args.size() == 1)
 	{
 		showState();
-		sendState(); //座標を送信
+		//sendState(); //座標を送信
 
 		return true;
 	}
