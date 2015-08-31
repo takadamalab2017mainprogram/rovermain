@@ -33,23 +33,39 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 	VECTOR3 accelRaw;
 	bool useAccel = gAccelerationSensor.getAccel(accelRaw);
 	// VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for Gaia Team rover
-
+	VECTOR3 gyro;
+	VECTOR3 accel;
 	if (mRoverid == 1)
 	{
-		VECTOR3 gyro(gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for high-ball Team rover 1
-		VECTOR3 accel(-accelRaw.x, -accelRaw.y, accelRaw.z); // for high-ball Team rover 1
+		gyro.x = gGyroSensor.getRvx() / 180 * M_PI;
+		gyro.y = gGyroSensor.getRvy() / 180 * M_PI;
+		gyro.z = gGyroSensor.getRvz() / 180 * M_PI; //for high-ball Team rover 1
+
+		accel.x = -accelRaw.x;
+		accel.y = -accelRaw.y;
+		accel.z = accelRaw.z; // for high-ball Team rover 1
 
 	}
 	else if(mRoverid == 2)
 	{
-		VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for high-ball Team rover 2
-		VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for high-ball Team rover 2
+		gyro.x = -gGyroSensor.getRvy() / 180 * M_PI;
+		gyro.y = gGyroSensor.getRvx() / 180 * M_PI;
+		gyro.z = gGyroSensor.getRvz() / 180 * M_PI; //for high-ball Team rover 1
+
+		accel.x = accelRaw.y;
+		accel.y = -accelRaw.x;
+		accel.z = accelRaw.z; // for high-ball Team rover 1
 
 	}
 	else if(mRoverid == 3)
 	{
-		VECTOR3 gyro(-gGyroSensor.getRvx() / 180 * M_PI, -gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for high-ball Team rover 3
-		VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for high-ball Team rover 3
+		gyro.x = -gGyroSensor.getRvx() / 180 * M_PI;
+		gyro.y = -gGyroSensor.getRvy() / 180 * M_PI;
+		gyro.z = gGyroSensor.getRvz() / 180 * M_PI; //for high-ball Team rover 1
+
+		accel.x = accelRaw.y;
+		accel.y = -accelRaw.x;
+		accel.z = accelRaw.z; // for high-ball Team rover 1
 	}
 	else
 	{
@@ -351,7 +367,7 @@ mEstimatedRelativeGpsCourse(0),
  mAccelUsableRange(0.3),
  mFlipThreshold(60),
  mLieThreshold(60),
- mmRoverid(0)
+ mRoverid(0)
 {
 	setName("pose");
 	setPriority(TASK_PRIORITY_SENSOR + 1,TASK_INTERVAL_SENSOR);
