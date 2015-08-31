@@ -322,6 +322,18 @@ float GPSSensor::getSpeed() const
 {
 	return mGpsSpeed;
 }
+double GPSSensor::getX() const
+{
+	return mPos.x;
+}
+double GPSSensor::getY() const
+{
+	return mPos.y;
+}
+double GPSSensor::getZ() const
+{
+	return mPos.z;
+}
 void GPSSensor::showState() const
 {
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\nYaw: %f\r\n", mSatelites, gPoseDetecting.getYawLPF());
