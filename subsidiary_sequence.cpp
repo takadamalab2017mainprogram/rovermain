@@ -1348,8 +1348,8 @@ void StatusSending::sendStatus()
 	//	sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d %f %f %f %f",mSatelites, mPos.x, mPos.y, mPos.z, gPoseDetecting.getYawLPF());//衛星数 x座標 Y座標 Z座標 方角
 	//}
 
-	//衛星数 X Y Z direction isFlip isLie
-	sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py pose %d %f %f %f %f %d %d &", gPoseDetecting.isFlip(), gPoseDetecting.isLie());
+	//衛星数 X Y Z direction isFlip isLie バックグラウンド処理
+	sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d %f %f %f %f %d %d &", gGPSSensor.getSatelites(), gGPSSensor.getX(), gGPSSensor.getY(), gGPSSensor.getZ(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
 
 	//system(send_gps_string);
 	//system(send_pose_string);

@@ -314,6 +314,10 @@ int GPSSensor::getTime() const
 {
 	return mGpsTime;
 }
+int GPSSensor::getSatelites() const
+{
+	return mSatelites;
+}
 float GPSSensor::getCourse() const
 {
 	return GyroSensor::normalize(mGpsCourse);

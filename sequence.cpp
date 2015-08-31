@@ -58,6 +58,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gCameraServo.setRunMode(true);
 
 	gPoseDetecting.setRunMode(true);
+	gStatusSending.setRunMode(true);
 
 	//ローバーステータスをサーバーに送り始める
 	//gGPSSensor.setMIsLogger(true);
