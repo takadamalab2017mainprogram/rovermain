@@ -221,6 +221,24 @@ public:
 	~EncoderMonitoring();
 };
 
+//定期的にUIに情報を送る仲田
+class StatusSending : public TaskBase
+{
+	struct timespec mLastSendedTime; //前回送信時刻
+	double mSendPerid; //送信周期
+
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+
+public:
+	void sendStatus();
+	void setPeriod(double period);
+
+	StatusSending();
+	~StatusSending();
+}
+
 //extern Escaping gEscapingState;
 extern Waking gWakingState;
 //extern Turning gTurningState;
@@ -232,3 +250,4 @@ extern Waking gWakingState;
 extern SensorLogging gSensorLoggingState;
 extern MovementLogging gMovementLoggingState;
 extern EncoderMonitoring gEncoderMonitoringState;
+extern StatusSending gStatusSending;
