@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "serial_command.h"
 #include "sensor.h"
+#include "pose_detector.h"
 #include "actuator.h"
 #include "motor.h"
 #include "image_proc.h"
@@ -24,6 +25,7 @@ Waking gWakingState;
 SensorLogging gSensorLoggingState;
 MovementLogging gMovementLoggingState;
 EncoderMonitoring gEncoderMonitoringState;
+StatusSending gStatusSending;
 
 //bool WadachiPredicting::onInit(const struct timespec& time)
 //{
@@ -1304,18 +1306,17 @@ EncoderMonitoring::~EncoderMonitoring()
 bool StatusSending::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "StatusSending: start!\r\n");
-	//setPeriod(1.0);
-	mLastSendedTime; = time;
+	mLastSendedTime = time;
 	gGPSSensor.setRunMode(true);
 	gPoseDetecting.setRunMode(true);
 	return true;
 }
 void StatusSending::onUpdate(const struct timespec& time)
 {
-	if(Time::dt(time, mLastSendedTime) > mSendPeriod) //double SendPeriod周期でステータス送信
+	if(Time::dt(time, mLastSendedTime) > mSendPeriod) //double mSendPeriod周期でステータス送信
 	{
-		sendStatus();
 		mLastSendedTime = time;
+		sendStatus();
 	}
 }
 bool StatusSending::onCommand(const std::vector<std::string>& args)
@@ -1326,40 +1327,39 @@ bool StatusSending::onCommand(const std::vector<std::string>& args)
 		Debug::print(LOG_SUMMARY, "mSendPeriod: %d\r\n", mSendPeriod);
 		return true;
 	}
-	Debug::print(LOG_SUMMARY, "mSendPeriod            : %d\r\n
-sending period [period]: set period of sending data\r\n\
-waking                 : show period\r\n", mSendPeriod);
+	Debug::print(LOG_SUMMARY, "mSendPeriod: %d\r\n", mSendPeriod);
+	Debug::print(LOG_SUMMARY, "sending setperiod [period]: set period of sending data\r\n");
 	return false;
-
 }
 //UIに情報を送る
 void StatusSending::sendStatus()
 {
-	//char send_gps_string[256]; //gpsに関するデータ
-	//char send_pose_string[256]; //姿勢に関するデータ
 	char send_string[256];
+	int mSatelites = gGPSSensor.getSatelites();
+	VECTOR3 vec;
+	gGPSSensor.get(vec);
 
-	//if(mSatelites < 4)
-	//{
-	//	sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d 0 0 0 %f",mSatelites, gPoseDetecting.getYawLPF());
-	//}
-	//else
-	//{
-	//	sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d %f %f %f %f",mSatelites, mPos.x, mPos.y, mPos.z, gPoseDetecting.getYawLPF());//衛星数 x座標 Y座標 Z座標 方角
-	//}
+	if(mSatelites < 4)
+	{
+		sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d 0 0 0 %f %d %d", gGPSSensor.getSatelites(), gPoseDetecting.getYawLPF(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
+	}
+	else
+	{
+		//衛星数 X Y Z direction isFlip isLie
+		sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d %f %f %f %f %d %d", gGPSSensor.getSatelites(), vec.x, vec.y, vec.z, gPoseDetecting.getYaw(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
+	}
 
-	//衛星数 X Y Z direction isFlip isLie バックグラウンド処理
-	sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d %f %f %f %f %d %d &", gGPSSensor.getSatelites(), gGPSSensor.getX(), gGPSSensor.getY(), gGPSSensor.getZ(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
-
-	//system(send_gps_string);
-	//system(send_pose_string);
 	system(send_string);
 }
 void StatusSending::setPeriod(double period)
 {
 	mSendPeriod = period;
 }
-StatusSending::StatusSending() : mSendState(1.0)
+StatusSending::StatusSending() : mSendPeriod(1.0)
 {
-	setName(sending);
+	setName("sending");
+	setPriority(TASK_PRIORITY_SEQUENCE,TASK_INTERVAL_SEQUENCE);
+}
+StatusSending::~StatusSending()
+{
 }

@@ -58,13 +58,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gCameraServo.setRunMode(true);
 
 	gPoseDetecting.setRunMode(true);
-	gStatusSending.setRunMode(true);
-
-	//ローバーステータスをサーバーに送り始める
-	//gGPSSensor.setMIsLogger(true);
-
-	//UIに操作可能になったことを知らせる
-	//system("python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py free");	
+	gStatusSending.setRunMode(true); //UIに情報をおくるタスク
 
 	return true;
 }

@@ -254,14 +254,13 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	}
 
 
-	if (mIsLogger) //testingに入ったら開始
+	if (mIsLogger)
 	{
 		//1秒ごとにGPS座標を表示する
 		if (Time::dt(time, mLastCheckTime) > 1)
 		{
 			mLastCheckTime = time;
 			showState();
-			//sendState(); //座標を送信 8-7 村上
 		}
 	}
 }
@@ -272,7 +271,6 @@ bool GPSSensor::onCommand(const std::vector<std::string>& args)
 	if (args.size() == 1)
 	{
 		showState();
-		//sendState(); //座標を送信
 
 		return true;
 	}
@@ -326,34 +324,10 @@ float GPSSensor::getSpeed() const
 {
 	return mGpsSpeed;
 }
-double GPSSensor::getX() const
-{
-	return mPos.x;
-}
-double GPSSensor::getY() const
-{
-	return mPos.y;
-}
-double GPSSensor::getZ() const
-{
-	return mPos.z;
-}
 void GPSSensor::showState() const
 {
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\nYaw: %f\r\n", mSatelites, gPoseDetecting.getYawLPF());
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed, gPoseDetecting.getYawLPF());
-}
-void GPSSensor::setMIsLogger(bool logging){
-	//mIsLoggerをセットしてログで知らせる
-	mIsLogger = logging;
-	if(mIsLogger)
-	{
-		Debug::print(LOG_SUMMARY, "GPS logger start!\r\n");
-	}
-	else
-	{
-		Debug::print(LOG_SUMMARY, "GPS logger stop!\r\n");
-	}
 }
 GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
 {
@@ -363,22 +337,6 @@ GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(fals
 GPSSensor::~GPSSensor()
 {
 }
-
-void  GPSSensor::sendState()
- {
-	char send_gps_string[256];
-
- 	if(mSatelites < 4)
- 	{
-		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d 0 0 0 %f",mSatelites, gPoseDetecting.getYawLPF());
- 	}
-
- 	else
- 	{
-		sprintf(send_gps_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py gps %d %f %f %f %f",mSatelites, mPos.x, mPos.y, mPos.z, gPoseDetecting.getYawLPF());//衛星数 x座標 Y座標 Z座標 方角
- 	}
-	system(send_gps_string);
- }
 
 //////////////////////////////////////////////
 // Gyro Sensor

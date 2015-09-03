@@ -79,9 +79,6 @@ public:
 	int getSatelites() const; //衛星数
 	float getCourse() const;
 	float getSpeed() const;
-	double getX() const; //経度 型はfloatかdoubleかようわからん
-	double getY() const; //緯度
-	double getZ() const; //高度
 	void setMIsLogger(bool logging); //mIsLoggerを切り替える testing入ったら呼び出す
 
 	GPSSensor();

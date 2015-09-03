@@ -225,11 +225,12 @@ public:
 class StatusSending : public TaskBase
 {
 	struct timespec mLastSendedTime; //前回送信時刻
-	double mSendPerid; //送信周期
+	double mSendPeriod; //送信周期
 
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 public:
 	void sendStatus();
@@ -237,7 +238,7 @@ public:
 
 	StatusSending();
 	~StatusSending();
-}
+};
 
 //extern Escaping gEscapingState;
 extern Waking gWakingState;
