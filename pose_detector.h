@@ -25,6 +25,8 @@ private:
 	int mLastGpsSampleTime;
 
 	struct timespec mLastUpdatedTime;
+	int mRoverid;
+
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -57,7 +59,7 @@ public:
 	bool isFlipCoord() const;
 	//横転を検知
 	bool isLie() const;
-	
+
 	bool isIllegalAccel(const VECTOR3& accel) const;
 
 	//エンコーダの値から方向転換量を取得
@@ -68,4 +70,3 @@ public:
 };
 
 extern PoseDetecting gPoseDetecting;
-
