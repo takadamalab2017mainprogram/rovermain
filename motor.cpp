@@ -263,6 +263,20 @@ void MotorDrive::onUpdate(const struct timespec& time)
 		mStabiScheduledMode=NO_SCHEDULE;
 		}
 		break;
+	case MOTOR_LEFT:
+		if(Time::dt(time,mCommandTime)>2.0)
+		{
+		gBackStabiServo.stop();
+		mStabiScheduledMode=NO_SCHEDULE;
+		}
+		break;
+	case MOTOR_RIGHT:
+		if(Time::dt(time,mCommandTime)>2.0)
+		{
+		gBackStabiServo.stop();
+		mStabiScheduledMode=NO_SCHEDULE;
+		}
+		break;
 	default:
 		break;
 	}
@@ -360,6 +374,10 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args/*oncommand に�
 		{
 			//左折
 			//drive(0,MOTOR_MAX_POWER * 0.7);
+			Time::get(mCommandTime);
+			mStabiScheduledMode=MOTOR_LEFT;
+
+			gBackStabiServo.moveGo();
 			drive(0,MOTOR_MAX_POWER * 0.5); //審査会用チューニング
 			//drive(0,-MOTOR_MAX_POWER * 0.7); //左右逆転問題対策
 			//gStabiServo.start(0.2); //左折withスタビ動作
@@ -368,6 +386,10 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args/*oncommand に�
 		{
 			//右折
 			//drive(MOTOR_MAX_POWER * 0.7,0);
+			Time::get(mCommandTime);
+			mStabiScheduledMode=MOTOR_RIGHT;
+
+			gBackStabiServo.moveGo();
 			drive(MOTOR_MAX_POWER * 0.5,0); //審査会チューニング
 			//drive(-MOTOR_MAX_POWER * 0.7,0); //左右逆転問題対策
 			//gStabiServo.start(0.2); //右折withスタビ動作
