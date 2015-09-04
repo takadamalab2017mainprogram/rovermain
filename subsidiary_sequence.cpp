@@ -600,6 +600,8 @@ void Waking::onUpdate(const struct timespec& time)
 				if(++mWakeRetryCount > WAKING_RETRY_COUNT)
 				{
 					Debug::print(LOG_SUMMARY, "Waking Failed!\r\n");
+					mIsSucceed=false;
+					sendMsg();
 					setRunMode(false);
 					return;
 				}
@@ -615,6 +617,8 @@ void Waking::onUpdate(const struct timespec& time)
 			if(Time::dt(time,mLastUpdateTime) >1.0)
 			{
 				gSoftCameraServo.stop();
+				mIsSucceed=true;
+				sendMsg();
 				setRunMode(false);
 			}
 	}
@@ -695,7 +699,19 @@ Waking::Waking() : mWakeRetryCount(0),mStartPower(100),mAngleThreshold(70),mDeac
 Waking::~Waking()
 {
 }
-
+void  Waking::sendMsg()//waking の結果をサーバに送る　�E�－４　chou
+ {
+	char send_waking_string[256];
+ 	if (mIsSucceed)
+	{
+	sprintf(send_waking_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py waking succeed ");
+	}
+	else
+	{
+    sprintf(send_waking_string,"python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py waking faild ");
+	}
+	system(send_waking_string);
+ }
 //bool Turning::onInit(const struct timespec& time)
 //{
 //	mTurnPower = 0;

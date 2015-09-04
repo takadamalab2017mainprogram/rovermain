@@ -94,6 +94,8 @@ class Waking : public TaskBase
 
 	void setPower(int p);
 	void setAngle(double a);
+	bool mIsSucceed;
+	void sendMsg();
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
