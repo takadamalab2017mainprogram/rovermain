@@ -1355,15 +1355,8 @@ void StatusSending::sendStatus()
 	VECTOR3 vec;
 	gGPSSensor.get(vec);
 
-	if(mSatelites < 4)
-	{
-		sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d 0 0 0 %f %d %d", gGPSSensor.getSatelites(), gPoseDetecting.getYawLPF(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
-	}
-	else
-	{
-		//‰q¯” X Y Z direction isFlip isLie
-		sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d %f %f %f %f %d %d", gGPSSensor.getSatelites(), vec.x, vec.y, vec.z, gPoseDetecting.getYaw(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
-	}
+	//‰q¯” X Y Z direction isFlip isLie
+	sprintf(send_string, "python /home/pi/high-ball-server/websocket_upload/websocket_sendstatus.py rover_status %d %f %f %f %f %d %d", gGPSSensor.getSatelites(), vec.x, vec.y, vec.z, gPoseDetecting.getYaw(), gPoseDetecting.isFlip(), gPoseDetecting.isLie());
 
 	system(send_string);
 }

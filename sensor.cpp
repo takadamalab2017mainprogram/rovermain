@@ -195,9 +195,6 @@ bool GPSSensor::onInit(const struct timespec& time)
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
 
-	//方角取得用
-	gPoseDetecting.setRunMode(true);
-
 	//バージョン情報を表示
 	Debug::print(LOG_SUMMARY, "GPS Firmware Version:%d\r\n", wiringPiI2CReadReg8(mFileHandle, 0x03));
 
@@ -326,8 +323,8 @@ float GPSSensor::getSpeed() const
 }
 void GPSSensor::showState() const
 {
-	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\nYaw: %f\r\n", mSatelites, gPoseDetecting.getYawLPF());
-	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed, gPoseDetecting.getYawLPF());
+	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
+	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
 }
 GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
 {
