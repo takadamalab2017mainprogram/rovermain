@@ -104,6 +104,8 @@ private:
 
 		typedef enum{
 		MOTOR_GO,
+		MOTOR_LEFT,
+		MOTOR_RIGHT,
 		MOTOR_BACK,
 		MOTOR_STOP,
 		NO_SCHEDULE
