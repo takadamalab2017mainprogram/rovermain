@@ -2,7 +2,6 @@
 #include "sensor.h"
 #include "motor.h"
 
-
 PoseDetecting gPoseDetecting;
 
 bool PoseDetecting::onInit(const struct timespec& time)
@@ -15,6 +14,7 @@ bool PoseDetecting::onInit(const struct timespec& time)
 	Time::get(mLastUpdatedTime);
 	mLastEncL = gMotorDrive.getL();
 	mLastEncR = gMotorDrive.getR();
+	mLastGpsPos.clear();
 	mLastGpsSampleTime = 0;
 	mIsInitializedAngle = false;
 
@@ -29,50 +29,10 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 	mLastUpdatedTime = newTime;
 
 	//get gyro and accel using kalman-filter
-	// VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI); //for Gaia Team rover
+	VECTOR3 gyro(-gGyroSensor.getRvy() / 180 * M_PI, gGyroSensor.getRvx() / 180 * M_PI, gGyroSensor.getRvz() / 180 * M_PI);
 	VECTOR3 accelRaw;
 	bool useAccel = gAccelerationSensor.getAccel(accelRaw);
-	// VECTOR3 accel(accelRaw.y, -accelRaw.x, accelRaw.z); // for Gaia Team rover
-	VECTOR3 gyro;
-	VECTOR3 accel;
-	if (mRoverid == 1)
-	{
-		gyro.x = gGyroSensor.getRvx() / 180 * M_PI;
-		gyro.y = gGyroSensor.getRvy() / 180 * M_PI;
-		gyro.z = gGyroSensor.getRvz() / 180 * M_PI; //for high-ball Team rover 1
-
-		accel.x = -accelRaw.x;
-		accel.y = -accelRaw.y;
-		accel.z = accelRaw.z; // for high-ball Team rover 1
-
-	}
-	else if(mRoverid == 2)
-	{
-		gyro.x = -gGyroSensor.getRvy() / 180 * M_PI;
-		gyro.y = gGyroSensor.getRvx() / 180 * M_PI;
-		gyro.z = gGyroSensor.getRvz() / 180 * M_PI; //for high-ball Team rover 1
-
-		accel.x = accelRaw.y;
-		accel.y = -accelRaw.x;
-		accel.z = accelRaw.z; // for high-ball Team rover 1
-
-	}
-	else if(mRoverid == 3)
-	{
-		gyro.x = -gGyroSensor.getRvx() / 180 * M_PI;
-		gyro.y = -gGyroSensor.getRvy() / 180 * M_PI;
-		gyro.z = gGyroSensor.getRvz() / 180 * M_PI; //for high-ball Team rover 1
-
-		accel.x = accelRaw.y;
-		accel.y = -accelRaw.x;
-		accel.z = accelRaw.z; // for high-ball Team rover 1
-	}
-	else
-	{
-		Debug::print(LOG_SUMMARY,"Please Write Rover ID in initialize.txt \r\n");
-			exit(-1);
-	}
-
+	VECTOR3 accel(-accelRaw.x, -accelRaw.y, accelRaw.z);
 	if(isIllegalAccel(accel))useAccel = false;
 
 	if(useAccel)
@@ -125,13 +85,29 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 
 	//GPS方角と内部方角の差分を更新
 	VECTOR3 gpsPos;
-	if(gGPSSensor.isActive() && gGPSSensor.get(gpsPos, true) && gGPSSensor.getSpeed() > 0.1 && gGPSSensor.getTime() != mLastGpsSampleTime && !isFlip())
+	int gpsTime = gGPSSensor.getTime();
+	if(gGPSSensor.isActive() && gGPSSensor.get(gpsPos, true) && gpsTime != mLastGpsSampleTime)
 	{
-		if(mLastGpsSampleTime != 0)
+		mLastGpsPos.push_back(gpsPos);
+		PoseDetecting::removeError(mLastGpsPos, 100 / DEGREE_2_METER);
+		while(mLastGpsPos.size() > mMaxGpsSamplesStore)mLastGpsPos.pop_back();
+
+		VECTOR3 lastPos;
+		for(auto it = mLastGpsPos.begin(); it != mLastGpsPos.end(); ++it)
 		{
-			double gpsCourse = -VECTOR3::calcAngleXY(mLastGpsPos, gpsPos);
+			lastPos += *it;
+		}
+		gpsPos = mLastGpsPos.back();
+		lastPos = (lastPos - mLastGpsPos.back()) / (mLastGpsPos.size() - 1);
+		double gpsDistance = VECTOR3::calcDistanceXY(lastPos, gpsPos);
+
+		if(mLastGpsSampleTime != 0 && gpsDistance > 0.1 / DEGREE_2_METER && !isFlip())
+		{
+			double gpsCourse = GyroSensor::normalize(-VECTOR3::calcAngleXY(lastPos, gpsPos) - 90);
 			double inertialCourse = getYawLPF(true);
 			double relativeCourse = GyroSensor::normalize(gpsCourse - inertialCourse);
+
+			Debug::print(LOG_DETAIL, "Pose Courser (%f %f %f %f) %d samples\r\n", gpsCourse, gpsDistance, inertialCourse, relativeCourse, mLastGpsPos.size());
 
 			mEstimatedRelativeGpsCourse += relativeCourse * mGpsCoeff;
 			mEstimatedRelativeGpsCourse = GyroSensor::normalize(mEstimatedRelativeGpsCourse);
@@ -139,8 +115,29 @@ void PoseDetecting::onUpdate(const struct timespec& time)
 			mEstimatedVelocity = mEstimatedVelocity * (1 - mGpsCoeff) + gGPSSensor.getSpeed() * mGpsCoeff;
 		}
 		mLastGpsSampleTime = gGPSSensor.getTime();
-		mLastGpsPos = gpsPos;
 	}
+}
+bool PoseDetecting::removeError(std::list<VECTOR3>& pos, double threshold)
+{
+	if (pos.size() <= 2)return false;
+	std::list<VECTOR3>::iterator it = pos.begin();
+	VECTOR3 average, sigma;
+	for(auto it = pos.begin(); it != pos.end(); ++it)
+	{
+		average += *it;
+	}
+	average /= pos.size();
+
+	for(auto it = pos.begin(); it != pos.end(); ++it)
+	{
+		if (VECTOR3::calcDistanceXY(average, *it) > threshold)
+		{
+			pos.erase(it);
+			removeError(pos, threshold);
+			return true;
+		}
+	}
+	return false;
 }
 bool PoseDetecting::onCommand(const std::vector<std::string>& args)
 {
@@ -194,12 +191,6 @@ bool PoseDetecting::onCommand(const std::vector<std::string>& args)
 		{
 			mAccelUsableRange = atof(args[2].c_str());
 			Debug::print(LOG_PRINT, "accel range: %f\r\n", mAccelUsableRange);
-			return true;
-		}
-		if(args[1].compare("roverid") == 0)
-		{
-			mRoverid = atoi(args[2].c_str());
-			Debug::print(LOG_PRINT, "Rover ID: %d\r\n", mRoverid);
 			return true;
 		}
 	}
@@ -343,7 +334,7 @@ void PoseDetecting::updateUsingIMU(double dt, double gx, double gy, double gz, d
 	mEstimatedAngle = QUATERNION(q1, q2, q3, q0);
 	// Integrate rate of change of quaternion to yield quaternion
 	mEstimatedAngle += dotQuat * dt;
-
+	
 	// Normalise quaternion
 	mEstimatedAngle = mEstimatedAngle.normalize();
 }
@@ -355,19 +346,7 @@ double PoseDetecting::calcEncAngle(long long left, long long right)
 	return rotation;
 }
 
-PoseDetecting::PoseDetecting() :
-mEstimatedRelativeGpsCourse(0),
- mEstimatedVelocity(0),
- mLastEncL(0),
- mLastEncR(0),
- mAccelCoeff(0.3),
- mEncCoeff(0.05),
- mGpsCoeff(0.1),
- mAngleLPFCoeff(0.3),
- mAccelUsableRange(0.3),
- mFlipThreshold(60),
- mLieThreshold(60),
- mRoverid(0)
+PoseDetecting::PoseDetecting() : mEstimatedRelativeGpsCourse(0), mEstimatedVelocity(0), mLastEncL(0), mLastEncR(0), mAccelCoeff(0.1), mEncCoeff(0.05), mGpsCoeff(0.1), mAngleLPFCoeff(0.3), mAccelUsableRange(0.3), mFlipThreshold(60), mLieThreshold(60), mMaxGpsSamplesStore(30)
 {
 	setName("pose");
 	setPriority(TASK_PRIORITY_SENSOR + 1,TASK_INTERVAL_SENSOR);
@@ -376,3 +355,4 @@ mEstimatedRelativeGpsCourse(0),
 PoseDetecting::~PoseDetecting()
 {
 }
+

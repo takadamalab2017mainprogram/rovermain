@@ -2,9 +2,9 @@
 #include <math.h>
 #include <fstream>
 #include <functional>
-//#include <opencv2/opencv.hpp>
-//#include <opencv/cvaux.h>
-//#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include <stdarg.h>
 #include <wiringPi.h>
 #include "sequence.h"
@@ -23,7 +23,7 @@ Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
-//Modeling gModelingState;
+Modeling gModelingState;
 //ColorAccessing gColorAccessingState;
 //extern Filename gCaptureFilename;
 
@@ -475,22 +475,22 @@ void Separating::onUpdate(const struct timespec& time)
 		if (Time::dt(time, mLastUpdateTime) > 2)
 		{
 			//パラシュートの存在チェックを行う
-			//IplImage* pImage = gCameraCapture.getFrame();
-			//if (gImageProc.isParaExist(pImage))
-			//{
+			IplImage* pImage = gCameraCapture.getFrame();
+			if (gImageProc.isParaExist(pImage))
+			{
 				//回避動作に遷移
-			//	gBuzzer.start(20, 20, 5);
-			//	mCurStep = STEP_PARA_DODGE;
-			//	mLastUpdateTime = time;
-			//	gTurningState.setRunMode(true);
-			//	Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
-			//}
-			//else
-			//{
+				gBuzzer.start(20, 20, 5);
+				mCurStep = STEP_PARA_DODGE;
+				mLastUpdateTime = time;
+				gTurningState.setRunMode(true);
+				Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
+			}
+			else
+			{
 				//次状態(ナビ)に遷移
-		  //	Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
-		  //		nextState();
-		  //	}
+				Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
+				nextState();
+			}
 			//パラ検知に用いた画像を保存する
 			//gCameraCapture.save(NULL, pImage);
 		}
@@ -513,7 +513,6 @@ void Separating::onUpdate(const struct timespec& time)
 		break;
 	};
 }
-
 void Separating::nextState()
 {
 	//ブザー鳴らしとく
@@ -642,10 +641,10 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 	//数秒たっていなければ処理を返す
-	//if (Time::dt(time, mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
-	//mLastNaviMoveCheckTime = time;
+	if (Time::dt(time, mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
+	mLastNaviMoveCheckTime = time;
 
-       	//gCameraCapture.wadatisave();	
+	gCameraCapture.wadatisave();	
 
 	//異常値排除
 	if (removeError())
@@ -857,7 +856,7 @@ void Navigating::nextState()
 	gBuzzer.start(1000);
 
 	//gColorAccessingState.setRunMode(true);
-	//gModelingState.setRunMode(true);
+	gModelingState.setRunMode(true);
 
 	gMotorDrive.drive(0);//念のため2回
 	gMotorDrive.drive(0);
@@ -1562,7 +1561,7 @@ bool Modeling::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	//gCameraCapture.setRunMode(true);
+	gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gJohnServo.setRunMode(true);
@@ -1574,22 +1573,20 @@ bool Modeling::onInit(const struct timespec& time)
 	//gSServo.moveDetect();		//スタビをゴール検知の位置に移動
 	return true;
 }
-*/
-//void Modeling::onUpdate(const struct timespec& time)
-//{
-  //if (Time::dt(time, mLastUpdateTime) < 1) return;
-  //mLastUpdateTime = time;
-  //	IplImage* pImage = gCameraCapture.getFrame();
-  //	gCameraCapture.save(NULL, pImage);
+void Modeling::onUpdate(const struct timespec& time)
+{
+	if (Time::dt(time, mLastUpdateTime) < 1) return;
+	mLastUpdateTime = time;
+	IplImage* pImage = gCameraCapture.getFrame();
+	gCameraCapture.save(NULL, pImage);
 
-//	if (pImage == NULL)//カメラが死んでるのでその場でゴール判定する
-	  //{
-	  //		Debug::print(LOG_SUMMARY, "Detecting: Camera is not working...\r\n");
-//}
-//	nextState();
-//	return;
-//}
-/*
+	if (pImage == NULL)//カメラが死んでるのでその場でゴール判定する
+	{
+		Debug::print(LOG_SUMMARY, "Detecting: Camera is not working...\r\n");
+	}
+	nextState();
+	return;
+}
 bool Modeling::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() == 2)

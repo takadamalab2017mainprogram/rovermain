@@ -4,9 +4,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-//#include <opencv2/opencv.hpp>
-//#include <opencv/cvaux.h>
-//#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include <stdarg.h>
 #include "subsidiary_sequence.h"
 #include "utils.h"
@@ -14,7 +14,7 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
-//#include "image_proc.h"
+#include "image_proc.h"
 #include "pose_detector.h"
 
 Escaping gEscapingState;
@@ -24,22 +24,20 @@ Waking gWakingState;
 WakingFromLie gWakingFromLieState;
 Turning gTurningState;
 Avoiding gAvoidingState;
-//WadachiPredicting gPredictingState;
-//PictureTaking gPictureTakingState;
+WadachiPredicting gPredictingState;
+PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
 MovementLogging gMovementLoggingState;
 EncoderMonitoring gEncoderMonitoringState;
-//CameraSave_Sequence gCameraSave_Sequence;
+CameraSave_Sequence gCameraSave_Sequence;
 
-/*bool WadachiPredicting::onInit(const struct timespec& time)
+bool WadachiPredicting::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	gCameraCapture.startWarming();
 
 	return true;
 }
-*/
-/*
 void WadachiPredicting::onUpdate(const struct timespec& time)
 {
 	if (gAvoidingState.isActive())return;
@@ -116,8 +114,6 @@ void WadachiPredicting::onUpdate(const struct timespec& time)
 		break;
 	}
 }
-*/
-/*
 bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() == 2)
@@ -148,14 +144,13 @@ WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false), mCurStep(STEP
 WadachiPredicting::~WadachiPredicting()
 {
 }
-*/
 
 bool Escaping::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
 	mCurStep = STEP_BACKWARD;
 	gMotorDrive.drive(-100);
-	//gCameraCapture.setRunMode(true);
+	gCameraCapture.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	mEscapingTriedCount = 0;
 	return true;
@@ -167,86 +162,84 @@ void Escaping::onClean()
 }
 void Escaping::onUpdate(const struct timespec& time)
 {
-  const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 20;
-  const static unsigned int ESCAPING_MAX_RANDOM_ESCAPING_COUNT = 20;
-  switch (mCurStep)
-    {
-    case STEP_BACKWARD:
-      //�o�b�N���s��
-      if (Time::dt(time, mLastUpdateTime) >= 2)
+	const static unsigned int ESCAPING_MAX_CAMERA_ESCAPING_COUNT = 20;
+	const static unsigned int ESCAPING_MAX_RANDOM_ESCAPING_COUNT = 20;
+	switch (mCurStep)
 	{
-	  Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
-	  mCurStep = STEP_AFTER_BACKWARD;
-	  mLastUpdateTime = time;
-	  gMotorDrive.drive(0);
-	  //gCameraCapture.startWarming();
-	}
-      break;
-    case STEP_AFTER_BACKWARD:
-      //�ċN���h�~�̂��ߑҋ@
-      if (Time::dt(time, mLastUpdateTime) >= 3)
-	{
-	  if (mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
-	    {
-	      //�����_���ڍs
-	      Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
-	      mEscapingTriedCount = 0;
-	      mCurStep = STEP_RANDOM;
-	      mCurRandomStep = RANDOM_STEP_FORWARD;
-	      break;
-	    }
-	  //mCurStep = STEP_PRE_CAMERA;
-	  mLastUpdateTime = time;
-	  //�N���オ�蓮�����s��
-	  //IplImage* pImage = gCameraCapture.getFrame();
-	}
-      //gCameraCapture.save(NULL, pImage);
-      //if (gImageProc.isSky(pImage))gWakingState.setRunMode(true);
-  break;
- case STEP_PRE_CAMERA:
-   //�摜�B�e�p�ɋN���オ�蓮�����s���A���b�ҋ@����
-   if (gWakingState.isActive())mLastUpdateTime = time;//�N���オ�蓮�쒆�͑ҋ@����
-   if (Time::dt(time, mLastUpdateTime) > 2)//�N���オ�芮�����A���莞�Ԃ��o�߂��Ă�����
-     {
-       Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
-       //�摜�B�e�������s��
-       mCurStep = STEP_CAMERA;
-       mLastUpdateTime = time;
-       
-       
-       gMotorDrive.drive(0);
-       //gCameraCapture.startWarming();
-     }
-   break;
-   /*
- case STEP_CAMERA:
-   //�摜�������s���A�����̍s�������肷��
-   if (Time::dt(time, mLastUpdateTime) >= 2)
-     {
-       Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
-       mLastUpdateTime = time;
-       IplImage* pImage = gCameraCapture.getFrame();
-       stuckMoveCamera(pImage);
-       //gCameraCapture.save(NULL, pImage);
-       mAngle = gGyroSensor.getRz();
-       ++mEscapingTriedCount;
-     }
-   break;
-   */
- case STEP_CAMERA_TURN:
-   //�摜�����̌��ʁA���]�����K�v���������ꍇ
-		if (Time::dt(time, mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
-		  {
-		    //gCameraCapture.startWarming();
-		    mCurStep = STEP_CAMERA_FORWARD;
-		    gMotorDrive.drivePIDGyro(0, 100, true);
-		    mLastUpdateTime = time;
-		  }
+	case STEP_BACKWARD:
+		//�o�b�N���s��
+		if (Time::dt(time, mLastUpdateTime) >= 2)
+		{
+			Debug::print(LOG_SUMMARY, "Escaping: Backward finished!\r\n");
+			mCurStep = STEP_AFTER_BACKWARD;
+			mLastUpdateTime = time;
+			gMotorDrive.drive(0);
+			gCameraCapture.startWarming();
+		}
 		break;
- case STEP_CAMERA_FORWARD:
+	case STEP_AFTER_BACKWARD:
+		//�ċN���h�~�̂��ߑҋ@
+		if (Time::dt(time, mLastUpdateTime) >= 3)
+		{
+			if (mEscapingTriedCount > ESCAPING_MAX_CAMERA_ESCAPING_COUNT)
+			{
+				//�����_���ڍs
+				Debug::print(LOG_SUMMARY, "Escaping: aborting camera escape!\r\n");
+				mEscapingTriedCount = 0;
+				mCurStep = STEP_RANDOM;
+				mCurRandomStep = RANDOM_STEP_FORWARD;
+				break;
+			}
+			mCurStep = STEP_PRE_CAMERA;
+			mLastUpdateTime = time;
+			//�N���オ�蓮�����s��
+			IplImage* pImage = gCameraCapture.getFrame();
+			gCameraCapture.save(NULL, pImage);
+			if (gImageProc.isSky(pImage))gWakingState.setRunMode(true);
+		}
+		break;
+	case STEP_PRE_CAMERA:
+		//�摜�B�e�p�ɋN���オ�蓮�����s���A���b�ҋ@����
+		if (gWakingState.isActive())mLastUpdateTime = time;//�N���オ�蓮�쒆�͑ҋ@����
+		if (Time::dt(time, mLastUpdateTime) > 2)//�N���オ�芮�����A���莞�Ԃ��o�߂��Ă�����
+		{
+			Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
+			//�摜�B�e�������s��
+			mCurStep = STEP_CAMERA;
+			mLastUpdateTime = time;
+
+
+			gMotorDrive.drive(0);
+			gCameraCapture.startWarming();
+		}
+		break;
+	case STEP_CAMERA:
+		//�摜�������s���A�����̍s�������肷��
+		if (Time::dt(time, mLastUpdateTime) >= 2)
+		{
+			Debug::print(LOG_SUMMARY, "Escaping: taking picture!\r\n");
+			mLastUpdateTime = time;
+			IplImage* pImage = gCameraCapture.getFrame();
+			stuckMoveCamera(pImage);
+			gCameraCapture.save(NULL, pImage);
+			mAngle = gGyroSensor.getRz();
+			++mEscapingTriedCount;
+		}
+		break;
+	case STEP_CAMERA_TURN:
+		//�摜�����̌��ʁA���]�����K�v���������ꍇ
+		if (Time::dt(time, mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
+		{
+			gCameraCapture.startWarming();
+			mCurStep = STEP_CAMERA_FORWARD;
+			gMotorDrive.drivePIDGyro(0, 100, true);
+			mLastUpdateTime = time;
+		}
+		break;
+	case STEP_CAMERA_FORWARD:
 		//�摜�����̌��ʁA���i�����K�v���������ꍇ
-   if (Time::dt(time, mLastUpdateTime) >= 10)
-     {
+		if (Time::dt(time, mLastUpdateTime) >= 10)
+		{
 			gMotorDrive.drive(-100);
 			mCurStep = STEP_BACKWARD;
 			mLastUpdateTime = time;
@@ -256,7 +249,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		//�摜�����̌��ʁA���̏����]�����K�v���������ꍇ
 		if (Time::dt(time, mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
-		  //gCameraCapture.startWarming();
+			gCameraCapture.startWarming();
 			mCurStep = STEP_BACKWARD;
 			gMotorDrive.drive(-100);
 			mLastUpdateTime = time;
@@ -305,7 +298,6 @@ void Escaping::stuckMoveRandom()
 		break;
 	}
 }
-/*
 void Escaping::stuckMoveCamera(IplImage* pImage)
 {
 	switch (gImageProc.wadachiExiting(pImage)) {
@@ -331,8 +323,7 @@ void Escaping::stuckMoveCamera(IplImage* pImage)
 		break;
 
 	}
-	}
-*/
+}
 Escaping::Escaping()
 {
 	setName("escaping");
@@ -860,7 +851,6 @@ Avoiding::~Avoiding()
 {
 }
 
-/*
 bool PictureTaking::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -900,7 +890,7 @@ PictureTaking::PictureTaking() : mStepCount(0)
 PictureTaking::~PictureTaking()
 {
 }
-*/
+
 bool SensorLogging::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
@@ -1174,8 +1164,7 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 	mLastSamplingTime = time;
 
 	//�X�^�b�N���蒆�Ȃ�return
-	if (gEscapingByStabiState.isActive()||gEscapingRandomState.isActive()
-	    )
+	if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 	{
 		mPrevDeltaPulseL = 0;
 		mPrevDeltaPulseR = 0;
@@ -1197,8 +1186,8 @@ void EncoderMonitoring::onUpdate(const struct timespec& time)
 	}
 
 	//臒l�̌v�Z
-	//	long long pulse_threshold = std::min(abs(mStoredPulse - mThresholdPulse), //ab//s(mUpperThreshold));
-	//
+	long long pulse_threshold = std::min(abs(mStoredPulse - mThresholdPulse), abs(mUpperThreshold));
+
 	////�X�^�b�N�`�F�b�N�D�O����臒l�ȏ��ŁC������臒l�ȉ��Ȃ��X�^�b�N���肷��
 	//if (mPrevDeltaPulseL >= pulse_threshold && mPrevDeltaPulseR >= pulse_threshold)	//�O���̃p���X����臒l�ȏ�
 	//{
@@ -1397,7 +1386,7 @@ EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(), mLastUpdateTime(),
 EncoderMonitoring::~EncoderMonitoring()
 {
 }
-/*
+
 bool CameraSave_Sequence::onInit(const struct timespec& time) {
 	Debug::print(LOG_SUMMARY, "Start Camera Save Sequence...");
 	Time::showNowTime();
@@ -1464,4 +1453,3 @@ CameraSave_Sequence::CameraSave_Sequence() {
 }
 CameraSave_Sequence::~CameraSave_Sequence() {
 }
-*/

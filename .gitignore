@@ -1,0 +1,6 @@
+/svmTrain.txt
+/compiler
+/out
+*.o
+*.txt
+!initialize.txt

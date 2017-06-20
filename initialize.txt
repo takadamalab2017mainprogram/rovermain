@@ -1,8 +1,14 @@
-waiting
+start testing
 detecting setmode ON
-navigating 40.862905 -119.135297
-motor p 0.004 0.0 0.0
-motor r 50 45
+cdetecting setmode ON
+navigating 40.863405 -119.134445
+motor p 0.003 0.0 0.0
+motor pp 0.008 0 0
+motor cpose 0.8
+motor r 100 85
+jmss offset 0.1 0
+jmss fold -1.2 -1.05
+wakinglie 30
 //
 // ------------------- notes -------------------
 //
@@ -18,7 +24,7 @@ image setS 100
 image setV 0
 image setdist 200.0
 image setfindarea 0.0005
-gyro calib 0.304365 -0.643921 0.222596
+gyro calib -0.930056 -6.140539 -1.875874
 detecting threshold straight high 2000
 detecting threshold straight low 1000
 detecting threshold rotation high 500
@@ -29,6 +35,16 @@ detecting colorwidth 100
 detecting pf 1.0
 detecting pfg 2.0
 detecting set waittime 1.0
+cdetecting threshold straight high 2000
+cdetecting threshold straight low 1000
+cdetecting threshold rotation high 500
+cdetecting threshold rotation low 200
+cdetecting threshold curve high 300
+cdetecting threshold curve low 200
+cdetecting colorwidth 100
+cdetecting pf 1.0
+cdetecting pfg 2.0
+cdetecting set waittime 1.0
 monitoring set upper 3000
 //
 //
@@ -46,5 +62,3 @@ alias wadachistart escapingbystabi start
 alias imomusi escapingbystabi start
 alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
-alias bsopen backstabiservo 19
-alias bsclose backstabiservo 6

@@ -8,105 +8,128 @@
 #include "utils.h"
 #include "motor.h"
 #include "sensor.h"
-#include "actuator.h"
 
 MotorDrive gMotorDrive;
 
 bool Motor::init(int powPin, int revPin)
 {
 	//ピン番号を確認
-    VERIFY(powPin < 0 || revPin < 0);
+	VERIFY(powPin < 0 || revPin < 0);
 
 	//ピンを初期化
-    mPowerPin = powPin;
-    mReversePin = revPin;
-    pinMode(mPowerPin, OUTPUT);
-    if(softPwmCreate(mPowerPin ,0,100) != 0)
+	ForwardPin = powPin;
+	ReversePin = revPin;
+	//前ピンを出力モードに
+	pinMode(ForwardPin, OUTPUT);
+	if (softPwmCreate(ForwardPin, 0, 100) != 0)
 	{
-		Debug::print(LOG_SUMMARY,"Failed to initialize soft-PWM\r\n");
+		Debug::print(LOG_SUMMARY, "Failed to initialize soft-PWM\r\n");
 		return false;
 	}
-    pinMode(mReversePin, OUTPUT);
-    digitalWrite(mReversePin, LOW);
+
+	//バックピンを出力モードに
+	pinMode(ReversePin, OUTPUT);
+
+	if (softPwmCreate(ReversePin, 0, 100) != 0)
+	{
+		Debug::print(LOG_SUMMARY, "Failed to initialize soft-PWM\r\n");
+		return false;
+	}
+	//LOW状態にして開放
+	softPwmWrite(ForwardPin, 0);
+	softPwmWrite(ReversePin, 0);
 
 	//現在の出力を保持
-    mCurPower = 0;
-    return true;
+	mCurPower = 0;
+	return true;
 }
 void Motor::update(double elapsedSeconds)
 {
-	if(fabs(mCurPower - mTargetPower) != 0)//目標出力と現在出力に差がある場合
+	if (fabs(mCurPower - mTargetPower) != 0)//目標出力と現在出力に差がある場合
 	{
 		//なめらかにモータ出力を変化させる
 		double curFrameTarget = mTargetPower;//この呼び出しで設定するモーター出力
-
 		double maxMotorPowerChange = MOTOR_MAX_POWER_CHANGE * mCoeff;
 
 		//モータ出力変化量を制限
-		if(fabs(mTargetPower - mCurPower) > maxMotorPowerChange)
+		//最大モーター出力変化量が目標出力-現在の出力より大きければ
+		if (fabs(mTargetPower - mCurPower) > maxMotorPowerChange)
 		{
+			//モーターの目標出力を現在の出力に変更
 			curFrameTarget = mCurPower;
+			//現在の出力に最大出力変化量5を足すか引くかする
 			curFrameTarget += ((mTargetPower > mCurPower) ? maxMotorPowerChange : -maxMotorPowerChange);
-			Debug::print(LOG_DETAIL,"MOTOR power Limitation %f %f(%d) \r\n",mCurPower,curFrameTarget,mTargetPower);
 		}
 
 		//新しいpowerをもとにpinの状態を設定する
-		if(curFrameTarget > 0 && mCurPower <= 0)digitalWrite(mReversePin, HIGH);
-		else if(curFrameTarget < 0 && mCurPower >= 0)digitalWrite(mReversePin, LOW);
-		mCurPower = curFrameTarget;
-		softPwmWrite(mPowerPin, fabs(mCurPower));
+		if (curFrameTarget > 0 && mCurPower <= 0)
+		  {
+		    softPwmWrite(ForwardPin, fabs(mCurPower));
+		    softPwmWrite(ReversePin, fabs(mCurPower));
+		  }
+		else if (curFrameTarget < 0 && mCurPower >= 0)
+		  {
+		    softPwmWrite(ForwardPin, fabs(mCurPower));
+		    softPwmWrite(ReversePin, fabs(mCurPower));
+		  }
+		    //mCurPower = curFrameTarget;
+		    //softPwmWrite(ForfardPin, fabs(mCurPower));
 	}
 }
 void Motor::clean()
 {
-	if(mPowerPin >= 0)softPwmWrite(mPowerPin, 0);
-	if(mReversePin >= 0)digitalWrite(mReversePin, LOW);
+	if (ForwardPin >= 0)softPwmWrite(ForwardPin, 0);
+	if (ReversePin >= 0)digitalWrite(ReversePin, LOW);
 	mCurPower = 0;
 }
 void Motor::set(int power)
 {
 	//値の範囲をチェックし、正しい範囲に丸める
-	if(power > MOTOR_MAX_POWER)power = MOTOR_MAX_POWER;
-	else if(power < -MOTOR_MAX_POWER)power = -MOTOR_MAX_POWER;
-	
+	if (power > MOTOR_MAX_POWER)power = MOTOR_MAX_POWER;
+	else if (power < -MOTOR_MAX_POWER)power = -MOTOR_MAX_POWER;
+
 	//目標出力を設定
 	mTargetPower = power;
 }
 int Motor::getPower()
 {
-    return mCurPower;
+	return mCurPower;
 }
 void Motor::setCoeff(double coeff)
 {
 	mCoeff = coeff;
 }
-Motor::Motor() : mPowerPin(-1), mReversePin(-1), mCurPower(0), mTargetPower(0), mCoeff(1)
+Motor::Motor() : ForwardPin(-1), ReversePin(-1), mCurPower(0), mTargetPower(0), mCoeff(1)
 {
 }
 Motor::~Motor()
 {
 }
+/*
 MotorEncoder* MotorEncoder::getInstance()
 {
 	static MotorEncoder singleton;
-	return &singleton;
+return &singleton;
 }
+
 void MotorEncoder::pulseLCallback()
 {
 	MotorEncoder::getInstance()->mPulseCountL++;
+	//digitalRead(MotorEncoder::getInstance()->mEncoderPin2L) == 1 ? MotorEncoder::getInstance()->mPulseCountL-- : MotorEncoder::getInstance()->mPulseCountL++;
 }
 void MotorEncoder::pulseRCallback()
 {
 	MotorEncoder::getInstance()->mPulseCountR++;
+  //digitalRead(MotorEncoder::getInstance()->mEncoderPin2R)==1 ? MotorEncoder::getInstance()->mPulseCountR++ : MotorEncoder::getInstance()->mPulseCountR--;
 }
 bool MotorEncoder::init()
 {
-	mPulseCountL = mPulseCountR = 0;
+mPulseCountL = mPulseCountR = 0;
 
 	//ピンのパルスを監視する
-	if(wiringPiISR(mEncoderPinL, INT_EDGE_RISING, pulseLCallback) == -1 || wiringPiISR(mEncoderPinR, INT_EDGE_RISING, pulseRCallback) == -1)
+	if (wiringPiISR(mEncoderPinL, INT_EDGE_RISING, pulseLCallback) == -1 || wiringPiISR(mEncoderPinR, INT_EDGE_RISING, pulseRCallback) == -1)
 	{
-		Debug::print(LOG_SUMMARY,"Failed to onInitialize Motor encoder\r\n");
+		Debug::print(LOG_SUMMARY, "Failed to onInitialize Motor encoder\r\n");
 		return false;
 	}
 	return true;
@@ -114,191 +137,149 @@ bool MotorEncoder::init()
 void MotorEncoder::clean()
 {
 	//両方のピンの割り込みを無効にする
-	char command [64];
-	sprintf (command, "/usr/local/bin/gpio edge %d none", mEncoderPinL) ;
-    system (command) ;
-	sprintf (command, "/usr/local/bin/gpio edge %d none", mEncoderPinR) ;
-    system (command) ;
+	char command[64];
+	sprintf(command, "/usr/local/bin/gpio edge %d none", mEncoderPinL);
+	system(command);
+	sprintf(command, "/usr/local/bin/gpio edge %d none", mEncoderPinR);
+	system(command);
 
 	//スレッドが複数残ることを防止するためsleep
 	delay(100);
 }
-unsigned long long MotorEncoder::getL()
+long long MotorEncoder::getL()
 {
 	return mPulseCountL;
 }
-unsigned long long MotorEncoder::getR()
+long long MotorEncoder::getR()
 {
 	return mPulseCountR;
 }
-unsigned long long MotorEncoder::getDeltaPulseL()
+long long MotorEncoder::getDeltaPulseL()
 {
 	long long ret = mPulseCountL;
-	mPulseCountL = 0;	//リセット
+	mPulseCountL = 0; //リセット
 	return ret;
 }
-unsigned long long MotorEncoder::getDeltaPulseR()
+long long MotorEncoder::getDeltaPulseR()
 {
 	long long ret = mPulseCountR;
-	mPulseCountR = 0;	//リセット
+	mPulseCountR = 0; //リセット
 	return ret;
 }
-unsigned long long MotorEncoder::convertRotation(unsigned long long pulse)
+double MotorEncoder::convertRotation(long long pulse)
 {
 	//分解能とギア比で割る
-	return pulse / (unsigned long long)(RESOLVING_POWER * GEAR_RATIO);
+	return pulse / (double)(RESOLVING_POWER * GEAR_RATIO);
 }
 void MotorEncoder::reset()
 {
 	mPulseCountL = 0;
 	mPulseCountR = 0;
-	Debug::print(LOG_SUMMARY,"Motor Pulse Count Reset\r\n");
+	Debug::print(LOG_SUMMARY, "Motor Pulse Count Reset\r\n");
 }
 
-MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B),mEncoderPinR(PIN_PULSE_A),mPulseCountL(0),mPulseCountR(0)
+MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B), mEncoderPinR(PIN_PULSE_A), mPulseCountL(0), mPulseCountR(0)
 {
+	pinMode(mEncoderPin2L, INPUT);
+	pinMode(mEncoderPin2R, INPUT);
 }
 MotorEncoder::~MotorEncoder()
 {
 }
-
+  */
 bool MotorDrive::onInit(const struct timespec& time)
 {
 	//ジャイロを使うように設定
 	gGyroSensor.setRunMode(true);
 
-	//スタビ使用指定　仲田
-	gStabiServo.setRunMode(true);
-
 	//初期化
-    if(!mMotorR.init(PIN_PWM_A,PIN_INVERT_MOTOR_A) || !mMotorL.init(PIN_PWM_B,PIN_INVERT_MOTOR_B))
+	if (!mMotorR.init(PIN_PWM_A1, PIN_PWM_A2) || !mMotorL.init(PIN_PWM_B1, PIN_PWM_B2))
 	{
-		Debug::print(LOG_SUMMARY,"Failed to initialize Motors\r\n");
+		Debug::print(LOG_SUMMARY, "Failed to initialize Motors\r\n");
 		return false;
 	}
-	if(!mpMotorEncoder->init())
+	/*if (!mpMotorEncoder->init())
 	{
-		Debug::print(LOG_SUMMARY,"Failed to initialize Motor Encoders\r\n");
+		Debug::print(LOG_SUMMARY, "Failed to initialize Motor Encoders\r\n");
 		return false;
 	}
-	if(clock_gettime(CLOCK_MONOTONIC_RAW,&mLastUpdateTime) != 0)
+	*/
+	if (clock_gettime(CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
 	{
-		Debug::print(LOG_SUMMARY,"Unable to get time!\r\n");
+		Debug::print(LOG_SUMMARY, "Unable to get time!\r\n");
 	}
-	Debug::print(LOG_DETAIL,"MotorDrive is Ready!\r\n");
 
 	mLastUpdateTime = time;
 	mAngle = 0;
-    return true;
+	return true;
 }
 
 void MotorDrive::onClean()
 {
-	mpMotorEncoder->clean();
+  //mpMotorEncoder->clean();
 	mMotorL.clean();
 	mMotorR.clean();
 }
 
-void MotorDrive::updatePIDState(double p,double i,double d)
+void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxControlRatio)
 {
 	//ずれ情報を更新
-	mDiff3 = mDiff2;mDiff2 = mDiff1;mDiff1 = gGyroSensor.normalize(gGyroSensor.getRz() - mAngle);
+	double angle = gGyroSensor.normalize(dangle);
+	mDiff3 = mDiff2; mDiff2 = mDiff1; mDiff1 = angle;
 
 	//ずれ情報を元に新しいモーター出力を設定(PID)
-	double powerDiff = p * (mDiff1 - mDiff2) + i * mDiff1 + d * ((mDiff1 - mDiff2) - (mDiff2 - mDiff3));
+	double powerDiff = pid.x * (mDiff1 - mDiff2) + pid.y * mDiff1 + pid.z * ((mDiff1 - mDiff2) - (mDiff2 - mDiff3));
 	mControlPower += powerDiff;
-}
-void MotorDrive::updatePIDMove()
-{
-	updatePIDState(mP,mI,mD);
-
+	
 	//モータ速度係数を用意
 	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//モータ出力の割合
 
 	//モータの逆回転をせずに方向転換する
-	double controlRatio = 1 - fabs(mControlPower);
-	if(controlRatio <= 0)controlRatio = 0;
+	double controlRatio = 1 - std::min(fabs(mControlPower), maxControlRatio);
+	if (controlRatio <= 0)controlRatio = 0;
 
 	//モータ出力を適用
-	if(mControlPower > 0)
+	if (mControlPower > 0)
 	{
-		//左に曲がる
-		//mMotorL.set(mRatioL * drivePowerRatio); //去年の
-		//mMotorR.set(-mRatioR * controlRatio * drivePowerRatio); //去年の
-
-		//2015 highball版
-		mMotorL.set(-mRatioL * controlRatio * drivePowerRatio);
-		mMotorR.set(mRatioR * drivePowerRatio);
-	}else
-	{
-		//右に曲がる
-		//mMotorL.set(mRatioL * controlRatio * drivePowerRatio); //去年の
-		//mMotorR.set(-mRatioR * drivePowerRatio);
-
-		//2015 highball版
-		mMotorL.set(-mRatioL * drivePowerRatio);
-		mMotorR.set(mRatioR * controlRatio * drivePowerRatio);
+		//Turn Right
+		mMotorL.set(mRatioL * drivePowerRatio);
+		mMotorR.set(-mRatioR * controlRatio * drivePowerRatio);
 	}
+	else
+	{
+		//Turn Left
+		mMotorL.set(mRatioL * controlRatio * drivePowerRatio);
+		mMotorR.set(-mRatioR * drivePowerRatio);
+	}
+}
+void MotorDrive::updatePIDGyroMove()
+{
+	updatePIDState(mPIDGyro, gGyroSensor.getRz() - mAngle, mMaxPIDControlRatioGyro);
 }
 
 void MotorDrive::onUpdate(const struct timespec& time)
 {
 	//最後の出力更新からの経過時間を取得
-	double dt = Time::dt(time,mLastUpdateTime);
+	double dt = Time::dt(time, mLastUpdateTime);
 	mLastUpdateTime = time;
-	switch(mStabiScheduledMode)
-	{
-	case MOTOR_GO:
-		if( Time::dt(time,mCommandTime)>3.0)
-		{
-		gBackStabiServo.stop();
-		mStabiScheduledMode=NO_SCHEDULE;
-		}
-		
-		break;
-	case MOTOR_STOP:
-		if(Time::dt(time,mCommandTime)>2.0)
-		{
-		gBackStabiServo.stop();
-		mStabiScheduledMode=NO_SCHEDULE;
-		}
-		break;
-	case MOTOR_LEFT:
-		if(Time::dt(time,mCommandTime)>2.0)
-		{
-		gBackStabiServo.stop();
-		mStabiScheduledMode=NO_SCHEDULE;
-		}
-		break;
-	case MOTOR_RIGHT:
-		if(Time::dt(time,mCommandTime)>2.0)
-		{
-		gBackStabiServo.stop();
-		mStabiScheduledMode=NO_SCHEDULE;
-		}
-		break;
-	default:
-		break;
-	}
 
-
-	switch(mDriveMode)
+	switch (mDriveMode)
 	{
 	case DRIVE_PID:
-		updatePIDMove();
+		updatePIDGyroMove();
 		break;
 	default:
 		break;
 	}
-	
+
 	//モータ出力を更新
 	mMotorL.update(dt);
 	mMotorR.update(dt);
 }
-void MotorDrive::setRatio(int ratioL,int ratioR)
+void MotorDrive::setRatio(int ratioL, int ratioR)
 {
-	mMotorL.setCoeff((double)(mRatioL = std::max(std::min(ratioL,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
-	mMotorR.setCoeff((double)(mRatioR = std::max(std::min(ratioR,MOTOR_MAX_POWER),0)) / MOTOR_MAX_POWER);
+	mMotorL.setCoeff((double)(mRatioL = std::max(std::min(ratioL, MOTOR_MAX_POWER), 0)) / MOTOR_MAX_POWER);
+	mMotorR.setCoeff((double)(mRatioR = std::max(std::min(ratioR, MOTOR_MAX_POWER), 0)) / MOTOR_MAX_POWER);
 }
 
 double MotorDrive::getPowerL()
@@ -307,164 +288,137 @@ double MotorDrive::getPowerL()
 }
 double MotorDrive::getPowerR()
 {
-	return mMotorR.getPower();
+	return -mMotorR.getPower();
 }
 
-//high-ballチームは回路の都合上、モーターの回転の向きが従来と逆になります
 void MotorDrive::drive(int powerL, int powerR)
 {
 	mDriveMode = DRIVE_RATIO;
-	Debug::print(LOG_DETAIL,"Motor ratio: %d %d\r\n",powerL,powerR);
-    mMotorL.set(mRatioL * -powerL / MOTOR_MAX_POWER);
-    mMotorR.set(-mRatioR * -powerR / MOTOR_MAX_POWER);
+	mMotorL.set(mRatioL * powerL / MOTOR_MAX_POWER);
+	mMotorR.set(-mRatioR * powerR / MOTOR_MAX_POWER);
 
 	mAngle = 0;
 }
 void MotorDrive::drive(int power)
 {
-	//highball回路の都合で出力逆向きにしてます
-	drive(-power,-power); //drive(L, R)で符号逆転するのだからこれはダメ
+	drive(power, power);
 }
 
-void MotorDrive::set(double p,double i,double d)
+void MotorDrive::setPIDGyro(double p, double i, double d)
 {
-	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n",p,i,d);
-	mP = p;
-	mI = i;
-	mD = d;
+	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
+	mPIDGyro.x = p;
+	mPIDGyro.y = i;
+	mPIDGyro.z = d;
 }
-void MotorDrive::startPID(double angle,int power)
+void MotorDrive::setPIDPose(double p, double i, double d)
 {
-	//gGyroSensor.setZero();
-	mAngle = gGyroSensor.getRz();
-	drivePID(angle,power);
-	mDiff1 = mDiff2 = mDiff3 = 0;
-	mControlPower = 0;
+	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
+	mPIDPose.x = p;
+	mPIDPose.y = i;
+	mPIDPose.z = d;
 }
-void MotorDrive::drivePID(double angle,int power)
-{       //power = -power; //8-9 chou IPD制御　の試し ダメだった
-	mAngle = GyroSensor::normalize(angle + mAngle);
-	mDrivePower = std::max(std::min(power,MOTOR_MAX_POWER),0);
-	Debug::print(LOG_SUMMARY, "PID is Started (%f, %d)\r\n",mAngle,mDrivePower);
+void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
+{
+	if(reset) mAngle = gGyroSensor.getRz();
+	else mAngle = GyroSensor::normalize(angle + mAngle);
+
+	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
+	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f, %d)\r\n", mAngle, mDrivePower);
 	mDriveMode = DRIVE_PID;
-}
-bool MotorDrive::onCommand(const std::vector<std::string>& args/*oncommand にも時間制御したい　chou 8-28*/)
-{
 
-	
-	int size = args.size();
-	if(size == 1)
+	if(reset)
 	{
-		Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n"    ,mMotorL.getPower(),-mMotorR.getPower());
-		Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n",mpMotorEncoder->getL(),mpMotorEncoder->getR());
+		mDiff1 = mDiff2 = mDiff3 = 0;
+		mControlPower = 0;
 	}
-	else if(size >= 2)
+}
+bool MotorDrive::onCommand(const std::vector<std::string>& args)
+{
+	int size = args.size();
+	if (size == 1)
 	{
-		if(args[1].compare("w") == 0)
+	  //Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
+	  //Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
+	}
+	else if (size >= 2)
+	{
+		if (args[1].compare("w") == 0)
 		{
 			//前進
-			drive(MOTOR_MAX_POWER,MOTOR_MAX_POWER);
+			drive(MOTOR_MAX_POWER, MOTOR_MAX_POWER);
 			return true;
-		}else if(args[1].compare("s") == 0)
+		}
+		else if (args[1].compare("s") == 0)
 		{
 			//後退
-			drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
+			drive(-MOTOR_MAX_POWER, -MOTOR_MAX_POWER);
 			return true;
-		}else if(args[1].compare("a") == 0)
+		}
+		else if (args[1].compare("a") == 0)
 		{
 			//左折
-			//drive(0,MOTOR_MAX_POWER * 0.7);
-			Time::get(mCommandTime);
-			mStabiScheduledMode=MOTOR_LEFT;
-
-			gBackStabiServo.moveGo();
-			drive(0,MOTOR_MAX_POWER * 0.5); //審査会用チューニング
-			//drive(0,-MOTOR_MAX_POWER * 0.7); //左右逆転問題対策
-			//gStabiServo.start(0.2); //左折withスタビ動作
+			drive(0, MOTOR_MAX_POWER * 0.7);
 			return true;
-		}else if(args[1].compare("d") == 0)
+		}
+		else if (args[1].compare("d") == 0)
 		{
 			//右折
-			//drive(MOTOR_MAX_POWER * 0.7,0);
-			Time::get(mCommandTime);
-			mStabiScheduledMode=MOTOR_RIGHT;
-
-			gBackStabiServo.moveGo();
-			drive(MOTOR_MAX_POWER * 0.5,0); //審査会チューニング
-			//drive(-MOTOR_MAX_POWER * 0.7,0); //左右逆転問題対策
-			//gStabiServo.start(0.2); //右折withスタビ動作
+			drive(MOTOR_MAX_POWER * 0.7, 0);
 			return true;
-		}else if(args[1].compare("h") == 0)
+		}
+		else if (args[1].compare("h") == 0)
 		{
 			//停止
-			drive(0,0);
+			drive(0, 0);
 			return true;
-		}else if(args[1].compare("go") == 0)
-		{
-			Time::get(mCommandTime);
-			mStabiScheduledMode=MOTOR_GO;
-
-			//前進withスタビ
-			gStabiServo.start(0.8);
-			gBackStabiServo.moveGo();
-			//drive(motor_max_power,motor_max_power);
-			startPID(0,MOTOR_MAX_POWER*0.7);//8-9 PID 制御　モータードライバー回路の都合により マイナスつけたよ
-			// 8-9 PID制御のためコメントアウト　　drive(MOTOR_MAX_POWER*0.7,MOTOR_MAX_POWER*0.7); 
-			return true;
-		}else if(args[1].compare("back") == 0)
-		{
-			//後退withスタビ
-			gBackStabiServo.moveRelease();
-			gStabiServo.start(0.2);
-			//drive(-MOTOR_MAX_POWER,-MOTOR_MAX_POWER);
-			drive(-MOTOR_MAX_POWER*0.7,-MOTOR_MAX_POWER*0.7); //能代用チューニング
-			return true;
-		}else if(args[1].compare("stop")==0)
-		{
-			Time::get(mCommandTime);
-			mStabiScheduledMode=MOTOR_STOP;			
-			//ストップwithスタビ
-			gBackStabiServo.moveRelease();
-			//8-27 cho 姿勢が上向きなら、前スタビのちから抜く
-			//gBackStabiServo.stop();
-			gStabiServo.start(0.8);
-			drive(0,0);
-			
-			//if(Time::dt(time,mLastUpdateTime) >0.5)
-			//{gBackStabiServo.stop();}//0.5秒なったら　スタビ停止
-			return true;
-		}else if(args[1].compare("p") == 0)
+		}
+		else if (args[1].compare("p") == 0)
 		{
 			//PID制御関連
-			if(size == 2)
+			if (size == 2)
 			{
 				//PID制御開始(現在の向き)
-				startPID(0,MOTOR_MAX_POWER);
+				drivePIDGyro(0, MOTOR_MAX_POWER, true);
 				return true;
-			}else if(size == 3)
+			}
+			else if (size == 3)
 			{
 				//PID(相対角度指定)
-				startPID(atoi(args[2].c_str()),MOTOR_MAX_POWER);
+				drivePIDGyro(atoi(args[2].c_str()), MOTOR_MAX_POWER, true);
 				return true;
-			}else if(size == 5)
+			}
+			else if (size == 5)
 			{
 				//PIDパラメータ設定
-				set(atof(args[2].c_str()),atof(args[3].c_str()),atof(args[4].c_str()));
+				setPIDGyro(atof(args[2].c_str()), atof(args[3].c_str()), atof(args[4].c_str()));
 				return true;
 			}
-		}else if(args[1].compare("r") == 0)
+		}
+		else if (args[1].compare("r") == 0)
 		{
-			if(size == 4)
+			if (size == 4)
 			{
 				//レシオ設定
-				setRatio(atoi(args[2].c_str()),atoi(args[3].c_str()));
+				setRatio(atoi(args[2].c_str()), atoi(args[3].c_str()));
 				return true;
 			}
-		}else
+		}
+		else if(args[1].compare("cpose") == 0 && size == 3)
 		{
-			if(size == 3)
+			mMaxPIDControlRatioPose = atof(args[2].c_str());
+			return true;
+		}
+		else if(args[1].compare("cgyro") == 0 && size == 3)
+		{
+			mMaxPIDControlRatioGyro = atof(args[2].c_str());
+			return true;
+		}
+		else
+		{
+			if (size == 3)
 			{
-				drive(atoi(args[1].c_str()),atoi(args[2].c_str()));//出力直接指定
+				drive(atoi(args[1].c_str()), atoi(args[2].c_str()));//出力直接指定
 				return true;
 			}
 		}
@@ -475,30 +429,32 @@ motor p            : pid start\r\n\
 motor p [angle]    : pid start with angle to move\r\n\
 motor p [P] [I] [D]: set pid params\r\n\
 motor r [l] [r]    : set motor ratio\r\n\
-motor [l] [r]      : drive motor by specified ratio\r\n");
+motor [l] [r]      : drive motor by specified ratio\r\n\
+motor [cpose/cgyro] [param]   : set max control ratio\r\n");
 	return true;
 }
-unsigned long long MotorDrive::getL()
-{
-	return mpMotorEncoder->getL();
-}
-unsigned long long MotorDrive::getR()
-{
-	return mpMotorEncoder->getR();
-}
-unsigned long long MotorDrive::getDeltaPulseL()
-{
-	return mpMotorEncoder->getDeltaPulseL();
-}
-unsigned long long MotorDrive::getDeltaPulseR()
-{
-	return mpMotorEncoder->getDeltaPulseR();
-}
-MotorDrive::MotorDrive() : mMotorL(),mMotorR(),mDriveMode(DRIVE_RATIO),mRatioL(100),mRatioR(100),mP(0),mI(0),mD(0),mDiff1(0),mDiff2(0),mDiff3(0),mAngle(0),mControlPower(0),mDrivePower(0)
-{
-	setName("motor");
-	setPriority(TASK_PRIORITY_MOTOR,TASK_INTERVAL_MOTOR);
 
-	mpMotorEncoder = MotorEncoder::getInstance();
-}
+//long long MotorDrive::getL()
+//{
+//	return mpMotorEncoder->getL();
+//}
+//long long MotorDrive::getR()
+//{
+//	return mpMotorEncoder->getR();
+//}
+//long long MotorDrive::getDeltaPulseL()
+//{
+//	return mpMotorEncoder->getDeltaPulseL();
+//}
+//long long MotorDrive::getDeltaPulseR()
+//{
+//	return mpMotorEncoder->getDeltaPulseR();
+//}
+//MotorDrive::MotorDrive() : mMotorL(), mMotorR(), mDriveMode(DRIVE_RATIO), mRatioL(100), mRatioR(100), mPIDGyro(0.003, 0, 0), mPIDPose(0.006, 0, 0), mMaxPIDControlRatioGyro(1), mMaxPIDControlRatioPose(0.5), mDiff1(0), mDiff2(0), mDiff3(0), mAngle(0), mControlPower(0), mDrivePower(0)
+//{
+//	setName("motor");
+//	setPriority(TASK_PRIORITY_MOTOR, TASK_INTERVAL_MOTOR);
+//
+//	mpMotorEncoder = MotorEncoder::getInstance();
+//}
 MotorDrive::~MotorDrive(){}

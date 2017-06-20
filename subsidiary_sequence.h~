@@ -1,9 +1,9 @@
 #pragma once
 #include <time.h>
 #include <list>
-//#include <opencv2/opencv.hpp>
-//#include <opencv/cvaux.h>
-//#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv/cvaux.h>
+#include <opencv/highgui.h>
 #include "task.h"
 #include "utils.h"
 
@@ -42,7 +42,7 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 
 	void stuckMoveRandom();//�X�^�b�N���̈ړ�����
-	//	void stuckMoveCamera(IplImage* pImage);//�J�������p�����X�^�b�N���̈ړ�����
+	void stuckMoveCamera(IplImage* pImage);//�J�������p�����X�^�b�N���̈ړ�����
 public:
 	Escaping();
 	~Escaping();
@@ -162,7 +162,6 @@ public:
 	~Avoiding();
 };
 
-/*
 //�L�O�B�e
 class PictureTaking : public TaskBase
 {
@@ -175,7 +174,7 @@ public:
 	PictureTaking();
 	~PictureTaking();
 };
-*/
+
 //�Z���T�[���O
 class SensorLogging : public TaskBase
 {
@@ -245,7 +244,6 @@ public:
 	~EncoderMonitoring();
 };
 
-/*
 class CameraSave_Sequence : public TaskBase{
 	struct timespec mLastUpdateTime;
 	double timing;
@@ -260,17 +258,17 @@ public:
   CameraSave_Sequence();
   ~CameraSave_Sequence();
 };
-*/
+
 extern Escaping gEscapingState;
 extern Waking gWakingState;
 extern WakingFromLie gWakingFromLieState;
 extern Turning gTurningState;
 extern Avoiding gAvoidingState;
-//extern WadachiPredicting gPredictingState;
+extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
-//extern PictureTaking gPictureTakingState;
+extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern MovementLogging gMovementLoggingState;
 extern EncoderMonitoring gEncoderMonitoringState;
-//extern CameraSave_Sequence gCameraSave_Sequence;
+extern CameraSave_Sequence gCameraSave_Sequence;
