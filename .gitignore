@@ -2,3 +2,6 @@
 /compiler
 /out
 *.o
+*.txt
+!initialize.txt
+
