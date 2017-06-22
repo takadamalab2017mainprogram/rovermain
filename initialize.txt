@@ -11,7 +11,7 @@ jmss fold -1.2 -1.05
 wakinglie 30
 //
 // ------------------- notes -------------------
-//hogehogehoge
+//
 // - Sentences starting by "//" are regarded as "Comment sentences".
 //
 // ---------------------------------------------
