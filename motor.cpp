@@ -105,7 +105,7 @@ Motor::Motor() : ForwardPin(-1), ReversePin(-1), mCurPower(0), mTargetPower(0), 
 Motor::~Motor()
 {
 }
-/*
+
 MotorEncoder* MotorEncoder::getInstance()
 {
 	static MotorEncoder singleton;
@@ -186,7 +186,7 @@ MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B), mEncoderPinR(PIN_PULSE
 MotorEncoder::~MotorEncoder()
 {
 }
-  */
+
 bool MotorDrive::onInit(const struct timespec& time)
 {
 	//ジャイロを使うように設定
@@ -198,12 +198,12 @@ bool MotorDrive::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motors\r\n");
 		return false;
 	}
-	/*if (!mpMotorEncoder->init())
+	if (!mpMotorEncoder->init())
 	{
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motor Encoders\r\n");
 		return false;
 	}
-	*/
+	
 	if (clock_gettime(CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
 	{
 		Debug::print(LOG_SUMMARY, "Unable to get time!\r\n");
@@ -338,8 +338,8 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 	int size = args.size();
 	if (size == 1)
 	{
-	  //Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
-	  //Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
+	  Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
+	  Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
 	}
 	else if (size >= 2)
 	{
@@ -434,27 +434,27 @@ motor [cpose/cgyro] [param]   : set max control ratio\r\n");
 	return true;
 }
 
-//long long MotorDrive::getL()
-//{
-//	return mpMotorEncoder->getL();
-//}
-//long long MotorDrive::getR()
-//{
-//	return mpMotorEncoder->getR();
-//}
-//long long MotorDrive::getDeltaPulseL()
-//{
-//	return mpMotorEncoder->getDeltaPulseL();
-//}
-//long long MotorDrive::getDeltaPulseR()
-//{
-//	return mpMotorEncoder->getDeltaPulseR();
-//}
-//MotorDrive::MotorDrive() : mMotorL(), mMotorR(), mDriveMode(DRIVE_RATIO), mRatioL(100), mRatioR(100), mPIDGyro(0.003, 0, 0), mPIDPose(0.006, 0, 0), mMaxPIDControlRatioGyro(1), mMaxPIDControlRatioPose(0.5), mDiff1(0), mDiff2(0), mDiff3(0), mAngle(0), mControlPower(0), mDrivePower(0)
-//{
-//	setName("motor");
-//	setPriority(TASK_PRIORITY_MOTOR, TASK_INTERVAL_MOTOR);
-//
-//	mpMotorEncoder = MotorEncoder::getInstance();
-//}
+long long MotorDrive::getL()
+{
+	return mpMotorEncoder->getL();
+}
+long long MotorDrive::getR()
+{
+	return mpMotorEncoder->getR();
+}
+long long MotorDrive::getDeltaPulseL()
+{
+	return mpMotorEncoder->getDeltaPulseL();
+}
+long long MotorDrive::getDeltaPulseR()
+{
+	return mpMotorEncoder->getDeltaPulseR();
+}
+MotorDrive::MotorDrive() : mMotorL(), mMotorR(), mDriveMode(DRIVE_RATIO), mRatioL(100), mRatioR(100), mPIDGyro(0.003, 0, 0), mPIDPose(0.006, 0, 0), mMaxPIDControlRatioGyro(1), mMaxPIDControlRatioPose(0.5), mDiff1(0), mDiff2(0), mDiff3(0), mAngle(0), mControlPower(0), mDrivePower(0)
+{
+	setName("motor");
+	setPriority(TASK_PRIORITY_MOTOR, TASK_INTERVAL_MOTOR);
+
+	mpMotorEncoder = MotorEncoder::getInstance();
+}
 MotorDrive::~MotorDrive(){}

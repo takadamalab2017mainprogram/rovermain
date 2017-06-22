@@ -54,8 +54,9 @@ public:
 
 /////監視スレッドの管理が微妙だったり、コールバック関数に引数を取れないしでWiringPiの実装が微妙
 ////20170616使わないため変更
-/*
-  classC
+///おかしくなるため再び追加
+
+  class MotorEncoder
   {
   private:
   int mEncoderPinL, mEncoderPinR, mEncoderPin2L, mEncoderPin2R;//エンコーダのピン番号
@@ -89,13 +90,13 @@ public:
   
   ~MotorEncoder();
   };
-*/
+
 //モータ2個とセンサーを組み合わせて走行するクラス
 class MotorDrive : public TaskBase
 {
  private:
   Motor mMotorL, mMotorR;
-  //MotorEncoder* mpMotorEncoder;
+  MotorEncoder* mpMotorEncoder;
   
   typedef enum{//制御モード
     DRIVE_RATIO, //レシオ指定で制御する
