@@ -10,7 +10,7 @@
 #include <math.h>
 
 //詳細なログ表示が必要な場合はつかってください
-//#define _LOG_DETAIL 1
+#define _LOG_DETAIL 1
 
 const static int VERSION = 01;
 

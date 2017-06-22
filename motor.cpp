@@ -20,22 +20,23 @@ bool Motor::init(int powPin, int revPin)
 	ForwardPin = powPin;
 	ReversePin = revPin;
 Debug::print(LOG_SUMMARY, "これがForwardPin番号%d\r\n",ForwardPin);
+Debug::print(LOG_SUMMARY, "これReversePin番号%d\r\n",ReversePin);
 	//前ピンを出力モードに
+	pinMode(ForwardPin, OUTPUT);
 	if (softPwmCreate(ForwardPin, 0, 100) != 0)
 	{
 		Debug::print(LOG_SUMMARY, "Failed to initialize soft-PWM\r\n");
 		return false;
 	}
-	pinMode(ForwardPin, OUTPUT);
 	//バックピンを出力モード
 
+	pinMode(ReversePin, OUTPUT);
 	if (softPwmCreate(ReversePin, 0, 100) != 0)
 	{
 		Debug::print(LOG_SUMMARY, "Failed to initialize soft-PWM\r\n");
 		return false;
 	}
 
-	pinMode(ReversePin, OUTPUT);
 	//LOW状態にして開放
 	softPwmWrite(ForwardPin, 0);
 	softPwmWrite(ReversePin, 0);
@@ -61,23 +62,13 @@ void Motor::update(double elapsedSeconds)
 			curFrameTarget = mCurPower;
 			//現在の出力に最大出力変化量5を足すか引くかする
 			curFrameTarget += ((mTargetPower > mCurPower) ? maxMotorPowerChange : -maxMotorPowerChange);
+      Debug::print(LOG_SUMMARY,"MOTOR power Limitation %f %f(%d) \r\n",mCurPower,curFrameTarget,mTargetPower);
 		}
 
 		//新しいpowerをもとにpinの状態を設定する
-    if (curFrameTarget > 0 && mCurPower <= 0)
-		  {
-        Debug::print(LOG_SUMMARY,"Reverse%d\r\n",ReversePin);
+		    softPwmWrite(ForwardPin, curFrameTarget > 0 ? fabs(curFrameTarget) : 0);
+		    softPwmWrite(ReversePin, curFrameTarget > 0 ? 0 : fabs(curFrameTarget) ) ;
         mCurPower = curFrameTarget;
-		    softPwmWrite(ForwardPin, 0);
-		    softPwmWrite(ReversePin, fabs(mCurPower));
-		  }
-		else if (curFrameTarget < 0 && mCurPower >= 0)
-		  {
-        Debug::print(LOG_SUMMARY,"Forward%d\r\n",ForwardPin);
-        mCurPower = curFrameTarget;
-		    softPwmWrite(ForwardPin, 0);
-		    softPwmWrite(ReversePin, fabs(mCurPower));
-		  }
 	}
 }
 void Motor::clean()
