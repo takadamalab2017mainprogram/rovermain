@@ -125,6 +125,8 @@ public:
 //};
 
 // サーボ制御クラス(ソフトウェアPWM)
+//20170623_サーボを１つにするため削除
+/*
 class FrontStabiServo : public TaskBase
 {
 private:
@@ -148,8 +150,11 @@ public:
 	FrontStabiServo();
 	~FrontStabiServo();
 };
+*/
 
 // サーボ制御クラス(ソフトウェアPWM)
+//20170623_このサーボとパラサーボを統合します
+//Mikeスタビって名前らしい
 class BackStabiServo : public TaskBase
 {
 private:
@@ -175,6 +180,7 @@ public:
 };
 
 // サーボ制御クラス(ソフトウェアPWM)
+/*
 class ArmServo : public TaskBase
 {
 private:
@@ -206,8 +212,11 @@ public:
 	ArmServo();
 	~ArmServo();
 };
+*/
 
 // サーボ制御クラス(ハードウェアPWM)
+//20170623_サーボを１つにするため削除
+/*
 class NeckServo : public TaskBase
 {
 private:
@@ -228,7 +237,7 @@ public:
 	NeckServo(const char* name, unsigned int pin);
 	~NeckServo();
 };
-
+*/
 
 // 4つのサーボモーターをまとめるクラス
 class SServo : public TaskBase
@@ -242,10 +251,10 @@ protected:
 	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	void start(int j, int m, int a, double n);
-	void startJohn(int j);
+	//void startJohn(int j);
 	void startMike(int m);
-	void startArm(int a);
-	void startNeck(double n);
+	//void startArm(int a);
+	//void startNeck(double n);
 	void stop();
 	void moveFold();
 	void moveRun();
@@ -281,7 +290,7 @@ public:
 extern Buzzer gBuzzer;
 extern ParaServo gParaServo;
 extern SServo gSServo;
-extern ArmServo gArmServo;
-extern FrontStabiServo gJohnServo;
+//extern ArmServo gArmServo;
+//extern FrontStabiServo gJohnServo;
 extern BackStabiServo gMikeServo;
-extern NeckServo gNeckServo;
+//extern NeckServo gNeckServo;

@@ -349,7 +349,7 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 
 	mLastUpdateTime = time;
 	gMikeServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	//gMotorDrive.drive(20);
 	mFlag = false;
 	mTryCount = 0;
@@ -475,10 +475,10 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
 	gMikeServo.start(BACK_STABI_RUN_ANGLE);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();
@@ -505,10 +505,10 @@ void Waking::onUpdate(const struct timespec& time)
 			mCurStep = STEP_WAIT_LIE;
 			return;
 		}
-		gJohnServo.start(FRONT_STABI_FOLD_ANGLE);//角度調節
+		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);//角度調節
 		gMikeServo.start(BACK_STABI_RUN_ANGLE);
-		gArmServo.start(ARM_FOLD_ANGLE);
-		gNeckServo.start(NECK_FOLD_ANGLE);
+		//gArmServo.start(ARM_FOLD_ANGLE);
+		//gNeckServo.start(NECK_FOLD_ANGLE);
 		// Do following case without breaking
 	case STEP_WAIT_LIE:
 		if (gWakingFromLieState.isActive())return;
@@ -588,9 +588,9 @@ void Waking::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
 			gBuzzer.start(30, 20, 4);
 			setRunMode(false);
-			gJohnServo.start(FRONT_STABI_RUN_ANGLE);
+			//gJohnServo.start(FRONT_STABI_RUN_ANGLE);
 			gMikeServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
-			gArmServo.start(ARM_RUN_ANGLE);
+			//gArmServo.start(ARM_RUN_ANGLE);
 			//gSServo.moveRun(); // �N���オ�萬���������X�^�r���x�[�X�̊p�x�ɖ߂�
 		}
 		else
@@ -607,10 +607,10 @@ void Waking::onUpdate(const struct timespec& time)
 				setRunMode(false);
 				return;
 			}
-			gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
+			//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 			gMikeServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
-			gArmServo.start(ARM_FOLD_ANGLE);
-			gNeckServo.start(NECK_FOLD_ANGLE);
+			//gArmServo.start(ARM_FOLD_ANGLE);
+			//gNeckServo.start(NECK_FOLD_ANGLE);
 			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n", mWakeRetryCount, WAKING_RETRY_COUNT, power);
 		}
 		break;

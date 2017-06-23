@@ -417,7 +417,8 @@ ParaServo::~ParaServo()
 //////////////////////////////////////////////
 // SoftwarePWMServo 
 //////////////////////////////////////////////
-
+//20170623_サーボを１つにするため削除
+/*
 bool FrontStabiServo::onInit(const struct timespec& time)
 {
 	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
@@ -501,7 +502,7 @@ FrontStabiServo::FrontStabiServo() : mPin(PIN_JOHN_SERVO), mAngle(0)
 FrontStabiServo::~FrontStabiServo()
 {
 }
-
+*/
 //////////////////////////////////////////////
 // SoftwarePWMServo 
 //////////////////////////////////////////////
@@ -593,6 +594,8 @@ BackStabiServo::~BackStabiServo()
 //////////////////////////////////////////////
 // SoftwarePWMServo 
 //////////////////////////////////////////////
+//20170623_サーボを１つにするため削除
+/*
 bool ArmServo::onInit(const struct timespec& time)
 {
 	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
@@ -688,11 +691,13 @@ ArmServo::ArmServo() : mPin(PIN_ARM_SERVO)
 ArmServo::~ArmServo()
 {
 }
+*/
 
 //////////////////////////////////////////////
 // HardwarePWMServo(Hardware PWM)
 //////////////////////////////////////////////
-
+//20170623_サーボを１つにするため削除
+/*
 bool NeckServo::onInit(const struct timespec& time)
 {
 	pinMode(mPin, PWM_OUTPUT);
@@ -765,48 +770,48 @@ NeckServo::NeckServo(const char* name, unsigned int pin) : mPin(pin), mAngle(0)
 NeckServo::~NeckServo()
 {
 }
-
+*/
 
 bool SServo::onInit(const struct timespec& time)
 {
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
 	return true;
 }
 void SServo::onClean()
 {
 }
-void SServo::startJohn(int j)
-{
-	gJohnServo.start(j);
-}
+//void SServo::startJohn(int j)
+//{
+	//gJohnServo.start(j);
+//}
 void SServo::startMike(int m)
 {
 	gMikeServo.start(m);
 }
-void SServo::startArm(int a)
-{
-	gArmServo.start(a);
-}
-void SServo::startNeck(double n)
-{
-	gNeckServo.start(n);
-}
+//void SServo::startArm(int a)
+//{
+	//gArmServo.start(a);
+//}
+//void SServo::startNeck(double n)
+//{
+	//gNeckServo.start(n);
+//}
 void SServo::start(int j, int m, int a, double n)
 {
-	startJohn(j);
+	//startJohn(j);
 	startMike(m);
-	startArm(a);
-	startNeck(n);
+	//startArm(a);
+	//startNeck(n);
 }
 void SServo::stop()
 {
-	gJohnServo.stop();
+	//gJohnServo.stop();
 	gMikeServo.stop();
-	gArmServo.stop();
-	gNeckServo.stop();
+	//gArmServo.stop();
+	//gNeckServo.stop();
 }
 void SServo::moveRun()
 {
@@ -838,13 +843,14 @@ bool SServo::onCommand(const std::vector<std::string>& args)
 	else if (args.size() == 3)
 	{
 		if (args[1].compare("j") == 0 || args[1].compare("J") == 0)
-			start(atoi(args[2].c_str()), gMikeServo.get(), gArmServo.get(), gNeckServo.get());
+			//20170623_MikeServoを使うため変更しました
+			start(atoi(args[2].c_str()),gMikeServo.get(),0,0);
 		else if (args[1].compare("m") == 0 || args[1].compare("M") == 0)
-			start(gJohnServo.get(), atoi(args[2].c_str()), gArmServo.get(), gNeckServo.get());
+			start(0, atoi(args[2].c_str()), 0, 0);
 		else if (args[1].compare("a") == 0 || args[1].compare("A") == 0)
-			start(gJohnServo.get(), gMikeServo.get(), atoi(args[2].c_str()), gNeckServo.get());
+			start(0, gMikeServo.get(), atoi(args[2].c_str()), 0);
 		else if (args[1].compare("n") == 0 || args[1].compare("N") == 0)
-			start(gJohnServo.get(), gMikeServo.get(), gArmServo.get(), atof(args[2].c_str()));
+			start(0, gMikeServo.get(), 0, atof(args[2].c_str()));
 		return true;
 	}
 	else if (args.size() == 6)
@@ -897,8 +903,8 @@ SServo::~SServo()
 
 Buzzer gBuzzer;
 ParaServo gParaServo;
-ArmServo gArmServo;
-FrontStabiServo gJohnServo;
+//ArmServo gArmServo;
+//FrontStabiServo gJohnServo;
 BackStabiServo gMikeServo;
-NeckServo gNeckServo("neckservo", PIN_NECK_SERVO);
+//NeckServo gNeckServo("neckservo", PIN_NECK_SERVO);
 SServo gSServo;

@@ -37,11 +37,11 @@ bool Testing::onInit(const struct timespec& time)
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gParaServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
-	gDelayedExecutor.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
+	//PgDelayedExecutor.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
@@ -199,9 +199,9 @@ bool Waiting::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
+	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMikeServo.start(BACK_STABI_FOLD_ANGLE);
 	return true;
 }
@@ -277,11 +277,11 @@ bool Falling::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gParaServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
-	gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
+	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMikeServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
@@ -298,7 +298,7 @@ void Falling::onUpdate(const struct timespec& time)
 		mLastPressure = gPressureSensor.get();
 		gParaServo.moveHold();
 		//gSServo.moveFold();//スタビを格納状態で固定
-		gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
+		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
 		gMikeServo.start(BACK_STABI_FOLD_ANGLE);
 		//gNeckServo.start(0.5);
 	}
@@ -392,10 +392,10 @@ bool Separating::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	//gSServo.setRunMode(true);
 	gParaServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
@@ -554,13 +554,13 @@ bool Navigating::onInit(const struct timespec& time)
 	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gEncoderMonitoringState.setRunMode(true);
-	gJohnServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
-	gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
+	//gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
 	gMikeServo.start(BACK_STABI_RUN_ANGLE);
-	gArmServo.start(ARM_RUN_ANGLE);
+	//gArmServo.start(ARM_RUN_ANGLE);
 	//gNeckServo.start(1);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();		//スタビを走行時の位置に移動
@@ -576,7 +576,7 @@ bool Navigating::onInit(const struct timespec& time)
 void Navigating::onUpdate(const struct timespec& time)
 {
 	//gArmServo.start(ARM_RUN_ANGLE);
-	gNeckServo.start(NECK_RUN_ANGLE);
+	//gNeckServo.start(NECK_RUN_ANGLE);
 	VECTOR3 currentPos;
 
 	//ゴールが設定されているか確認
@@ -591,12 +591,12 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	if (Time::dt(time, mLastArmServoStopTime) > 10.0 && mArmMoveFlag == true){
                 mLastArmServoMoveTime = time;
-                gArmServo.start(ARM_RUN_ANGLE);
+                //gArmServo.start(ARM_RUN_ANGLE);
                 mArmMoveFlag = false;
                 mArmStopFlag = true;
         }
         if(Time::dt(time, mLastArmServoMoveTime) > 0.5 && mArmStopFlag == true){
-                gArmServo.stop();
+                //gArmServo.stop();
                 mLastArmServoStopTime = time;
                 mArmStopFlag = false;
                 mArmMoveFlag = true;
@@ -623,7 +623,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			mLastArmServoMoveTime = time;
 			mLastArmServoStopTime = time;
 			mArmStopFlag = true;
-			gArmServo.stop();
+			//gArmServo.stop();
 		}
 		mLastPos.push_back(currentPos);
 	}
