@@ -417,8 +417,7 @@ void Separating::onUpdate(const struct timespec& time)
 	case STEP_STABI_OPEN:
 		gMultiServo.moveHold();
 		//gJohnServo.start(20); // 角度調節
-		//gMulti
-		Servo.start(20);
+		//gMultiServo.start(20);
 		//gSServo.moveRun();//スタビを走行時の位置に移動
 
 		mCurStep = STEP_WAIT_STABI_OPEN;
