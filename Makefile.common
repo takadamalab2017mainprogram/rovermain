@@ -1,4 +1,0 @@
-TARGET = out 
-
-OBJS = utils.o task.o motor.o sensor.o actuator.o serial_command.o sequence.o  main.o subsidiary_sequence.o alias.o delayed_execution.o pose_detector.o
-
