@@ -3,7 +3,7 @@
 
 	このクラスがTaskManagerのcommandメソッドを呼び出します
 	task.hも参照
-*/
+	*/
 #pragma once
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ private:
 	std::list<std::string>::iterator mHistoryIterator;
 	int mCursorPos;
 	int mEscapeBeginPos;//エスケープシーケンスの開始位置(-1：エスケープなし　-2：エスケープ完了)
-	struct termios mOldTermios,mNewTermios;
+	struct termios mOldTermios, mNewTermios;
 public:
 	virtual void onUpdate(const struct timespec& time);//シリアルポートに到着したコマンドを確認する
 

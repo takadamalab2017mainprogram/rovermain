@@ -5,7 +5,7 @@ sudo apt-get update
 sudo apt-get upgrade  
 sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0  
 sudo apt-get install libc6-i386 lib32stdc++6 zlib1g:i386  
-3. https://bitbucket.org/hogefugabar/minerva/downloads/compiler.tar.gz  
+3. https://bitbucket.org/Taisyo/the_3rd_highball/downloads/compiler.zip
 を落としてきて，解凍し，ソースコードのあるディレクトリに放り込む．  
 4. ~~ ~/.bashrcに~~  
 ~~export PKG_CONFIG_PATH=さっき解凍したコンパイラのディレクトリのパス/arm-linux-gnueabihf/lib/pkgconfig:$PKG_CONFIG_PATH~~  
@@ -14,6 +14,7 @@ sudo apt-get install libc6-i386 lib32stdc++6 zlib1g:i386
 ~~を実行．~~    
 やらなくていいです．2014/06/25  
 5. ソースコードのあるディレクトリでmakeコマンド実行．
+make -f Makefile.cross
 
 ## UbuntuでBitbucketをsshで利用する方法 ##
 1. ターミナルで，  

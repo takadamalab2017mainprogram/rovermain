@@ -4,4 +4,4 @@
 *.o
 *.txt
 !initialize.txt
-*~
+

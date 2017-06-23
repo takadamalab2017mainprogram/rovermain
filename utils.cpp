@@ -12,16 +12,16 @@
 #include <time.h>
 #include "utils.h"
 
-void Debug::print(LOG_LEVEL level, const char* fmt, ... )
+void Debug::print(LOG_LEVEL level, const char* fmt, ...)
 {
 	static std::string mFilename;
-	if(mFilename.length() == 0)
+	if (mFilename.length() == 0)
 	{
-		Filename filename("log",".txt");
+		Filename filename("log", ".txt");
 		filename.get(mFilename);
 	}
 #ifndef _LOG_DETAIL
-	if(level == LOG_DETAIL)return; //デバッグモードでなければログ出力しない
+	if (level == LOG_DETAIL)return; //デバッグモードでなければログ出力しない
 #endif
 
 	char buf[MAX_STRING_LENGTH];
@@ -29,13 +29,13 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ... )
 	va_list argp;
 	va_start(argp, fmt);
 	vsprintf(buf, fmt, argp);
-	
+
 	//画面に出力
 	printf(buf);
 	//ログファイルに出力
-	if(level != LOG_PRINT)
+	if (level != LOG_PRINT)
 	{
-		std::ofstream of(mFilename.c_str(),std::ios::out | std::ios::app);
+		std::ofstream of(mFilename.c_str(), std::ios::out | std::ios::app);
 		of << buf;
 	}
 }
@@ -45,7 +45,19 @@ void Filename::get(std::string& name)
 	filename << mPrefix << ++mIndex << mSuffix;
 	name.assign(filename.str());
 }
-Filename::Filename(const std::string& prefix,const std::string& suffix) : mPrefix(prefix),mSuffix(suffix),mIndex(0)
+void Filename::getNow(std::string& name)
+{
+	std::stringstream filename;
+	filename << mPrefix << mIndex << mSuffix;
+	name.assign(filename.str());
+}
+void Filename::getNoIndex(std::string& name)
+{
+	std::stringstream filename;
+	filename << mPrefix << mSuffix;
+	name.assign(filename.str());
+}
+Filename::Filename(const std::string& prefix, const std::string& suffix) : mPrefix(prefix), mSuffix(suffix), mIndex(0)
 {
 	//撮影インデックスを既存のファイルに上書きしないように変更
 	std::string filename;
@@ -53,23 +65,9 @@ Filename::Filename(const std::string& prefix,const std::string& suffix) : mPrefi
 	do
 	{
 		get(filename);
-	}while(stat(filename.c_str(), &st) == 0);
+	} while (stat(filename.c_str(), &st) == 0);
 	--mIndex;
 }
-//double Time::dt(const struct timespec& now,const struct timespec& last) 8-24 chou
-//{
-//	return ((double)(now.tv_sec - last.tv_sec) * 1000000000 + now.tv_nsec - last.tv_nsec) / 1000000000.0;
-//}
-//void Time::showNowTime()
-//{
-//	time_t now;
-//	struct tm *ts;
-//	now = time(NULL);
-//	ts = localtime(&now);
-//
-//	Debug::print(LOG_SUMMARY,"Time --> %d:%d:%d\r\n",ts->tm_hour, ts->tm_min, ts->tm_sec);
-//}
-///8-24 chou
 double Time::dt(const struct timespec& now, const struct timespec& last)
 {
 	return ((double)(now.tv_sec - last.tv_sec) * 1000000000 + now.tv_nsec - last.tv_nsec) / 1000000000.0;
@@ -90,62 +88,60 @@ void Time::showNowTime()
 
 	Debug::print(LOG_SUMMARY, "Time --> %d:%d:%d\r\n", ts->tm_hour, ts->tm_min, ts->tm_sec);
 }
-
-
-void String::split(const std::string& input,std::vector<std::string>& outputs)
+void String::split(const std::string& input, std::vector<std::string>& outputs)
 {
 	//文字列を空白文字で分割してvectorに格納
 	outputs.clear();
 	std::istringstream iss(input);
-	std::copy(std::istream_iterator<std::string>(iss),  std::istream_iterator<std::string>(), std::back_inserter(outputs));
+	std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter(outputs));
 }
-void ConstantManager::add(unsigned int index,const char* name,double value)
+void ConstantManager::add(unsigned int index, const char* name, double value)
 {
-	if(mData.count(index) != 0)
+	if (mData.count(index) != 0)
 	{
-		Debug::print(LOG_SUMMARY, "Constant %d  is already exist!\r\n",index);
+		Debug::print(LOG_SUMMARY, "Constant %d  is already exist!\r\n", index);
 		return;
 	}
-	struct CONSTANT constant = {name,value};
+	struct CONSTANT constant = { name, value };
 	mData[index] = constant;
 }
 double& ConstantManager::operator[](int index)
 {
 	static double error = DBL_MIN;
-	if(mData.count(index) == 0)
+	if (mData.count(index) == 0)
 	{
-		Debug::print(LOG_SUMMARY, "Constant %d not found!\r\n",index);
+		Debug::print(LOG_SUMMARY, "Constant %d not found!\r\n", index);
 		return error;
 	}
-	std::map<unsigned int,struct CONSTANT>::iterator it = mData.find(index);
+	std::map<unsigned int, struct CONSTANT>::iterator it = mData.find(index);
 	return it->second.value;
 }
 double& ConstantManager::operator[](const char* name)
 {
 	static double error = DBL_MIN;
-	std::map<unsigned int,struct CONSTANT>::iterator it = mData.begin();
-	while(it != mData.end())
+	std::map<unsigned int, struct CONSTANT>::iterator it = mData.begin();
+	while (it != mData.end())
 	{
-		if(it->second.name.compare(name) == 0)
+		if (it->second.name.compare(name) == 0)
 		{
 			return it->second.value;
 		}
 		++it;
 	}
-	Debug::print(LOG_SUMMARY, "Constant %s not found!\r\n",name);
+	Debug::print(LOG_SUMMARY, "Constant %s not found!\r\n", name);
 	return error;
 }
 
 void ConstantManager::save(const char* filename)
 {
-	if(filename == NULL)
+	if (filename == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Constant: null po\r\n");
 		return;
 	}
-	std::ofstream of(filename,std::ios::out);
-	std::map<unsigned int,struct CONSTANT>::iterator it = mData.begin();
-	while(it != mData.end())
+	std::ofstream of(filename, std::ios::out);
+	std::map<unsigned int, struct CONSTANT>::iterator it = mData.begin();
+	while (it != mData.end())
 	{
 		of << it->first << " " << it->second.name << " " << it->second.value << std::endl;
 		++it;
@@ -153,31 +149,31 @@ void ConstantManager::save(const char* filename)
 }
 void ConstantManager::load(const char* filename)
 {
-	if(filename == NULL)
+	if (filename == NULL)
 	{
 		Debug::print(LOG_SUMMARY, "Constant: null po\r\n");
 		return;
 	}
-	std::ifstream ifs(filename,std::ios::in);
+	std::ifstream ifs(filename, std::ios::in);
 	std::string str;
-	if(ifs.good())
+	if (ifs.good())
 	{
-		Debug::print(LOG_SUMMARY, "Reading %s\r\n",filename);
-		
-		//行ごとに読み込んで設定を読み込む
-		while(!ifs.eof() && !ifs.fail() && !ifs.bad())
-		{
-			std::getline(ifs,str);
-			std::vector<std::string> str_constant;
-			String::split(str,str_constant);
+		Debug::print(LOG_SUMMARY, "Reading %s\r\n", filename);
 
-			if(str_constant.size() != 3)
+		//行ごとに読み込んで設定を読み込む
+		while (!ifs.eof() && !ifs.fail() && !ifs.bad())
+		{
+			std::getline(ifs, str);
+			std::vector<std::string> str_constant;
+			String::split(str, str_constant);
+
+			if (str_constant.size() != 3)
 			{
 				Debug::print(LOG_SUMMARY, "Constant: parse error\r\n");
 				continue;
 			}
 
-			add(atoi(str_constant[0].c_str()),str_constant[1].c_str(), atof(str_constant[2].c_str()));
+			add(atoi(str_constant[0].c_str()), str_constant[1].c_str(), atof(str_constant[2].c_str()));
 		}
 	}
 }
@@ -192,8 +188,6 @@ ConstantManager::ConstantManager() : mData()
 ConstantManager::~ConstantManager()
 {
 }
-
-/////8-24 chou
 float KalmanFilter::update(float newAngle, float newRate, float dt)
 {
 	mXAngle += dt * (newRate - mXBias);
@@ -221,15 +215,14 @@ KalmanFilter::KalmanFilter() : mQAngle(0.001f), mQBias(0.003f), mRAngle(0.03f), 
 KalmanFilter::~KalmanFilter()
 {}
 
-
-double VECTOR3::calcAngleXY(const VECTOR3& current,const VECTOR3& target)
+double VECTOR3::calcAngleXY(const VECTOR3& current, const VECTOR3& target)
 {
-	return atan2(target.y - current.y,target.x - current.x) / M_PI * 180;
+	return atan2(target.y - current.y, target.x - current.x) / M_PI * 180;
 }
-double VECTOR3::calcDistanceXY(const VECTOR3& current,const VECTOR3& target)
+double VECTOR3::calcDistanceXY(const VECTOR3& current, const VECTOR3& target)
 {
 	VECTOR3 dif = current - target;
-	return sqrt(pow(dif.x,2) + pow(dif.y,2));
+	return sqrt(pow(dif.x, 2) + pow(dif.y, 2));
 }
 
 VECTOR3 VECTOR3::operator+() const
@@ -238,59 +231,59 @@ VECTOR3 VECTOR3::operator+() const
 }
 VECTOR3 VECTOR3::operator-() const
 {
-	return VECTOR3(-x,-y,-z);
+	return VECTOR3(-x, -y, -z);
 }
 VECTOR3& VECTOR3::operator+=(const VECTOR3& v)
 {
 	x += v.x;
-	y += v.y;	
+	y += v.y;
 	z += v.z;
 	return *this;
 }
 VECTOR3& VECTOR3::operator-=(const VECTOR3& v)
 {
 	x -= v.x;
-	y -= v.y;	
+	y -= v.y;
 	z -= v.z;
 	return *this;
 }
 VECTOR3 VECTOR3::operator+(const VECTOR3& v) const
 {
-	return VECTOR3(x + v.x,y + v.y,z + v.z);
+	return VECTOR3(x + v.x, y + v.y, z + v.z);
 }
 VECTOR3 VECTOR3::operator-(const VECTOR3& v) const
 {
-	return VECTOR3(x - v.x,y - v.y,z - v.z);
+	return VECTOR3(x - v.x, y - v.y, z - v.z);
 }
 VECTOR3 VECTOR3::operator+(const double v) const
 {
-	return VECTOR3(x + v,y + v,z + v);
+	return VECTOR3(x + v, y + v, z + v);
 }
 VECTOR3 VECTOR3::operator-(const double v) const
 {
-	return VECTOR3(x - v,y - v,z - v);
+	return VECTOR3(x - v, y - v, z - v);
 }
 VECTOR3& VECTOR3::operator*=(const double v)
 {
 	x *= v;
-	y *= v;	
+	y *= v;
 	z *= v;
 	return *this;
 }
 VECTOR3& VECTOR3::operator/=(const double v)
 {
 	x /= v;
-	y /= v;	
+	y /= v;
 	z /= v;
 	return *this;
 }
 VECTOR3 VECTOR3::operator*(const double v) const
 {
-	return VECTOR3(x * v,y * v,z * v);
+	return VECTOR3(x * v, y * v, z * v);
 }
 VECTOR3 VECTOR3::operator/(const double v) const
 {
-	return VECTOR3(x / v,y / v,z / v);
+	return VECTOR3(x / v, y / v, z / v);
 }
 bool VECTOR3::operator==(const VECTOR3& v) const
 {
@@ -300,7 +293,6 @@ bool VECTOR3::operator!=(const VECTOR3& v) const
 {
 	return (x != v.x) || (y != v.y) || (z != v.z);
 }
-////8-24 chou 
 VECTOR3 VECTOR3::normalize() const
 {
 	double length = sqrt(pow(x,2) + pow(y,2) + pow(z,2));

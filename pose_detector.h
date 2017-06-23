@@ -1,6 +1,7 @@
 #pragma once
 #include <time.h>
 #include <tuple>
+#include <list>
 #include "task.h"
 #include "utils.h"
 
@@ -20,13 +21,12 @@ private:
 	double mAngleLPFCoeff;
 	double mAccelUsableRange;
 	double mFlipThreshold, mLieThreshold;
+	double mMaxGpsSamplesStore;
 
-	VECTOR3 mLastGpsPos;
+	std::list<VECTOR3> mLastGpsPos;
 	int mLastGpsSampleTime;
 
 	struct timespec mLastUpdatedTime;
-	int mRoverid;
-
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -48,8 +48,8 @@ public:
 	double getPitch() const;
 	//Yaw(方角)を取得 反時計回り
 	//absoluteをtrueにすると今向いている方位(GPS基準)を返す
-	double getYaw(bool absolute = false, bool flipfix = true) const;
-	double getYawLPF(bool absolute = true/*8-24 chou trueにした*/, bool flipfix = true) const;
+	double getYaw(bool absolute = false, bool flipfix = false) const;
+	double getYawLPF(bool absolute = false, bool flipfix = false) const;
 
 	//Velocity using encoder
 	double getVelocity() const;
@@ -59,14 +59,17 @@ public:
 	bool isFlipCoord() const;
 	//横転を検知
 	bool isLie() const;
-
+	
 	bool isIllegalAccel(const VECTOR3& accel) const;
 
 	//エンコーダの値から方向転換量を取得
 	static double calcEncAngle(long long left, long long right);
+
+	static bool removeError(std::list<VECTOR3>& pos, double threshold);
 
 	PoseDetecting();
 	~PoseDetecting();
 };
 
 extern PoseDetecting gPoseDetecting;
+

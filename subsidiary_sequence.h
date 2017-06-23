@@ -1,101 +1,99 @@
 #pragma once
 #include <time.h>
 #include <list>
-#include <opencv2/opencv.hpp>
-#include <opencv/cvaux.h>
-#include <opencv/highgui.h>
+//#include <opencv2/opencv.hpp>
+//#include <opencv/cvaux.h>
+//#include <opencv/highgui.h>
 #include "task.h"
 #include "utils.h"
 
-//“QЋ–‘OЊџ’m“®Ќм
-//class WadachiPredicting : public TaskBase
-//{
-//	struct timespec mLastUpdateTime;//‘O‰с‚Мѓ`ѓFѓbѓNЋћЌЏ
-//	bool mIsAvoidingEnable;
-//	enum STEP{STEP_RUNNING, STEP_STOPPING, STEP_WAKING, STEP_CHECKING, STEP_AVOIDING};
-//	enum STEP mCurStep;
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onUpdate(const struct timespec& time);
-//	virtual bool onCommand(const std::vector<std::string>& args);
-//public:
-//	bool isWorking(const struct timespec& time);//Ћ–‘OЊџ’m“®Ќм’†‚©”Ы‚©
-//	WadachiPredicting();
-//	~WadachiPredicting();
-//};
-//
-////“Q’EЏo“®Ќм
-////‚±‚Мѓ^ѓXѓN‚Є—LЊш‚МЉФ‚НѓiѓrѓQЃ[ѓVѓ‡ѓ“‚µ‚Ь‚№‚с
-//class Escaping : public TaskBase
-//{
-//	struct timespec mLastUpdateTime;//‘O‰с‚МЌs“®‚©‚з‚М•П‰»ЋћЉФ
-//
-//	enum STEP{STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_CAMERA_TURN_HERE, STEP_RANDOM};
-//	enum STEP mCurStep;
-//	enum RANDOM_STEP{RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD};
-//	enum RANDOM_STEP mCurRandomStep;
-//	unsigned int mEscapingTriedCount;//ѓJѓЃѓ‰’EЏo‚рЋЋЌs‚µ‚Ѕ‰сђ”
-//	double mAngle;
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onClean();
-//	virtual void onUpdate(const struct timespec& time);
-//
-//	void stuckMoveRandom();//ѓXѓ^ѓbѓNЋћ‚М€Ъ“®Џ€—ќ
-//	void stuckMoveCamera(IplImage* pImage);//ѓJѓЃѓ‰‚р—p‚ў‚ЅѓXѓ^ѓbѓNЋћ‚М€Ъ“®Џ€—ќ
-//public:
-//	Escaping();
-//	~Escaping();
-//};
-//
-////“Q’EЏo’EЏoЃiѓXѓ^ѓrЋg—pverЃj
-//class EscapingByStabi : public TaskBase
-//{	
-//	struct timespec mLastUpdateTime;//‘O‰с‚МЌs“®‚©‚з‚М•П‰»ЋћЉФ
-//	bool mFlag;
-//	unsigned int mTryCount;
-//	double mAngle;// €р’Ћ‘–Ќs’†‚МѓXѓ^ѓrЉp“x 
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onUpdate(const struct timespec& time);
-//	virtual bool onCommand(const std::vector<std::string>& args);
-//public:
-//	unsigned int getTryCount();
-//	EscapingByStabi();
-//	~EscapingByStabi();
-//};
-////“Q’EЏo’EЏoЃi‹Њѓ‰ѓ“ѓ_ѓЂЃj
-//class EscapingRandom : public TaskBase
-//{
-//	struct timespec mLastUpdateTime;//‘O‰с‚МЌs“®‚©‚з‚М•П‰»ЋћЉФ
-//
-//	enum STEP{STEP_TURN = 0, STEP_FORWARD};
-//	enum STEP mCurStep;
-//protected:
-//	virtual bool onInit(const struct timespec& time);
-//	virtual void onUpdate(const struct timespec& time);
-//public:
-//	EscapingRandom();
-//	~EscapingRandom();
-//};
+//пїЅQпїЅпїЅпїЅOпїЅпїЅпїЅmпїЅпїЅпїЅпїЅ
+class WadachiPredicting : public TaskBase
+{
+	struct timespec mLastUpdateTime;//пїЅOпїЅпїЅпїЅМѓ`пїЅFпїЅbпїЅNпїЅпїЅпїЅпїЅ
+	bool mIsAvoidingEnable;
+	enum STEP{ STEP_RUNNING, STEP_STOPPING, STEP_WAKING, STEP_CHECKING, STEP_AVOIDING };
+	enum STEP mCurStep;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
+public:
+	bool isWorking(const struct timespec& time);//пїЅпїЅпїЅOпїЅпїЅпїЅmпїЅпїЅпїЅм’†пїЅпїЅпїЅЫ‚пїЅ
+	WadachiPredicting();
+	~WadachiPredicting();
+};
 
-//ѓЌЃ[ѓoЃ[‚МЋpђЁђ§Њд
-//ЋpђЁђ§Њд‚ЄЉ®—№‚·‚й‚Жѓ^ѓXѓN‚ЄЏI—№‚µ‚Ь‚·
+//пїЅQпїЅEпїЅoпїЅпїЅпїЅпїЅ
+//пїЅпїЅпїЅМѓ^пїЅXпїЅNпїЅпїЅпїЅLпїЅпїЅпїЅМЉФ‚НѓiпїЅrпїЅQпїЅ[пїЅVпїЅпїЅпїЅпїЅпїЅпїЅпїЅЬ‚пїЅпїЅпїЅ
+class Escaping : public TaskBase
+{
+	struct timespec mLastUpdateTime;//пїЅOпїЅпїЅпїЅМЌsпїЅпїЅпїЅпїЅпїЅпїЅпїЅМ•П‰пїЅпїЅпїЅпїЅпїЅ
+
+	enum STEP{ STEP_BACKWARD = 0, STEP_AFTER_BACKWARD, STEP_PRE_CAMERA, STEP_CAMERA, STEP_CAMERA_TURN, STEP_CAMERA_FORWARD, STEP_CAMERA_TURN_HERE, STEP_RANDOM };
+	enum STEP mCurStep;
+	enum RANDOM_STEP{ RANDOM_STEP_BACKWARD = 0, RANDOM_STEP_TURN, RANDOM_STEP_FORWARD };
+	enum RANDOM_STEP mCurRandomStep;
+	unsigned int mEscapingTriedCount;//пїЅJпїЅпїЅпїЅпїЅпїЅEпїЅoпїЅпїЅпїЅпїЅпїЅsпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	double mAngle;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual void onUpdate(const struct timespec& time);
+
+	void stuckMoveRandom();//пїЅXпїЅ^пїЅbпїЅNпїЅпїЅпїЅМ€Ъ“пїЅпїЅпїЅпїЅпїЅ
+	//	void stuckMoveCamera(IplImage* pImage);//пїЅJпїЅпїЅпїЅпїЅпїЅпїЅпїЅpпїЅпїЅпїЅпїЅпїЅXпїЅ^пїЅbпїЅNпїЅпїЅпїЅМ€Ъ“пїЅпїЅпїЅпїЅпїЅ
+public:
+	Escaping();
+	~Escaping();
+};
+
+//пїЅQпїЅEпїЅoпїЅEпїЅoпїЅiпїЅXпїЅ^пїЅrпїЅgпїЅpverпїЅj
+class EscapingByStabi : public TaskBase
+{
+	struct timespec mLastUpdateTime;//пїЅOпїЅпїЅпїЅМЌsпїЅпїЅпїЅпїЅпїЅпїЅпїЅМ•П‰пїЅпїЅпїЅпїЅпїЅ
+	bool mFlag;
+	unsigned int mTryCount;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
+public:
+	unsigned int getTryCount();
+	EscapingByStabi();
+	~EscapingByStabi();
+};
+
+//пїЅQпїЅEпїЅoпїЅEпїЅoпїЅiпїЅпїЅпїЅпїЅпїЅпїЅпїЅ_пїЅпїЅпїЅj
+class EscapingRandom : public TaskBase
+{
+	struct timespec mLastUpdateTime;//пїЅOпїЅпїЅпїЅМЌsпїЅпїЅпїЅпїЅпїЅпїЅпїЅМ•П‰пїЅпїЅпїЅпїЅпїЅ
+
+	enum STEP{ STEP_TURN = 0, STEP_FORWARD };
+	enum STEP mCurStep;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	EscapingRandom();
+	~EscapingRandom();
+};
+
+//пїЅпїЅпїЅ[пїЅoпїЅ[пїЅМЋpпїЅпїЅпїЅпїЅпїЅпїЅ
+//пїЅpпїЅпїЅпїЅпїЅпїЅд‚ЄпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅЖѓ^пїЅXпїЅNпїЅпїЅпїЅIпїЅпїЅпїЅпїЅпїЅЬ‚пїЅ
 class Waking : public TaskBase
 {
-	struct timespec mLastUpdateTime;//Ќs“®ЉJЋnЋћЌЏ
-	enum STEP{STEP_START,STEP_STOP,STEP_DEACCELERATE,STEP_VERIFY,STEP_LAST};
+	struct timespec mLastUpdateTime;
+	enum STEP{ STEP_CHECK_LIE, STEP_WAIT_LIE, STEP_START, STEP_STOP, STEP_DEACCELERATE, STEP_VERIFY };
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;
-	int mStartPower;				//‹N‚«Џг‚Є‚иЉJЋnЋћ‚Мѓ‚Ѓ[ѓ^Џo—Н—К
-	double mAngleThreshold;			//‹N‚«Џг‚Є‚иЉ®—№‚Ж‚·‚йЉp“x(ZX)
-	double mDeaccelerateDuration;	//Њё‘¬‚Й—v‚·‚йЋћЉФ
+	int mStartPower;				//пїЅNпїЅпїЅпїЅг‚ЄпїЅпїЅпїЅJпїЅnпїЅпїЅпїЅМѓпїЅпїЅ[пїЅ^пїЅoпїЅН—пїЅ
+	double mAngleThreshold;			//пїЅNпїЅпїЅпїЅг‚ЄпїЅиЉ®пїЅпїЅпїЅЖ‚пїЅпїЅпїЅпїЅpпїЅx(ZX)
+	double mDeaccelerateDuration;	//пїЅпїЅпїЅпїЅпїЅЙ—vпїЅпїЅпїЅйЋћпїЅпїЅ
 
 	void setPower(int p);
 	void setAngle(double a);
-	bool mIsSucceed;
-	void sendMsg();
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -106,14 +104,37 @@ public:
 	~Waking();
 };
 
-/*//ѓЌЃ[ѓoЃ[‚М‚»‚МЏк‰с“]
-//Љ®—№‚·‚й‚Жѓ^ѓXѓN‚ЄЏI—№‚µ‚Ь‚·
+//пїЅпїЅпїЅ[пїЅoпїЅ[пїЅМЋpпїЅпїЅпїЅпїЅпїЅпїЅ
+//пїЅpпїЅпїЅпїЅпїЅпїЅд‚ЄпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅЖѓ^пїЅXпїЅNпїЅпїЅпїЅIпїЅпїЅпїЅпїЅпїЅЬ‚пїЅ
+class WakingFromLie : public TaskBase
+{
+	struct timespec mLastUpdateTime;
+	struct timespec mLastDtTime;
+	enum STEP{STEP_FORWARD, STEP_VERIFY};
+	enum STEP mCurStep;
+	unsigned int mWakeRetryCount;
+	double mShortestSpeedUpPeriod;
+	double mCurrentPower;
+	unsigned int mNotLieCount;
+
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
+	virtual void onClean();
+public:
+	WakingFromLie();
+	~WakingFromLie();
+};
+
+//пїЅпїЅпїЅ[пїЅoпїЅ[пїЅМ‚пїЅпїЅМЏпїЅпїЅпїЅпїЅ]
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅЖѓ^пїЅXпїЅNпїЅпїЅпїЅIпїЅпїЅпїЅпїЅпїЅЬ‚пїЅ
 class Turning : public TaskBase
 {
 	bool mIsTurningLeft;
 	double mTurnPower;
 	double mAngle;
-	struct timespec mLastUpdateTime;//Ќs“®ЉJЋnЋћЌЏ
+	struct timespec mLastUpdateTime;//пїЅsпїЅпїЅпїЅJпїЅnпїЅпїЅпїЅпїЅ
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -124,13 +145,13 @@ public:
 	~Turning();
 };
 
-//“QЋ–‘OЊџ’mЋћ‚М‰с”р“®Ќм
-//Љ®—№‚·‚й‚Жѓ^ѓXѓN‚ЄЏI—№‚µ‚Ь‚·
+//пїЅQпїЅпїЅпїЅOпїЅпїЅпїЅmпїЅпїЅпїЅМ‰пїЅпїЅр“®ЌпїЅ
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅЖѓ^пїЅXпїЅNпїЅпїЅпїЅIпїЅпїЅпїЅпїЅпїЅЬ‚пїЅ
 class Avoiding : public TaskBase
 {
-	struct timespec mLastUpdateTime;//Ќs“®ЉJЋnЋћЌЏ
+	struct timespec mLastUpdateTime;//пїЅsпїЅпїЅпїЅJпїЅnпїЅпїЅпїЅпїЅ
 	double mAngle;
-	enum STEP {STEP_TURN = 0, STEP_FORWARD};
+	enum STEP { STEP_TURN = 0, STEP_FORWARD };
 	enum STEP mCurStep;
 protected:
 	virtual bool onInit(const struct timespec& time);
@@ -139,9 +160,10 @@ public:
 
 	Avoiding();
 	~Avoiding();
-};*/
+};
 
-//‹L”OЋB‰e
+/*
+//пїЅLпїЅOпїЅBпїЅe
 class PictureTaking : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -153,42 +175,42 @@ public:
 	PictureTaking();
 	~PictureTaking();
 };
-
-//ѓZѓ“ѓTЃ[ѓЌѓO
+*/
+//пїЅZпїЅпїЅпїЅTпїЅ[пїЅпїЅпїЅO
 class SensorLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
-	std::string mFilenameGPS,mFilenameGyro,mFilenamePressure,mFilenameEncoder;
-	unsigned long long mLastEncL,mLastEncR;
+	std::string mFilenameGPS, mFilenameGyro, mFilenamePressure, mFilenameEncoder, mFilenameAccel;
+	unsigned long long mLastEncL, mLastEncR;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 
-	void write(const std::string& filename,const char* fmt, ... );
+	void write(const std::string& filename, const char* fmt, ...);
 public:
 	SensorLogging();
 	~SensorLogging();
 };
 
-// ‘Oђi‚µ‚В‚В1•b‚І‚Ж‚Йѓ^ѓCѓ„‰с“]ђ”ЃA‰Б‘¬“x‚М’l‚рЋж“ѕ
+// пїЅOпїЅiпїЅпїЅпїЅВ‚пїЅ1пїЅbпїЅпїЅпїЅЖ‚Йѓ^пїЅCпїЅпїЅпїЅпїЅпїЅ]пїЅпїЅпїЅAпїЅпїЅпїЅпїЅпїЅxпїЅМ’lпїЅпїЅпїЅж“ѕ
 class MovementLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
-	std::string mFilenameEncoder,mFilenameAcceleration;
+	std::string mFilenameEncoder, mFilenameAcceleration;
 
-	double mPrevPowerL,mPrevPowerR;
+	double mPrevPowerL, mPrevPowerR;
 
-	//‘O‰с‚Мѓpѓ‹ѓXђ”
+	//пїЅOпїЅпїЅпїЅМѓpпїЅпїЅпїЅXпїЅпїЅ
 	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
-	
-	bool mBuzzerFlag;	//ѓuѓUЃ[‚МON,OFF‚рЉЗ—ќ 				true:ON, false:OFF
-	bool mPrintFlag;	//TeraTermЏг‚М•\Ћ¦‚МON,OFF‚рЉЗ—ќ	true:ON, false:OFF
+
+	bool mBuzzerFlag;	//пїЅuпїЅUпїЅ[пїЅпїЅON,OFFпїЅпїЅпїЅЗ—пїЅ 				true:ON, false:OFF
+	bool mPrintFlag;	//TeraTermпїЅпїЅпїЅМ•\пїЅпїЅпїЅпїЅON,OFFпїЅпїЅпїЅЗ—пїЅ	true:ON, false:OFF
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string>& args);
 
-	void write(const std::string& filename,const char* fmt, ... );
+	void write(const std::string& filename, const char* fmt, ...);
 public:
 	MovementLogging();
 	~MovementLogging();
@@ -196,61 +218,59 @@ public:
 
 class EncoderMonitoring : public TaskBase
 {
-	struct timespec mLastSamplingTime;			//ѓpѓ‹ѓXђ”‚рѓTѓ“ѓvѓЉѓ“ѓO‚µ‚ЅЋћЌЏ‚р•Ы‘¶
-	struct timespec mLastUpdateTime;			//и‡’l‚рЌXђV‚µ‚ЅЋћЌЏ‚р•Ы‘¶
-	
-	unsigned long long mStoredPulse;			//€к’иЋћЉФ“а‚Мѓpѓ‹ѓXЌЕ‘е’l(‚±‚к‚ри‡’l‚ЙЋg—p)
-	unsigned long long mCurrentMaxPulse;		//Њ»ЌЭ‚МЉъЉФ“а‚Мѓpѓ‹ѓXЌЕ‘е’l
-	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;//‘O‰с‚Мѓpѓ‹ѓXђ”
-	
-	unsigned int mUpdateTimer;					//и‡’l‚рЌXђV‚·‚йЉФЉu(•b)
-	unsigned long long mThresholdPulse;			//mStoredPulse‚©‚з‚±‚М’l‚р€ш‚ў‚Ѕ’l‚Єи‡’l‚Й‚И‚й
-	unsigned long long mIgnoredDeltaUpperPulse;	//‚±‚М’l•Є€ИЏгѓpѓ‹ѓX‚Є‘ќ‚¦‚ЅЏкЌ‡‚Ни‡’l‚рЌXђV‚µ‚И‚ў
-	unsigned long long mIgnoredDeltaLowerPulse;	//‚±‚М’l•Є€ИЏгѓpѓ‹ѓX‚ЄЊё‚Б‚ЅЏкЌ‡‚Ни‡’l‚рЌXђV‚µ‚И‚ў
-	unsigned long long mUpperThreshold;			//и‡’l‚МЏгЊА
-	unsigned long long mLowerThreshold;			//и‡’l‚М‰єЊА
-	bool mIsPrint;								//true‚И‚з1•b‚І‚Ж‚Йѓpѓ‹ѓXђ”‚р•\Ћ¦‚·‚й
+	struct timespec mLastSamplingTime;			//пїЅpпїЅпїЅпїЅXпїЅпїЅпїЅпїЅпїЅTпїЅпїЅпїЅvпїЅпїЅпїЅпїЅпїЅOпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅЫ‘пїЅ
+	struct timespec mLastUpdateTime;			//и‡’lпїЅпїЅпїЅXпїЅVпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅЫ‘пїЅ
+
+	long long mStoredPulse;			//пїЅпїЅпїЅиЋћпїЅФ“пїЅпїЅМѓpпїЅпїЅпїЅXпїЅЕ‘пїЅпїЅl(пїЅпїЅпїЅпїЅпїЅпїЅи‡’lпїЅЙЋgпїЅp)
+	long long mCurrentMaxPulse;		//пїЅпїЅпїЅЭ‚МЉпїЅпїЅФ“пїЅпїЅМѓpпїЅпїЅпїЅXпїЅЕ‘пїЅпїЅl
+	long long mPrevDeltaPulseL, mPrevDeltaPulseR;//пїЅOпїЅпїЅпїЅМѓpпїЅпїЅпїЅXпїЅпїЅ
+
+	int mUpdateTimer;					//и‡’lпїЅпїЅпїЅXпїЅVпїЅпїЅпїЅпїЅпїЅФЉu(пїЅb)
+	long long mThresholdPulse;			//mStoredPulseпїЅпїЅпїЅз‚±пїЅМ’lпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅlпїЅпїЅи‡’lпїЅЙ‚И‚пїЅ
+	long long mIgnoredDeltaUpperPulse;	//пїЅпїЅпїЅМ’lпїЅпїЅпїЅИЏпїЅпїЅpпїЅпїЅпїЅXпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅкЌ‡пїЅпїЅи‡’lпїЅпїЅпїЅXпїЅVпїЅпїЅпїЅИ‚пїЅ
+	long long mIgnoredDeltaLowerPulse;	//пїЅпїЅпїЅМ’lпїЅпїЅпїЅИЏпїЅпїЅpпїЅпїЅпїЅXпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅкЌ‡пїЅпїЅи‡’lпїЅпїЅпїЅXпїЅVпїЅпїЅпїЅИ‚пїЅ
+	long long mUpperThreshold;			//и‡’lпїЅМЏпїЅпїЅпїЅ
+	long long mLowerThreshold;			//и‡’lпїЅМ‰пїЅпїЅпїЅ
+	bool mIsPrint;								//trueпїЅИ‚пїЅ1пїЅbпїЅпїЅпїЅЖ‚ЙѓpпїЅпїЅпїЅXпїЅпїЅпїЅпїЅпїЅ\пїЅпїЅпїЅпїЅпїЅпїЅ
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string>& args);
 
-	//и‡’l‚рЌXђV‚·‚й
+	//и‡’lпїЅпїЅпїЅXпїЅVпїЅпїЅпїЅпїЅ
 	virtual void updateThreshold();
-	virtual bool removeError(unsigned long long pulseL, unsigned long long pulseR);					//ѓpѓ‹ѓXђ”‚М€ЩЏн’l‚рЏњ‹Ћ true: €ЩЏн’l‚рЊџЏo
+	virtual bool removeError(long long pulseL, long long pulseR);					//пїЅpпїЅпїЅпїЅXпїЅпїЅпїЅМ€ЩЏпїЅпїЅlпїЅпїЅпїЅпїЅпїЅпїЅ true: пїЅЩЏпїЅпїЅlпїЅпїЅпїЅпїЅпїЅo
 public:
 	EncoderMonitoring();
 	~EncoderMonitoring();
 };
 
-//’иЉъ“I‚ЙUI‚ЙЏо•с‚р‘—‚й’‡“c
-class StatusSending : public TaskBase
-{
-	struct timespec mLastSendedTime; //‘O‰с‘—ђMЋћЌЏ
-	double mSendPeriod; //‘—ђMЋьЉъ
-
+/*
+class CameraSave_Sequence : public TaskBase{
+	struct timespec mLastUpdateTime;
+	double timing;
+	bool mIsUpdateCamera;
+	bool mIsUpdateWadati;
+	
 protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-
+  virtual bool onInit(const struct timespec& time);
+  virtual void onUpdate(const struct timespec& time);
+  virtual bool onCommand(const std::vector<std::string>& args);
 public:
-	void sendStatus();
-	void setPeriod(double period);
-
-	StatusSending();
-	~StatusSending();
+  CameraSave_Sequence();
+  ~CameraSave_Sequence();
 };
-
-//extern Escaping gEscapingState;
+*/
+extern Escaping gEscapingState;
 extern Waking gWakingState;
-//extern Turning gTurningState;
-//extern Avoiding gAvoidingState;
+extern WakingFromLie gWakingFromLieState;
+extern Turning gTurningState;
+extern Avoiding gAvoidingState;
 //extern WadachiPredicting gPredictingState;
-//extern EscapingRandom gEscapingRandomState;
-//extern EscapingByStabi gEscapingByStabiState;
+extern EscapingRandom gEscapingRandomState;
+extern EscapingByStabi gEscapingByStabiState;
 //extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 extern MovementLogging gMovementLoggingState;
 extern EncoderMonitoring gEncoderMonitoringState;
-extern StatusSending gStatusSending;
+//extern CameraSave_Sequence gCameraSave_Sequence;
