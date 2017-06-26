@@ -348,7 +348,7 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 	Time::showNowTime();
 
 	mLastUpdateTime = time;
-	gMikeServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	//gMotorDrive.drive(20);
 	mFlag = false;
@@ -364,12 +364,12 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 	if (!mFlag)
 	{
 		gMotorDrive.drive(0);
-		gMikeServo.start(0);
+		gMultiServo.start(0);
 	}
 	else
 	{
 		gMotorDrive.drive(100);
-		gMikeServo.start(50);
+		gMultiServo.start(50);
 		mTryCount++;
 
 		if (mTryCount % 5 == 0)
@@ -417,7 +417,7 @@ bool EscapingRandom::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Start Escaping Random... ");
 	Time::showNowTime();
-	gMikeServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	mLastUpdateTime = time;
 	mCurStep = STEP_TURN;
 	gMotorDrive.drive(100, -100);
@@ -434,7 +434,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		//		mCurStep = STEP_TURN;
 		//		mLastUpdateTime = time;
 		//		gMotorDrive.drive(100,-100);
-		//		gMikeServo.start(0);					//�X�^�r������
+		//		gMultiServo.start(0);					//�X�^�r������
 		//	}
 		//	break;
 	case STEP_TURN:
@@ -444,7 +444,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100);
-			//gMikeServo.start(STABI_BASE_ANGLE);	//�X�^�r�L�΂�
+			//gMultiServo.start(STABI_BASE_ANGLE);	//�X�^�r�L�΂�
 		}
 		break;
 	case STEP_FORWARD:
@@ -454,7 +454,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 			mCurStep = STEP_TURN;
 			mLastUpdateTime = time;
 			gMotorDrive.drive(100, -100);
-			//gMikeServo.start(STABI_BASE_ANGLE);	//�X�^�r�L�΂�
+			//gMultiServo.start(STABI_BASE_ANGLE);	//�X�^�r�L�΂�
 		}
 		break;
 	}
@@ -476,10 +476,10 @@ bool Waking::onInit(const struct timespec& time)
 	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	//gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
-	gMikeServo.start(BACK_STABI_RUN_ANGLE);
+	gMultiServo.start(BACK_STABI_RUN_ANGLE);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();
 	gPoseDetecting.setRunMode(true);
@@ -506,7 +506,7 @@ void Waking::onUpdate(const struct timespec& time)
 			return;
 		}
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);//角度調節
-		gMikeServo.start(BACK_STABI_RUN_ANGLE);
+		gMultiServo.start(BACK_STABI_RUN_ANGLE);
 		//gArmServo.start(ARM_FOLD_ANGLE);
 		//gNeckServo.start(NECK_FOLD_ANGLE);
 		// Do following case without breaking
@@ -589,7 +589,7 @@ void Waking::onUpdate(const struct timespec& time)
 			gBuzzer.start(30, 20, 4);
 			setRunMode(false);
 			//gJohnServo.start(FRONT_STABI_RUN_ANGLE);
-			gMikeServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
+			gMultiServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
 			//gArmServo.start(ARM_RUN_ANGLE);
 			//gSServo.moveRun(); // �N���オ�萬���������X�^�r���x�[�X�̊p�x�ɖ߂�
 		}
@@ -608,7 +608,7 @@ void Waking::onUpdate(const struct timespec& time)
 				return;
 			}
 			//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-			gMikeServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
+			gMultiServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
 			//gArmServo.start(ARM_FOLD_ANGLE);
 			//gNeckServo.start(NECK_FOLD_ANGLE);
 			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n", mWakeRetryCount, WAKING_RETRY_COUNT, power);
