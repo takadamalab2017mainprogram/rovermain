@@ -156,6 +156,7 @@ public:
 // サーボ制御クラス(ソフトウェアPWM)
 //20170623_このサーボとパラサーボを統合します
 //
+/*
 class BackStabiServo : public TaskBase
 {
 private:
@@ -179,7 +180,7 @@ public:
 	BackStabiServo();
 	~BackStabiServo();
 };
-
+*/
 // サーボ制御クラス(ソフトウェアPWM)
 /*
 class ArmServo : public TaskBase
@@ -241,7 +242,7 @@ public:
 */
 
 // 4つのサーボモーターをまとめるクラス
-class SServo : public TaskBase
+/*class SServo : public TaskBase
 {
 private:
 	//std::tuple<int, int, int, double> mOffsetAngle; //set zero point for both of servo.
@@ -262,7 +263,7 @@ public:
 	SServo();
 	~SServo();
 };
-
+*/
 //// 二つのスタビサーボをまとめるクラス
 //class StabiServo : public TaskBase
 //{
@@ -290,8 +291,8 @@ public:
 
 extern Buzzer gBuzzer;
 extern MultiServo gMultiServo;
-extern SServo gSServo;
+//extern SServo gSServo;
 //extern ArmServo gArmServo;
 //extern FrontStabiServo gJohnServo;
-extern MultiServo gMultiServo;
+//extern MultiServo gMultiServo;
 //extern NeckServo gNeckServo;

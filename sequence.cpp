@@ -282,7 +282,7 @@ bool Falling::onInit(const struct timespec& time)
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-	gMultiServo.start(BACK_STABI_FOLD_ANGLE);
+	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
 	return true;
@@ -393,7 +393,7 @@ bool Separating::onInit(const struct timespec& time)
 	//gSServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
-	gMultiServo.setRunMode(true);
+	//gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);

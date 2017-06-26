@@ -169,7 +169,7 @@ bool MultiServo::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() >= 2)
 	{
-		//compareは一致したら0を返す
+		//stopと入力したらサーボに入れる力が0になる
 		if (args[1].compare("stop") == 0)
 		{
 			stop();
@@ -182,7 +182,7 @@ bool MultiServo::onCommand(const std::vector<std::string>& args)
 			float period = 0;
 			if (args.size() == 2)
 			{
-				//double型の数値に変換
+				//入力した角度をdouble型に変換
 				period = atof(args[1].c_str());
 			}
 			start(period);
@@ -192,8 +192,8 @@ bool MultiServo::onCommand(const std::vector<std::string>& args)
 	}
 	else
 	{
-		Debug::print(LOG_PRINT, "paraservo [0-1]          : set servo angle\r\n\
-paraservo stop           : stop servo\r\n");
+		Debug::print(LOG_PRINT, "multiservo [0-1]          : set servo angle\r\n\
+multiservo stop           : stop servo\r\n");
 	}
 	return true;
 }
@@ -776,7 +776,7 @@ NeckServo::~NeckServo()
 {
 }
 */
-
+/*
 bool SServo::onInit(const struct timespec& time)
 {
 	//gJohnServo.setRunMode(true);
@@ -905,10 +905,10 @@ SServo::SServo() : mRunAngle(15, 6, 5, -0.1), mFoldAngle(1, 20, 15, 1)
 SServo::~SServo()
 {
 }
-
+*/
 Buzzer gBuzzer;
 MultiServo gMultiServo;
 //ArmServo gArmServo;
 //FrontStabiServo gJohnServo;
 //NeckServo gNeckServo("neckservo", PIN_NECK_SERVO);
-SServo gSServo;
+//SServo gSServo;
