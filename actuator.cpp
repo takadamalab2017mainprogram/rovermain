@@ -147,9 +147,9 @@ Buzzer::~Buzzer()
 }
 
 //////////////////////////////////////////////
-// ParaServo(Hardware PWM)
+// MaltiServo(Hardware PWM)
 //////////////////////////////////////////////
-bool ParaServo::onInit(const struct timespec& time)
+bool MaltiServo::onInit(const struct timespec& time)
 {
 	//Pin番号をセットして出力状態に
 	pinMode(mPin, PWM_OUTPUT);
@@ -161,11 +161,11 @@ bool ParaServo::onInit(const struct timespec& time)
 
 	return true;
 }
-void ParaServo::onClean()
+void MaltiServo::onClean()
 {
 	stop();
 }
-bool ParaServo::onCommand(const std::vector<std::string>& args)
+bool MaltiServo::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() >= 2)
 	{
@@ -197,7 +197,7 @@ paraservo stop           : stop servo\r\n");
 	}
 	return true;
 }
-void ParaServo::start(double angle)
+void MaltiServo::start(double angle)
 {
 	if (angle > 1)
 		angle = 1;
@@ -209,40 +209,40 @@ void ParaServo::start(double angle)
 	double tmp = 0.8*(angle + 1.0) / 2.0;
 	pwmWrite(mPin, SERVO_BASE_VALUE + tmp * SERVO_MOVABLE_RANGE);
 }
-void ParaServo::stop()
+void MaltiServo::stop()
 {
 	pwmWrite(mPin, 0);
 }
-double ParaServo::get()
+double MaltiServo::get()
 {
 	return mAngle;
 }
-void ParaServo::moveRelease()
+void MaltiServo::moveRelease()
 {
 	start(0.0);
 }
-void ParaServo::moveHold()
+void MaltiServo::moveHold()
 {
 	start(1.0);
 }
-ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
+MaltiServo::MaltiServo() : mPin(PIN_PARA_SERVO)
 {
 	setName("paraservo");
 	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
 }
-ParaServo::~ParaServo()
+MaltiServo::~MaltiServo()
 {
 }
 
 ////////////////////////////////////////////////
-//// ParaServo(Software PWM) 
+//// MaltiServo(Software PWM) 
 ////////////////////////////////////////////////
 //
-//bool ParaServo::onInit(const struct timespec& time)
+//bool MaltiServo::onInit(const struct timespec& time)
 //{
 //	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
 //	//{
-//	//	Debug::print(LOG_PRINT,"ParaServoError: wiringPi setup failed...\n");
+//	//	Debug::print(LOG_PRINT,"MaltiServoError: wiringPi setup failed...\n");
 //	//}
 //	pinMode(mPin, PWM_OUTPUT);
 //	if (softPwmCreate(mPin, 0, SERVO_RANGE) != 0)
@@ -253,11 +253,11 @@ ParaServo::~ParaServo()
 //	//softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
 //	return true;
 //}
-//void ParaServo::onClean()
+//void MaltiServo::onClean()
 //{
 //	stop();
 //}
-//bool ParaServo::onCommand(const std::vector<std::string>& args)
+//bool MaltiServo::onCommand(const std::vector<std::string>& args)
 //{
 //	if (args.size() >= 2)
 //	{
@@ -286,7 +286,7 @@ ParaServo::~ParaServo()
 //	}
 //	return true;
 //}
-//void ParaServo::start(int angle)
+//void MaltiServo::start(int angle)
 //{
 //	//範囲のチェック
 //	if (angle >= SERVO_MAX_RANGE)
@@ -303,30 +303,30 @@ ParaServo::~ParaServo()
 //	}
 //
 //	softPwmWrite(mPin, angle);			//void softPwmWrite (int pin, int value);
-//	Debug::print(LOG_PRINT, "ParaServo Start (%d)!\r\n", angle);
+//	Debug::print(LOG_PRINT, "MaltiServo Start (%d)!\r\n", angle);
 //}
-//void ParaServo::start(POSITION p)
+//void MaltiServo::start(POSITION p)
 //{
 //	start((int)p);
 //}
-//void ParaServo::stop()
+//void MaltiServo::stop()
 //{
 //	softPwmWrite(mPin, 0);
 //}
-//void ParaServo::moveRelease()
+//void MaltiServo::moveRelease()
 //{
 //	start(POSITION_RELEASE);
 //}
-//void ParaServo::moveHold()
+//void MaltiServo::moveHold()
 //{
 //	start(POSITION_HOLD);
 //}
-//ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
+//MaltiServo::MaltiServo() : mPin(PIN_PARA_SERVO)
 //{
 //	setName("paraservo");
 //	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
 //}
-//ParaServo::~ParaServo()
+//MaltiServo::~MaltiServo()
 //{
 //}
 
@@ -906,7 +906,7 @@ SServo::~SServo()
 }
 
 Buzzer gBuzzer;
-ParaServo gParaServo;
+MaltiServo gMaltiServo;
 //ArmServo gArmServo;
 //FrontStabiServo gJohnServo;
 BackStabiServo gMikeServo;
