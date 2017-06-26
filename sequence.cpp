@@ -36,7 +36,7 @@ bool Testing::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gMaltiServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -276,7 +276,7 @@ bool Falling::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gMaltiServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -296,7 +296,7 @@ void Falling::onUpdate(const struct timespec& time)
 	if (mLastPressure == 0)
 	{
 		mLastPressure = gPressureSensor.get();
-		gMaltiServo.moveHold();
+		gMultiServo.moveHold();
 		//gSServo.moveFold();//スタビを格納状態で固定
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
 		gMultiServo.start(BACK_STABI_FOLD_ANGLE);
@@ -391,7 +391,7 @@ bool Separating::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	//gSServo.setRunMode(true);
-	gMaltiServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -415,7 +415,7 @@ void Separating::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_STABI_OPEN:
-		gMaltiServo.moveHold();
+		gMultiServo.moveHold();
 		//gJohnServo.start(20); // 角度調節
 		//gMulti
 		Servo.start(20);
@@ -441,11 +441,11 @@ void Separating::onUpdate(const struct timespec& time)
 
 		if (mCurServoState)
 		{
-			gMaltiServo.moveRelease();
+			gMultiServo.moveRelease();
 		}
 		else
 		{
-			gMaltiServo.moveHold();
+			gMultiServo.moveHold();
 		}
 
 		++mServoCount;
@@ -454,7 +454,7 @@ void Separating::onUpdate(const struct timespec& time)
 		if (mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
 			//次状態に遷移
-			gMaltiServo.stop();
+			gMultiServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);

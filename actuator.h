@@ -46,7 +46,7 @@ public:
 };
 
 //// サーボ制御クラス(ソフトウェアPWM)
-//class MaltiServo : public TaskBase
+//class MultiServo : public TaskBase
 //{
 //private:
 //	const static int SERVO_MIN_RANGE = 6;	//そのうちconstants.hに移す
@@ -73,13 +73,13 @@ public:
 //	void moveRelease();//パラシュート切り離し
 //	void moveHold();//ピンが刺さった状態の位置に移動
 //
-//	MaltiServo();
-//	~MaltiServo();
+//	MultiServo();
+//	~MultiServo();
 //};
 
 // パラサーボ制御クラス(ハードウェアPWM)
-//20170626_パラシュートサーボとバックサーボを１つに統合(MaltiServo)
-class MaltiServo : public TaskBase
+//20170626_パラシュートサーボとバックサーボを１つに統合(MultiServo)
+class MultiServo : public TaskBase
 {
 private:
 	int mPin;
@@ -97,8 +97,8 @@ public:
 	void moveHold();//ピンが刺さった状態の位置に移動
 	double get();
 
-	MaltiServo();
-	~MaltiServo();
+	MultiServo();
+	~MultiServo();
 };
 
 //// サーボ制御クラス(ソフトウェアPWM)
@@ -289,9 +289,9 @@ public:
 //};
 
 extern Buzzer gBuzzer;
-extern MaltiServo gMaltiServo;
+extern MultiServo gMultiServo;
 extern SServo gSServo;
 //extern ArmServo gArmServo;
 //extern FrontStabiServo gJohnServo;
-extern BackStabiServo gMikeServo;
+extern MultiServo gMultiServo;
 //extern NeckServo gNeckServo;
