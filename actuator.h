@@ -78,7 +78,7 @@ public:
 //};
 
 // パラサーボ制御クラス(ハードウェアPWM)
-//20170626_パラシュートサーボとバックサーボを１つに統合
+//20170626_パラシュートサーボとバックサーボを１つに統合(MaltiServo)
 class MaltiServo : public TaskBase
 {
 private:
@@ -155,7 +155,7 @@ public:
 
 // サーボ制御クラス(ソフトウェアPWM)
 //20170623_このサーボとパラサーボを統合します
-//Mikeスタビって名前らしい
+//
 class BackStabiServo : public TaskBase
 {
 private:
@@ -253,7 +253,7 @@ protected:
 public:
 	void start(int j, int m, int a, double n);
 	//void startJohn(int j);
-	void startMike(int m);
+	void startMulti(int m);
 	//void startArm(int a);
 	//void startNeck(double n);
 	void stop();
