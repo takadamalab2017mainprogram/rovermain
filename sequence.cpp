@@ -36,7 +36,7 @@ bool Testing::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gParaServo.setRunMode(true);
+	gMaltiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -276,7 +276,7 @@ bool Falling::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gParaServo.setRunMode(true);
+	gMaltiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -296,7 +296,7 @@ void Falling::onUpdate(const struct timespec& time)
 	if (mLastPressure == 0)
 	{
 		mLastPressure = gPressureSensor.get();
-		gParaServo.moveHold();
+		gMaltiServo.moveHold();
 		//gSServo.moveFold();//スタビを格納状態で固定
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
 		gMikeServo.start(BACK_STABI_FOLD_ANGLE);
@@ -391,7 +391,7 @@ bool Separating::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	//gSServo.setRunMode(true);
-	gParaServo.setRunMode(true);
+	gMaltiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMikeServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -415,7 +415,7 @@ void Separating::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_STABI_OPEN:
-		gParaServo.moveHold();
+		gMaltiServo.moveHold();
 		//gJohnServo.start(20); // 角度調節
 		//gMikeServo.start(20);
 		//gSServo.moveRun();//スタビを走行時の位置に移動
@@ -440,11 +440,11 @@ void Separating::onUpdate(const struct timespec& time)
 
 		if (mCurServoState)
 		{
-			gParaServo.moveRelease();
+			gMaltiServo.moveRelease();
 		}
 		else
 		{
-			gParaServo.moveHold();
+			gMaltiServo.moveHold();
 		}
 
 		++mServoCount;
@@ -453,7 +453,7 @@ void Separating::onUpdate(const struct timespec& time)
 		if (mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
 			//次状態に遷移
-			gParaServo.stop();
+			gMaltiServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);
