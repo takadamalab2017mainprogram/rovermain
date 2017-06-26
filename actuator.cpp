@@ -780,7 +780,7 @@ NeckServo::~NeckServo()
 bool SServo::onInit(const struct timespec& time)
 {
 	//gJohnServo.setRunMode(true);
-	//gMultiServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	return true;
