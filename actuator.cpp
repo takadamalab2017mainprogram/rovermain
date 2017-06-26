@@ -151,9 +151,11 @@ Buzzer::~Buzzer()
 //////////////////////////////////////////////
 bool ParaServo::onInit(const struct timespec& time)
 {
+	//Pin番号をセットして出力状態に
 	pinMode(mPin, PWM_OUTPUT);
-
+	//サーボの制御にはmark:spacemode(MS)を使う
 	pwmSetMode(PWM_MODE_MS);
+	//範囲レジスタを設定、デフォルトは1024
 	pwmSetRange(9000);
 	pwmSetClock(32);
 
@@ -167,6 +169,7 @@ bool ParaServo::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() >= 2)
 	{
+		//compareは一致したら0を返す
 		if (args[1].compare("stop") == 0)
 		{
 			stop();
@@ -179,6 +182,7 @@ bool ParaServo::onCommand(const std::vector<std::string>& args)
 			float period = 0;
 			if (args.size() == 2)
 			{
+				//double型の数値に変換
 				period = atof(args[1].c_str());
 			}
 			start(period);
