@@ -20,16 +20,5 @@ bool Server::init()
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
 
-}
 
-void error_check(int sock) 
-{
-	//sockが-1を返したら失敗
-	if (sock < 0)
-	{
-		//エラーを表示する処理
-		perror("socketのエラーが出ました");
-		printf("%d\n", errno);
-		return 1;
-	}
 }
