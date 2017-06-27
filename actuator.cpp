@@ -147,26 +147,29 @@ Buzzer::~Buzzer()
 }
 
 //////////////////////////////////////////////
-// ParaServo(Hardware PWM)
+// MultiServo(Hardware PWM)
 //////////////////////////////////////////////
-bool ParaServo::onInit(const struct timespec& time)
+bool MultiServo::onInit(const struct timespec& time)
 {
+	//Pin番号をセットして出力状態に
 	pinMode(mPin, PWM_OUTPUT);
-
+	//サーボの制御にはmark:spacemode(MS)を使う
 	pwmSetMode(PWM_MODE_MS);
+	//範囲レジスタを設定、デフォルトは1024
 	pwmSetRange(9000);
 	pwmSetClock(32);
 
 	return true;
 }
-void ParaServo::onClean()
+void MultiServo::onClean()
 {
 	stop();
 }
-bool ParaServo::onCommand(const std::vector<std::string>& args)
+bool MultiServo::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() >= 2)
 	{
+		//stopと入力したらサーボに入れる力が0になる
 		if (args[1].compare("stop") == 0)
 		{
 			stop();
@@ -179,6 +182,7 @@ bool ParaServo::onCommand(const std::vector<std::string>& args)
 			float period = 0;
 			if (args.size() == 2)
 			{
+				//入力した角度をdouble型に変換
 				period = atof(args[1].c_str());
 			}
 			start(period);
@@ -188,12 +192,12 @@ bool ParaServo::onCommand(const std::vector<std::string>& args)
 	}
 	else
 	{
-		Debug::print(LOG_PRINT, "paraservo [0-1]          : set servo angle\r\n\
-paraservo stop           : stop servo\r\n");
+		Debug::print(LOG_PRINT, "multiservo [0-1]          : set servo angle\r\n\
+multiservo stop           : stop servo\r\n");
 	}
 	return true;
 }
-void ParaServo::start(double angle)
+void MultiServo::start(double angle)
 {
 	if (angle > 1)
 		angle = 1;
@@ -205,40 +209,40 @@ void ParaServo::start(double angle)
 	double tmp = 0.8*(angle + 1.0) / 2.0;
 	pwmWrite(mPin, SERVO_BASE_VALUE + tmp * SERVO_MOVABLE_RANGE);
 }
-void ParaServo::stop()
+void MultiServo::stop()
 {
 	pwmWrite(mPin, 0);
 }
-double ParaServo::get()
+double MultiServo::get()
 {
 	return mAngle;
 }
-void ParaServo::moveRelease()
+void MultiServo::moveRelease()
 {
 	start(0.0);
 }
-void ParaServo::moveHold()
+void MultiServo::moveHold()
 {
 	start(1.0);
 }
-ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
+MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
 {
-	setName("paraservo");
+	setName("Multiservo");
 	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
 }
-ParaServo::~ParaServo()
+MultiServo::~MultiServo()
 {
 }
 
 ////////////////////////////////////////////////
-//// ParaServo(Software PWM) 
+//// MultiServo(Software PWM) 
 ////////////////////////////////////////////////
 //
-//bool ParaServo::onInit(const struct timespec& time)
+//bool MultiServo::onInit(const struct timespec& time)
 //{
 //	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
 //	//{
-//	//	Debug::print(LOG_PRINT,"ParaServoError: wiringPi setup failed...\n");
+//	//	Debug::print(LOG_PRINT,"MultiServoError: wiringPi setup failed...\n");
 //	//}
 //	pinMode(mPin, PWM_OUTPUT);
 //	if (softPwmCreate(mPin, 0, SERVO_RANGE) != 0)
@@ -249,11 +253,11 @@ ParaServo::~ParaServo()
 //	//softPwmCreate(mPin, 0, SERVO_RANGE);	//int softPwmCreate (int pin, int initialValue, int pwmRange);
 //	return true;
 //}
-//void ParaServo::onClean()
+//void MultiServo::onClean()
 //{
 //	stop();
 //}
-//bool ParaServo::onCommand(const std::vector<std::string>& args)
+//bool MultiServo::onCommand(const std::vector<std::string>& args)
 //{
 //	if (args.size() >= 2)
 //	{
@@ -282,7 +286,7 @@ ParaServo::~ParaServo()
 //	}
 //	return true;
 //}
-//void ParaServo::start(int angle)
+//void MultiServo::start(int angle)
 //{
 //	//範囲のチェック
 //	if (angle >= SERVO_MAX_RANGE)
@@ -299,30 +303,30 @@ ParaServo::~ParaServo()
 //	}
 //
 //	softPwmWrite(mPin, angle);			//void softPwmWrite (int pin, int value);
-//	Debug::print(LOG_PRINT, "ParaServo Start (%d)!\r\n", angle);
+//	Debug::print(LOG_PRINT, "MultiServo Start (%d)!\r\n", angle);
 //}
-//void ParaServo::start(POSITION p)
+//void MultiServo::start(POSITION p)
 //{
 //	start((int)p);
 //}
-//void ParaServo::stop()
+//void MultiServo::stop()
 //{
 //	softPwmWrite(mPin, 0);
 //}
-//void ParaServo::moveRelease()
+//void MultiServo::moveRelease()
 //{
 //	start(POSITION_RELEASE);
 //}
-//void ParaServo::moveHold()
+//void MultiServo::moveHold()
 //{
 //	start(POSITION_HOLD);
 //}
-//ParaServo::ParaServo() : mPin(PIN_PARA_SERVO)
+//MultiServo::MultiServo() : mPin(PIN_PARA_SERVO)
 //{
 //	setName("paraservo");
 //	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
 //}
-//ParaServo::~ParaServo()
+//MultiServo::~MultiServo()
 //{
 //}
 
@@ -417,7 +421,8 @@ ParaServo::~ParaServo()
 //////////////////////////////////////////////
 // SoftwarePWMServo 
 //////////////////////////////////////////////
-
+//20170623_サーボを１つにするため削除
+/*
 bool FrontStabiServo::onInit(const struct timespec& time)
 {
 	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
@@ -501,11 +506,12 @@ FrontStabiServo::FrontStabiServo() : mPin(PIN_JOHN_SERVO), mAngle(0)
 FrontStabiServo::~FrontStabiServo()
 {
 }
-
+*/
 //////////////////////////////////////////////
 // SoftwarePWMServo 
 //////////////////////////////////////////////
-
+/*
+//20170626_MultiServoのみ使います。
 bool BackStabiServo::onInit(const struct timespec& time)
 {
 	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
@@ -589,10 +595,12 @@ BackStabiServo::BackStabiServo() : mPin(PIN_MIKE_SERVO), mAngle(0)
 BackStabiServo::~BackStabiServo()
 {
 }
-
+*/
 //////////////////////////////////////////////
 // SoftwarePWMServo 
 //////////////////////////////////////////////
+//20170623_サーボを１つにするため削除
+/*
 bool ArmServo::onInit(const struct timespec& time)
 {
 	//if (wiringPiSetup() == -1)//Software PWMを使う前にwiringPiSetupを呼ぶ必要があるらしい
@@ -688,11 +696,13 @@ ArmServo::ArmServo() : mPin(PIN_ARM_SERVO)
 ArmServo::~ArmServo()
 {
 }
+*/
 
 //////////////////////////////////////////////
 // HardwarePWMServo(Hardware PWM)
 //////////////////////////////////////////////
-
+//20170623_サーボを１つにするため削除
+/*
 bool NeckServo::onInit(const struct timespec& time)
 {
 	pinMode(mPin, PWM_OUTPUT);
@@ -765,48 +775,48 @@ NeckServo::NeckServo(const char* name, unsigned int pin) : mPin(pin), mAngle(0)
 NeckServo::~NeckServo()
 {
 }
-
-
+*/
+/*
 bool SServo::onInit(const struct timespec& time)
 {
-	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
 	return true;
 }
 void SServo::onClean()
 {
 }
-void SServo::startJohn(int j)
+//void SServo::startJohn(int j)
+//{
+	//gJohnServo.start(j);
+//}
+void SServo::startMulti(int m)
 {
-	gJohnServo.start(j);
+	gMultiServo.start(m);
 }
-void SServo::startMike(int m)
-{
-	gMikeServo.start(m);
-}
-void SServo::startArm(int a)
-{
-	gArmServo.start(a);
-}
-void SServo::startNeck(double n)
-{
-	gNeckServo.start(n);
-}
+//void SServo::startArm(int a)
+//{
+	//gArmServo.start(a);
+//}
+//void SServo::startNeck(double n)
+//{
+	//gNeckServo.start(n);
+//}
 void SServo::start(int j, int m, int a, double n)
 {
-	startJohn(j);
-	startMike(m);
-	startArm(a);
-	startNeck(n);
+	//startJohn(j);
+	startMulti(m);
+	//startArm(a);
+	//startNeck(n);
 }
 void SServo::stop()
 {
-	gJohnServo.stop();
-	gMikeServo.stop();
-	gArmServo.stop();
-	gNeckServo.stop();
+	//gJohnServo.stop();
+	gMultiServo.stop();
+	//gArmServo.stop();
+	//gNeckServo.stop();
 }
 void SServo::moveRun()
 {
@@ -838,13 +848,14 @@ bool SServo::onCommand(const std::vector<std::string>& args)
 	else if (args.size() == 3)
 	{
 		if (args[1].compare("j") == 0 || args[1].compare("J") == 0)
-			start(atoi(args[2].c_str()), gMikeServo.get(), gArmServo.get(), gNeckServo.get());
+			//20170623_MultiServoを使うため変更しました
+			start(atoi(args[2].c_str()),gMultiServo.get(),0,0);
 		else if (args[1].compare("m") == 0 || args[1].compare("M") == 0)
-			start(gJohnServo.get(), atoi(args[2].c_str()), gArmServo.get(), gNeckServo.get());
+			start(0, atoi(args[2].c_str()), 0, 0);
 		else if (args[1].compare("a") == 0 || args[1].compare("A") == 0)
-			start(gJohnServo.get(), gMikeServo.get(), atoi(args[2].c_str()), gNeckServo.get());
+			start(0, gMultiServo.get(), atoi(args[2].c_str()), 0);
 		else if (args[1].compare("n") == 0 || args[1].compare("N") == 0)
-			start(gJohnServo.get(), gMikeServo.get(), gArmServo.get(), atof(args[2].c_str()));
+			start(0, gMultiServo.get(), 0, atof(args[2].c_str()));
 		return true;
 	}
 	else if (args.size() == 6)
@@ -876,7 +887,7 @@ bool SServo::onCommand(const std::vector<std::string>& args)
 	{
 		Debug::print(LOG_PRINT, "jmans          : set servo angle\r\n\
 jmans [0:100] [0:100] [0:100] [-1:1]    : set JMservo angle\r\n\
-jmans m [0:100]           : set Mike servo angle\r\n\
+jmans m [0:100]           : set Multi servo angle\r\n\
 jmans j [0:100]           : set John servo angle\r\n\
 jmans a [0:100]           : set Arm servo angle\r\n\
 jmans n [-1:1]           : set Neck servo angle\r\n\
@@ -894,11 +905,10 @@ SServo::SServo() : mRunAngle(15, 6, 5, -0.1), mFoldAngle(1, 20, 15, 1)
 SServo::~SServo()
 {
 }
-
+*/
 Buzzer gBuzzer;
-ParaServo gParaServo;
-ArmServo gArmServo;
-FrontStabiServo gJohnServo;
-BackStabiServo gMikeServo;
-NeckServo gNeckServo("neckservo", PIN_NECK_SERVO);
-SServo gSServo;
+MultiServo gMultiServo;
+//ArmServo gArmServo;
+//FrontStabiServo gJohnServo;
+//NeckServo gNeckServo("neckservo", PIN_NECK_SERVO);
+//SServo gSServo;

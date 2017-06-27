@@ -36,12 +36,12 @@ bool Testing::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gParaServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
-	gDelayedExecutor.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
+	//PgDelayedExecutor.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
@@ -199,10 +199,10 @@ bool Waiting::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
-	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
-	gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-	gMikeServo.start(BACK_STABI_FOLD_ANGLE);
+	//gJohnServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
+	gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	return true;
 }
 void Waiting::nextState()
@@ -276,13 +276,13 @@ bool Falling::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gParaServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
-	gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-	gMikeServo.start(BACK_STABI_FOLD_ANGLE);
+	gMultiServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
+	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
+	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
 	return true;
@@ -296,10 +296,10 @@ void Falling::onUpdate(const struct timespec& time)
 	if (mLastPressure == 0)
 	{
 		mLastPressure = gPressureSensor.get();
-		gParaServo.moveHold();
+		gMultiServo.moveHold();
 		//gSServo.moveFold();//スタビを格納状態で固定
-		gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
-		gMikeServo.start(BACK_STABI_FOLD_ANGLE);
+		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
+		gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 		//gNeckServo.start(0.5);
 	}
 
@@ -391,11 +391,11 @@ bool Separating::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	//gSServo.setRunMode(true);
-	gParaServo.setRunMode(true);
-	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gJohnServo.setRunMode(true);
+	//gMultiServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gGyroSensor.setRunMode(true);
@@ -415,9 +415,9 @@ void Separating::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_STABI_OPEN:
-		gParaServo.moveHold();
+		gMultiServo.moveHold();
 		//gJohnServo.start(20); // 角度調節
-		//gMikeServo.start(20);
+		//gMultiServo.start(20);
 		//gSServo.moveRun();//スタビを走行時の位置に移動
 
 		mCurStep = STEP_WAIT_STABI_OPEN;
@@ -440,11 +440,11 @@ void Separating::onUpdate(const struct timespec& time)
 
 		if (mCurServoState)
 		{
-			gParaServo.moveRelease();
+			gMultiServo.moveRelease();
 		}
 		else
 		{
-			gParaServo.moveHold();
+			gMultiServo.moveHold();
 		}
 
 		++mServoCount;
@@ -453,7 +453,7 @@ void Separating::onUpdate(const struct timespec& time)
 		if (mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
 			//次状態に遷移
-			gParaServo.stop();
+			gMultiServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_PRE_PARA_JUDGE;
 			gWakingState.setRunMode(true);
@@ -554,13 +554,13 @@ bool Navigating::onInit(const struct timespec& time)
 	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gEncoderMonitoringState.setRunMode(true);
-	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
-	gArmServo.setRunMode(true);
-	gNeckServo.setRunMode(true);
-	gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
-	gMikeServo.start(BACK_STABI_RUN_ANGLE);
-	gArmServo.start(ARM_RUN_ANGLE);
+	//gJohnServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	//gArmServo.setRunMode(true);
+	//gNeckServo.setRunMode(true);
+	//gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
+	gMultiServo.start(BACK_STABI_RUN_ANGLE);
+	//gArmServo.start(ARM_RUN_ANGLE);
 	//gNeckServo.start(1);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();		//スタビを走行時の位置に移動
@@ -576,7 +576,7 @@ bool Navigating::onInit(const struct timespec& time)
 void Navigating::onUpdate(const struct timespec& time)
 {
 	//gArmServo.start(ARM_RUN_ANGLE);
-	gNeckServo.start(NECK_RUN_ANGLE);
+	//gNeckServo.start(NECK_RUN_ANGLE);
 	VECTOR3 currentPos;
 
 	//ゴールが設定されているか確認
@@ -591,12 +591,12 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	if (Time::dt(time, mLastArmServoStopTime) > 10.0 && mArmMoveFlag == true){
                 mLastArmServoMoveTime = time;
-                gArmServo.start(ARM_RUN_ANGLE);
+                //gArmServo.start(ARM_RUN_ANGLE);
                 mArmMoveFlag = false;
                 mArmStopFlag = true;
         }
         if(Time::dt(time, mLastArmServoMoveTime) > 0.5 && mArmStopFlag == true){
-                gArmServo.stop();
+                //gArmServo.stop();
                 mLastArmServoStopTime = time;
                 mArmStopFlag = false;
                 mArmMoveFlag = true;
@@ -623,7 +623,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			mLastArmServoMoveTime = time;
 			mLastArmServoStopTime = time;
 			mArmStopFlag = true;
-			gArmServo.stop();
+			//gArmServo.stop();
 		}
 		mLastPos.push_back(currentPos);
 	}
@@ -903,12 +903,12 @@ bool ColorAccessing::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	gArmServo.setRunMode(true);
 	gNeckServo.setRunMode(true);
 	//gSServo.setRunMode(true);
 	gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
-	gMikeServo.start(BACK_STABI_RUN_ANGLE);
+	gMultiServo.start(BACK_STABI_RUN_ANGLE);
 	//gSServo.moveDetect();		//スタビをゴール検知の位置に移動
 
 	mCurStep = STEP_STARTING;
@@ -964,7 +964,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		if (!gWakingState.isActive())
 		{
 			Debug::print(LOG_SUMMARY, "Detecting: Checking started\r\n");
-			//gMikeServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
+			//gMultiServo.start(STABI_BASE_ANGLE);		//スタビを走行時の位置に移動
 			//setHorizontalStabiAngle();
 			mCurStep = STEP_CHECKING;
 			mLastUpdateTime = time;
@@ -1141,14 +1141,14 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 		}
 		break;
 	case STEP_STOPPING_LONG:
-		//gMikeServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
+		//gMultiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 		if (Time::dt(time, mLastUpdateTime) > mStraightTime)
 		{
 			mCurStep = STEP_DEACCELERATE;
 		}
 		break;
 	case STEP_STOPPING_VERYLONG:
-		//gMikeServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
+		//gMultiServo.start(STABI_WAKING_ANGLE);		//スタビを上げる
 		if (Time::dt(time, mLastUpdateTime) > mStraightTimeFromFar)
 		{
 			mCurStep = STEP_DEACCELERATE;
@@ -1173,7 +1173,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 	case STEP_WAIT_FIRST:
 		if (Time::dt(time, mLastUpdateTime) > (mWaitTime / 2))
 		{
-			//gMikeServo.start((STABI_BASE_ANGLE + STABI_WAKING_ANGLE) / 2);	//中間の角度
+			//gMultiServo.start((STABI_BASE_ANGLE + STABI_WAKING_ANGLE) / 2);	//中間の角度
 			mCurStep = STEP_WAIT_SECOND;
 		}
 		break;
@@ -1228,7 +1228,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 
 //void ColorAccessing::setHorizontalStabiAngle()
 //{
-//	gMikeServo.start(mCalcedStabiAngle);
+//	gMultiServo.start(mCalcedStabiAngle);
 //
 //	double az = gAccelerationSensor.getAz();
 //	double ay = gAccelerationSensor.getAy();
@@ -1252,7 +1252,7 @@ void ColorAccessing::onUpdate(const struct timespec& time)
 //			if (mCalcedStabiAngle < 0)
 //				mCalcedStabiAngle = 0.0;
 //		}
-//		gMikeServo.start(mCalcedStabiAngle);
+//		gMultiServo.start(mCalcedStabiAngle);
 //	}
 //
 //}
@@ -1566,7 +1566,7 @@ bool Modeling::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gJohnServo.setRunMode(true);
-	gMikeServo.setRunMode(true);
+	gMultiServo.setRunMode(true);
 	gArmServo.setRunMode(true);
 	gNeckServo.setRunMode(true);
 	//gSServo.setRunMode(true);

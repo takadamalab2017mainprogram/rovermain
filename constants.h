@@ -27,11 +27,11 @@ const static int PIN_PWM_B2 = 29;                              //Clear!
 const static int PIN_BUZZER = 12;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 13;//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;//Cdsセンサピン                  Clear!
-const static int PIN_PARA_SERVO = 23;// パラシュートサーボピン          Clear!
-const static int PIN_JOHN_SERVO = 25;//                                 Clear!
-const static int PIN_MIKE_SERVO = 21;       //スタビサーボピン          Clear!
-const static int PIN_NECK_SERVO = 1;//                                  Clear!
-const static int PIN_ARM_SERVO = 22;//                                  Clear!
+const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
+//const static int PIN_JOHN_SERVO = 25;//                                 Clear!
+//const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
+//const static int PIN_NECK_SERVO = 1;//                                  Clear!
+//const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
 
 //モータ設定
