@@ -21,6 +21,7 @@
 #include <time.h>
 #include "alias.h"
 
+//これらを定義することで#ifdef～#endifのコンパイルを無視させることができる
 #define USE_ALIAS
 #define USE_EXEC_SCRIPT
 
