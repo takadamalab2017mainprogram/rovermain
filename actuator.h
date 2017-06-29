@@ -324,6 +324,7 @@ public:
 
 extern Buzzer gBuzzer;
 extern MultiServo gMultiServo;
+extern LED gLED;
 //extern SServo gSServo;
 //extern ArmServo gArmServo;
 //extern FrontStabiServo gJohnServo;
