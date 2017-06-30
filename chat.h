@@ -57,7 +57,7 @@ private:
 	char buf[32];
     //•¶š”
 	int n;
-	
+
 public:
 
 	bool init();
