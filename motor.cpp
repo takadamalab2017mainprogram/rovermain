@@ -118,7 +118,7 @@ void MotorEncoder::pulseRCallback()
 {
 	MotorEncoder::getInstance()->mPulseCountR++;
   	digitalRead(MotorEncoder::getInstance()->mEncoderPin2R)==1 ? MotorEncoder::getInstance()->mPulseCountR++ : MotorEncoder::getInstance()->mPulseCountR--;
-}		
+}
 bool MotorEncoder::init()
 {
 mPulseCountL = mPulseCountR = 0;
@@ -202,7 +202,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motor Encoders\r\n");
 		return false;
 	}
-	
+
 	if (clock_gettime(CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
 	{
 		Debug::print(LOG_SUMMARY, "Unable to get time!\r\n");
@@ -229,7 +229,7 @@ void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxCon
 	//ずれ情報を元に新しいモーター出力を設定(PID)
 	double powerDiff = pid.x * (mDiff1 - mDiff2) + pid.y * mDiff1 + pid.z * ((mDiff1 - mDiff2) - (mDiff2 - mDiff3));
 	mControlPower += powerDiff;
-	
+
 	//モータ速度係数を用意
 	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//モータ出力の割合
 

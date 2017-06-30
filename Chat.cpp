@@ -11,8 +11,8 @@
 #include "utils.h"
 using namespace std;
 
-//マルチーズ追加チャットプログラム
-//chatを受けとるserverのセットアップ
+//20170630マルチーズ追加チャットプログラム
+//文字列委を受けとるserverのセットアップ
 bool Server::init(int cl_ip)
 {
 	//ソケットの作成
@@ -44,18 +44,28 @@ void Server::update(double elapsedSeconds)
 	//TCPクライアントからの接続要求を受け付ける
 	len = sizeof(client);
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
+}
+//sock操作を一端終了（電力消費軽減らしい？）
+void Server::clean();
+{
+	//TCPセッションの終了
+	close(sock);
+	//listenするsocketの終了
+	close(sock0);
+	mes = NULL
+}
+void Server::onCommand(const std::vector<std::string>& args)
+{
+	switch(args.size())
+	{
+		case 2:
+		if(args[1].compare(""))
+	}
 
-	//クライアントからデータ(文字列)を受信
-	memset(buf_client, 0, sizeof(buf_client));
+}
 
-	//nは文字列
-	int n = recv(sock, buf_client, sizeof(buf_client), 0);
-
-	//クライアントから受信した文字列を表示
-	Debug::print(LOG_SUMMARY, "次の文字列を受信しました→,%s\n",buf_client)
-	//送るメッセージを入力
-	cin >> mes;
-	//入力した5文字を送信
-	write(sock, mes, 5);
-	Debug::print(LOG_SUMMARY,"次の文字列を送信しました→%s\n",mes)
+Server::Server():
+{
+	setName("chat");
+	setPriority(TASK_)
 }

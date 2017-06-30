@@ -235,7 +235,7 @@ MultiServo::~MultiServo()
 }
 
 ////////////////////////////////////////////////
-//// MultiServo(Software PWM) 
+//// MultiServo(Software PWM)
 ////////////////////////////////////////////////
 //
 //bool MultiServo::onInit(const struct timespec& time)
@@ -331,7 +331,7 @@ MultiServo::~MultiServo()
 //}
 
 ////////////////////////////////////////////////
-//// SoftwarePWMServo 
+//// SoftwarePWMServo
 ////////////////////////////////////////////////
 //
 //bool SoftwarePWMServo::onInit(const struct timespec& time)
@@ -419,7 +419,7 @@ MultiServo::~MultiServo()
 //}
 
 //////////////////////////////////////////////
-// SoftwarePWMServo 
+// SoftwarePWMServo
 //////////////////////////////////////////////
 //20170623_サーボを１つにするため削除
 /*
@@ -508,7 +508,7 @@ FrontStabiServo::~FrontStabiServo()
 }
 */
 //////////////////////////////////////////////
-// SoftwarePWMServo 
+// SoftwarePWMServo
 //////////////////////////////////////////////
 /*
 //20170626_MultiServoのみ使います。
@@ -597,7 +597,7 @@ BackStabiServo::~BackStabiServo()
 }
 */
 //////////////////////////////////////////////
-// SoftwarePWMServo 
+// SoftwarePWMServo
 //////////////////////////////////////////////
 //20170623_サーボを１つにするため削除
 /*
@@ -842,7 +842,7 @@ bool SServo::onCommand(const std::vector<std::string>& args)
 		{
 			moveFold();
 		}
-		
+
 		return true;
 	}
 	else if (args.size() == 3)

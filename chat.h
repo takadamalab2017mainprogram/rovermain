@@ -40,6 +40,9 @@ public:
 
 	void update();
 	//エラーチェック用の関数
+
+	void onCommand();
+
 	void error_check(sock);
 
 	Server();
@@ -66,6 +69,7 @@ public:
 
 	void update();
 
+	void onCommand();
 	Client();
 	~Client();
 };
