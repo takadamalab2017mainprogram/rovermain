@@ -10,7 +10,7 @@
 #include <math.h>
 
 //詳細なログ表示が必要な場合はつかってください
-//#define _LOG_DETAIL 1
+#define _LOG_DETAIL 1
 
 const static int VERSION = 01;
 
@@ -18,20 +18,20 @@ const static int VERSION = 01;
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A1 = 12;//モータPWM 
-const static int PIN_PWM_A2 = 16;
-const static int PIN_PULSE_A = 0;//モータエンコーダ Right              Clear!
-const static int PIN_PULSE_B = 7;//                                    Clear!
-const static int PIN_PWM_B1 = 20;//モータPWM					          Clear!
-const static int PIN_PWM_B2 = 21;                              //Clear!
+const static int PIN_PWM_A1 = 26;//モータPWM 
+const static int PIN_PWM_A2 = 27;
+const static int PIN_PULSE_A = 0;//モータエンコーダ Right             
+const static int PIN_PULSE_B = 7;//                                    
+const static int PIN_PWM_B1 = 28;//モータPWM					   
+const static int PIN_PWM_B2 = 29;                              //Clear!
 const static int PIN_BUZZER = 12;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 13;//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 14;//Cdsセンサピン                  Clear!
-const static int PIN_PARA_SERVO = 23;// パラシュートサーボピン          Clear!
-const static int PIN_JOHN_SERVO = 25;//                                 Clear!
-const static int PIN_MIKE_SERVO = 21;       //スタビサーボピン          Clear!
-const static int PIN_NECK_SERVO = 1;//                                  Clear!
-const static int PIN_ARM_SERVO = 22;//                                  Clear!
+const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
+//const static int PIN_JOHN_SERVO = 25;//                                 Clear!
+//const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
+//const static int PIN_NECK_SERVO = 1;//                                  Clear!
+//const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
 
 //モータ設定
@@ -51,7 +51,7 @@ const static int SERVO_MOVABLE_RANGE = 1200;//パルス幅変更範囲
 const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パルス幅
 
 //スタビサーボ設定
-const static double STABI_BASE_ANGLE = 0.7;	//通常時のスタビ角度
+const static double STABI_BASE_ANGLE = 0.5;	//通常時のスタビ角度
 
 //スタビ学習用の設定
 const static int POPULATION_NUM = 6; // 個体数

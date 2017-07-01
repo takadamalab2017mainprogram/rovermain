@@ -46,7 +46,7 @@ public:
 };
 
 //// サーボ制御クラス(ソフトウェアPWM)
-//class ParaServo : public TaskBase
+//class MultiServo : public TaskBase
 //{
 //private:
 //	const static int SERVO_MIN_RANGE = 6;	//そのうちconstants.hに移す
@@ -73,12 +73,13 @@ public:
 //	void moveRelease();//パラシュート切り離し
 //	void moveHold();//ピンが刺さった状態の位置に移動
 //
-//	ParaServo();
-//	~ParaServo();
+//	MultiServo();
+//	~MultiServo();
 //};
 
 // パラサーボ制御クラス(ハードウェアPWM)
-class ParaServo : public TaskBase
+//20170626_パラシュートサーボとバックサーボを１つに統合(MultiServo)
+class MultiServo : public TaskBase
 {
 private:
 	int mPin;
@@ -96,8 +97,8 @@ public:
 	void moveHold();//ピンが刺さった状態の位置に移動
 	double get();
 
-	ParaServo();
-	~ParaServo();
+	MultiServo();
+	~MultiServo();
 };
 
 //// サーボ制御クラス(ソフトウェアPWM)
@@ -125,6 +126,8 @@ public:
 //};
 
 // サーボ制御クラス(ソフトウェアPWM)
+//20170623_サーボを１つにするため削除
+/*
 class FrontStabiServo : public TaskBase
 {
 private:
@@ -148,8 +151,12 @@ public:
 	FrontStabiServo();
 	~FrontStabiServo();
 };
+*/
 
 // サーボ制御クラス(ソフトウェアPWM)
+//20170623_このサーボとパラサーボを統合します
+//
+/*
 class BackStabiServo : public TaskBase
 {
 private:
@@ -173,8 +180,9 @@ public:
 	BackStabiServo();
 	~BackStabiServo();
 };
-
+*/
 // サーボ制御クラス(ソフトウェアPWM)
+/*
 class ArmServo : public TaskBase
 {
 private:
@@ -206,8 +214,11 @@ public:
 	ArmServo();
 	~ArmServo();
 };
+*/
 
 // サーボ制御クラス(ハードウェアPWM)
+//20170623_サーボを１つにするため削除
+/*
 class NeckServo : public TaskBase
 {
 private:
@@ -228,10 +239,10 @@ public:
 	NeckServo(const char* name, unsigned int pin);
 	~NeckServo();
 };
-
+*/
 
 // 4つのサーボモーターをまとめるクラス
-class SServo : public TaskBase
+/*class SServo : public TaskBase
 {
 private:
 	//std::tuple<int, int, int, double> mOffsetAngle; //set zero point for both of servo.
@@ -242,17 +253,17 @@ protected:
 	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	void start(int j, int m, int a, double n);
-	void startJohn(int j);
-	void startMike(int m);
-	void startArm(int a);
-	void startNeck(double n);
+	//void startJohn(int j);
+	void startMulti(int m);
+	//void startArm(int a);
+	//void startNeck(double n);
 	void stop();
 	void moveFold();
 	void moveRun();
 	SServo();
 	~SServo();
 };
-
+*/
 //// 二つのスタビサーボをまとめるクラス
 //class StabiServo : public TaskBase
 //{
@@ -279,9 +290,9 @@ public:
 //};
 
 extern Buzzer gBuzzer;
-extern ParaServo gParaServo;
-extern SServo gSServo;
-extern ArmServo gArmServo;
-extern FrontStabiServo gJohnServo;
-extern BackStabiServo gMikeServo;
-extern NeckServo gNeckServo;
+extern MultiServo gMultiServo;
+//extern SServo gSServo;
+//extern ArmServo gArmServo;
+//extern FrontStabiServo gJohnServo;
+//extern MultiServo gMultiServo;
+//extern NeckServo gNeckServo;

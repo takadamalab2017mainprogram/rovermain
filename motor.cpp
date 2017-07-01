@@ -17,8 +17,12 @@ bool Motor::init(int powPin, int revPin)
 	VERIFY(powPin < 0 || revPin < 0);
 
 	//ピンを初期化
+	//モーター前回りピン
 	ForwardPin = powPin;
+	//モーター後ろ回りピン
 	ReversePin = revPin;
+//Debug::print(LOG_SUMMARY, "これがForwardPin番号%d\r\n",ForwardPin);
+//Debug::print(LOG_SUMMARY, "これReversePin番号%d\r\n",ReversePin);
 	//前ピンを出力モードに
 	pinMode(ForwardPin, OUTPUT);
 	if (softPwmCreate(ForwardPin, 0, 100) != 0)
@@ -26,18 +30,18 @@ bool Motor::init(int powPin, int revPin)
 		Debug::print(LOG_SUMMARY, "Failed to initialize soft-PWM\r\n");
 		return false;
 	}
-
 	//バックピンを出力モードに
 	pinMode(ReversePin, OUTPUT);
-
 	if (softPwmCreate(ReversePin, 0, 100) != 0)
 	{
 		Debug::print(LOG_SUMMARY, "Failed to initialize soft-PWM\r\n");
 		return false;
 	}
+
 	//LOW状態にして開放
 	softPwmWrite(ForwardPin, 0);
 	softPwmWrite(ReversePin, 0);
+
 
 	//現在の出力を保持
 	mCurPower = 0;
@@ -59,27 +63,20 @@ void Motor::update(double elapsedSeconds)
 			curFrameTarget = mCurPower;
 			//現在の出力に最大出力変化量5を足すか引くかする
 			curFrameTarget += ((mTargetPower > mCurPower) ? maxMotorPowerChange : -maxMotorPowerChange);
+      //Debug::print(LOG_SUMMARY,"MOTOR power Limitation %f %f(%d) \r\n",mCurPower,curFrameTarget,mTargetPower);
 		}
 
-		//新しいpowerをもとにpinの状態を設定する
-		if (curFrameTarget > 0 && mCurPower <= 0)
-		  {
-		    softPwmWrite(ForwardPin, fabs(mCurPower));
-		    softPwmWrite(ReversePin, fabs(mCurPower));
-		  }
-		else if (curFrameTarget < 0 && mCurPower >= 0)
-		  {
-		    softPwmWrite(ForwardPin, fabs(mCurPower));
-		    softPwmWrite(ReversePin, fabs(mCurPower));
-		  }
-		    //mCurPower = curFrameTarget;
-		    //softPwmWrite(ForfardPin, fabs(mCurPower));
+		    //新しいpowerをもとにpinの状態を設定する
+	            //三項演算子を用いて計算目標ターゲットが前にあるなら前進するように、またその逆も
+		    softPwmWrite(ForwardPin, curFrameTarget > 0 ? fabs(curFrameTarget) : 0);
+		    softPwmWrite(ReversePin, curFrameTarget > 0 ? 0 : fabs(curFrameTarget) ) ;
+                    mCurPower = curFrameTarget;
 	}
 }
 void Motor::clean()
 {
 	if (ForwardPin >= 0)softPwmWrite(ForwardPin, 0);
-	if (ReversePin >= 0)digitalWrite(ReversePin, LOW);
+	if (ReversePin >= 0)softPwmWrite(ReversePin, 0);
 	mCurPower = 0;
 }
 void Motor::set(int power)
@@ -115,13 +112,13 @@ return &singleton;
 void MotorEncoder::pulseLCallback()
 {
 	MotorEncoder::getInstance()->mPulseCountL++;
-	//digitalRead(MotorEncoder::getInstance()->mEncoderPin2L) == 1 ? MotorEncoder::getInstance()->mPulseCountL-- : MotorEncoder::getInstance()->mPulseCountL++;
+	digitalRead(MotorEncoder::getInstance()->mEncoderPin2L) == 1 ? MotorEncoder::getInstance()->mPulseCountL-- : MotorEncoder::getInstance()->mPulseCountL++;
 }
 void MotorEncoder::pulseRCallback()
 {
 	MotorEncoder::getInstance()->mPulseCountR++;
-  //digitalRead(MotorEncoder::getInstance()->mEncoderPin2R)==1 ? MotorEncoder::getInstance()->mPulseCountR++ : MotorEncoder::getInstance()->mPulseCountR--;
-}
+  	digitalRead(MotorEncoder::getInstance()->mEncoderPin2R)==1 ? MotorEncoder::getInstance()->mPulseCountR++ : MotorEncoder::getInstance()->mPulseCountR--;
+}		
 bool MotorEncoder::init()
 {
 mPulseCountL = mPulseCountR = 0;
@@ -148,10 +145,12 @@ void MotorEncoder::clean()
 }
 long long MotorEncoder::getL()
 {
+	//エンコーダーで左側のパルス数を取得
 	return mPulseCountL;
 }
 long long MotorEncoder::getR()
 {
+	//エンコーダーで右側のパルス数を取得
 	return mPulseCountR;
 }
 long long MotorEncoder::getDeltaPulseL()
@@ -216,7 +215,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 
 void MotorDrive::onClean()
 {
-  //mpMotorEncoder->clean();
+  	mpMotorEncoder->clean();
 	mMotorL.clean();
 	mMotorR.clean();
 }

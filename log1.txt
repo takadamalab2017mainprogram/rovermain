@@ -4,111 +4,18 @@ log_pressure1.txt
 log_acceleration1.txt
 log_encoder1.txt
 log_acceleration1.txt
-Time --> 8:13:32
-2015 Takadama-lab ARLISS
-*** GAIA Team ***
+Time --> 7:32:54
+2017 Takadama-lab ARLISS
+*** MARUCHEESE Team ***
 Reading initialize.txt...Executing Initializing Commands...
 > start testing
 Start testing (stopped)
-> detecting setmode ON
-
-Failed to exec command!
-> cdetecting setmode ON
-
-Failed to exec command!
-> navigating 40.863405 -119.134445
-Set Goal ( 40.863405 -119.134445 )
 > motor p 0.003 0.0 0.0
 PID params: 0.003000 0.000000 0.000000
 > motor pp 0.008 0 0
 > motor cpose 0.8
-> motor r 100 85
-> jmss offset 0.1 0
-
-Failed to exec command!
-> jmss fold -1.2 -1.05
-
-Failed to exec command!
 > wakinglie 30
 Command executed!
-> image setH 5 160
-
-Failed to exec command!
-> image setS 100
-
-Failed to exec command!
-> image setV 0
-
-Failed to exec command!
-> image setdist 200.0
-
-Failed to exec command!
-> image setfindarea 0.0005
-
-Failed to exec command!
-> gyro calib -0.930056 -6.140539 -1.875874
-Gyro: offset is (-0.930056 -6.140539 -1.875874)
-> detecting threshold straight high 2000
-
-Failed to exec command!
-> detecting threshold straight low 1000
-
-Failed to exec command!
-> detecting threshold rotation high 500
-
-Failed to exec command!
-> detecting threshold rotation low 200
-
-Failed to exec command!
-> detecting threshold curve high 300
-
-Failed to exec command!
-> detecting threshold curve low 200
-
-Failed to exec command!
-> detecting colorwidth 100
-
-Failed to exec command!
-> detecting pf 1.0
-
-Failed to exec command!
-> detecting pfg 2.0
-
-Failed to exec command!
-> detecting set waittime 1.0
-
-Failed to exec command!
-> cdetecting threshold straight high 2000
-
-Failed to exec command!
-> cdetecting threshold straight low 1000
-
-Failed to exec command!
-> cdetecting threshold rotation high 500
-
-Failed to exec command!
-> cdetecting threshold rotation low 200
-
-Failed to exec command!
-> cdetecting threshold curve high 300
-
-Failed to exec command!
-> cdetecting threshold curve low 200
-
-Failed to exec command!
-> cdetecting colorwidth 100
-
-Failed to exec command!
-> cdetecting pf 1.0
-
-Failed to exec command!
-> cdetecting pfg 2.0
-
-Failed to exec command!
-> cdetecting set waittime 1.0
-
-Failed to exec command!
-> monitoring set upper 3000
 > alias ww motor w
 alias ww='motor w '
 > alias ss motor s
@@ -150,6 +57,12 @@ Failed to verify Gyro Sensor
 FAILED to initialize task gyro (4/5)
 Failed to verify Gyro Sensor
 FAILED to initialize task gyro (5/5)
+> motor w
+> motor s
+> multiservo
+> multiservo 0.3
+> motor h
 Ctrl-C is disabled
 To quit, Press Ctrl-C again!
 Shutting down...
+Restoreing Terminal Settings
