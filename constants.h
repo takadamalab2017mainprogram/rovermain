@@ -18,11 +18,11 @@ const static int VERSION = 01;
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A1 = 21;//モータPWM 
+const static int PIN_PWM_A1 = 21;//モータPWM
 const static int PIN_PWM_A2 = 14;
-const static int PIN_PULSE_A = 0;//モータエンコーダ Right             
-const static int PIN_PULSE_B = 7;//                                    
-const static int PIN_PWM_B1 = 13;//モータPWM					   
+const static int PIN_PULSE_A = 0;//モータエンコーダ Right
+const static int PIN_PULSE_B = 7;//
+const static int PIN_PWM_B1 = 13;//モータPWM
 const static int PIN_PWM_B2 = 12;                              //Clear!
 const static int PIN_BUZZER = 5;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 29;//XBeeスリープピン
@@ -33,6 +33,9 @@ const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clea
 //const static int PIN_NECK_SERVO = 1;//                                  Clear!
 //const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
+const static int PIN_LED_R = 24;// LED
+const static int PIN_LED_G = 22;// LED
+const static int PIN_LED_B = 23;// LED
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
@@ -60,7 +63,7 @@ const static int CIRCLE = 1000; // 試行回数
 const static double ENCODER_THRESHOLD = 4500; // エンコーダー関数のしきい値
 const static double ENCODER_THRESHOLD_PERCENT = 0.90; // エンコーダー関数の中央
 const static double ENCODER_THRESHOLD_DISCOUNT = 0.25; // エンコーダー関数の割引率
- 
+
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数
 
@@ -140,4 +143,3 @@ const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
 //////////////////////////////////////////////
 const static double DEGREE_2_METER = 111111.111111;//これを度に掛けるとメートルに変換できる
 const static char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt";
-
