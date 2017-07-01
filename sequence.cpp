@@ -57,7 +57,7 @@ bool Testing::onInit(const struct timespec& time)
 
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-
+  gLED.setRunMode(true);
 	std::function<void()> f = [&]()
 	{
 		gBuzzer.start(200);

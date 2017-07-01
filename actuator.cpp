@@ -503,24 +503,14 @@ void MultiServo::moveHold()
 }
 MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
 {
-<<<<<<< HEAD
 	setName("Multiservo");
-=======
-	setName("multiservo");
->>>>>>> LED
 	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
 }
 MultiServo::~MultiServo()
 {
 }
 
-////////////////////////////////////////////////
-<<<<<<< HEAD
 //// MultiServo(Software PWM)
-=======
-//// MultiServo(Software PWM)
->>>>>>> LED
-////////////////////////////////////////////////
 //
 //bool MultiServo::onInit(const struct timespec& time)
 //{
