@@ -106,32 +106,25 @@ float PressureSensor::val2float(unsigned int val, int total_bits, int fractional
 
 bool PressureSensor::onInit(const struct timespec& time)
 {
-	if ((mFileHandle = wiringPiI2CSetup(0x60)) == -1)
+	if ((mFileHandle = wiringPiI2CSetup(0b01011101)) == -1)
 	{
 		Debug::print(LOG_SUMMARY, "Failed to setup Pressure Sensor\r\n");
 		return false;
 	}
 
 	//気圧センサーの動作を確認(0xc - 0xfに0が入っているか確かめる)
-	if (wiringPiI2CReadReg32LE(mFileHandle, 0x0c) != 0)
+	if (wiringPiI2CReadReg8(mFileHandle, 0x0F) != 0xBD)
 	{
 		//close(mFileHandle);
 		Debug::print(LOG_SUMMARY, "Failed to verify Pressure Sensor\r\n");
 		//return false;
 	}
+	//気圧取得開始
+	wiringPiI2CWriteReg8(mFileHandle, 0x20, 0x90);
 
-	//気圧計算用の係数を取得
-	mA0 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x04), 16, 3, 0);
-	mB1 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x06), 16, 13, 0);
-	mB2 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x08), 16, 14, 0);
-	mC12 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x0A), 14, 13, 9);
-
-	//気圧取得要求
-	requestSample();
 
 	//気圧更新リクエスト
 	mLastUpdateRequest = time;
-	requestSample();
 
 	Debug::print(LOG_SUMMARY, "Pressure Sensor is Ready!: (%f %f %f %f)\r\n", mA0, mB1, mB2, mC12);
 	return true;
@@ -141,25 +134,15 @@ void PressureSensor::onClean()
 {
 	close(mFileHandle);
 }
-void PressureSensor::requestSample()
-{
-	//新しい気圧取得要求(3ms後に値が読み込まれてレジスタに格納される)
-	wiringPiI2CWriteReg8(mFileHandle, 0x12, 0x01);
-}
 void PressureSensor::onUpdate(const struct timespec& time)
 {
-	if (Time::dt(time, mLastUpdateRequest) > 0.003)//前回のデータ要請から3ms以上経過している場合値を読み取って更新する
+	if (Time::dt(time, mLastUpdateRequest) > 1.000)//前回のデータ要請から1000ms以上経過している場合値を読み取って更新する
 	{
 		//気圧値計算
-		unsigned int Padc = wiringPiI2CReadReg8(mFileHandle, 0x00) << 2 | wiringPiI2CReadReg8(mFileHandle, 0x01) >> 6;
-		unsigned int Tadc = wiringPiI2CReadReg8(mFileHandle, 0x02) << 2 | wiringPiI2CReadReg8(mFileHandle, 0x03) >> 6;
-
-		float Pcomp = mA0 + (mB1 + mC12 * Tadc) * Padc + mB2 * Tadc;
-		mPressure = (Pcomp * (115 - 50) / 1023.0 + 50) * 10;
-		mTemperature = ((float)Tadc - 498.0f) / -5.35f + 25.0f;
-
-		//気圧更新要請
-		requestSample();
+		int pressure =wiringPiI2CReadReg8(mFileHandle,0x2A) << 16 | wiringPiI2CReadReg8(mFileHandle,0x29) << 8 |  wiringPiI2CReadReg8(mFileHandle,0x28);
+		mPressure = pressure / 4096.0;
+		int temperature = wiringPiI2CReadReg16LE(mFileHandle, 0x2b);
+		mTemperature = temperature / 480 + 42.5;
 
 		//気圧更新要請時刻を記録
 		mLastUpdateRequest = time;
@@ -927,7 +910,7 @@ bool CameraCapture::onInit(const struct timespec& time)
 
 	gGPSSensor.setRunMode(true);
 
-	
+
 	count = 0;
 
 	return true;
@@ -1014,7 +997,7 @@ void CameraCapture::save(const std::string* name, IplImage* pImage, bool nolog)
 }
 void CameraCapture::wadatisave(const std::string* name, IplImage* pImage, bool nolog)
 {
-	
+
 	gGPSSensor.get(vec);
 	if (gGPSSensor.isActive())write(gpsfilename, "%f,%f,%f,%d\r\n", vec.x, vec.y, vec.z, count);
 	else write(gpsfilename, "unavailable\r\n");
@@ -1033,18 +1016,18 @@ void CameraCapture::wadatisave(const std::string* name, IplImage* pImage, bool n
 	//filename.c_str()
     // src(source): to save source image(grayscale)
     Mat src = imread(filename, 0);
-      
+
 	// blr(blur): to save blurred source image
 	// cny(canny): save the canny processed image
 	Mat blr, cny;
 	blur(src, blr, Size(3, 3));
 	Canny(blr, cny, 50, 200);
-	
+
 	// block_h, block_w: decide the size of image segmentation
 	const int block_h = 8, block_w = 9;
 	int canny_result[block_h][block_w] = {0};
 	int src_y = src.rows, src_x = src.cols, x_inc = src_x / block_w, y_inc =src_y / block_h;
-	
+
 	for (int h = 0, y = 0; h < block_h; h++, y += y_inc) {
 		for (int w = 0, x = 0; w < block_w; w++, x += x_inc) {
 			Mat cut(cny, Rect(x, y, x_inc, y_inc));
@@ -1056,7 +1039,7 @@ void CameraCapture::wadatisave(const std::string* name, IplImage* pImage, bool n
 			}
 		}
 	}
-	
+
 	//Draw lines and result
 	Mat rut;
 	cvtColor(src, rut, CV_GRAY2RGB);
