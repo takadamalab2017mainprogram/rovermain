@@ -106,24 +106,23 @@ float PressureSensor::val2float(unsigned int val, int total_bits, int fractional
 
 bool PressureSensor::onInit(const struct timespec& time)
 {
-	if ((mFileHandle = wiringPiI2CSetup(0b01011101)) == -1)
+	if ((mFileHandle = wiringPiI2CSetup(0b01011100)) == -1)
 	{
 		Debug::print(LOG_SUMMARY, "Failed to setup Pressure Sensor\r\n");
 		return false;
 	}
 
-	//気圧センサーの動作を確認(0xc - 0xfに0が入っているか確かめる)
+	//気圧センサーの動作を確認
 	if (wiringPiI2CReadReg8(mFileHandle, 0x0F) != 0xBD)
 	{
-		//close(mFileHandle);
+		close(mFileHandle);
 		Debug::print(LOG_SUMMARY, "Failed to verify Pressure Sensor\r\n");
-		//return false;
+		return false;
 	}
 	//気圧取得開始
 	wiringPiI2CWriteReg8(mFileHandle, 0x20, 0x90);
 
 
-	//気圧更新リクエスト
 	mLastUpdateRequest = time;
 
 	Debug::print(LOG_SUMMARY, "Pressure Sensor is Ready!: (%f %f %f %f)\r\n", mA0, mB1, mB2, mC12);
@@ -141,9 +140,8 @@ void PressureSensor::onUpdate(const struct timespec& time)
 		//気圧値計算
 		int pressure =wiringPiI2CReadReg8(mFileHandle,0x2A) << 16 | wiringPiI2CReadReg8(mFileHandle,0x29) << 8 |  wiringPiI2CReadReg8(mFileHandle,0x28);
 		mPressure = pressure / 4096.0;
-		int temperature = wiringPiI2CReadReg16LE(mFileHandle, 0x2b);
-		mTemperature = temperature / 480 + 42.5;
-
+short temperature = wiringPiI2CReadReg8(mFileHandle, 0x2c) << 8 | wiringPiI2CReadReg8(mFileHandle, 0x2b) ;
+		mTemperature = (temperature /480.0) + 42.5 ;
 		//気圧更新要請時刻を記録
 		mLastUpdateRequest = time;
 	}
