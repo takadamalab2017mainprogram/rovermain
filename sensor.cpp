@@ -1205,6 +1205,10 @@ void NineAxisSensor::onClean()
 void NineAxisSensor::onUpdate(const struct timespec& time)
 {
   unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
+  wiringPiI2CWriteReg8(mFileHandle,0x72,0);
+  wiringPiI2CWriteReg8(mFileHandle,0x73,0);
+//  for(int i = 0; i < fifo_count ; i++)
+//  {
 #define AXEL_RANGE 0.000488
   short mX = (wiringPiI2CReadReg8(mFileHandle, 0x3B) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x3C);
   short mY = (wiringPiI2CReadReg8(mFileHandle, 0x3D) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x3E);
@@ -1227,7 +1231,8 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mYaw = ypr[0];
 	mPitch = ypr[1];
 	mRoll = ypr[2];
-  Debug::print(LOG_SUMMARY, "\
+//  }
+/*  Debug::print(LOG_SUMMARY, "\
   FIFO %d \
   Accel %f %f %f\
 	Angle Velocity %f %f %f\
@@ -1236,7 +1241,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
   getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
 	 getMx(), getMy(), getMz());
-
+ */ 
 }
 bool NineAxisSensor::getAccel(VECTOR3& acc) const
 {
