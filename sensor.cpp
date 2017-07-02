@@ -1215,7 +1215,6 @@ bool NineAxisSensor::onInit(const struct timespec& time)
 }
 void NineAxisSensor::onClean()
 {
-	ms_close();
 }
 void NineAxisSensor::onUpdate(const struct timespec& time)
 {
@@ -1251,9 +1250,6 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mMagnet.z = COMPASS_RANGE * mZ;
   wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
   }
-  mYaw = ypr[0];
-	mPitch = ypr[1];
-	mRoll = ypr[2];
 //  }
 /*  Debug::print(LOG_SUMMARY, "\
   FIFO %d \

@@ -944,7 +944,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		if (gAccelerationSensor.isActive())write(mFilenameAccel, "%f,%f,%f\r\n", gAccelerationSensor.getAx(), gAccelerationSensor.getAy(), gAccelerationSensor.getAz());
 		else write(mFilenameAccel, "unavailable\r\n");
 
-		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%f,%f,%f,%f,%f,%f\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz());
+		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
 		//if(gMotorDrive.isActive())
 		//{
 		//	write(mFilenameEncoder,"%llu,%llu\r\n",gMotorDrive.getL() - mLastEncL,gMotorDrive.getR() - mLastEncR);
