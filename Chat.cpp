@@ -50,7 +50,7 @@ void Server::clean()
 {
 	//listenするsocketの終了
 	close(sock0);
-	mes = NULL
+	mes = NULL;
 }
 void Server::onCommand(const std::vector<std::string>& args)
 {
@@ -66,10 +66,14 @@ void Server::onCommand(const std::vector<std::string>& args)
 	}
 }
 
-Server::Server():
+Server::Server() :
 {
 	setName("chat_s");
 	setPriority(TASK_)
+}
+
+Server::~Server()
+{
 }
 
 //引数としてサーバーのIPアドレスが必要
@@ -80,9 +84,9 @@ bool Client::init(int sv_ip)
 		sock = socket(AF_INET, SOCK_STREAM, 0);
 
 			//ソケットの設定
-			addr.sin_family = AF_INET;
-			addr.sin_port = htons(12345);
-			addr.sin_addr.s_addr = inet_addr("192.168.0.249");
+			server.sin_family = AF_INET;
+			server.sin_port = htons(12345);
+			server.sin_addr.s_addr = inet_addr("192.168.0.249");
 
 			return true;
 }
@@ -111,10 +115,4 @@ void Client::onCommand(const std::vector<std::string>& args)
 			close(sock);
 		}
 	}
-}
-
-Server::Server() :
-{
-	setName("chat_c");
-	setPriority(TASK_)
 }

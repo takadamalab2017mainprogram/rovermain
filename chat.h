@@ -1,7 +1,8 @@
+
 //一度だけプログラムを呼び出す宣言
 #pragma once
 #include "task.h"
-
+#include <sys/socket.h>
 //マルチーズ追加raspberrypi同士でチャット（お互いの情報を送る）をするプログラム
 /*
 これはLinux上で動くC++を用いたTCP通信のサーバープログラムです。
@@ -38,12 +39,12 @@ public:
 
 	void clean();
 
-	void update();
+	void update(double x);
 	//エラーチェック用の関数
 
-	void onCommand();
+	void onCommand(const std::vector<std::string>& args);
 
-	void error_check(sock);
+	//void error_check(sock);
 
 	Server();
 	~Server();
@@ -54,7 +55,7 @@ class Client
 {
 private:
 	//構造体サーバーに関する
-	struct sock addr_in_server;
+	struct sockaddr_in server;
 	int sock;
 	//送信する文字
 	char buf[32];
@@ -62,14 +63,14 @@ private:
 	int n;
 
 public:
-
-	bool init();
+	//int yは適当な値なのでのちのち修正
+	bool init(int y);
 
 	void clean();
 
 	void update();
 
-	void onCommand();
+	void onCommand(const std::vector<std::string>& args);
 	Client();
 	~Client();
 };
