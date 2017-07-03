@@ -13,7 +13,7 @@ using namespace std;
 
 //20170630マルチーズ追加チャットプログラム
 //文字列委を受けとるserverのセットアップ
-bool Server::init(int cl_ip)
+bool Server::init()
 {
 	//ソケットの作成
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
@@ -46,10 +46,8 @@ void Server::update(double elapsedSeconds)
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
 }
 //sock操作を一端終了（電力消費軽減らしい？）
-void Server::clean();
+void Server::clean()
 {
-	//TCPセッションの終了
-	close(sock);
 	//listenするsocketの終了
 	close(sock0);
 	mes = NULL
@@ -59,13 +57,64 @@ void Server::onCommand(const std::vector<std::string>& args)
 	switch(args.size())
 	{
 		case 2:
-		if(args[1].compare(""))
+		if(args[1].compare("send"))
+		{
+			//clientに5文字HELLOを送る
+			write(sock, "HELLO", 5);
+			close(sock);
+		}
 	}
-
 }
 
 Server::Server():
 {
-	setName("chat");
+	setName("chat_s");
+	setPriority(TASK_)
+}
+
+//引数としてサーバーのIPアドレスが必要
+bool Client::init(int sv_ip)
+{
+		//ソケットの作成
+		//引数はアドレスファミリ、ソケットタイプ、プロトコル
+		sock = socket(AF_INET, SOCK_STREAM, 0);
+
+			//ソケットの設定
+			addr.sin_family = AF_INET;
+			addr.sin_port = htons(12345);
+			addr.sin_addr.s_addr = inet_addr("192.168.0.249");
+
+			return true;
+}
+
+void Client::update()
+{
+	/* サーバに接続 */
+  connect(sock, (struct sockaddr *)&server, sizeof(server));
+}
+
+void Client::clean()
+{
+}
+
+void Client::onCommand(const std::vector<std::string>& args)
+{
+	switch(args.size())
+	{
+		case 2:
+		if(args[1].compare("receive"))
+		{
+			memset(buf, 0, sizeof(buf));
+			n = read(sock, buf, sizeof(buf));
+
+			printf("%d, %s\n", n, buf);
+			close(sock);
+		}
+	}
+}
+
+Server::Server() :
+{
+	setName("chat_c");
 	setPriority(TASK_)
 }
