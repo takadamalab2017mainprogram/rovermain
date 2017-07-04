@@ -15,7 +15,7 @@
 #include "sensor.h"
 #include "utils.h"
 #include <stdarg.h>
-
+#include "MotionSensor.h"
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
 GyroSensor gGyroSensor;
