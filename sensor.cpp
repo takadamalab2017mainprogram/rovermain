@@ -1131,4 +1131,5 @@ bool NineAxisSensor::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Failed to setup NineAxisSensor\r\n");
 		return false;
 	}
+	return true;
 }
