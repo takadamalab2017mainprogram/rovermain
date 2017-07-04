@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <pthread.h>
 #include <arpa/inet.h>
 #include "chat.h"
 #include "utils.h"
