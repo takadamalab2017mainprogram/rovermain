@@ -15,7 +15,7 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
-#include "chat.h"
+//#include "chat.h"
 //#include "image_proc.h"
 #include "subsidiary_sequence.h"
 #include "delayed_execution.h"
@@ -46,7 +46,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gNeckServo.setRunMode(true);
 	//PgDelayedExecutor.setRunMode(true);
 	//マルチーズ追加
-	gServer.setRunMode(true);
+	//gServer.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
