@@ -1124,3 +1124,11 @@ CameraCapture::~CameraCapture()
 	if(mpResizedImage != NULL)cvReleaseImage(&mpResizedImage);
 }
 */
+bool NineAxisSensor::onInit(const struct timespec& time)
+{
+	if(ms_open() == -1)
+	{
+		Debug::print(LOG_SUMMARY, "Failed to setup NineAxisSensor\r\n");
+		return false;
+	}
+}
