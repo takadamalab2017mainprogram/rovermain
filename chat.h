@@ -41,10 +41,10 @@ protected:
 
 	virtual void onUpdate(double x);
 
-	virtual bool onCommand(const vector<string>& args);
+	virtual bool onCommand(const std::vector<std::string>& args);
 
 	//void error_check(sock);
-
+ public:
 	Server();
 	~Server();
 
@@ -60,16 +60,17 @@ class Client : public TaskBase
 	char buf[32];
     //•¶š”
 	int n; 
- public:
+ protected:
 	
 	//int y‚Í“K“–‚È’l‚È‚Ì‚Å‚Ì‚¿‚Ì‚¿C³
-	virtual bool init(int y);
+	virtual bool onInit(const struct timespec& time);
 
-	virtual void clean();
+	virtual void onClean();
 
-	virtual void update();
+	virtual void onUpdate();
 
         virtual bool onCommand(const std::vector<std::string>& args);
+ public:
 	Client();
 	~Client();
 };

@@ -1,4 +1,4 @@
-﻿#include <stdlib.h>
+#include <stdlib.h>
 #include <math.h>
 #include <fstream>
 #include <functional>
@@ -35,7 +35,7 @@ Navigating gNavigatingState;
 //////////////////////////////////////////////
 
 bool Testing::onInit(const struct timespec& time)
-{
+
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gBuzzer.setRunMode(true);

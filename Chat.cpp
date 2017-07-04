@@ -13,10 +13,11 @@ using namespace std;
 
 //20170630マルチーズ追加チャットプログラム
 //文字列委を受けとるserverのセットアップ
-bool Server::init()
+bool Server::onInit()
 {
 	//ソケットの作成
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
+  printf("こんんちわ");
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
 	//sockが-1を返したら失敗
@@ -39,14 +40,14 @@ bool Server::init()
 		return true;
 }
 //何度も接続要求受付を試みる
-void Server::update(double elapsedSeconds)
+void Server::onUpdate(double elapsedSeconds)
 {
 	//TCPクライアントからの接続要求を受け付ける
 	len = sizeof(client);
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
 }
 //sock操作を一端終了（電力消費軽減らしい？）
-void Server::clean()
+void Server::onClean()
 {
 	//listenするsocketの終了
 	close(sock0);
@@ -83,7 +84,7 @@ Server::~Server()
 }
 
 //引数としてサーバーのIPアドレスが必要
-bool Client::init(int sv_ip)
+bool Client::onInit(const struct timespec& time)
 {
 		//ソケットの作成
 		//引数はアドレスファミリ、ソケットタイプ、プロトコル
@@ -97,13 +98,13 @@ bool Client::init(int sv_ip)
 			return true;
 }
 
-void Client::update()
+void Client::onUpdate()
 {
 	/* サーバに接続 */
   connect(sock, (struct sockaddr *)&server, sizeof(server));
 }
 
-void Client::clean()
+void Client::onClean()
 {
 }
 
@@ -123,3 +124,14 @@ bool Client::onCommand(const std::vector<std::string>& args)
 	}
 	return true;
 }
+
+Client::Client()
+{
+}
+
+Client::~Client()
+{
+}
+
+Server gServer;
+//Client gClient;
