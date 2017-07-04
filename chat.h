@@ -73,3 +73,6 @@ class Client : public TaskBase
 	Client();
 	~Client();
 };
+
+extern Server gServer;
+extern Client gClient;

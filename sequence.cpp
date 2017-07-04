@@ -13,6 +13,7 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
+#include "chat.h"
 //#include "image_proc.h"
 #include "subsidiary_sequence.h"
 #include "delayed_execution.h"
@@ -26,6 +27,7 @@ Navigating gNavigatingState;
 //Modeling gModelingState;
 //ColorAccessing gColorAccessingState;
 //extern Filename gCaptureFilename;
+
 
 //////////////////////////////////////////////
 // Testing
@@ -42,6 +44,8 @@ bool Testing::onInit(const struct timespec& time)
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	//PgDelayedExecutor.setRunMode(true);
+	//マルチーズ追加
+	gServer.setRunMode(true);
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
