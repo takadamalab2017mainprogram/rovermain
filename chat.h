@@ -11,7 +11,7 @@
 */
 
 //サーバークラス
-class Server
+class Server : public TaskBase
 {
 private:
 	//Linuxでソケットはintで表現されるファイルディスクリプタ
@@ -51,7 +51,7 @@ public:
 
 };
 //クライアントクラス
-class Client
+class Client : public TaskBase
 {
 private:
 	//構造体サーバーに関する

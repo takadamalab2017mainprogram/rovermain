@@ -66,10 +66,10 @@ void Server::onCommand(const std::vector<std::string>& args)
 	}
 }
 
-Server::Server() :
+Server::Server()
 {
 	setName("chat_s");
-	setPriority(TASK_)
+	setPriority(TASK_);
 }
 
 Server::~Server()
