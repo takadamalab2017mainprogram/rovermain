@@ -307,7 +307,7 @@ public:
 	double getRvx() const;
 	double getRvy() const;
 	double getRvz() const;
-
+	bool getRawAccel(VECTOR3& acc)const;
 	//現在の角度を基準とする
 	void setZero();
 

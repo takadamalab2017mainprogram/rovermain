@@ -1253,14 +1253,7 @@ double NineAxisSensor::getMz() const
 {
 	return mMagnet.z;
 }
-NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
-{
-  setName("nineaxis");
-  setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
-}
-NineAxisSensor::~NineAxisSensor()
-{
-}
+
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {
 	Debug::print(LOG_SUMMARY, "Accel %f %f %f\r\n\
