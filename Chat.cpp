@@ -52,7 +52,7 @@ void Server::clean()
 	close(sock0);
 	mes = NULL;
 }
-void Server::onCommand(const std::vector<std::string>& args)
+bool Server::onCommand(const vector<string>& args)
 {
 	switch(args.size())
 	{
@@ -63,13 +63,19 @@ void Server::onCommand(const std::vector<std::string>& args)
 			write(sock, "HELLO", 5);
 			close(sock);
 		}
+	  
 	}
+	Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
+chat send: send messeage to client\r\n\
+chat recieve: recieve message from server|r\n\
+");
+	return true;
 }
 
 Server::Server()
 {
-	setName("chat_s");
-	setPriority(TASK_);
+	setName("chat");
+	setPriority(TASK_PRIORITY_CHAT,  TASK_INTERVAL_CHAT);
 }
 
 Server::~Server()
@@ -101,7 +107,7 @@ void Client::clean()
 {
 }
 
-void Client::onCommand(const std::vector<std::string>& args)
+bool Client::onCommand(const std::vector<std::string>& args)
 {
 	switch(args.size())
 	{
@@ -115,4 +121,5 @@ void Client::onCommand(const std::vector<std::string>& args)
 			close(sock);
 		}
 	}
+	return true;
 }

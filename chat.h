@@ -35,14 +35,13 @@ private:
 
 public:
 	//引数は何を入れるんだろう
-	bool init();
+	bool onInit();
 
-	void clean();
+	void onClean();
 
-	void update(double x);
-	//エラーチェック用の関数
+	void onUpdate(double x);
 
-	void onCommand(const std::vector<std::string>& args);
+	virtual bool onCommand(const vector<string>& args);
 
 	//void error_check(sock);
 
@@ -53,24 +52,24 @@ public:
 //クライアントクラス
 class Client : public TaskBase
 {
-private:
+ private:
 	//構造体サーバーに関する
 	struct sockaddr_in server;
 	int sock;
 	//送信する文字
 	char buf[32];
     //文字数
-	int n;
-
-public:
+	int n; 
+ public:
+	
 	//int yは適当な値なのでのちのち修正
-	bool init(int y);
+	virtual bool init(int y);
 
-	void clean();
+	virtual void clean();
 
-	void update();
+	virtual void update();
 
-	void onCommand(const std::vector<std::string>& args);
+        virtual bool onCommand(const std::vector<std::string>& args);
 	Client();
 	~Client();
 };
