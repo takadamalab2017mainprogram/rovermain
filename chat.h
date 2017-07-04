@@ -33,13 +33,13 @@ private:
 	//クライアントから取得する文字列32
 	char buf_client[32];
 
-public:
+protected:
 	//引数は何を入れるんだろう
-	bool onInit();
+	virtual bool onInit();
 
-	void onClean();
+	virtual void onClean();
 
-	void onUpdate(double x);
+	virtual void onUpdate(double x);
 
 	virtual bool onCommand(const vector<string>& args);
 

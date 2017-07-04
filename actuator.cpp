@@ -227,7 +227,7 @@ void MultiServo::moveHold()
 }
 MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
 {
-	setName("Multiservo");
+	setName("multiservo");
 	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
 }
 MultiServo::~MultiServo()
