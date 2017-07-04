@@ -4,7 +4,7 @@ CXXCFLAGS=-Wall -g -O2
 CXX_OPTS=-c
 LDFLAGS= -lm -lrt
 
-LIB=../libI2Cdev.a
+LIB=libI2Cdev.a
 OBJ=I2Cdev.o
 
 %.o: %.c                                                                         
