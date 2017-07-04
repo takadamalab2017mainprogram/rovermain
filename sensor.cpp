@@ -25,7 +25,7 @@ DistanceSensor gDistanceSensor;
 //CameraCapture gCameraCapture;
 AccelerationSensor gAccelerationSensor;
 Filename gCaptureFilename = Filename("capture", ".png");
-
+NineAxisSensor gNineAxisSensor;
 //using namespace cv;
 
 //
@@ -1132,4 +1132,22 @@ bool NineAxisSensor::onInit(const struct timespec& time)
 		return false;
 	}
 	return true;
+}
+void NineAxisSensor::onClean()
+{
+}
+void NineAxisSensor::onUpdate(const struct timespec& time)
+{
+}
+bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
+{
+  return true;
+}
+NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset()
+{
+  setName("nineaxis");
+  setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
+}
+NineAxisSensor::~NineAxisSensor()
+{
 }

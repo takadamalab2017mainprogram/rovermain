@@ -326,3 +326,4 @@ extern LightSensor gLightSensor;
 extern DistanceSensor gDistanceSensor;
 //extern CameraCapture gCameraCapture;
 extern AccelerationSensor gAccelerationSensor;
+extern NineAxisSensor gNineAxisSensor;
