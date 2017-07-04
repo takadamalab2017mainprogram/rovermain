@@ -315,7 +315,7 @@ public:
 	static void normalize(VECTOR3& pos);
 	static double normalize(double pos);
 
-	bool getMagnet(VECTOR3& mag);
+	bool getMagnet(VECTOR3& mag) const;
 	double getMx() const;
 	double getMy() const;
 	double getMz() const;
