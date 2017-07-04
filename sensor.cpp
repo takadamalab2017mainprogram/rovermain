@@ -1198,48 +1198,7 @@ bool NineAxisSensor::getRawAccel(VECTOR3& acc) const
 	}
 	return false;
 }
-bool NineAxisSensor::getAccel(VECTOR3& acc) const
-{
-	if (isActive())
-	{
-		acc = mAccelAve;
-		return true;
-	}
-	return false;
-}
-double NineAxisSensor::getAx() const
-{
-	return mAccelAve.x;
-}
-double NineAxisSensor::getAy() const
-{
-	return mAccelAve.y;
-}
-double NineAxisSensor::getAz() const
-{
-	return mAccelAve.z;
-}
-double NineAxisSensor::getTheta() const
-{
-    return atan2f(mAccelAve.x, sqrt(pow(mAccelAve.y, 2) + pow(mAccelAve.z, 2)));
-}
-double NineAxisSensor::getPsi() const
-{
-    return atan2f(mAccelAve.y, sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.z, 2)));
-}
-double NineAxisSensor::getPhi() const
-{
-    return atan2f(sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.y, 2)), mAccelAve.z);
-}
-bool NineAxisSensor::getRawAccel(VECTOR3& acc) const
-{
-	if(isActive())
-	{
-		acc = mAccel;
-		return true;
-	}
-	return false;
-}
+
 bool NineAxisSensor::getRVel(VECTOR3& vel) const
 {
 	if (isActive())
