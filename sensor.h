@@ -273,11 +273,15 @@ class NineAxisSensor : public TaskBase
 private:
 	int mFileHandle;
 	VECTOR3 mAccel, mAccelAve;
+	double mAccelAlpha;
 	VECTOR3 mRVel, mRAngle;
 	VECTOR3 mMagnet;
 	struct timespec mLastSampleTime;
 	std::list<VECTOR3> mRVelHistory;
 	VECTOR3 mRVelOffset;
+	float mYaw;
+	float mPitch;
+	float mRoll;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -315,6 +319,10 @@ public:
 	double getMx() const;
 	double getMy() const;
 	double getMz() const;
+
+	float getRoll() const;
+	float getPitch() const;
+	float getYaw() const;
 	NineAxisSensor();
 	~NineAxisSensor();
 };

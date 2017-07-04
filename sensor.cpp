@@ -1135,15 +1135,186 @@ bool NineAxisSensor::onInit(const struct timespec& time)
 }
 void NineAxisSensor::onClean()
 {
+	ms_close();
 }
 void NineAxisSensor::onUpdate(const struct timespec& time)
+{
+	ms_update();
+	mAccel.x = accel[0];
+	mAccel.y = accel[1];
+	mAccel.z = accel[2];
+  mAccelAve = mAccel * mAccelAlpha + mAccelAve * (1 - mAccelAlpha);
+
+	mRVel.x = gyro[0];
+	mRVel.y = gyro[1];
+	mRVel.z = gyro[2];
+	mMagnet.x = compass[0];
+	mMagnet.y = compass[1];
+	mMagnet.z = compass[2];
+	mYaw = ypr[0];
+	mPitch = ypr[1];
+	mRoll = ypr[2];
+
+}
+bool NineAxisSensor::getAccel(VECTOR3& acc) const
+{
+	if (isActive())
+	{
+		acc = mAccelAve;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getAx() const
+{
+	return mAccelAve.x;
+}
+double NineAxisSensor::getAy() const
+{
+	return mAccelAve.y;
+}
+double NineAxisSensor::getAz() const
+{
+	return mAccelAve.z;
+}
+double NineAxisSensor::getTheta() const
+{
+    return atan2f(mAccelAve.x, sqrt(pow(mAccelAve.y, 2) + pow(mAccelAve.z, 2)));
+}
+double NineAxisSensor::getPsi() const
+{
+    return atan2f(mAccelAve.y, sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.z, 2)));
+}
+double NineAxisSensor::getPhi() const
+{
+    return atan2f(sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.y, 2)), mAccelAve.z);
+}
+bool NineAxisSensor::getRawAccel(VECTOR3& acc) const
+{
+	if(isActive())
+	{
+		acc = mAccel;
+		return true;
+	}
+	return false;
+}
+bool NineAxisSensor::getAccel(VECTOR3& acc) const
+{
+	if (isActive())
+	{
+		acc = mAccelAve;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getAx() const
+{
+	return mAccelAve.x;
+}
+double NineAxisSensor::getAy() const
+{
+	return mAccelAve.y;
+}
+double NineAxisSensor::getAz() const
+{
+	return mAccelAve.z;
+}
+double NineAxisSensor::getTheta() const
+{
+    return atan2f(mAccelAve.x, sqrt(pow(mAccelAve.y, 2) + pow(mAccelAve.z, 2)));
+}
+double NineAxisSensor::getPsi() const
+{
+    return atan2f(mAccelAve.y, sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.z, 2)));
+}
+double NineAxisSensor::getPhi() const
+{
+    return atan2f(sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.y, 2)), mAccelAve.z);
+}
+bool NineAxisSensor::getRawAccel(VECTOR3& acc) const
+{
+	if(isActive())
+	{
+		acc = mAccel;
+		return true;
+	}
+	return false;
+}
+bool NineAxisSensor::getRVel(VECTOR3& vel) const
+{
+	if (isActive())
+	{
+		vel = mRVel;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getRvx() const
+{
+	return mRVel.x;
+}
+double NineAxisSensor::getRvy() const
+{
+	return mRVel.y;
+}
+double NineAxisSensor::getRvz() const
+{
+	return mRVel.z;
+}
+float NineAxisSensor::getRoll() const
+{
+	return mRoll;
+}
+float NineAxisSensor::getPitch() const
+{
+	return mPitch;
+}
+float NineAxisSensor::getYaw() const
+{
+	return mYaw;
+}
+bool NineAxisSensor::getMagnet(VECTOR3& mag) const
+{
+	if(isActive())
+	{
+		mag = mMagnet;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getMx() const
+{
+	return mMagnet.x;
+}
+double NineAxisSensor::getMy() const
+{
+	return mMagnet.y;
+}
+double NineAxisSensor::getMz() const
+{
+	return mMagnet.z;
+}
+NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
+{
+  setName("nineaxis");
+  setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
+}
+NineAxisSensor::~NineAxisSensor()
 {
 }
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {
+	Debug::print(LOG_SUMMARY, "Accel %f %f %f\r\n\
+	Angle Velocity %f %f %f\r\n\
+	Roll Pitch Yaw %f %f %f\r\n\
+	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
+	 getRvx(), getRvy(), getRvz(),
+	 getRoll(), getPitch(), getYaw(),
+	 getMx(), getMy(), getMz());
   return true;
 }
-NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset()
+
+NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
 {
   setName("nineaxis");
   setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
