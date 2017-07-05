@@ -41,10 +41,10 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
-	gMultiServo.setRunMode(true);
+	//gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
-	//PgDelayedExecutor.setRunMode(true);
+	gDelayedExecutor.setRunMode(true);
 	//マルチーズ追加
 	//gServer.setRunMode(true);
 
