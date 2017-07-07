@@ -75,5 +75,5 @@ class Client : public TaskBase
 	~Client();
 };
 
-//extern Server gServer;
-//extern Client gClient;
+extern Server gServer;
+extern Client gClient;

@@ -17,7 +17,6 @@ bool Server::onInit()
 {
 	//ソケットの作成
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
-  printf("こんんちわ");
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
 	//sockが-1を返したら失敗
@@ -30,6 +29,7 @@ bool Server::onInit()
 		}
 		//ソケットの設定
 		addr.sin_family = AF_INET;
+		//ポート指定
 		addr.sin_port = htons(12345);
 		addr.sin_addr.s_addr = INADDR_ANY;
 		bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
@@ -51,14 +51,14 @@ void Server::onClean()
 {
 	//listenするsocketの終了
 	close(sock0);
-	mes = NULL;
+	
 }
 bool Server::onCommand(const vector<string>& args)
 {
 	switch(args.size())
 	{
 		case 2:
-		if(args[1].compare("send"))
+		if(args[1].compare("se"))
 		{
 			//clientに5文字HELLOを送る
 			write(sock, "HELLO", 5);
@@ -67,8 +67,8 @@ bool Server::onCommand(const vector<string>& args)
 	  
 	}
 	Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
-chat send: send messeage to client\r\n\
-chat recieve: recieve message from server|r\n\
+chat se: semd messeage to client\r\n\
+chat rec: recieve message from server|r\n\
 ");
 	return true;
 }
@@ -89,19 +89,32 @@ bool Client::onInit(const struct timespec& time)
 		//ソケットの作成
 		//引数はアドレスファミリ、ソケットタイプ、プロトコル
 		sock = socket(AF_INET, SOCK_STREAM, 0);
+		deststr = host_name;
 
 			//ソケットの設定
 			server.sin_family = AF_INET;
 			server.sin_port = htons(12345);
-			server.sin_addr.s_addr = inet_addr("192.168.0.249");
+			//ホスト名からIpアドレスを読み込む関数をあとで使う
+			server.sin_addr.s_addr = inet_addr(deststr);
+			//inet_addrが失敗していたらhost_nameからIpアドレスを取得
+			if (server.sin_addr.s_addr == 0xffffffff) {
+				struct hostent *host;
+
+				host = gethostbyname(deststr);
+				//host_nameからもipを調べられなかったら失敗
+				if (host == NULL) {
+					//IP解析失敗！
+					return 1;
+				}
+				//(umsigned int *)をつけることで32ビットの値を取得できるようにしている。
+				server.sin_addr.s_addr = *(unsigned int *)host->h_addr_list[0];
+			}
 
 			return true;
 }
 
 void Client::onUpdate()
 {
-	/* サーバに接続 */
-  connect(sock, (struct sockaddr *)&server, sizeof(server));
 }
 
 void Client::onClean()
@@ -113,12 +126,14 @@ bool Client::onCommand(const std::vector<std::string>& args)
 	switch(args.size())
 	{
 		case 2:
-		if(args[1].compare("receive"))
+		if(args[1].compare("rec"))
 		{
+			/* サーバに接続 */
+			connect(sock, (struct sockaddr *)&server, sizeof(server));
 			memset(buf, 0, sizeof(buf));
 			n = read(sock, buf, sizeof(buf));
 
-			printf("%d, %s\n", n, buf);
+			printf("%d, %s\r\n", n, buf);
 			close(sock);
 		}
 	}
@@ -133,5 +148,5 @@ Client::~Client()
 {
 }
 
-//Server gServer;
-//Client gClient;
+Server gServer;
+Client gClient;
