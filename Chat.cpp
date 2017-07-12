@@ -45,6 +45,9 @@ void Server::onUpdate(double elapsedSeconds)
 	//TCPクライアントからの接続要求を受け付ける
 	len = sizeof(client);
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
+	printf("accepted connection from %s, port=%d\n",
+		inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+
 }
 //sock操作を一端終了（電力消費軽減らしい？）
 void Server::onClean()
@@ -119,7 +122,7 @@ void Client::onUpdate()
 
 void Client::onClean()
 {
-	close(sock);
+	
 }
 
 bool Client::onCommand(const std::vector<std::string>& args)
@@ -135,6 +138,7 @@ bool Client::onCommand(const std::vector<std::string>& args)
 			n = read(sock, buf, sizeof(buf));
 
 			printf("%d, %s\r\n", n, buf);
+			close(sock);
 		}
 	}
 	return true;
