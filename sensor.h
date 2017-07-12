@@ -271,7 +271,7 @@ public:
 class NineAxisSensor : public TaskBase
 {
 private:
-	int mFileHandle;
+	int mFileHandle,mFileHandleCompass;
 	VECTOR3 mAccel, mAccelAve;
 	double mAccelAlpha;
 	VECTOR3 mRVel, mRAngle;

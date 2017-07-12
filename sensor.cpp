@@ -1147,7 +1147,7 @@ bool NineAxisSensor::onInit(const struct timespec& time)
   wiringPiI2CWriteReg8(mFileHandle,0x1A, (1 << 6) | (1 << 0)); // FIFO_mode = 1 (accept overflow), Use LPF, Bandwidth_gyro = 184 Hz, Bandwidth_temperature = 188 Hz,
   wiringPiI2CWriteReg8(mFileHandle,0x1B, (3 << 3)); // FS_SEL = 3 (2000dps)
   wiringPiI2CWriteReg8(mFileHandle,0x1C, (3 << 3)); // AFS_SEL = 3 (16G)
-
+/*
   wiringPiI2CWriteReg8(mFileHandle,0x24, (0xC8 | 13)); // Multi-master, Wait for external sensor, I2C stop then start cond., clk 400KHz
 
   { // AK8963 setup
@@ -1183,9 +1183,24 @@ bool NineAxisSensor::onInit(const struct timespec& time)
     // which makes the AK8963A unlatch the data registers for the next measurement by reading ST2 register (0x09).
     //wiringPiI2CWriteReg8(mFileHandle,I2C_MST_DELAY_CTRL, 0x81); // Delayed sampling is applied to Slave 0.
   }
-
+*/
   wiringPiI2CWriteReg8(mFileHandle,0x23, 0xF9); // FIFO enabled for temperature(2), gyro(2 * 3), accelerometer(2 * 3), slave 0(7, delayed sample). Total 21 bytes.
-  wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x60); // Enable FIFO with Master I2C enabled
+  wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x40); // Enable FIFO 
+
+  wiringPiI2CWriteReg8(mFileHandle,0x37, 0x02);
+ if ((mFileHandleCompass = wiringPiI2CSetup(0b0001100)) == -1)
+	{
+		Debug::print(LOG_SUMMARY, "Failed to setup Compass\r\n");
+		return false;
+	}
+ wiringPiI2CWriteReg8(mFileHandleCompass,0x0A,0x16);
+	if (wiringPiI2CReadReg8(mFileHandleCompass, 0x00) != 0x48)
+	{
+		close(mFileHandleCompass);
+		Debug::print(LOG_SUMMARY, "Failed to setup Compass Sensor\r\n");
+		return false;
+	}
+
 
 
 	if (wiringPiI2CReadReg8(mFileHandle, 0x75) != 0x71)
@@ -1225,10 +1240,18 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mRVel.x =  GYRO_RANGE * mX;
 	mRVel.y =  GYRO_RANGE * mY;
 	mRVel.z =  GYRO_RANGE * mZ;
-	mMagnet.x = compass[0];
-	mMagnet.y = compass[1];
-	mMagnet.z = compass[2];
-	mYaw = ypr[0];
+  if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
+  {
+	mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x04) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x03);
+	mY = (wiringPiI2CReadReg8(mFileHandleCompass, 0x06) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x05);
+	mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x08) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x07);
+#define COMPASS_RANGE 0.15
+	mMagnet.x = COMPASS_RANGE * mX;
+	mMagnet.y = COMPASS_RANGE * mY;
+	mMagnet.z = COMPASS_RANGE * mZ;
+  wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
+  }
+  mYaw = ypr[0];
 	mPitch = ypr[1];
 	mRoll = ypr[2];
 //  }
