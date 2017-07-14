@@ -22,6 +22,7 @@ void TaskBase::setRunMode(bool running)
 	mNewRunningState = running;
 	mInitializeRetryCount = 0;
 }
+//タスクに名前を設定して呼び出す
 void TaskBase::setName(const char* name)
 {
 	if (name == NULL)
@@ -35,6 +36,7 @@ void TaskBase::setName(const char* name)
 	mpName = new char[name_length];
 	for (int i = 0; i < name_length; ++i)mpName[i] = tolower(name[i]);
 }
+//優先度を設定
 void TaskBase::setPriority(unsigned int pri, unsigned int interval)
 {
 	mPriority = pri;
