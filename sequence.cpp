@@ -302,7 +302,7 @@ void Falling::onUpdate(const struct timespec& time)
 		gMultiServo.moveHold();
 		//gSServo.moveFold();//スタビを格納状態で固定
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
-		gMultiServo.start(BACK_STABI_FOLD_ANGLE);
+		gMultiServo.fold();//たたむ
 		//gNeckServo.start(0.5);
 	}
 

@@ -233,7 +233,10 @@ void MultiServo::Running()
 	start(STABI_RUNNING_ANGLE);
 }
 
-void MultiServo::fold()
+void MultiServo::fold() 
+{
+	start(STABI_FOLD_ANGLE);
+}
 MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
 {
 	setName("multiservo");
