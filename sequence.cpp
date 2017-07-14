@@ -52,12 +52,12 @@ bool Testing::onInit(const struct timespec& time)
 	//gDistanceSensor.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	//gCameraSave_Sequence.setRunMode(true);
-
+  gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-  gLED.setRunMode(true);
+//  gLED.setRunMode(true);
 	std::function<void()> f = [&]()
 	{
 		gBuzzer.start(200);

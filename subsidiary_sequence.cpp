@@ -910,12 +910,14 @@ bool SensorLogging::onInit(const struct timespec& time)
 	write(mFilenamePressure, "Log started\r\n");
 	write(mFilenameAccel, "Log started\r\n");
 	//write(mFilenameEncoder,"Log started\r\n");
+  write(mFilenameNineAxis, "Log started\r\n");
 
 	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
+  gNineAxisSensor.setRunMode(true);
 	mLastUpdateTime = time;
 	//mLastEncL = gMotorDrive.getL();
 	//mLastEncR = gMotorDrive.getR();
@@ -942,6 +944,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		if (gAccelerationSensor.isActive())write(mFilenameAccel, "%f,%f,%f\r\n", gAccelerationSensor.getAx(), gAccelerationSensor.getAy(), gAccelerationSensor.getAz());
 		else write(mFilenameAccel, "unavailable\r\n");
 
+		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
 		//if(gMotorDrive.isActive())
 		//{
 		//	write(mFilenameEncoder,"%llu,%llu\r\n",gMotorDrive.getL() - mLastEncL,gMotorDrive.getR() - mLastEncR);
@@ -975,6 +978,8 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenamePressure.c_str());
 	Filename("log_acceleration", ".txt").get(mFilenameAccel);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameAccel.c_str());
+	Filename("log_nineaxis", ".txt").get(mFilenameNineAxis);
+	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameNineAxis.c_str());
 	//Filename("log_encoder_by_sensorlogging",".txt").get(mFilenameEncoder);
 	//Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
 }

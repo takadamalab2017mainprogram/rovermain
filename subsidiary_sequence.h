@@ -180,7 +180,7 @@ public:
 class SensorLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
-	std::string mFilenameGPS, mFilenameGyro, mFilenamePressure, mFilenameEncoder, mFilenameAccel;
+	std::string mFilenameGPS, mFilenameGyro, mFilenamePressure, mFilenameEncoder, mFilenameAccel,mFilenameNineAxis;
 	unsigned long long mLastEncL, mLastEncR;
 protected:
 	virtual bool onInit(const struct timespec& time);

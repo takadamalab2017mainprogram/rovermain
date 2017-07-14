@@ -166,7 +166,7 @@ public:
 	double getTheta() const; //XY
 	double getPsi() const; //YZ
 	double getPhi() const; //XZ
-	
+
 	bool getRawAccel(VECTOR3& acc) const;
 
 	AccelerationSensor();
@@ -268,6 +268,64 @@ public:
 	~CameraCapture();
 };
 */
+class NineAxisSensor : public TaskBase
+{
+private:
+	int mFileHandle,mFileHandleCompass;
+	VECTOR3 mAccel, mAccelAve;
+	double mAccelAlpha;
+	VECTOR3 mRVel, mRAngle;
+	VECTOR3 mMagnet;
+	struct timespec mLastSampleTime;
+	std::list<VECTOR3> mRVelHistory;
+	VECTOR3 mRVelOffset;
+	float mYaw;
+	float mPitch;
+	float mRoll;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
+public:
+	bool getAccel(VECTOR3& acc) const;
+	double getAx() const;
+	double getAy() const;
+	double getAz() const;
+
+	double getTheta() const; //XY
+	double getPsi() const; //YZ
+	double getPhi() const; //XZ
+
+	//現在の角度を返す(-180〜+180)
+	bool getRPos(VECTOR3& pos) const;
+	double getRx() const;
+	double getRy() const;
+	double getRz() const;
+
+	bool getRVel(VECTOR3& vel) const;
+	double getRvx() const;
+	double getRvy() const;
+	double getRvz() const;
+	bool getRawAccel(VECTOR3& acc)const;
+	//現在の角度を基準とする
+	void setZero();
+
+	//引数のベクトルを(-180〜+180)の範囲に修正
+	static void normalize(VECTOR3& pos);
+	static double normalize(double pos);
+
+	bool getMagnet(VECTOR3& mag) const;
+	double getMx() const;
+	double getMy() const;
+	double getMz() const;
+
+	float getRoll() const;
+	float getPitch() const;
+	float getYaw() const;
+	NineAxisSensor();
+	~NineAxisSensor();
+};
 extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
@@ -276,4 +334,4 @@ extern LightSensor gLightSensor;
 extern DistanceSensor gDistanceSensor;
 //extern CameraCapture gCameraCapture;
 extern AccelerationSensor gAccelerationSensor;
-
+extern NineAxisSensor gNineAxisSensor;
