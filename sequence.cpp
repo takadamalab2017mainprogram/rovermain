@@ -45,8 +45,8 @@ bool Testing::onInit(const struct timespec& time)
 
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
+//	gGyroSensor.setRunMode(true);
+//	gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	//gWebCamera.setRunMode(true);
 	//gDistanceSensor.setRunMode(true);
@@ -304,7 +304,7 @@ void Falling::onUpdate(const struct timespec& time)
 	}
 
 	//閾値以下ならカウント
-	if (abs(gGyroSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gGyroSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gGyroSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
+	if (abs(gNineAxisSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
 	{
 		if (mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
 	}
@@ -480,7 +480,7 @@ void Separating::onUpdate(const struct timespec& time)
 			//{
 				//回避動作に遷移
 			//	gBuzzer.start(20, 20, 5);
-			//	mCurStep = STEP_PARA_DODGE;
+				mCurStep = STEP_PARA_DODGE;
 			//	mLastUpdateTime = time;
 			//	gTurningState.setRunMode(true);
 			//	Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
