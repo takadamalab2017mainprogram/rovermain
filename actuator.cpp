@@ -217,14 +217,23 @@ double MultiServo::get()
 {
 	return mAngle;
 }
+//パラ切り離し時使用
 void MultiServo::moveRelease()
 {
-	start(0.0);
+	start(STABI_RELEASE_ANGLE);
 }
+//パラ切り離し時使用
 void MultiServo::moveHold()
 {
-	start(1.0);
+	start(STABI_HOLD_ANGLE);
 }
+
+void MultiServo::Running()
+{
+	start(STABI_RUNNING_ANGLE);
+}
+
+void MultiServo::fold()
 MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
 {
 	setName("multiservo");

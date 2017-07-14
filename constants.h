@@ -137,7 +137,7 @@ const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
 //マルチーズ追加
-const static unsigned int TASK_INTERVAL_CHAT = 5;
+const static unsigned int TASK_INTERVAL_CHAT = 10;
 //////////////////////////////////////////////
 //その他
 //////////////////////////////////////////////

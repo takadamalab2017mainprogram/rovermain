@@ -206,7 +206,7 @@ bool Waiting::onInit(const struct timespec& time)
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-	gMultiServo.start(BACK_STABI_FOLD_ANGLE);
+	gMultiServo.fold();//スタビたたんでいる状態
 	return true;
 }
 void Waiting::nextState()
@@ -421,7 +421,6 @@ void Separating::onUpdate(const struct timespec& time)
 	case STEP_STABI_OPEN:
 		gMultiServo.moveHold();
 		//gJohnServo.start(20); // 角度調節
-		//gMultiServo.start(20);
 		//gSServo.moveRun();//スタビを走行時の位置に移動
 
 		mCurStep = STEP_WAIT_STABI_OPEN;
@@ -563,7 +562,7 @@ bool Navigating::onInit(const struct timespec& time)
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
-	gMultiServo.start(BACK_STABI_RUN_ANGLE);
+	gMultiServo.Running();//走っているときの角度に設定
 	//gArmServo.start(ARM_RUN_ANGLE);
 	//gNeckServo.start(1);
 	//gSServo.setRunMode(true);
@@ -583,6 +582,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	//gNeckServo.start(NECK_RUN_ANGLE);
 	VECTOR3 currentPos;
 
+	
 	//ゴールが設定されているか確認
 	if (!mIsGoalPos)
 	{
