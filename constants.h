@@ -53,7 +53,7 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.5;	//通常時のスタビ角度
 const static double STABI_RUNNING_ANGLE = 0.7;
-const static double STABI_RELEASE_ANGLE = 0.0;
+const static double STABI_RELEASE_ANGLE = -0.9;
 const static double STABI_HOLD_ANGLE = 1.0;
 const static double STABI_FOLD_ANGLE = 0.0;
 
