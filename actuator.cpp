@@ -501,6 +501,16 @@ void MultiServo::moveHold()
 {
 	start(1.0);
 }
+
+void MultiServo::Running()
+{
+  start(STABI_RUNNING_ANGLE);
+}
+
+void MultiServo::Fold()
+{
+  start(STABI_FOLD_ANGLE);
+}
 MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
 {
 	setName("Multiservo");
