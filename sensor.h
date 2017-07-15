@@ -282,6 +282,7 @@ private:
 	float mYaw;
 	float mPitch;
 	float mRoll;
+  bool isMonitoring;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();

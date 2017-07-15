@@ -143,6 +143,8 @@ public:
 	static double calcDistanceXY(const VECTOR3& current, const VECTOR3& target);
 	//normalize length to 1
 	VECTOR3 normalize() const;
+  //ノルムを出力
+  double norm() ;
 };
 
 //3Dの角度を扱うときに便利なクラス
