@@ -203,6 +203,9 @@ bool Waiting::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMultiServo.start(BACK_STABI_FOLD_ANGLE);
+	
+  Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...");
+  system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
 }
 void Waiting::nextState()
@@ -284,6 +287,9 @@ bool Falling::onInit(const struct timespec& time)
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
+	
+	Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...");
+  system("sudo ruby /home/pi/network/build_network.rb &");
 
 	return true;
 }
