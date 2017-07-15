@@ -15,7 +15,6 @@
 #include "sensor.h"
 #include "utils.h"
 #include <stdarg.h>
-
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
 GyroSensor gGyroSensor;
@@ -25,7 +24,7 @@ DistanceSensor gDistanceSensor;
 //CameraCapture gCameraCapture;
 AccelerationSensor gAccelerationSensor;
 Filename gCaptureFilename = Filename("capture", ".png");
-
+NineAxisSensor gNineAxisSensor;
 //using namespace cv;
 
 //
@@ -106,32 +105,24 @@ float PressureSensor::val2float(unsigned int val, int total_bits, int fractional
 
 bool PressureSensor::onInit(const struct timespec& time)
 {
-	if ((mFileHandle = wiringPiI2CSetup(0x60)) == -1)
+	if ((mFileHandle = wiringPiI2CSetup(0b01011100)) == -1)
 	{
 		Debug::print(LOG_SUMMARY, "Failed to setup Pressure Sensor\r\n");
 		return false;
 	}
 
-	//気圧センサーの動作を確認(0xc - 0xfに0が入っているか確かめる)
-	if (wiringPiI2CReadReg32LE(mFileHandle, 0x0c) != 0)
+	//気圧センサーの動作を確認
+	if (wiringPiI2CReadReg8(mFileHandle, 0x0F) != 0xBD)
 	{
-		//close(mFileHandle);
+		close(mFileHandle);
 		Debug::print(LOG_SUMMARY, "Failed to verify Pressure Sensor\r\n");
-		//return false;
+		return false;
 	}
+	//気圧取得開始
+	wiringPiI2CWriteReg8(mFileHandle, 0x20, 0x90);
 
-	//気圧計算用の係数を取得
-	mA0 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x04), 16, 3, 0);
-	mB1 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x06), 16, 13, 0);
-	mB2 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x08), 16, 14, 0);
-	mC12 = val2float(wiringPiI2CReadReg16BE(mFileHandle, 0x0A), 14, 13, 9);
 
-	//気圧取得要求
-	requestSample();
-
-	//気圧更新リクエスト
 	mLastUpdateRequest = time;
-	requestSample();
 
 	Debug::print(LOG_SUMMARY, "Pressure Sensor is Ready!: (%f %f %f %f)\r\n", mA0, mB1, mB2, mC12);
 	return true;
@@ -141,26 +132,15 @@ void PressureSensor::onClean()
 {
 	close(mFileHandle);
 }
-void PressureSensor::requestSample()
-{
-	//新しい気圧取得要求(3ms後に値が読み込まれてレジスタに格納される)
-	wiringPiI2CWriteReg8(mFileHandle, 0x12, 0x01);
-}
 void PressureSensor::onUpdate(const struct timespec& time)
 {
-	if (Time::dt(time, mLastUpdateRequest) > 0.003)//前回のデータ要請から3ms以上経過している場合値を読み取って更新する
+	if (Time::dt(time, mLastUpdateRequest) > 1.000)//前回のデータ要請から1000ms以上経過している場合値を読み取って更新する
 	{
 		//気圧値計算
-		unsigned int Padc = wiringPiI2CReadReg8(mFileHandle, 0x00) << 2 | wiringPiI2CReadReg8(mFileHandle, 0x01) >> 6;
-		unsigned int Tadc = wiringPiI2CReadReg8(mFileHandle, 0x02) << 2 | wiringPiI2CReadReg8(mFileHandle, 0x03) >> 6;
-
-		float Pcomp = mA0 + (mB1 + mC12 * Tadc) * Padc + mB2 * Tadc;
-		mPressure = (Pcomp * (115 - 50) / 1023.0 + 50) * 10;
-		mTemperature = ((float)Tadc - 498.0f) / -5.35f + 25.0f;
-
-		//気圧更新要請
-		requestSample();
-
+		int pressure =wiringPiI2CReadReg8(mFileHandle,0x2A) << 16 | wiringPiI2CReadReg8(mFileHandle,0x29) << 8 |  wiringPiI2CReadReg8(mFileHandle,0x28);
+		mPressure = pressure / 4096.0;
+short temperature = wiringPiI2CReadReg8(mFileHandle, 0x2c) << 8 | wiringPiI2CReadReg8(mFileHandle, 0x2b) ;
+		mTemperature = (temperature /480.0) + 42.5 ;
 		//気圧更新要請時刻を記録
 		mLastUpdateRequest = time;
 	}
@@ -927,7 +907,7 @@ bool CameraCapture::onInit(const struct timespec& time)
 
 	gGPSSensor.setRunMode(true);
 
-	
+
 	count = 0;
 
 	return true;
@@ -1014,7 +994,7 @@ void CameraCapture::save(const std::string* name, IplImage* pImage, bool nolog)
 }
 void CameraCapture::wadatisave(const std::string* name, IplImage* pImage, bool nolog)
 {
-	
+
 	gGPSSensor.get(vec);
 	if (gGPSSensor.isActive())write(gpsfilename, "%f,%f,%f,%d\r\n", vec.x, vec.y, vec.z, count);
 	else write(gpsfilename, "unavailable\r\n");
@@ -1033,18 +1013,18 @@ void CameraCapture::wadatisave(const std::string* name, IplImage* pImage, bool n
 	//filename.c_str()
     // src(source): to save source image(grayscale)
     Mat src = imread(filename, 0);
-      
+
 	// blr(blur): to save blurred source image
 	// cny(canny): save the canny processed image
 	Mat blr, cny;
 	blur(src, blr, Size(3, 3));
 	Canny(blr, cny, 50, 200);
-	
+
 	// block_h, block_w: decide the size of image segmentation
 	const int block_h = 8, block_w = 9;
 	int canny_result[block_h][block_w] = {0};
 	int src_y = src.rows, src_x = src.cols, x_inc = src_x / block_w, y_inc =src_y / block_h;
-	
+
 	for (int h = 0, y = 0; h < block_h; h++, y += y_inc) {
 		for (int w = 0, x = 0; w < block_w; w++, x += x_inc) {
 			Mat cut(cny, Rect(x, y, x_inc, y_inc));
@@ -1056,7 +1036,7 @@ void CameraCapture::wadatisave(const std::string* name, IplImage* pImage, bool n
 			}
 		}
 	}
-	
+
 	//Draw lines and result
 	Mat rut;
 	cvtColor(src, rut, CV_GRAY2RGB);
@@ -1143,3 +1123,259 @@ CameraCapture::~CameraCapture()
 	if(mpResizedImage != NULL)cvReleaseImage(&mpResizedImage);
 }
 */
+bool NineAxisSensor::onInit(const struct timespec& time)
+{
+		if ((mFileHandle = wiringPiI2CSetup(0b01101000)) == -1)
+	{
+		Debug::print(LOG_SUMMARY, "Failed to setup NineAxis Sensor\r\n");
+		return false;
+	}
+
+    wiringPiI2CWriteReg8(mFileHandle, 0x6B,0x80);
+    delay(200);
+ 	if (wiringPiI2CReadReg8(mFileHandle, 0x75) != 0x71)
+	{
+		close(mFileHandle);
+		Debug::print(LOG_SUMMARY, "Failed to reset NineAxis Sensor\r\n");
+		return false;
+	}
+
+ wiringPiI2CWriteReg8(mFileHandle,0x6B,0x00);
+  wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x24); // Enable Master I2C, disable primary I2C I/F, and reset FIFO.
+  wiringPiI2CWriteReg8(mFileHandle,0x19, 9); // SMPLRT_DIV = 9, 100Hz sampling;
+  wiringPiI2CWriteReg8(mFileHandle,0x1A, (1 << 6) | (1 << 0)); // FIFO_mode = 1 (accept overflow), Use LPF, Bandwidth_gyro = 184 Hz, Bandwidth_temperature = 188 Hz,
+  wiringPiI2CWriteReg8(mFileHandle,0x1B, (3 << 3)); // FS_SEL = 3 (2000dps)
+  wiringPiI2CWriteReg8(mFileHandle,0x1C, (3 << 3)); // AFS_SEL = 3 (16G)
+/*
+  wiringPiI2CWriteReg8(mFileHandle,0x24, (0xC8 | 13)); // Multi-master, Wait for external sensor, I2C stop then start cond., clk 400KHz
+
+  { // AK8963 setup
+    wiringPiI2CWriteReg8(mFileHandle,0x31, 0x0C | 0x80); // Set the I2C slave 4 address of AK8963 and set for read.
+
+    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x00); //I2C slave 4 register address from where to begin data transfer
+    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
+    delay(20);
+    if(wiringPiI2CReadReg8(mFileHandle,0x35) == 0x48){
+    Debug::print(LOG_SUMMARY, "compass enable\n");
+    }
+    else{
+    Debug::print(LOG_SUMMARY, "compass diable\n");
+    }
+    wiringPiI2CWriteReg8(mFileHandle,0x31, 0x0C); // Set the I2C slave 4 address of AK8963 and set for write.
+
+    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x0B); //I2C slave 4 register address from where to begin data transfer
+   wiringPiI2CWriteReg8(mFileHandle,0x33, 0x01); // Reset AK8963
+    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
+    delay(20);
+
+    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x0A); //I2C slave 0 register address from where to begin data transfer
+    wiringPiI2CWriteReg8(mFileHandle,0x33, 0x12); // Register value to continuous measurement mode 1 (8Hz) in 16bit
+    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
+    delay(20);
+
+    //wiringPiI2CWriteReg8(mFileHandle,0x34, 0x0F); // sampling rate is 100 / (1 + 15) Hz
+
+    wiringPiI2CWriteReg8(mFileHandle,0x25, 0x0C | 0x80); // Set the I2C slave 0 address of AK8963 and set for read.
+
+    wiringPiI2CWriteReg8(mFileHandle,0x26, 0x03); //I2C slave 0 register address from where to begin data transfer
+    wiringPiI2CWriteReg8(mFileHandle,0x27, 0x87); // Enable I2C and set 7 byte,
+    // which makes the AK8963A unlatch the data registers for the next measurement by reading ST2 register (0x09).
+    //wiringPiI2CWriteReg8(mFileHandle,I2C_MST_DELAY_CTRL, 0x81); // Delayed sampling is applied to Slave 0.
+  }
+*/
+  wiringPiI2CWriteReg8(mFileHandle,0x23, 0xF9); // FIFO enabled for temperature(2), gyro(2 * 3), accelerometer(2 * 3), slave 0(7, delayed sample). Total 21 bytes.
+  wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x40); // Enable FIFO 
+
+  wiringPiI2CWriteReg8(mFileHandle,0x37, 0x02);
+ if ((mFileHandleCompass = wiringPiI2CSetup(0b0001100)) == -1)
+	{
+		Debug::print(LOG_SUMMARY, "Failed to setup Compass\r\n");
+		return false;
+	}
+ wiringPiI2CWriteReg8(mFileHandleCompass,0x0A,0x16);
+	if (wiringPiI2CReadReg8(mFileHandleCompass, 0x00) != 0x48)
+	{
+		close(mFileHandleCompass);
+		Debug::print(LOG_SUMMARY, "Failed to setup Compass Sensor\r\n");
+		return false;
+	}
+
+
+
+	if (wiringPiI2CReadReg8(mFileHandle, 0x75) != 0x71)
+	{
+		close(mFileHandle);
+		Debug::print(LOG_SUMMARY, "Failed to setup NineAxis Sensor\r\n");
+		return false;
+	}
+
+	Debug::print(LOG_SUMMARY, "NineAxis Sensor is Ready!\r\n");
+	return true;
+}
+void NineAxisSensor::onClean()
+{
+}
+void NineAxisSensor::onUpdate(const struct timespec& time)
+{
+  unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
+  wiringPiI2CWriteReg8(mFileHandle,0x72,0);
+  wiringPiI2CWriteReg8(mFileHandle,0x73,0);
+//  for(int i = 0; i < fifo_count ; i++)
+//  {
+#define AXEL_RANGE 0.000488
+  short mX = (wiringPiI2CReadReg8(mFileHandle, 0x3B) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x3C);
+  short mY = (wiringPiI2CReadReg8(mFileHandle, 0x3D) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x3E);
+  short mZ = (wiringPiI2CReadReg8(mFileHandle, 0x3F) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x40);
+	mAccel.x = AXEL_RANGE*mX;
+	mAccel.y = AXEL_RANGE*mY;
+	mAccel.z = AXEL_RANGE*mZ;
+  mAccelAlpha = 1;
+  mAccelAve = mAccel * mAccelAlpha + mAccelAve * (1 - mAccelAlpha);
+#define GYRO_RANGE 0.06097
+	mX = (wiringPiI2CReadReg8(mFileHandle, 0x43) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x44);
+  mY = (wiringPiI2CReadReg8(mFileHandle, 0x45) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x46);
+  mZ = (wiringPiI2CReadReg8(mFileHandle, 0x47) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x48);
+	mRVel.x =  GYRO_RANGE * mX;
+	mRVel.y =  GYRO_RANGE * mY;
+	mRVel.z =  GYRO_RANGE * mZ;
+  if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
+  {
+	mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x04) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x03);
+	mY = (wiringPiI2CReadReg8(mFileHandleCompass, 0x06) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x05);
+	mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x08) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x07);
+#define COMPASS_RANGE 0.15
+	mMagnet.x = COMPASS_RANGE * mX;
+	mMagnet.y = COMPASS_RANGE * mY;
+	mMagnet.z = COMPASS_RANGE * mZ;
+  wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
+  }
+//  }
+/*  Debug::print(LOG_SUMMARY, "\
+  FIFO %d \
+  Accel %f %f %f\
+	Angle Velocity %f %f %f\
+	Compass %f %f %f \r\n",
+  fifo_count, 
+  getAx() ,getAy(), getAz(),
+	 getRvx(), getRvy(), getRvz(),
+	 getMx(), getMy(), getMz());
+ */ 
+}
+bool NineAxisSensor::getAccel(VECTOR3& acc) const
+{
+	if (isActive())
+	{
+		acc = mAccelAve;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getAx() const
+{
+	return mAccelAve.x;
+}
+double NineAxisSensor::getAy() const
+{
+	return mAccelAve.y;
+}
+double NineAxisSensor::getAz() const
+{
+	return mAccelAve.z;
+}
+double NineAxisSensor::getTheta() const
+{
+    return atan2f(mAccelAve.x, sqrt(pow(mAccelAve.y, 2) + pow(mAccelAve.z, 2)));
+}
+double NineAxisSensor::getPsi() const
+{
+    return atan2f(mAccelAve.y, sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.z, 2)));
+}
+double NineAxisSensor::getPhi() const
+{
+    return atan2f(sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.y, 2)), mAccelAve.z);
+}
+bool NineAxisSensor::getRawAccel(VECTOR3& acc) const
+{
+	if(isActive())
+	{
+		acc = mAccel;
+		return true;
+	}
+	return false;
+}
+
+bool NineAxisSensor::getRVel(VECTOR3& vel) const
+{
+	if (isActive())
+	{
+		vel = mRVel;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getRvx() const
+{
+	return mRVel.x;
+}
+double NineAxisSensor::getRvy() const
+{
+	return mRVel.y;
+}
+double NineAxisSensor::getRvz() const
+{
+	return mRVel.z;
+}
+float NineAxisSensor::getRoll() const
+{
+	return mRoll;
+}
+float NineAxisSensor::getPitch() const
+{
+	return mPitch;
+}
+float NineAxisSensor::getYaw() const
+{
+	return mYaw;
+}
+bool NineAxisSensor::getMagnet(VECTOR3& mag) const
+{
+	if(isActive())
+	{
+		mag = mMagnet;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getMx() const
+{
+	return mMagnet.x;
+}
+double NineAxisSensor::getMy() const
+{
+	return mMagnet.y;
+}
+double NineAxisSensor::getMz() const
+{
+	return mMagnet.z;
+}
+
+bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
+{
+	Debug::print(LOG_SUMMARY, "Accel %f %f %f\r\n\
+	Angle Velocity %f %f %f\r\n\
+	Roll Pitch Yaw %f %f %f\r\n\
+	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
+	 getRvx(), getRvy(), getRvz(),
+	 getRoll(), getPitch(), getYaw(),
+	 getMx(), getMy(), getMz());
+  return true;
+}
+
+NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
+{
+  setName("nineaxis");
+  setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
+}
+NineAxisSensor::~NineAxisSensor()
+{
+}

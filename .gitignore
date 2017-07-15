@@ -144,7 +144,11 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
+<<<<<<< HEAD
+# TODO: Comment the next line if you want to checkin your web deploy settings
+=======
 # TODO: Comment the next line if you want to checkin your web deploy settings 
+>>>>>>> LED
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
@@ -240,4 +244,8 @@ _Pvt_Extensions
 .paket/paket.exe
 
 # FAKE - F# Make
+<<<<<<< HEAD
 .fake/
+=======
+.fake/
+>>>>>>> LED
