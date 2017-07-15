@@ -45,39 +45,6 @@ public:
 	~Buzzer();
 };
 
-//LEDの制御をするクラス
-class LED :public TaskBase {
-	struct timespec mLastUpdateTime1, mLastUpdateTime2;
-private:
-	int r, g, b, t;
-	double s, u, v, p;
-	float d;
-	bool rbw, bnk, hf;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string>& args);
-	virtual void onUpdate(const struct timespec& time);
-public:
-	void reflect();
-	void turnOff();
-	void setColor(int);
-	void setColor(int, int, int);
-	void rainbow(double);
-	void stopRainbow();
-	void brink(double);
-	void brink(double, double);
-	void stopBrink();
-	void hsv(float);
-	void stopHSV();
-	void startHSV(double);
-	void clearLED();
-	LED();
-	~LED();
-};
-
-
-
 //// サーボ制御クラス(ソフトウェアPWM)
 //class MultiServo : public TaskBase
 //{
@@ -128,9 +95,8 @@ public:
 	void stop();
 	void moveRelease();//パラシュート切り離し
 	void moveHold();//ピンが刺さった状態の位置に移動
-	void Running();//ナビ中のサーボの角度
-	void Fold();//筒に入っているときのサーボ
-	
+	void Running();//走っているときの角度
+	void fold();//たたんでいるときの角度
 	double get();
 
 	MultiServo();
@@ -327,7 +293,6 @@ public:
 
 extern Buzzer gBuzzer;
 extern MultiServo gMultiServo;
-extern LED gLED;
 //extern SServo gSServo;
 //extern ArmServo gArmServo;
 //extern FrontStabiServo gJohnServo;
