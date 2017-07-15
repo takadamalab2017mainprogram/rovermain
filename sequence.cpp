@@ -207,6 +207,8 @@ bool Waiting::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMultiServo.fold();//スタビたたんでいる状態
+  gNineAxisSensor.setRunMode(true);
+  gNineAxisSensor.isMonitoring = true;
 	return true;
 }
 void Waiting::nextState()
@@ -288,6 +290,8 @@ bool Falling::onInit(const struct timespec& time)
 	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
+  gNineAxisSensor.setRunMode(true);
+  gNineAxisSensor.isMonitoring = false;
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
@@ -307,7 +311,7 @@ void Falling::onUpdate(const struct timespec& time)
 	}
 
 	//閾値以下ならカウント
-	if (abs(gGyroSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gGyroSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gGyroSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
+	if (abs(gNineAxisSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
 	{
 		if (mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
 	}

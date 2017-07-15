@@ -59,7 +59,7 @@ const static double STABI_BASE_ANGLE = 0.5;	//通常時のスタビ角度
 const static double STABI_RUNNING_ANGLE = 0.7;//走ってるときの角度
 const static double STABI_RELEASE_ANGLE = -0.9;//パラ切り離し
 const static double STABI_HOLD_ANGLE = 1.0;//
-const static double STABI_FOLD_ANGLE = -0.9;//たたんでいる
+const static double STABI_FOLD_ANGLE = -0.7;//たたんでいる
 //スタビ学習用の設定
 const static int POPULATION_NUM = 6; // 個体数
 const static int ACTION_NUM = 6; // 行動回数
