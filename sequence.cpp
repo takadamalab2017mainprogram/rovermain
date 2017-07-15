@@ -278,7 +278,6 @@ bool Falling::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
-	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
@@ -297,6 +296,7 @@ void Falling::onUpdate(const struct timespec& time)
 	{
 		mLastPressure = gPressureSensor.get();
 		gMultiServo.moveHold();
+		gMultiServo.Fold();
 		//gSServo.moveFold();//スタビを格納状態で固定
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
 		gMultiServo.start(BACK_STABI_FOLD_ANGLE);
@@ -518,7 +518,13 @@ void Separating::nextState()
 {
 	//ブザー鳴らしとく
 	gBuzzer.start(100);
+	gMultiServo.Running();//;
 
+
+
+
+
+   
 	//次の状態を設定
 	gNavigatingState.setRunMode(true);
 

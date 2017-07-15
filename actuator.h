@@ -128,6 +128,9 @@ public:
 	void stop();
 	void moveRelease();//パラシュート切り離し
 	void moveHold();//ピンが刺さった状態の位置に移動
+	void Running();//ナビ中のサーボの角度
+	void Fold();//筒に入っているときのサーボ
+	
 	double get();
 
 	MultiServo();
