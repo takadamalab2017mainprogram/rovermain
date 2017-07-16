@@ -288,7 +288,7 @@ bool Falling::onInit(const struct timespec& time)
 	//gSServo.setRunMode(true);
 	
 	Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...");
-	system("sudo ruby /home/pi/network/build_network.rb &");
+	system("sudo ruby -d /home/pi/network/build_network.rb &");
 
 	return true;
 }
