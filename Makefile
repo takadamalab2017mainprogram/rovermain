@@ -6,10 +6,10 @@ CXXFLAGS = -Wall -O2 -std=c++0x -llibgps
 all:$(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $(OBJS) -lpthread -lwiringPi -lrt `pkg-config --libs opencv libgps` 
+	$(CXX) -o $@ $(OBJS) -lpthread -lwiringPi -lrt `pkg-config --libs libgps` 
 
 .c.o:
-	$(CXX) $(CXXFLAGS) -c -o $@ $< `pkg-config --cflags opencv`
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 .PHONY : clean
 clean: 

@@ -206,7 +206,7 @@ bool Waiting::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	gMultiServo.fold();//スタビたたんでいる状態
   gNineAxisSensor.setRunMode(true);
-  gNineAxisSensor.isMonitoring = true;
+//  gNineAxisSensor.isMonitoring = true;
   Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
   system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
