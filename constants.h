@@ -24,29 +24,19 @@ const static int PIN_PULSE_A = 0;//モータエンコーダ Right
 const static int PIN_PULSE_B = 7;//
 const static int PIN_PWM_B1 = 13;//モータPWM
 const static int PIN_PWM_B2 = 12;                              //Clear!
-const static int PIN_BUZZER = 5;//ブザー                               Clear!
-const static int PIN_XBEE_SLEEP = 29;//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
-const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
-//const static int PIN_JOHN_SERVO = 25;//                                 Clear!
+const static int PIN_PARA_SERVO = 1;//パラ＋バックスタビ          Clear!
+const static int PIN_JOHN_SERVO = 25;//                                 Clear!
 //const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
 //const static int PIN_NECK_SERVO = 1;//                                  Clear!
 //const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
-const static int PIN_LED_R = 24;// LED
-const static int PIN_LED_G = 22;// LED
-const static int PIN_LED_B = 23;// LED
+
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
 const static double MOTOR_MAX_POWER_CHANGE = (double)5;//モータ出力の最大変化量
 const static double MOTOR_PID_MAX_ANGLE_DIFF = 90;// d_angle in pid is limited to this range
-
-//エンコーダ関連 ※モータを変えたらここも変えてください。
-const static int RESOLVING_POWER = 32;		//モータの分解能
-const static int GEAR_RATIO = 29;			//モータのギア比
-const static double DISTANCE_PER_ROTATION = 0.14 * M_PI; //m
-const static double DISTANCE_BETWEEN_TIRES = 0.20; //m
 
 //サーボ設定
 const static int SERVO_RANGE = 9000;//パルス間隔
@@ -60,13 +50,6 @@ const static double STABI_RUNNING_ANGLE = 0.7;//走ってるときの角度
 const static double STABI_RELEASE_ANGLE = -0.9;//パラ切り離し
 const static double STABI_HOLD_ANGLE = 1.0;//
 const static double STABI_FOLD_ANGLE = -0.7;//たたんでいる
-//スタビ学習用の設定
-const static int POPULATION_NUM = 6; // 個体数
-const static int ACTION_NUM = 6; // 行動回数
-const static int CIRCLE = 1000; // 試行回数
-const static double ENCODER_THRESHOLD = 4500; // エンコーダー関数のしきい値
-const static double ENCODER_THRESHOLD_PERCENT = 0.90; // エンコーダー関数の中央
-const static double ENCODER_THRESHOLD_DISCOUNT = 0.25; // エンコーダー関数の割引率
 
 //ジャイロ設定
 const static unsigned int GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET = 100;//ドリフト誤差補正時に用いるサンプル数

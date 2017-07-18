@@ -170,24 +170,26 @@ PressureSensor::~PressureSensor()
 {
 }
 
+
+#include <wiringPi.h>
+#include <wiringSerial.h>
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <sstream>
+
+#include <libgpsmm.h>
 //////////////////////////////////////////////
 // GPS Sensor
 //////////////////////////////////////////////
 bool GPSSensor::onInit(const struct timespec& time)
 {
 	mLastCheckTime = time;
-	if ((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
-	{
+
+
+	if (gps_rec.stream(WATCH_ENABLE | WATCH_JSON) == NULL) {
 		Debug::print(LOG_SUMMARY, "Failed to setup GPS Sensor\r\n");
-		return false;
 	}
-
-	//座標を更新するように設定(一応2回書き込み)
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
-
-	//バージョン情報を表示
-	Debug::print(LOG_SUMMARY, "GPS Firmware Version:%d\r\n", wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
 	mIsNewData = false;
@@ -196,51 +198,27 @@ bool GPSSensor::onInit(const struct timespec& time)
 }
 void GPSSensor::onClean()
 {
-	//動作を停止するコマンドを発行
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x06);
-
-	close(mFileHandle);
+	Debug::print(LOG_SUMMARY, "onclean\r\n");
 }
 void GPSSensor::onUpdate(const struct timespec& time)
 {
-	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
-	if (status & 0x06)// Found Position
-	{
-		//座標を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
 
-		//経度
-		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07);
-		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = read / 10000000.0;
-
-		//緯度
-		read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B);
-		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
-
-		//高度
-		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21);
-		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
-
-		//Ground course
-		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 35);
-		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 35))mGpsCourse = read / 10.0f;
-
-		//Ground speed
-		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 31);
-		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 31))mGpsSpeed = read / 100.0f;
-
-		//新しいデータが届いたことを記録する
-		if (status & 0x01)mIsNewData = true;
+	if ((newdata = gps_rec.read()) == NULL) {
+		return;
 	}
-	//衛星個数を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
-	if (wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
-
-	if(mSatelites > 0)
-	{
-		//Time
-		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 39);
-		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 39))mGpsTime = read;
+	else {
+		mPos.x = newdata->fix.latitude;
+		mPos.y = newdata->fix.longitude;
+		mPos.z = newdata->fix.altitude;
+		mSatelites = newdata->satellites_visible;
+		mGpsSpeed = newdata->fix.speed;
+		mGpsCourse = newdata->fix.track;
+		mIsNewData = true;
 	}
 
+	if (mSatelites > 0) {
+		mGpsTime = newdata->fix.time;
+	}
 
 	if (mIsLogger)
 	{
@@ -312,7 +290,7 @@ void GPSSensor::showState() const
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
 }
-GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
+GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false), gps_rec("localhost", DEFAULT_GPSD_PORT)
 {
 	setName("gps");
 	setPriority(TASK_PRIORITY_SENSOR, TASK_INTERVAL_SENSOR);
