@@ -198,7 +198,7 @@ multiservo stop           : stop servo\r\n");
 	return true;
 }
 void MultiServo::start(double angle)
-{
+	{
 	if (angle > 1)
 		angle = 1;
 	else if (angle < -1.5)
@@ -208,39 +208,19 @@ void MultiServo::start(double angle)
 	angle *= -1;
 	double tmp = 0.8*(angle + 1.0) / 2.0;
 	pwmWrite(mPin, SERVO_BASE_VALUE + tmp * SERVO_MOVABLE_RANGE);
-}
+	}
 void MultiServo::stop()
-{
+	{	
 	pwmWrite(mPin, 0);
-}
+	}
 double MultiServo::get()
-{
+	{	
 	return mAngle;
-}
-//パラ切り離し時使用
-void MultiServo::moveRelease()
-{
-	start(STABI_RELEASE_ANGLE);
-}
-//パラ切り離し時使用
-void MultiServo::moveHold()
-{
-	start(STABI_HOLD_ANGLE);
-}
+	}
 
-void MultiServo::Running()
-{
-	start(STABI_RUNNING_ANGLE);
-}
-
-void MultiServo::fold()
-MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
-{
-	setName("multiservo");
-	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
-}
 MultiServo::~MultiServo()
-{
+	{
+	}
 }
 
 ////////////////////////////////////////////////
