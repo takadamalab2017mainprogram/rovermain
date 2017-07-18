@@ -56,6 +56,8 @@ private:
 	float mGpsCourse;
 	bool mIsNewData;//新しい座標データがあれば真
 	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
+	gpsmm gps_rec;
+	struct gps_data_t *newdata;
 
 	void showState() const;//補足した衛星数と座標を表示
 protected:
