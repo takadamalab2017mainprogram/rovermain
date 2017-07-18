@@ -30,7 +30,7 @@ void Server::onUpdate(double elapsedSeconds)
 		//エラーを表示する処理
 		perror("socketのエラーが出ました");
 		printf("%d\n", errno);
-		return 1;
+		//return 1;
 	}
 	//ソケットの設定
 	addr.sin_family = AF_INET;
@@ -88,18 +88,27 @@ bool Client::onInit(const struct timespec& time)
 {
 	//ソケットの作成
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	//sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	//ソケットの設定
-	server.sin_family = AF_INET;
-	server.sin_port = htons(12345);
-	server.sin_addr.s_addr = inet_addr("10.0.0.5");
+	//server.sin_family = AF_INET;
+	//server.sin_port = htons(12345);
+	//server.sin_addr.s_addr = inet_addr("10.0.0.5");
 
-	return true;
+	//return true;
 }
 
 void Client::onUpdate()
 {
+  //ソケットの作成
+  //引数はアドレスファミリ、ソケットタイプ、プロトコル
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+
+  //ソケットの設定
+  server.sin_family = AF_INET;
+  server.sin_port = htons(12345);
+  server.sin_addr.s_addr = inet_addr("10.0.0.5");
+  
 	/* サーバに接続 */
 	connect(sock, (struct sockaddr *)&server, sizeof(server));
 }
