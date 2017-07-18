@@ -74,5 +74,5 @@ public:
 	~Client();
 };
 
-//extern Server gServer;
+extern Server gServer;
 //extern Client gClient;
