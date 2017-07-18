@@ -95,7 +95,7 @@ bool Client::onInit(const struct timespec& time)
 	//server.sin_port = htons(12345);
 	//server.sin_addr.s_addr = inet_addr("10.0.0.5");
 
-	//return true;
+	return true;
 }
 
 void Client::onUpdate()
@@ -143,4 +143,5 @@ Client::~Client()
 }
 
 Server gServer;
-//Client gClient;
+//クライアントのインスタンスを作るとプログラムが終了する
+Client gClient;

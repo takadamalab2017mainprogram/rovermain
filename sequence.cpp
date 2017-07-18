@@ -46,7 +46,7 @@ bool Testing::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	//マルチーズ追加
 	gServer.setRunMode(true);
-	//gClient.setRunMode(true);
+	gClient.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
