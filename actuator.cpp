@@ -217,6 +217,10 @@ double MultiServo::get()
 {	
 	return mAngle;
 }
+void MultiServo::moveRelease()
+{
+	start(STABI_RELEASE_ANGLE);
+}
 //パラ切り離し時使用
 void MultiServo::moveHold()
 {
