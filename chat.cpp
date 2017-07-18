@@ -30,7 +30,7 @@ void Server::onUpdate(double elapsedSeconds)
 		//エラーを表示する処理
 		perror("socketのエラーが出ました");
 		printf("%d\n", errno);
-		return 1;
+		//return 1;
 	}
 	//ソケットの設定
 	addr.sin_family = AF_INET;
@@ -61,7 +61,7 @@ bool Server::onCommand(const vector<string>& args)
 		if (args[1].compare("send"))
 		{
 			//clientに5文字HELLOを送る
-			write(sock, "HELLO", 5);
+			write(sock, "KOUKI", 5);
 			close(sock);
 		}
 
