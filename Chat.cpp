@@ -133,5 +133,5 @@ Client::~Client()
 {
 }
 
-Server gServer;
-Client gClient;
+//Server gServer;
+//Client gClient;
