@@ -293,6 +293,10 @@ bool VECTOR3::operator!=(const VECTOR3& v) const
 {
 	return (x != v.x) || (y != v.y) || (z != v.z);
 }
+double VECTOR3::norm()
+{
+  return sqrt(x*x + y*y + z*z);
+}
 VECTOR3 VECTOR3::normalize() const
 {
 	double length = sqrt(pow(x,2) + pow(y,2) + pow(z,2));

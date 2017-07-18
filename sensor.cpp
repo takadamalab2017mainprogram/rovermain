@@ -1249,17 +1249,17 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mMagnet.z = COMPASS_RANGE * mZ;
   wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
   }
-//  }
-/*  Debug::print(LOG_SUMMARY, "\
-  FIFO %d \
+  if(isMonitoring){
+  Debug::print(LOG_SUMMARY, "\
+  AccelNorm %f \
   Accel %f %f %f\
 	Angle Velocity %f %f %f\
 	Compass %f %f %f \r\n",
-  fifo_count, 
+  mAccel.norm(),
   getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
 	 getMx(), getMy(), getMz());
- */ 
+  }
 }
 bool NineAxisSensor::getAccel(VECTOR3& acc) const
 {
@@ -1361,6 +1361,21 @@ double NineAxisSensor::getMz() const
 
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {
+  if (args.size() == 3)
+	{
+		if (args[1].compare("monitor") == 0)
+		{
+      if(args[2].compare("true") == 0)
+      {
+		  	isMonitoring =true;
+      }
+      else if(args[2].compare("false") == 0)
+      {
+        isMonitoring = false;
+      }
+        return true;
+		}
+  }else{
 	Debug::print(LOG_SUMMARY, "Accel %f %f %f\r\n\
 	Angle Velocity %f %f %f\r\n\
 	Roll Pitch Yaw %f %f %f\r\n\
@@ -1368,11 +1383,14 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 	 getRvx(), getRvy(), getRvz(),
 	 getRoll(), getPitch(), getYaw(),
 	 getMx(), getMy(), getMz());
+	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n",args[0].c_str());
+  }
   return true;
 }
 
 NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
 {
+  isMonitoring = false;
   setName("nineaxis");
   setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
 }

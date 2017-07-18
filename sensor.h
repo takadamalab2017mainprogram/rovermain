@@ -323,6 +323,7 @@ public:
 	float getRoll() const;
 	float getPitch() const;
 	float getYaw() const;
+  bool isMonitoring;
 	NineAxisSensor();
 	~NineAxisSensor();
 };

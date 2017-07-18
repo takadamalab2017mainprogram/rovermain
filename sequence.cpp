@@ -7,12 +7,15 @@
 //#include <opencv/highgui.h>
 #include <stdarg.h>
 #include <wiringPi.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include "sequence.h"
 #include "utils.h"
 #include "serial_command.h"
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
+//#include "chat.h"
 //#include "image_proc.h"
 #include "subsidiary_sequence.h"
 #include "delayed_execution.h"
@@ -25,7 +28,7 @@ Separating gSeparatingState;
 Navigating gNavigatingState;
 //Modeling gModelingState;
 //ColorAccessing gColorAccessingState;
-//extern Filename gCaptureFilename;
+//extern Filename gCaptureFilename
 
 //////////////////////////////////////////////
 // Testing
@@ -38,11 +41,12 @@ bool Testing::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
-	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
-	//PgDelayedExecutor.setRunMode(true);
-
+	gDelayedExecutor.setRunMode(true);
+	//マルチーズ追加
+	//gServer.setRunMode(true);
+	//gClient.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
@@ -57,7 +61,7 @@ bool Testing::onInit(const struct timespec& time)
 
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-//  gLED.setRunMode(true);
+
 	std::function<void()> f = [&]()
 	{
 		gBuzzer.start(200);
@@ -202,7 +206,9 @@ bool Waiting::onInit(const struct timespec& time)
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-	gMultiServo.start(BACK_STABI_FOLD_ANGLE);
+	gMultiServo.fold();//スタビたたんでいる状態
+  gNineAxisSensor.setRunMode(true);
+  gNineAxisSensor.isMonitoring = true;
 	return true;
 }
 void Waiting::nextState()
@@ -278,13 +284,14 @@ bool Falling::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gJohnServo.setRunMode(true);
-	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
+  gNineAxisSensor.setRunMode(true);
+  gNineAxisSensor.isMonitoring = false;
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
@@ -299,12 +306,12 @@ void Falling::onUpdate(const struct timespec& time)
 		gMultiServo.moveHold();
 		//gSServo.moveFold();//スタビを格納状態で固定
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
-		gMultiServo.start(BACK_STABI_FOLD_ANGLE);
+		gMultiServo.fold();//たたむ
 		//gNeckServo.start(0.5);
 	}
 
 	//閾値以下ならカウント
-	if (abs(gGyroSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gGyroSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gGyroSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
+	if (abs(gNineAxisSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
 	{
 		if (mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
 	}
@@ -417,7 +424,6 @@ void Separating::onUpdate(const struct timespec& time)
 	case STEP_STABI_OPEN:
 		gMultiServo.moveHold();
 		//gJohnServo.start(20); // 角度調節
-		//gMultiServo.start(20);
 		//gSServo.moveRun();//スタビを走行時の位置に移動
 
 		mCurStep = STEP_WAIT_STABI_OPEN;
@@ -559,7 +565,7 @@ bool Navigating::onInit(const struct timespec& time)
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
-	gMultiServo.start(BACK_STABI_RUN_ANGLE);
+	gMultiServo.Running();//走っているときの角度に設定
 	//gArmServo.start(ARM_RUN_ANGLE);
 	//gNeckServo.start(1);
 	//gSServo.setRunMode(true);
@@ -579,6 +585,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	//gNeckServo.start(NECK_RUN_ANGLE);
 	VECTOR3 currentPos;
 
+	
 	//ゴールが設定されているか確認
 	if (!mIsGoalPos)
 	{
