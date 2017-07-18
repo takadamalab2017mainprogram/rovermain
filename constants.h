@@ -91,7 +91,7 @@ const static double NECK_RUN_ANGLE = -0.2;
 //////////////////////////////////////////////
 // シーケンス系設定
 //////////////////////////////////////////////
-const static unsigned int WAITING_LIGHT_COUNT = 5000;//何回連続で光っていると判定されたときに放出判定とするか
+const static unsigned int WAITING_LIGHT_COUNT = 1000;//何回連続で光っていると判定されたときに放出判定とするか
 const static unsigned int WAITING_ABORT_TIME = 7200;//強制的に放出判定とする時間（秒）
 
 const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//前回との気圧の差がこれ以内なら停止中とカウント(1秒間隔でサンプリング)
