@@ -1,4 +1,3 @@
-
 //一度だけプログラムを呼び出す宣言
 #pragma once
 #include "task.h"
@@ -44,7 +43,7 @@ protected:
 	virtual bool onCommand(const std::vector<std::string>& args);
 
 	//void error_check(sock);
- public:
+public:
 	Server();
 	~Server();
 
@@ -52,17 +51,17 @@ protected:
 //クライアントクラス
 class Client : public TaskBase
 {
- private:
+private:
 	//構造体サーバーに関する
 	struct sockaddr_in server;
 	int sock;
 	//送信する文字
 	char buf[32];
 	char *deststr;
-    //文字数
-	int n; 
- protected:
-	
+	//文字数
+	int n;
+protected:
+
 	//int yは適当な値なのでのちのち修正
 	virtual bool onInit(const struct timespec& time);
 
@@ -70,8 +69,8 @@ class Client : public TaskBase
 
 	virtual void onUpdate();
 
-        virtual bool onCommand(const std::vector<std::string>& args);
- public:
+	virtual bool onCommand(const std::vector<std::string>& args);
+public:
 	Client();
 	~Client();
 };
