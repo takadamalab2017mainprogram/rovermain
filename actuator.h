@@ -93,6 +93,10 @@ public:
 	void start(double angle);
 	//サーボの制御を終了する
 	void stop();
+	void moveRelease();//パラシュート切り離し
+	void moveHold();//ピンが刺さった状態の位置に移動
+	void Running();//走っているときの角度
+	void fold();//たたんでいるときの角度
 	double get();
 
 	MultiServo();
