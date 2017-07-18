@@ -107,7 +107,7 @@ void Client::onUpdate()
   //ソケットの設定
   server.sin_family = AF_INET;
   server.sin_port = htons(12345);
-  server.sin_addr.s_addr = inet_addr("10.0.0.5");
+  server.sin_addr.s_addr = inet_addr("10.0.0.3");
   
 	/* サーバに接続 */
 	connect(sock, (struct sockaddr *)&server, sizeof(server));
