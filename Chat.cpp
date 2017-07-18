@@ -16,6 +16,7 @@ using namespace std;
 bool Server::onInit()
 {
 	//ソケットの作成
+	//
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
