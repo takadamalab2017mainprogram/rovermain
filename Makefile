@@ -9,10 +9,8 @@ $(TARGET): $(OBJS)
 	$(CXX) -o $@ $(OBJS) -lpthread -lwiringPi -lrt `pkg-config --libs opencv libgps` 
 
 .c.o:
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) -c -o $@ $< `pkg-config --cflags opencv`
 
-#sensor.o:sensor.cpp
-#	$(CXX) $(CXXFLAGS) -o sensor.o sensor.cpp MotionSensor/libMotionSensor.a libI2Cdev.a -lpthread -lwiringPi -lrt 
 .PHONY : clean
 clean: 
 	@rm -rf *.o *~ $(TARGET)
