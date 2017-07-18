@@ -52,7 +52,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gDistanceSensor.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	//gCameraSave_Sequence.setRunMode(true);
-  	gNineAxisSensor.setRunMode(true);
+  gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
 	gSerialCommand.setRunMode(true);
@@ -203,8 +203,6 @@ bool Waiting::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMultiServo.start(BACK_STABI_FOLD_ANGLE);
-	Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...");
-	system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
 }
 void Waiting::nextState()
@@ -286,9 +284,6 @@ bool Falling::onInit(const struct timespec& time)
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
-	
-	Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...");
-	system("sudo ruby -d /home/pi/network/build_network.rb &");
 
 	return true;
 }
