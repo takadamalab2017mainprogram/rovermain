@@ -15,9 +15,13 @@ using namespace std;
 //文字列委を受けとるserverのセットアップ
 bool Server::onInit()
 {
+	return true;
+}
+//何度も接続要求受付を試みる
+void Server::onUpdate(double elapsedSeconds)
+{
 	//ソケットの作成
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
-	printf("こんんちわ");
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
 	//sockが-1を返したら失敗
@@ -37,11 +41,6 @@ bool Server::onInit()
 	//TCPクライアントからの接続要求を待てる状態にする
 	listen(sock0, 5);
 
-	return true;
-}
-//何度も接続要求受付を試みる
-void Server::onUpdate(double elapsedSeconds)
-{
 	//TCPクライアントからの接続要求を受け付ける
 	len = sizeof(client);
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
@@ -55,6 +54,7 @@ void Server::onClean()
 }
 bool Server::onCommand(const vector<string>& args)
 {
+
 	switch (args.size())
 	{
 	case 2:
