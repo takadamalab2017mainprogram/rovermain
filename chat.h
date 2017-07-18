@@ -57,7 +57,6 @@ private:
 	int sock;
 	//‘—M‚·‚é•¶š
 	char buf[32];
-	char *deststr;
 	//•¶š”
 	int n;
 protected:
@@ -74,8 +73,6 @@ public:
 	Client();
 	~Client();
 };
-
-
 
 //extern Server gServer;
 //extern Client gClient;
