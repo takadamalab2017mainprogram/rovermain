@@ -49,8 +49,6 @@ bool Testing::onInit(const struct timespec& time)
 	//gClient.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	//gWebCamera.setRunMode(true);
 	//gDistanceSensor.setRunMode(true);
@@ -87,14 +85,6 @@ bool Testing::onCommand(const std::vector<std::string>& args)
 			if (gPressureSensor.isActive())Debug::print(LOG_SUMMARY, " Pressure (%f) hPa\r\n", gPressureSensor.get());
 			else Debug::print(LOG_SUMMARY, " Pressure is NOT working\r\n");
 
-			if (gGyroSensor.isActive())
-			{
-				gGyroSensor.getRPos(vec);
-				Debug::print(LOG_SUMMARY, " Gyro pos (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
-				gGyroSensor.getRVel(vec);
-				Debug::print(LOG_SUMMARY, " Gyro vel (%f %f %f) dps\r\n", vec.x, vec.y, vec.z);
-			}
-			else Debug::print(LOG_SUMMARY, " Gyro is NOT working\r\n");
 
 			if (gAccelerationSensor.isActive())
 			{
@@ -102,6 +92,16 @@ bool Testing::onCommand(const std::vector<std::string>& args)
 				Debug::print(LOG_SUMMARY, " Accel val (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
 			}
 			else Debug::print(LOG_SUMMARY, " Accel is NOT working\r\n");
+
+			if(gNineAxisSensor.isActive())
+			{
+				gNineAxisSensor.getAccel(vec);
+				Debug::print(LOG_SUMMARY, " Accel val (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
+				gNineAxisSensor.getMagnet(vec);
+				Debug::print(LOG_SUMMARY, " Compass val (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
+				gNineAxisSensor.getRVel(vec);
+				Debug::print(LOG_SUMMARY, " Gyro val (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
+			}
 
 			if (gLightSensor.isActive())Debug::print(LOG_SUMMARY, " Light    (%s)\r\n", gLightSensor.get() ? "High" : "Low");
 			else Debug::print(LOG_SUMMARY, " Light is NOT working\r\n");
@@ -208,7 +208,7 @@ bool Waiting::onInit(const struct timespec& time)
 	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMultiServo.fold();//スタビたたんでいる状態
   gNineAxisSensor.setRunMode(true);
-  gNineAxisSensor.isMonitoring = true;
+  gNineAxisSensor.setMonitoring(true);
 	return true;
 }
 void Waiting::nextState()
@@ -276,7 +276,6 @@ bool Falling::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
-	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
@@ -291,7 +290,7 @@ bool Falling::onInit(const struct timespec& time)
 	//gSServo.setRunMode(true);
 
   gNineAxisSensor.setRunMode(true);
-  gNineAxisSensor.isMonitoring = false;
+  gNineAxisSensor.setMonitoring(false);
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
@@ -405,7 +404,6 @@ bool Separating::onInit(const struct timespec& time)
 	//gNeckServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	gGyroSensor.setRunMode(true);
 	gAccelerationSensor.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
@@ -553,7 +551,6 @@ bool Navigating::onInit(const struct timespec& time)
 	setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);

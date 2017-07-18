@@ -1358,6 +1358,11 @@ double NineAxisSensor::getMz() const
 {
 	return mMagnet.z;
 }
+void NineAxisSensor:setMonitoring(bool val)
+{
+	isMonitoring = val;
+	return;
+}
 
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {

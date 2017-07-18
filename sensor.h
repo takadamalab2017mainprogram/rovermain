@@ -282,6 +282,7 @@ private:
 	float mYaw;
 	float mPitch;
 	float mRoll;
+	bool isMonitoring;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -323,7 +324,7 @@ public:
 	float getRoll() const;
 	float getPitch() const;
 	float getYaw() const;
-  bool isMonitoring;
+	void setMonitoring(bool val);
 	NineAxisSensor();
 	~NineAxisSensor();
 };
