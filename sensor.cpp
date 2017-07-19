@@ -186,7 +186,6 @@ bool GPSSensor::onInit(const struct timespec& time)
 {
 	mLastCheckTime = time;
 
-
 	if (gps_rec.stream(WATCH_ENABLE | WATCH_JSON) == NULL) {
 		Debug::print(LOG_SUMMARY, "Failed to setup GPS Sensor\r\n");
 	}

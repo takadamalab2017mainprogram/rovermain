@@ -18,15 +18,13 @@ const static int VERSION = 01;
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A1 = 21;//モータPWM
-const static int PIN_PWM_A2 = 14;
-const static int PIN_PULSE_A = 0;//モータエンコーダ Right
-const static int PIN_PULSE_B = 7;//
-const static int PIN_PWM_B1 = 13;//モータPWM
-const static int PIN_PWM_B2 = 12;                              //Clear!
+const static int PIN_PWM_A1 = 0;//モータPWM
+const static int PIN_PWM_A2 = 2;
+const static int PIN_PWM_B1 = 1;//モータPWM
+const static int PIN_PWM_B2 = 3;                              //Clear!
 const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
-const static int PIN_PARA_SERVO = 1;//パラ＋バックスタビ          Clear!
-const static int PIN_JOHN_SERVO = 25;//                                 Clear!
+const static int PIN_PARA_SERVO = 24;//パラ          Clear!
+const static int PIN_JOHN_SERVO = 29;//                                 Clear!
 //const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
 //const static int PIN_NECK_SERVO = 1;//                                  Clear!
 //const static int PIN_ARM_SERVO = 22;//                                  Clear!
