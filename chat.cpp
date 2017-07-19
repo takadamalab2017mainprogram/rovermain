@@ -110,10 +110,10 @@ void Client::onUpdate()
   //ソケットの設定
   server.sin_family = AF_INET;
   server.sin_port = htons(12345);
-  server.sin_addr.s_addr = inet_addr("10.0.0.3");
+  server.sin_addr.s_addr = inet_addr("10.0.0.10");
   
 	/* サーバに接続 */
-	connect(sock1, (struct sockaddr *)&server, sizeof(server));
+	//connect(sock1, (struct sockaddr *)&server, sizeof(server));
 }
 
 void Client::onClean()
@@ -127,10 +127,12 @@ bool Client::onCommand(const std::vector<std::string>& args)
 	case 2:
 		if (args[1].compare("rec"))
 		{
+	
+			connect(sock1, (struct sockaddr *)&server, sizeof(server));
 			memset(buf, 0, sizeof(buf));
 			n = read(sock1, buf, sizeof(buf));
 
-			printf("%d, %s\r\n", n, buf);
+			printf("%d, %s\n", n, buf);
 			close(sock1);
 		}
 	}
