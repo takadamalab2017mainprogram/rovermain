@@ -15,11 +15,6 @@ using namespace std;
 //文字列委を受けとるserverのセットアップ
 bool Server::onInit()
 {
-	return true;
-}
-//何度も接続要求受付を試みる
-void Server::onUpdate(double elapsedSeconds)
-{
 	//ソケットの作成
 	//引数はアドレスファミリ、ソケットタイプ、プロトコル
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
@@ -40,7 +35,11 @@ void Server::onUpdate(double elapsedSeconds)
 
 	//TCPクライアントからの接続要求を待てる状態にする
 	listen(sock0, 5);
-
+	return true;
+}
+//何度も接続要求受付を試みる
+void Server::onUpdate(double elapsedSeconds)
+{
 	//TCPクライアントからの接続要求を受け付ける
 	len = sizeof(client);
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
@@ -60,23 +59,21 @@ bool Server::onCommand(const vector<string>& args)
 	case 2:
 		if (args[1].compare("sen"))
 		{
-			//clientに5文字HELLOを送る
-			write(sock, "KOUKI", 5);
-			close(sock);
+		
 		}
 
 	}
-	Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
-chat sen: send messeage to client\r\n\
-chat rec: recieve message from server|r\n\
-");
-	return true;
+return true;
 }
 
+void Server::send()
+{
+	//clientに5文字HELLOを送る
+	write(sock, "KOUKI", 5);
+	close(sock);
+}
 Server::Server()
 {
-	setName("chat");
-	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
 }
 
 Server::~Server()
@@ -103,14 +100,6 @@ void Client::onUpdate()
   //ソケットの作成
   //引数はアドレスファミリ、ソケットタイプ、プロトコル
 	//sockがサーバーの
-
-
-  sock1 = socket(AF_INET, SOCK_STREAM, 0);
-
-  //ソケットの設定
-  server.sin_family = AF_INET;
-  server.sin_port = htons(12345);
-  server.sin_addr.s_addr = inet_addr("10.0.0.10");
   
 	/* サーバに接続 */
 	//connect(sock1, (struct sockaddr *)&server, sizeof(server));
@@ -128,17 +117,28 @@ bool Client::onCommand(const std::vector<std::string>& args)
 		if (args[1].compare("rec"))
 		{
 	
-			connect(sock1, (struct sockaddr *)&server, sizeof(server));
-			memset(buf, 0, sizeof(buf));
-			n = read(sock1, buf, sizeof(buf));
-
-			printf("%d, %s\n", n, buf);
-			close(sock1);
+			
 		}
 	}
 	return true;
 }
+//レシーブ関数
+void Client::receive() 
+{
+	sock1 = socket(AF_INET, SOCK_STREAM, 0);
 
+	//ソケットの設定
+	server.sin_family = AF_INET;
+	server.sin_port = htons(12345);
+	server.sin_addr.s_addr = inet_addr("10.0.0.10");
+
+	connect(sock1, (struct sockaddr *)&server, sizeof(server));
+	memset(buf, 0, sizeof(buf));
+	n = read(sock1, buf, sizeof(buf));
+
+	printf("%d, %s\n", n, buf);
+	close(sock1);
+}
 Client::Client()
 {
 }
@@ -147,6 +147,54 @@ Client::~Client()
 {
 }
 
+
+//サーバーとクライアントをまとめたクラス
+bool Chat::onInit(const struct timespec& time)
+{
+	gServer.setRunMode(true);
+	gClient.setRunMode(true);
+	return true;
+}
+void Chat::onClean()
+{
+}
+
+bool Chat::onCommand(const std::vector<std::string>& args)
+{
+	if (args.size() == 2)
+	{
+		//サーバー
+		if (args[1].compare("sen") == 0)
+		{
+			gServer.send();
+		}
+		//クライアント
+		else if (args[1].compare("rec") == 0)
+		{
+			gClient.receive();
+		}
+		return true;
+	}
+	else
+	{
+		Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
+chat sen: send messeage to client\r\n\
+chat rec: recieve message from server\r\n\"");
+	}
+	return false;
+}
+//初期化するものはちゃんと決める
+Chat::Chat()
+{
+	setName("chat");
+	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
+}
+Chat::~Chat()
+{
+}
+
+
 Server gServer;
 //繧ｯ繝ｩ繧､繧｢繝ｳ繝医・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ繧剃ｽ懊ｋ縺ｨ繝励Ο繧ｰ繝ｩ繝縺檎ｵゆｺ・☆繧・
 Client gClient;
+Chat gChat;

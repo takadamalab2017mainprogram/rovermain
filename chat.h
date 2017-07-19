@@ -44,6 +44,7 @@ protected:
 
 	//void error_check(sock);
 public:
+	void send();
 	Server();
 	~Server();
 
@@ -60,7 +61,6 @@ private:
 	//•¶š”
 	int n;
 protected:
-
 	//int y‚Í“K“–‚È’l‚È‚Ì‚Å‚Ì‚¿‚Ì‚¿C³
 	virtual bool onInit(const struct timespec& time);
 
@@ -70,9 +70,23 @@ protected:
 
 	virtual bool onCommand(const std::vector<std::string>& args);
 public:
+	void receive();
 	Client();
 	~Client();
 };
 
+class Chat : public TaskBase
+{
+private:
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string>& args);
+public:
+	Chat();
+	~Chat();
+};
+
 extern Server gServer;
 extern Client gClient;
+extern Chat gChat;
