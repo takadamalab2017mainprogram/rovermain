@@ -9,7 +9,6 @@
 #include "utils.h"
 #include <pthread.h>
 #include <list>
-#include <libgpsmm.h>
 
 //MPL115A2からデータを取得するクラス
 //気圧の値はhPa単位で+-10hPaの誤差が存在
