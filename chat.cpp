@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -152,7 +153,7 @@ Client::~Client()
 bool Chat::onInit(const struct timespec& time)
 {
 	gServer.setRunMode(true);
-	gClient.setRunMode(true);
+	//gClient.setRunMode(true);
 	return true;
 }
 void Chat::onClean()
@@ -171,7 +172,7 @@ bool Chat::onCommand(const std::vector<std::string>& args)
 		//クライアント
 		else if (args[1].compare("rec") == 0)
 		{
-			gClient.receive();
+			//gClient.receive();
 		}
 		return true;
 	}
@@ -196,5 +197,5 @@ Chat::~Chat()
 
 Server gServer;
 //繧ｯ繝ｩ繧､繧｢繝ｳ繝医・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ繧剃ｽ懊ｋ縺ｨ繝励Ο繧ｰ繝ｩ繝縺檎ｵゆｺ・☆繧・
-Client gClient;
+//Client gClient;
 Chat gChat;

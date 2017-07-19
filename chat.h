@@ -88,5 +88,5 @@ public:
 };
 
 extern Server gServer;
-extern Client gClient;
+//extern Client gClient;
 extern Chat gChat;
