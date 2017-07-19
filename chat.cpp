@@ -58,7 +58,7 @@ bool Server::onCommand(const vector<string>& args)
 	switch (args.size())
 	{
 	case 2:
-		if (args[1].compare("send"))
+		if (args[1].compare("sen"))
 		{
 			//clientに5文字HELLOを送る
 			write(sock, "KOUKI", 5);
@@ -67,8 +67,8 @@ bool Server::onCommand(const vector<string>& args)
 
 	}
 	Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
-chat send: send messeage to client\r\n\
-chat recieve: recieve message from server|r\n\
+chat sen: send messeage to client\r\n\
+chat rec: recieve message from server|r\n\
 ");
 	return true;
 }
@@ -102,7 +102,10 @@ void Client::onUpdate()
 {
   //ソケットの作成
   //引数はアドレスファミリ、ソケットタイプ、プロトコル
-  sock = socket(AF_INET, SOCK_STREAM, 0);
+	//sockがサーバーの
+
+
+  sock1 = socket(AF_INET, SOCK_STREAM, 0);
 
   //ソケットの設定
   server.sin_family = AF_INET;
@@ -110,7 +113,7 @@ void Client::onUpdate()
   server.sin_addr.s_addr = inet_addr("10.0.0.3");
   
 	/* サーバに接続 */
-	connect(sock, (struct sockaddr *)&server, sizeof(server));
+	connect(sock1, (struct sockaddr *)&server, sizeof(server));
 }
 
 void Client::onClean()
@@ -122,13 +125,13 @@ bool Client::onCommand(const std::vector<std::string>& args)
 	switch (args.size())
 	{
 	case 2:
-		if (args[1].compare("receive"))
+		if (args[1].compare("rec"))
 		{
 			memset(buf, 0, sizeof(buf));
-			n = read(sock, buf, sizeof(buf));
+			n = read(sock1, buf, sizeof(buf));
 
 			printf("%d, %s\r\n", n, buf);
-			close(sock);
+			close(sock1);
 		}
 	}
 	return true;
@@ -143,5 +146,5 @@ Client::~Client()
 }
 
 Server gServer;
-//繧ｯ繝ｩ繧､繧｢繝ｳ繝医�ｮ繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ繧剃ｽ懊ｋ縺ｨ繝励Ο繧ｰ繝ｩ繝縺檎ｵゆｺ�縺吶ｋ
+//繧ｯ繝ｩ繧､繧｢繝ｳ繝医・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ繧剃ｽ懊ｋ縺ｨ繝励Ο繧ｰ繝ｩ繝縺檎ｵゆｺ・☆繧・
 Client gClient;
