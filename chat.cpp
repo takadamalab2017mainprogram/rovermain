@@ -120,7 +120,6 @@ chat rec: recieve message from server\r\n\"");
 
 Rec::Rec():buf(),n(0)
 {
-	close(sock);
 	//setName("chat");
 	//setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
 }
