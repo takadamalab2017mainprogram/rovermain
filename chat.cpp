@@ -37,7 +37,7 @@ bool Send::onCommand(const vector<string>& args)
 		{
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ菴懈・ */
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
-
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ險ｭ螳・*/
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
@@ -106,10 +106,9 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 	{
 		if (args[1].compare("rec") == 0)
 		{
-			//確認のprint
-			//Debug::print(LOG_PRINT, "FIRE_rec");
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ菴懈・ */
 			sock = socket(AF_INET, SOCK_STREAM, 0);
+			//ここまでは動いている
 			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			/* 謗･邯壼・謖・ｮ夂畑讒矩菴薙・貅門ｙ */
 			server.sin_family = AF_INET;
@@ -121,6 +120,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 
 			/* 繧ｵ繝ｼ繝舌°繧峨ョ繝ｼ繧ｿ繧貞女菫｡ */
 			memset(buf, 0, sizeof(buf));
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			n = read(sock, buf, sizeof(buf));
 			if (n < 0) {
 				perror("read");
