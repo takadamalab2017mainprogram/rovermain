@@ -62,14 +62,15 @@ bool Send::onCommand(const vector<string>& args)
 			close(sock);
 			/* listen 縺吶ｋsocket縺ｮ邨ゆｺ・*/
 			close(sock0);
+			return true;
 		}
 //		}
 	}
   else {
 	  Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
 chat_s sen: send messeage to client\r\n\"");
+	  return true;
   }
-  return true;
 }
 
 Send::Send()
@@ -100,7 +101,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size()==2)
 	{
-		if (args[1].compare("rec")==0)
+		if (args[1].compare("rec") == 0)
 		{
 			//確認のprint
 			Debug::print(LOG_PRINT, "FIRE");
@@ -126,14 +127,14 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			Debug::print(LOG_PRINT,"%d, %s\n", n, buf);
 			/* socket縺ｮ邨ゆｺ・*/
 			close(sock);
-			
+			return true;
 		}
 	}
 	else {
 		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
 chat_r rec: recieve message from server\r\n\"");
+		return true;
 	}
-	return true;
 }
 //繝ｬ繧ｷ繝ｼ繝夜未謨ｰ
 
