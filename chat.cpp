@@ -68,8 +68,8 @@ bool Send::onCommand(const vector<string>& args)
   else {
 	  Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
 chat_s sen: send messeage to client\r\n\"");
-	  return true;
   }
+  return true;
 }
 
 Send::Send()
