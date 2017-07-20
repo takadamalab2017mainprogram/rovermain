@@ -72,7 +72,7 @@ chat_s sen: send messeage to client\r\n\"");
   }
 }
 
-Send::Send():sock(0),sock0(0)
+Send::Send()
 {
 	setName("chat_s");
 	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
@@ -137,7 +137,7 @@ chat_r rec: recieve message from server\r\n\"");
 }
 //レシーブ関数
 
-Rec::Rec():sock(0),buf(),n(0)
+Rec::Rec():buf(),n(0)
 {
 	setName("chat_r");
 	setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
