@@ -76,7 +76,7 @@ bool Send::onCommand(const vector<string>& args)
 			//5蝗槭⊇縺ｩ逶ｸ謇九↓繝｡繝・そ繝ｼ繧ｸ繧帝√▲縺溘ｉ邨ゆｺ・☆繧・
 			/* TCP繧ｯ繝ｩ繧､繧｢繝ｳ繝医°繧峨・謗･邯夊ｦ∵ｱゅｒ蠕・※繧狗憾諷九↓縺吶ｋ */
 			listen(sock0, 5);
-			while(k < 5){
+			//while(k < 5){
 			/* TCP繧ｯ繝ｩ繧､繧｢繝ｳ繝医°繧峨・謗･邯夊ｦ∵ｱゅｒ蜿励￠莉倥￠繧・*/
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
@@ -85,12 +85,11 @@ bool Send::onCommand(const vector<string>& args)
 			if (nn < 1)
 			{
 				perror("write");
-				break;
+				//break;
 			}
 			/* TCP繧ｻ繝・す繝ｧ繝ｳ縺ｮ邨ゆｺ・*/
-		   	 k++;
+		   	// k++;
 			close(sock);
-			}
 			/* listen 縺吶ｋsocket縺ｮ邨ゆｺ・*/
 			close(sock0);
 		}
