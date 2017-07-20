@@ -91,10 +91,9 @@ bool Send::onCommand(const vector<string>& args)
 			/* TCPセチE��ョンの終亁E*/
 		   	// k++;
 			close(sock);
-			}
 			/* listen するsocketの終亁E*/
 			close(sock0);
-		//}
+		}
 //		}
 	}
   else {
