@@ -12,6 +12,8 @@
 #include "utils.h"
 using namespace std;
 
+//20170630ãƒãƒ«ãƒãEã‚ºè¿½åŠãƒãƒ£ãƒEƒˆãƒ—ãƒ­ã‚°ãƒ©ãƒ
+//æ–E­—åEå§”ã‚’å—ã‘ã¨ã‚‹serverã®ã‚»ãƒEƒˆã‚¢ãƒEE
 //SendƒNƒ‰ƒX‚Í‘Šè‚ÉƒƒbƒZ[ƒW‚ª‘—‚ç‚ê‚é‚Ü‚ÅÀs‚³‚ê‚éB
 //‘—‚ç‚ê‚½‚çsock‚ğ•Â‚¶‚ÄI—¹AŒ»İ‚Í‘—‚ç‚ê‚È‚¢‚ÆƒvƒƒOƒ‰ƒ€‚ÌI—¹‚ª‚Å‚«‚È‚­‚È‚éB
 bool Send::onInit(const struct timespec& time)
@@ -19,60 +21,60 @@ bool Send::onInit(const struct timespec& time)
 	return true;
 }
 
-//‘—MƒNƒ‰ƒX
+//ä½•åº¦ã‚‚æ¥ç¶šè¦æ±‚å—ä»˜ã‚’è©¦ã¿ã‚E
 void Send::onUpdate(const struct timespec& time)
 {
 }
+//sockæ“ä½œã‚’ä¸ç«¯çµ‚äºE¼ˆé›»åŠ›æ¶ˆè²»è»½æ¸›ã‚‰ã—ã„EŸï¼E
 void Send::onClean()
 {
 }
 bool Send::onCommand(const vector<string>& args)
 {
-  if(args.size()==2)
+	if (args.size() == 2)
 	{
-		if (args[1].compare("sen")==0)
+		if (args[1].compare("sen") == 0)
 		{
-			/* ã‚½ã‚±ãƒEï¿½ï¿½ã®ä½œï¿½E */
+			/* ã‚½ã‚±ãƒEƒˆã®ä½œæE */
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
-			//ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‚Í“ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+			//‚±‚±‚Ü‚Å‚Í“®‚¢‚Ä‚¢‚é
 			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
-			/* ã‚½ã‚±ãƒEï¿½ï¿½ã®è¨­å®E*/
+			/* ã‚½ã‚±ãƒEƒˆã®è¨­å®E*/
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
 			bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
 			Debug::print(LOG_PRINT, "FIRE");
-			//5å›ã»ã©ç›¸æ‰‹ã«ãƒ¡ãƒEï¿½ï¿½ãƒ¼ã‚¸ã‚’é€ã£ãŸã‚‰çµ‚äºEï¿½ï¿½ã‚E
-			/* TCPã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‹ã‚‰ï¿½Eæ¥ç¶šè¦æ±‚ã‚’å¾Eï¿½ï¿½ã‚‹çŠ¶æ…‹ã«ã™ã‚‹ */
+			//5å›ã»ã©ç›¸æ‰‹ã«ãƒ¡ãƒE‚»ãƒ¼ã‚¸ã‚’éã£ãŸã‚‰çµ‚äºE™ã‚E
+			/* TCPã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‹ã‚‰ãEæ¥ç¶šè¦æ±‚ã‚’å¾E¦ã‚‹çŠ¶æ…‹ã«ã™ã‚‹ */
 			listen(sock0, 5);
 			//while(k < 5){
-			/* TCPã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‹ã‚‰ï¿½Eæ¥ç¶šè¦æ±‚ã‚’å—ã‘ä»˜ã‘ã‚E*/
+			/* TCPã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‹ã‚‰ãEæ¥ç¶šè¦æ±‚ã‚’å—ã‘ä»˜ã‘ã‚E*/
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
-			/* 5æ–Eï¿½ï¿½é€ä¿¡ */
+			/* 5æ–E­—éä¿¡ */
 			Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
 				inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 			nn = write(sock, "HELLO", 5);
-			/* TCPã‚»ãƒEï¿½ï¿½ãƒ§ãƒ³ã®çµ‚äºE*/
+			/* TCPã‚»ãƒE‚·ãƒ§ãƒ³ã®çµ‚äºE*/
 			close(sock);
 			/* listen ã™ã‚‹socketã®çµ‚äºE*/
 			close(sock0);
 			return true;
 		}
 		return false;
-//		}
+		//		}
 	}
-  else {
-	  Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
-chat sen: send messeage to client\r\n\
-chat rec: recieve message from server\r\n\"");
-	  return true;
-  }
+	else {
+		Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
+chat_s sen: send messeage to client\r\n\"");
+		return true;
+	}
 }
 
 Send::Send()
 {
-	setName("chat");
+	setName("chat_s");
 	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
 }
 
@@ -80,7 +82,7 @@ Send::~Send()
 {
 }
 
-//å¼•æ•°ã¨ã—ã¦ã‚µãƒ¼ãƒï¿½Eã®IPã‚¢ãƒ‰ãƒ¬ã‚¹ãŒå¿Eï¿½ï¿½E
+//å¼•æ•°ã¨ã—ã¦ã‚µãƒ¼ãƒãEã®IPã‚¢ãƒ‰ãƒ¬ã‚¹ãŒå¿E¦E
 bool Rec::onInit(const struct timespec& time)
 {
 	return true;
@@ -97,88 +99,99 @@ void Rec::onClean()
 bool Rec::onCommand(const std::vector<std::string>& args)
 {
 	//Debug::print(LOG_PRINT, "FIRE_soto");
-	if(args.size() == 2)
+	if (args.size() == 2)
 	{
 		if (args[1].compare("rec") == 0)
 		{
+			/* ã‚½ã‚±ãƒEƒˆã®ä½œæE */
 			sock = socket(AF_INET, SOCK_STREAM, 0);
+			//‚±‚±‚Ü‚Å‚Í“®‚¢‚Ä‚¢‚é
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
+			/* æ¥ç¶šåEæŒE®šç”¨æ§‹éä½“ãEæº–å‚™ */
 			server.sin_family = AF_INET;
 			server.sin_port = htons(12345);
 			server.sin_addr.s_addr = inet_addr("10.0.0.12");
+
+			/* ã‚µãƒ¼ãƒã«æ¥ç¶E*/
 			connect(sock, (struct sockaddr *)&server, sizeof(server));
+
+			/* ã‚µãƒ¼ãƒã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å—ä¿¡ */
 			memset(buf, 0, sizeof(buf));
+			//‚±‚±‚Ü‚Å“®‚¢‚Ä‚¢‚é
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			n = read(sock, buf, sizeof(buf));
 			if (n < 0) {
 				perror("read");
-				printf("‘Šè‚ª‘—MƒvƒƒOƒ‰ƒ€‚ğ‹N“®‚µ‚Ä‚È‚¢‚æ");
+				printf("ç›¸æ‰‹ãEãƒ—ãƒ­ã‚°ãƒ©ãƒã‹ã‚‰ä½•ã‚‚é€ã‚‰ã‚Œã¦ãã¦ãªãE‚ˆ");
 				return 1;
 			}
-			Debug::print(LOG_PRINT,"%d, %s\n", n, buf);
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
+			Debug::print(LOG_PRINT, "%d, %s\n", n, buf);
+			/* socketã®çµ‚äºE*/
 			close(sock);
 			return true;
 		}
+		//Debug::print(LOG_PRINT, "FIREF");
 		return false;
 	}
-	/*
 	else {
-		Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
-chat rec: recieve message from server\r\n\"");
+		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
+chat_r rec: recieve message from server\r\n\"");
 		return true;
 	}
-	*/
 }
+//ãƒ¬ã‚·ãƒ¼ãƒ–é–¢æ•°
 
-Rec::Rec():buf(),n(0)
+Rec::Rec() :buf(), n(0)
 {
-	//setName("chat");
-	//setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
+	setName("chat_r");
+	setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
 }
 
 Rec::~Rec()
 {
-	close(sock);
 }
 
 /*
+//ã‚µãƒ¼ãƒãEã¨ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‚’ã¾ã¨ã‚ãŸã‚¯ãƒ©ã‚¹
 bool Chat::onInit(const struct timespec& time)
 {
-	gSend.setRunMode(true);
-	//gRec.setRunMode(true);
-	return true;
+gSend.setRunMode(true);
+//gRec.setRunMode(true);
+return true;
 }
 void Chat::onClean()
 {
 }
-
 bool Chat::onCommand(const std::vector<std::string>& args)
 {
-	if (args.size() == 2)
-	{
-		//ã‚µãƒ¼ãƒãE
-		if (args[1].compare("sen") == 0)
-		{
-			gSend.send();
-		}
-		//ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒE
-		else if (args[1].compare("rec") == 0)
-		{
-			//gRec.receive();
-		}
-		return true;
-	}
-	else
-	{
-		Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
+if (args.size() == 2)
+{
+//ã‚µãƒ¼ãƒãE
+if (args[1].compare("sen") == 0)
+{
+gSend.send();
+}
+//ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒE
+else if (args[1].compare("rec") == 0)
+{
+//gRec.receive();
+}
+return true;
+}
+else
+{
+Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
 chat sen: send messeage to client\r\n\
 chat rec: recieve message from server\r\n\"");
-	}
-	return false;
+}
+return false;
 }
 //åˆæœŸåŒ–ã™ã‚‹ã‚‚ã®ã¯ã¡ã‚E‚“ã¨æ±ºã‚ã‚‹
 Chat::Chat()
 {
-	setName("chat");
-	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
+setName("chat");
+setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
 }
 Chat::~Chat()
 {
@@ -186,5 +199,6 @@ Chat::~Chat()
 */
 
 Send gSend;
+//ç¹§E¯ç¹ï½©ç¹§E¤ç¹§E¢ç¹ï½³ç¹åŒ»ãƒ»ç¹§E¤ç¹ï½³ç¹§E¹ç¹§E¿ç¹ï½³ç¹§E¹ç¹§å‰E½½æ‡Šï½‹ç¸ºE¨ç¹åŠ±ÎŸç¹§E°ç¹ï½©ç¹ ç¸ºæªï½µã‚E½ºãƒ»â˜E¹§ãƒ»
 Rec gRec;
 //Chat gChat;
