@@ -14,7 +14,8 @@ using namespace std;
 
 //20170630繝槭Ν繝√・繧ｺ霑ｽ蜉繝√Ε繝・ヨ繝励Ο繧ｰ繝ｩ繝
 //譁・ｭ怜・蟋斐ｒ蜿励￠縺ｨ繧虐erver縺ｮ繧ｻ繝・ヨ繧｢繝・・
-
+//Sendクラスは相手にメッセージが送られるまで実行される。
+//送られたらsockを閉じて終了、現在は送られないとプログラムの終了ができなくなる。
 bool Send::onInit(const struct timespec& time)
 {
 	/*
@@ -209,7 +210,7 @@ void Rec::receive()
 Rec::Rec():sock(0),buf(),n(0)
 {
 	setName("chat_r");
-	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
+	setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
 }
 
 Rec::~Rec()
