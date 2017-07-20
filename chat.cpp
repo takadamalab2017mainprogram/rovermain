@@ -17,48 +17,16 @@ using namespace std;
 //����ꂽ��sock����ďI���A���݂͑����Ȃ��ƃv���O�����̏I�����ł��Ȃ��Ȃ�B
 bool Send::onInit(const struct timespec& time)
 {
-	/*
-	//ソケチE��の作�E
-	//引数はアドレスファミリ、ソケチE��タイプ、�Eロトコル
-	sock0 = socket(AF_INET, SOCK_STREAM, 0);
-
-	//sockぁE1を返したら失敁E
-	if (sock < 0)
-	{
-		//エラーを表示する処琁E
-		perror("socketのエラーが�Eました");
-		printf("%d\n", errno);
-		//return 1;
-	}
-	//ソケチE��の設宁E
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(12345);
-	addr.sin_addr.s_addr = INADDR_ANY;
-	bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-
-	//TCPクライアントから�E接続要求を征E��る状態にする
-	listen(sock0, 5);
 	return true;
-	*/
 }
 
 //何度も接続要求受付を試みめE
 void Send::onUpdate(const struct timespec& time)
 {
-	/*
-	//TCPクライアントから�E接続要求を受け付けめE
-	len = sizeof(client);
-	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
-	*/
 }
 //sock操作を一端終亁E��電力消費軽減らしい�E�！E
 void Send::onClean()
 {
-	/*
-	//listenするsocketの終亁E
-	close(sock0);
-	mes = NULL;
-	*/
 }
 bool Send::onCommand(const vector<string>& args)
 {
@@ -74,6 +42,7 @@ bool Send::onCommand(const vector<string>& args)
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
 			bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
+			Debug::print(LOG_PRINT, "FIRE");
 			//5回ほど相手にメチE��ージを送ったら終亁E��めE
 			/* TCPクライアントから�E接続要求を征E��る状態にする */
 			listen(sock0, 5);
@@ -101,14 +70,6 @@ bool Send::onCommand(const vector<string>& args)
 chat_s sen: send messeage to client\r\n\"");
 	  return true;
   }
-/*
-void Send::send()
-{
-	//clientに5斁E��HELLOを送る
-	write(sock, "KOUKI", 5);
-	close(sock);
-}
-*/
 }
 
 Send::Send():sock(0),sock0(0)
@@ -124,26 +85,11 @@ Send::~Send()
 //引数としてサーバ�EのIPアドレスが忁E��E
 bool Rec::onInit(const struct timespec& time)
 {
-	//ソケチE��の作�E
-	//引数はアドレスファミリ、ソケチE��タイプ、�Eロトコル
-	//sock = socket(AF_INET, SOCK_STREAM, 0);
-
-	//ソケチE��の設宁E
-	//server.sin_family = AF_INET;
-	//server.sin_port = htons(12345);
-	//server.sin_addr.s_addr = inet_addr("10.0.0.5");
-
 	return true;
 }
 
 void Rec::onUpdate(const struct timespec& time)
 {
-  //ソケチE��の作�E
-  //引数はアドレスファミリ、ソケチE��タイプ、�Eロトコル
-	//sockがサーバ�Eの
-  
-	/* サーバに接綁E*/
-	//connect(sock, (struct sockaddr *)&server, sizeof(server));
 }
 
 void Rec::onClean()
@@ -156,6 +102,8 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 	{
 		if (args[1].compare("rec"))
 		{
+			//�m�F��print
+			Debug::print(LOG_PRINT, "FIRE");
 			/* ソケチE��の作�E */
 			sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -188,24 +136,7 @@ chat_r rec: recieve message from server\r\n\"");
 	return true;
 }
 //レシーブ関数
-/*
-void Rec::receive() 
-{
-	sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	//ソケチE��の設宁E
-	server.sin_family = AF_INET;
-	server.sin_port = htons(12345);
-	server.sin_addr.s_addr = inet_addr("10.0.0.10");
-
-	connect(sock, (struct sockaddr *)&server, sizeof(server));
-	memset(buf, 0, sizeof(buf));
-	n = read(sock, buf, sizeof(buf));
-
-	printf("%d, %s\n", n, buf);
-	close(sock);
-}
-*/
 Rec::Rec():sock(0),buf(),n(0)
 {
 	setName("chat_r");
