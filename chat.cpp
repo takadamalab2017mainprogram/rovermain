@@ -32,7 +32,7 @@ bool Send::onCommand(const vector<string>& args)
 {
   if(args.size()==2)
 	{
-		if (args[1].compare("sen"))
+		if (args[1].compare("sen")==0)
 		{
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ菴懈・ */
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
@@ -100,7 +100,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 {
 	if(args.size()==2)
 	{
-		if (args[1].compare("rec"))
+		if (args[1].compare("rec")==0)
 		{
 			//確認のprint
 			Debug::print(LOG_PRINT, "FIRE");
