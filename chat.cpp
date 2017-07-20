@@ -107,7 +107,6 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			close(sock);
 			return true;
 		}
-		//Debug::print(LOG_PRINT, "FIREF");
 		return false;
 	}
 	/*
@@ -121,12 +120,14 @@ chat rec: recieve message from server\r\n\"");
 
 Rec::Rec():buf(),n(0)
 {
+	close(sock);
 	//setName("chat");
 	//setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
 }
 
 Rec::~Rec()
 {
+	close(sock);
 }
 
 /*
@@ -176,6 +177,5 @@ Chat::~Chat()
 */
 
 Send gSend;
-//郢ｧ・ｯ郢晢ｽｩ郢ｧ・､郢ｧ・｢郢晢ｽｳ郢晏現繝ｻ郢ｧ・､郢晢ｽｳ郢ｧ・ｹ郢ｧ・ｿ郢晢ｽｳ郢ｧ・ｹ郢ｧ蜑・ｽｽ諛奇ｽ狗ｸｺ・ｨ郢晏干ﾎ溽ｹｧ・ｰ郢晢ｽｩ郢擒邵ｺ讙趣ｽｵ繧・ｽｺ繝ｻ笘・ｹｧ繝ｻ
 Rec gRec;
 //Chat gChat;
