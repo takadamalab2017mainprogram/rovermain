@@ -36,6 +36,7 @@ bool Send::onCommand(const vector<string>& args)
 		{
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ菴懈・ */
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
+			//ここまでは動いている
 			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ險ｭ螳・*/
 			addr.sin_family = AF_INET;
@@ -51,7 +52,9 @@ bool Send::onCommand(const vector<string>& args)
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
 			/* 5譁・ｭ鈴∽ｿ｡ */
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			nn = write(sock, "HELLO", 5);
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			if (nn < 1)
 			{
 				perror("write");
@@ -119,6 +122,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 
 			/* 繧ｵ繝ｼ繝舌°繧峨ョ繝ｼ繧ｿ繧貞女菫｡ */
 			memset(buf, 0, sizeof(buf));
+			//ここまで動いている
 			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			n = read(sock, buf, sizeof(buf));
 			if (n < 0) {
@@ -126,6 +130,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 				printf("逶ｸ謇九・繝励Ο繧ｰ繝ｩ繝縺九ｉ菴輔ｂ騾√ｉ繧後※縺阪※縺ｪ縺・ｈ");
 				return 1;
 			}
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			Debug::print(LOG_PRINT,"%d, %s\n", n, buf);
 			/* socket縺ｮ邨ゆｺ・*/
 			close(sock);
