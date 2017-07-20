@@ -22,8 +22,8 @@ private:
 	int len;
 	//
 	int sock;
-	//エラー処理で用いるn
-	int n;
+	//エラー処理で用いるnn
+	int nn;
 	//while文で用いる数（文字を送る回数)
 	int k;
 protected:

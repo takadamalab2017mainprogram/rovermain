@@ -82,8 +82,8 @@ bool Send::onCommand(const vector<string>& args)
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
 			/* 5æ–E­—é€ä¿¡ */
-			n = write(sock, "HELLO", 5);
-			if (n < 1)
+			nn = write(sock, "HELLO", 5);
+			if (nn < 1)
 			{
 				perror("write");
 				break;
