@@ -49,7 +49,7 @@ class Rec : public TaskBase
 private:
 	//構造体サーバーに関する
 	struct sockaddr_in server;
-	int sock1;
+	int sock;
 	//送信する文字
 	char buf[32];
 	//文字数
