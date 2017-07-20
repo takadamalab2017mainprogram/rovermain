@@ -100,16 +100,16 @@ void Rec::onClean()
 
 bool Rec::onCommand(const std::vector<std::string>& args)
 {
-	Debug::print(LOG_PRINT, "FIRE_soto");
-	if(args.size()==2)
+	//Debug::print(LOG_PRINT, "FIRE_soto");
+	if(args.size() == 2)
 	{
 		if (args[1].compare("rec") == 0)
 		{
 			//確認のprint
-			Debug::print(LOG_PRINT, "FIRE_rec");
+			//Debug::print(LOG_PRINT, "FIRE_rec");
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ菴懈・ */
 			sock = socket(AF_INET, SOCK_STREAM, 0);
-
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
 			/* 謗･邯壼・謖・ｮ夂畑讒矩菴薙・貅門ｙ */
 			server.sin_family = AF_INET;
 			server.sin_port = htons(12345);
@@ -131,7 +131,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			close(sock);
 			return true;
 		}
-		Debug::print(LOG_PRINT, "FIREF");
+		//Debug::print(LOG_PRINT, "FIREF");
 		return false;
 	}
 	else {
