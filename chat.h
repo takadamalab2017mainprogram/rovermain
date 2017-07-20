@@ -10,47 +10,41 @@
 */
 
 //サーバークラス
-class Server : public TaskBase
+class Send : public TaskBase
 {
 private:
 	//Linuxでソケットはintで表現されるファイルディスクリプタ
 	int sock0;
-
 	//構造体で簡単に
 	struct sockaddr_in addr;
 	struct sockaddr_in client;
-
-	//送信するメッセージ
-	char* mes;
-
-	//よく分かってない
+	//
 	int len;
-
-	//sock0と何が違うんだろう
+	//
 	int sock;
-
-	//クライアントから取得する文字列32
-	char buf_client[32];
-
+	//エラー処理で用いるn
+	int n;
+	//while文で用いる数（文字を送る回数)
+	int k;
 protected:
 	//引数は何を入れるんだろう
-	virtual bool onInit();
+	virtual bool onInit(const struct timespec& time);
 
 	virtual void onClean();
 
-	virtual void onUpdate(double x);
+	virtual void onUpdate(const struct timespec& time);
 
 	virtual bool onCommand(const std::vector<std::string>& args);
 
 	//void error_check(sock);
 public:
 	void send();
-	Server();
-	~Server();
+	Send();
+	~Send();
 
 };
 //クライアントクラス
-class Client : public TaskBase
+class Rec : public TaskBase
 {
 private:
 	//構造体サーバーに関する
@@ -66,15 +60,15 @@ protected:
 
 	virtual void onClean();
 
-	virtual void onUpdate();
+	virtual void onUpdate(const struct timespec& time);
 
 	virtual bool onCommand(const std::vector<std::string>& args);
 public:
 	void receive();
-	Client();
-	~Client();
+	Rec();
+	~Rec();
 };
-
+/*
 class Chat : public TaskBase
 {
 private:
@@ -86,7 +80,7 @@ public:
 	Chat();
 	~Chat();
 };
-
-extern Server gServer;
-//extern Client gClient;
-extern Chat gChat;
+*/
+extern Send gSend;
+extern Rec gRec;
+//extern Chat gChat;
