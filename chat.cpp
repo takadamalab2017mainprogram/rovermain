@@ -86,7 +86,6 @@ bool Send::onCommand(const vector<string>& args)
 			if (nn < 1)
 			{
 				perror("write");
-				break;
 			}
 			/* TCPセチE��ョンの終亁E*/
 		   	// k++;
