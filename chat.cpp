@@ -98,8 +98,8 @@ bool Send::onCommand(const vector<string>& args)
 //		}
 		else
 		{
-			Debug::print(LOG_PRINT, "send              : show chat state\r\n\
-send sen: send messeage to client\r\n\"");
+			Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
+chat_s sen: send messeage to client\r\n\"");
 			}
 return true;
 }
@@ -115,7 +115,7 @@ void Send::send()
 
 Send::Send():sock(0),sock0(0)
 {
-	setName("send");
+	setName("chat_s");
 	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
 }
 
@@ -187,8 +187,8 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 		}
 		else
 		{
-			Debug::print(LOG_PRINT, "rec              : show chat state\r\n\
-rec rec: recieve message from server\r\n\"");
+			Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
+chat_r rec: recieve message from server\r\n\"");
 		}
 	}
 	return true;
@@ -214,7 +214,7 @@ void Rec::receive()
 */
 Rec::Rec():sock1(0),buf(),n(0)
 {
-	setName("rec");
+	setName("chat_r");
 	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
 }
 
