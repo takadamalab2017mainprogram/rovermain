@@ -54,7 +54,8 @@ bool Send::onCommand(const vector<string>& args)
 	}
   else {
 	  Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
-chat sen: send messeage to client\r\n\"");
+chat sen: send messeage to client\r\n\
+chat rec: recieve message from server\r\n\"");
 	  return true;
   }
 }
@@ -109,17 +110,19 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 		//Debug::print(LOG_PRINT, "FIREF");
 		return false;
 	}
+	/*
 	else {
 		Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
 chat rec: recieve message from server\r\n\"");
 		return true;
 	}
+	*/
 }
 
 Rec::Rec():buf(),n(0)
 {
-	setName("chat");
-	setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
+	//setName("chat");
+	//setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
 }
 
 Rec::~Rec()
@@ -127,7 +130,6 @@ Rec::~Rec()
 }
 
 /*
-//サーバ�Eとクライアントをまとめたクラス
 bool Chat::onInit(const struct timespec& time)
 {
 	gSend.setRunMode(true);
