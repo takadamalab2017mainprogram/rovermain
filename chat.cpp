@@ -142,7 +142,7 @@ void Rec::onUpdate(const struct timespec& time)
 	//sock縺後し繝ｼ繝舌・縺ｮ
   
 	/* 繧ｵ繝ｼ繝舌↓謗･邯・*/
-	//connect(sock1, (struct sockaddr *)&server, sizeof(server));
+	//connect(sock, (struct sockaddr *)&server, sizeof(server));
 }
 
 void Rec::onClean()
@@ -156,7 +156,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 		if (args[1].compare("rec"))
 		{
 			/* 繧ｽ繧ｱ繝・ヨ縺ｮ菴懈・ */
-			sock1 = socket(AF_INET, SOCK_STREAM, 0);
+			sock = socket(AF_INET, SOCK_STREAM, 0);
 
 			/* 謗･邯壼・謖・ｮ夂畑讒矩菴薙・貅門ｙ */
 			server.sin_family = AF_INET;
@@ -164,20 +164,19 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			server.sin_addr.s_addr = inet_addr("10.0.0.12");
 
 			/* 繧ｵ繝ｼ繝舌↓謗･邯・*/
-			connect(sock1, (struct sockaddr *)&server, sizeof(server));
+			connect(sock, (struct sockaddr *)&server, sizeof(server));
 
 			/* 繧ｵ繝ｼ繝舌°繧峨ョ繝ｼ繧ｿ繧貞女菫｡ */
 			memset(buf, 0, sizeof(buf));
-			n = read(sock1, buf, sizeof(buf));
+			n = read(sock, buf, sizeof(buf));
 			if (n < 0) {
 				perror("read");
 				printf("逶ｸ謇九・繝励Ο繧ｰ繝ｩ繝縺九ｉ菴輔ｂ騾√ｉ繧後※縺阪※縺ｪ縺・ｈ");
 				return 1;
 			}
 			Debug::print(LOG_PRINT,"%d, %s\n", n, buf);
-
 			/* socket縺ｮ邨ゆｺ・*/
-			close(sock1);
+			close(sock);
 			
 		}
 	}
@@ -191,22 +190,22 @@ chat_r rec: recieve message from server\r\n\"");
 /*
 void Rec::receive() 
 {
-	sock1 = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	//繧ｽ繧ｱ繝・ヨ縺ｮ險ｭ螳・
 	server.sin_family = AF_INET;
 	server.sin_port = htons(12345);
 	server.sin_addr.s_addr = inet_addr("10.0.0.10");
 
-	connect(sock1, (struct sockaddr *)&server, sizeof(server));
+	connect(sock, (struct sockaddr *)&server, sizeof(server));
 	memset(buf, 0, sizeof(buf));
-	n = read(sock1, buf, sizeof(buf));
+	n = read(sock, buf, sizeof(buf));
 
 	printf("%d, %s\n", n, buf);
-	close(sock1);
+	close(sock);
 }
 */
-Rec::Rec():sock1(0),buf(),n(0)
+Rec::Rec():sock(0),buf(),n(0)
 {
 	setName("chat_r");
 	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
