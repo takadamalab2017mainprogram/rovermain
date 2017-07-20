@@ -78,7 +78,7 @@ bool Send::onCommand(const vector<string>& args)
 			//5回ほど相手にメッセージを送ったら終了する
 			/* TCPクライアントからの接続要求を待てる状態にする */
 			listen(sock0, 5);
-			//while(k < 5){
+			while(k < 5){
 			/* TCPクライアントからの接続要求を受け付ける */
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
@@ -90,19 +90,18 @@ bool Send::onCommand(const vector<string>& args)
 				break;
 			}
 			/* TCPセッションの終了 */
-		   // k++;
+		   	 k++;
 			close(sock);
+			}
 			/* listen するsocketの終了 */
 			close(sock0);
 		}
 //		}
-		else
-		{
+	}
 			Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
 chat_s sen: send messeage to client\r\n\"");
-			}
 return true;
-}
+
 /*
 void Send::send()
 {
@@ -185,12 +184,9 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			close(sock1);
 			
 		}
-		else
-		{
+	}
 			Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
 chat_r rec: recieve message from server\r\n\"");
-		}
-	}
 	return true;
 }
 //レシーブ関数
