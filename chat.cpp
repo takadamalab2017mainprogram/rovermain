@@ -32,20 +32,30 @@ bool Send::onCommand(const vector<string>& args)
 	{
 		if (args[1].compare("sen")==0)
 		{
-			
+			/* ソケチE��の作�E */
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
+			//�����܂ł͓����Ă���
+			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
+			/* ソケチE��の設宁E*/
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
 			bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
 			Debug::print(LOG_PRINT, "FIRE");
+			//5回ほど相手にメチE��ージを送ったら終亁E��めE
+			/* TCPクライアントから�E接続要求を征E��る状態にする */
 			listen(sock0, 5);
+			//while(k < 5){
+			/* TCPクライアントから�E接続要求を受け付けめE*/
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
+			/* 5斁E��送信 */
 			Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
 				inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 			nn = write(sock, "HELLO", 5);
+			/* TCPセチE��ョンの終亁E*/
 			close(sock);
+			/* listen するsocketの終亁E*/
 			close(sock0);
 			return true;
 		}
@@ -70,7 +80,7 @@ Send::~Send()
 {
 }
 
-
+//引数としてサーバ�EのIPアドレスが忁E��E
 bool Rec::onInit(const struct timespec& time)
 {
 	return true;
