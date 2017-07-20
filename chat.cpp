@@ -52,16 +52,10 @@ bool Send::onCommand(const vector<string>& args)
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
 			/* 5譁・ｭ鈴∽ｿ｡ */
-			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
-			nn = write(sock, "HELLO", 5);
-			Debug::print(LOG_PRINT, "Buzzer is already stopping\r\n");
-			if (nn < 1)
-			{
-				perror("write");
-				//break;
-			}
+			Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
+				inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+			send(sock, "HELLO", 5);
 			/* TCP繧ｻ繝・す繝ｧ繝ｳ縺ｮ邨ゆｺ・*/
-		   	// k++;
 			close(sock);
 			/* listen 縺吶ｋsocket縺ｮ邨ゆｺ・*/
 			close(sock0);
