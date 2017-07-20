@@ -175,8 +175,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 				printf("相手�Eプログラムから何も送られてきてなぁE��");
 				return 1;
 			}
-
-			printf("%d, %s\n", n, buf);
+			Debug::print(LOG_PRINT,"%d, %s\n", n, buf);
 
 			/* socketの終亁E*/
 			close(sock1);
