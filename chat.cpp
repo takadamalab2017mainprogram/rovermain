@@ -12,100 +12,100 @@
 #include "utils.h"
 using namespace std;
 
-//20170630マルチーズ追加チャットプログラム
-//文字列委を受けとるserverのセットアップ
+//20170630マルチ�Eズ追加チャチE��プログラム
+//斁E���E委を受けとるserverのセチE��アチE�E
 
 bool Send::onInit(const struct timespec& time)
 {
 	/*
-	//ソケットの作成
-	//引数はアドレスファミリ、ソケットタイプ、プロトコル
+	//ソケチE��の作�E
+	//引数はアドレスファミリ、ソケチE��タイプ、�Eロトコル
 	sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
-	//sockが-1を返したら失敗
+	//sockぁE1を返したら失敁E
 	if (sock < 0)
 	{
-		//エラーを表示する処理
-		perror("socketのエラーが出ました");
+		//エラーを表示する処琁E
+		perror("socketのエラーが�Eました");
 		printf("%d\n", errno);
 		//return 1;
 	}
-	//ソケットの設定
+	//ソケチE��の設宁E
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(12345);
 	addr.sin_addr.s_addr = INADDR_ANY;
 	bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
 
-	//TCPクライアントからの接続要求を待てる状態にする
+	//TCPクライアントから�E接続要求を征E��る状態にする
 	listen(sock0, 5);
 	return true;
 	*/
 }
 
-//何度も接続要求受付を試みる
+//何度も接続要求受付を試みめE
 void Send::onUpdate(const struct timespec& time)
 {
 	/*
-	//TCPクライアントからの接続要求を受け付ける
+	//TCPクライアントから�E接続要求を受け付けめE
 	len = sizeof(client);
 	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
 	*/
 }
-//sock操作を一端終了（電力消費軽減らしい？）
+//sock操作を一端終亁E��電力消費軽減らしい�E�！E
 void Send::onClean()
 {
 	/*
-	//listenするsocketの終了
+	//listenするsocketの終亁E
 	close(sock0);
 	mes = NULL;
 	*/
 }
 bool Send::onCommand(const vector<string>& args)
 {
-  switch (args.size())
+  if(args.size()==2)
 	{
-	case 2:
 		if (args[1].compare("sen"))
 		{
-			/* ソケットの作成 */
+			/* ソケチE��の作�E */
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
 
-			/* ソケットの設定 */
+			/* ソケチE��の設宁E*/
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
 			bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-			//5回ほど相手にメッセージを送ったら終了する
-			/* TCPクライアントからの接続要求を待てる状態にする */
+			//5回ほど相手にメチE��ージを送ったら終亁E��めE
+			/* TCPクライアントから�E接続要求を征E��る状態にする */
 			listen(sock0, 5);
 			while(k < 5){
-			/* TCPクライアントからの接続要求を受け付ける */
+			/* TCPクライアントから�E接続要求を受け付けめE*/
 			len = sizeof(client);
 			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
-			/* 5文字送信 */
+			/* 5斁E��送信 */
 			n = write(sock, "HELLO", 5);
 			if (n < 1)
 			{
 				perror("write");
 				break;
 			}
-			/* TCPセッションの終了 */
+			/* TCPセチE��ョンの終亁E*/
 		   	 k++;
 			close(sock);
 			}
-			/* listen するsocketの終了 */
+			/* listen するsocketの終亁E*/
 			close(sock0);
 		}
 //		}
 	}
-			Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
+  else {
+	  Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
 chat_s sen: send messeage to client\r\n\"");
-return true;
-
+	  return true;
+  }
 /*
 void Send::send()
 {
-	//clientに5文字HELLOを送る
+	//clientに5斁E��HELLOを送る
 	write(sock, "KOUKI", 5);
 	close(sock);
 }
@@ -115,21 +115,21 @@ void Send::send()
 Send::Send():sock(0),sock0(0)
 {
 	setName("chat_s");
-	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
+	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
 }
 
 Send::~Send()
 {
 }
 
-//引数としてサーバーのIPアドレスが必要
+//引数としてサーバ�EのIPアドレスが忁E��E
 bool Rec::onInit(const struct timespec& time)
 {
-	//ソケットの作成
-	//引数はアドレスファミリ、ソケットタイプ、プロトコル
+	//ソケチE��の作�E
+	//引数はアドレスファミリ、ソケチE��タイプ、�Eロトコル
 	//sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	//ソケットの設定
+	//ソケチE��の設宁E
 	//server.sin_family = AF_INET;
 	//server.sin_port = htons(12345);
 	//server.sin_addr.s_addr = inet_addr("10.0.0.5");
@@ -139,11 +139,11 @@ bool Rec::onInit(const struct timespec& time)
 
 void Rec::onUpdate(const struct timespec& time)
 {
-  //ソケットの作成
-  //引数はアドレスファミリ、ソケットタイプ、プロトコル
-	//sockがサーバーの
+  //ソケチE��の作�E
+  //引数はアドレスファミリ、ソケチE��タイプ、�Eロトコル
+	//sockがサーバ�Eの
   
-	/* サーバに接続 */
+	/* サーバに接綁E*/
 	//connect(sock1, (struct sockaddr *)&server, sizeof(server));
 }
 
@@ -153,20 +153,19 @@ void Rec::onClean()
 
 bool Rec::onCommand(const std::vector<std::string>& args)
 {
-	switch (args.size())
+	if(args.size()==2)
 	{
-	case 2:
 		if (args[1].compare("rec"))
 		{
-			/* ソケットの作成 */
+			/* ソケチE��の作�E */
 			sock1 = socket(AF_INET, SOCK_STREAM, 0);
 
-			/* 接続先指定用構造体の準備 */
+			/* 接続�E持E��用構造体�E準備 */
 			server.sin_family = AF_INET;
 			server.sin_port = htons(12345);
 			server.sin_addr.s_addr = inet_addr("10.0.0.12");
 
-			/* サーバに接続 */
+			/* サーバに接綁E*/
 			connect(sock1, (struct sockaddr *)&server, sizeof(server));
 
 			/* サーバからデータを受信 */
@@ -174,19 +173,21 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			n = read(sock1, buf, sizeof(buf));
 			if (n < 0) {
 				perror("read");
-				printf("相手のプログラムから何も送られてきてないよ");
+				printf("相手�Eプログラムから何も送られてきてなぁE��");
 				return 1;
 			}
 
 			printf("%d, %s\n", n, buf);
 
-			/* socketの終了 */
+			/* socketの終亁E*/
 			close(sock1);
 			
 		}
 	}
-			Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
+	else {
+		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
 chat_r rec: recieve message from server\r\n\"");
+	}
 	return true;
 }
 //レシーブ関数
@@ -195,7 +196,7 @@ void Rec::receive()
 {
 	sock1 = socket(AF_INET, SOCK_STREAM, 0);
 
-	//ソケットの設定
+	//ソケチE��の設宁E
 	server.sin_family = AF_INET;
 	server.sin_port = htons(12345);
 	server.sin_addr.s_addr = inet_addr("10.0.0.10");
@@ -211,7 +212,7 @@ void Rec::receive()
 Rec::Rec():sock1(0),buf(),n(0)
 {
 	setName("chat_r");
-	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
+	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
 }
 
 Rec::~Rec()
@@ -219,7 +220,7 @@ Rec::~Rec()
 }
 
 /*
-//サーバーとクライアントをまとめたクラス
+//サーバ�Eとクライアントをまとめたクラス
 bool Chat::onInit(const struct timespec& time)
 {
 	gSend.setRunMode(true);
@@ -234,12 +235,12 @@ bool Chat::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() == 2)
 	{
-		//サーバー
+		//サーバ�E
 		if (args[1].compare("sen") == 0)
 		{
 			gSend.send();
 		}
-		//クライアント
+		//クライアンチE
 		else if (args[1].compare("rec") == 0)
 		{
 			//gRec.receive();
@@ -254,7 +255,7 @@ chat rec: recieve message from server\r\n\"");
 	}
 	return false;
 }
-//初期化するものはちゃんと決める
+//初期化するものはちめE��と決める
 Chat::Chat()
 {
 	setName("chat");
@@ -266,6 +267,6 @@ Chat::~Chat()
 */
 
 Send gSend;
-//繧ｯ繝ｩ繧､繧｢繝ｳ繝医・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ繧剃ｽ懊ｋ縺ｨ繝励Ο繧ｰ繝ｩ繝�縺檎ｵゆｺ・☆繧・
+//繧�E�繝ｩ繧�E�繧�E�繝ｳ繝医・繧�E�繝ｳ繧�E�繧�E�繝ｳ繧�E�繧剁E��懊ｋ縺�E�繝励Ο繧�E�繝ｩ繝�縺檎ｵめE��・☁E��・
 Rec gRec;
 //Chat gChat;
