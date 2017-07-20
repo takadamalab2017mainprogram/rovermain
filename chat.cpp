@@ -64,6 +64,7 @@ bool Send::onCommand(const vector<string>& args)
 			close(sock0);
 			return true;
 		}
+		return false;
 //		}
 	}
   else {
@@ -129,6 +130,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			close(sock);
 			return true;
 		}
+		return false;
 	}
 	else {
 		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
