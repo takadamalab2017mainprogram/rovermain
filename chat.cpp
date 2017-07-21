@@ -66,6 +66,7 @@ void Send::send()
 	{
 		perror("listen"); exit(1);
 	}
+
 	len = sizeof(client);
 	if (sock2 = accept(sock1, (struct sockaddr *)&client, (socklen_t *)&len) < 0)
 	{
@@ -77,10 +78,9 @@ void Send::send()
 		Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
 			inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 	}
-	close(sock1);
-
 	strcpy(buf, "I'm a server.\n");
-	write(sock2, buf, sizeof(buf));
+	write(sock1, buf, sizeof(buf));
+	close(sock1);
 	close(sock2);
 }
 
