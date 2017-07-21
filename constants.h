@@ -131,7 +131,9 @@ const static unsigned int TASK_PRIORITY_COMMUNICATION = 0;
 const static unsigned int TASK_PRIORITY_ACTUATOR = 10000;
 const static unsigned int TASK_PRIORITY_SEQUENCE = 1000;
 //マルチーズ追加
-const static unsigned int TASK_PRIORITY_CHAT = 1;
+const static unsigned int TASK_PRIORITY_SEND = 100000;
+const static unsigned int TASK_PRIORITY_REC = 100000;
+
 //タスク実行間隔(低いほど多く実行される)
 const static unsigned int TASK_INTERVAL_GYRO = 0;
 const static unsigned int TASK_INTERVAL_SENSOR = 10;
@@ -140,7 +142,8 @@ const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
 //マルチーズ追加
-const static unsigned int TASK_INTERVAL_CHAT = 10;
+const static unsigned int TASK_INTERVAL_SEND = 10;
+const static unsigned int TASK_INTERVAL_REC = 10;
 //////////////////////////////////////////////
 //その他
 //////////////////////////////////////////////

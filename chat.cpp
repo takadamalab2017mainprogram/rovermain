@@ -1,7 +1,7 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
@@ -12,190 +12,174 @@
 #include "utils.h"
 using namespace std;
 
-//20170630ƒ}ƒ‹ƒ`[ƒY’Ç‰Áƒ`ƒƒƒbƒgƒvƒƒOƒ‰ƒ€
-//•¶š—ñˆÏ‚ğó‚¯‚Æ‚éserver‚ÌƒZƒbƒgƒAƒbƒv
-bool Server::onInit()
+//Sendã‚¯ãƒ©ã‚¹ã¯ç›¸æ‰‹ã«ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒé€ã‚‰ã‚Œã‚‹ã¾ã§å®Ÿè¡Œã•ã‚Œã‚‹ã€‚
+//é€ã‚‰ã‚ŒãŸã‚‰sockã‚’é–‰ã˜ã¦çµ‚äº†ã€ç¾åœ¨ã¯é€ã‚‰ã‚Œãªã„ã¨ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®çµ‚äº†ãŒã§ããªããªã‚‹ã€‚
+bool Send::onInit(const struct timespec& time)
 {
-	//ƒ\ƒPƒbƒg‚Ìì¬
-	//ˆø”‚ÍƒAƒhƒŒƒXƒtƒ@ƒ~ƒŠAƒ\ƒPƒbƒgƒ^ƒCƒvAƒvƒƒgƒRƒ‹
-	sock0 = socket(AF_INET, SOCK_STREAM, 0);
-
-	//sock‚ª-1‚ğ•Ô‚µ‚½‚ç¸”s
-	if (sock < 0)
-	{
-		//ƒGƒ‰[‚ğ•\¦‚·‚éˆ—
-		perror("socket‚ÌƒGƒ‰[‚ªo‚Ü‚µ‚½");
-		printf("%d\n", errno);
-		//return 1;
-	}
-	//ƒ\ƒPƒbƒg‚Ìİ’è
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(12345);
-	addr.sin_addr.s_addr = INADDR_ANY;
-	bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-
-	//TCPƒNƒ‰ƒCƒAƒ“ƒg‚©‚ç‚ÌÚ‘±—v‹‚ğ‘Ò‚Ä‚éó‘Ô‚É‚·‚é
-	listen(sock0, 5);
 	return true;
 }
-//‰½“x‚àÚ‘±—v‹ó•t‚ğ‚İ‚é
-void Server::onUpdate(double elapsedSeconds)
-{
-	//TCPƒNƒ‰ƒCƒAƒ“ƒg‚©‚ç‚ÌÚ‘±—v‹‚ğó‚¯•t‚¯‚é
-	len = sizeof(client);
-	sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
-}
-//sock‘€ì‚ğˆê’[I—¹i“d—ÍÁ”ïŒyŒ¸‚ç‚µ‚¢Hj
-void Server::onClean()
-{
-	//listen‚·‚ésocket‚ÌI—¹
-	close(sock0);
-	mes = NULL;
-}
-bool Server::onCommand(const vector<string>& args)
-{
 
-	switch (args.size())
+void Send::onUpdate(const struct timespec& time)
+{
+}
+
+void Send::onClean()
+{
+}
+bool Send::onCommand(const vector<string>& args)
+{
+	if (args.size() == 2)
 	{
-	case 2:
-		if (args[1].compare("sen"))
-		{
-		
+		if (args[1].compare("sen") == 0)
+		{		
+			sock0 = socket(AF_INET, SOCK_STREAM, 0);
+			//ã“ã“ã¾ã§ã¯å‹•ã„ã¦ã„ã‚‹
+			addr.sin_family = AF_INET;
+			addr.sin_port = htons(12345);
+			addr.sin_addr.s_addr = INADDR_ANY;
+			bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
+			listen(sock0, 5);
+			len = sizeof(client);
+			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
+			Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
+				inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+			nn = write(sock, "HELLO", 5);
+			close(sock);
+			close(sock0);
+			return true;
 		}
-
+		return false;
 	}
-return true;
+	else {
+		Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
+chat_s sen: send messeage to client\r\n\"");
+		return true;
+	}
 }
 
-void Server::send()
+Send::Send()
 {
-	//client‚É5•¶šHELLO‚ğ‘—‚é
-	write(sock, "KOUKI", 5);
-	close(sock);
-}
-Server::Server()
-{
+	setName("chat_s");
+	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
 }
 
-Server::~Server()
+Send::~Send()
 {
 }
 
-//ˆø”‚Æ‚µ‚ÄƒT[ƒo[‚ÌIPƒAƒhƒŒƒX‚ª•K—v
-bool Client::onInit(const struct timespec& time)
+bool Rec::onInit(const struct timespec& time)
 {
-	//ƒ\ƒPƒbƒg‚Ìì¬
-	//ˆø”‚ÍƒAƒhƒŒƒXƒtƒ@ƒ~ƒŠAƒ\ƒPƒbƒgƒ^ƒCƒvAƒvƒƒgƒRƒ‹
-	//sock = socket(AF_INET, SOCK_STREAM, 0);
-
-	//ƒ\ƒPƒbƒg‚Ìİ’è
-	//server.sin_family = AF_INET;
-	//server.sin_port = htons(12345);
-	//server.sin_addr.s_addr = inet_addr("10.0.0.5");
-
 	return true;
 }
 
-void Client::onUpdate()
-{
-  //ƒ\ƒPƒbƒg‚Ìì¬
-  //ˆø”‚ÍƒAƒhƒŒƒXƒtƒ@ƒ~ƒŠAƒ\ƒPƒbƒgƒ^ƒCƒvAƒvƒƒgƒRƒ‹
-	//sock‚ªƒT[ƒo[‚Ì
-  
-	/* ƒT[ƒo‚ÉÚ‘± */
-	//connect(sock1, (struct sockaddr *)&server, sizeof(server));
-}
-
-void Client::onClean()
+void Rec::onUpdate(const struct timespec& time)
 {
 }
 
-bool Client::onCommand(const std::vector<std::string>& args)
+void Rec::onClean()
 {
-	switch (args.size())
+}
+
+bool Rec::onCommand(const std::vector<std::string>& args)
+{
+	//Debug::print(LOG_PRINT, "FIRE_soto");
+	if (args.size() == 2)
 	{
-	case 2:
-		if (args[1].compare("rec"))
+		if (args[1].compare("rec") == 0)
 		{
-	
-			
+			sock = socket(AF_INET, SOCK_STREAM, 0);
+			//ã“ã“ã¾ã§ã¯å‹•ã„ã¦ã„ã‚‹
+			server.sin_family = AF_INET;
+			server.sin_port = htons(12345);
+			server.sin_addr.s_addr = inet_addr("10.0.0.12");
+
+			connect(sock, (struct sockaddr *)&server, sizeof(server));
+
+			memset(buf, 0, sizeof(buf));
+			//ã“ã“ã¾ã§å‹•ã„ã¦ã„ã‚‹
+			n = read(sock, buf, sizeof(buf));
+			if (n < 0) {
+				perror("read");
+				printf("ä½•ã‚‚é€ã‚‰ã‚Œã¦ãªã„ã§ã™ã€‚sendãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„");
+				return 1;
+			}
+			Debug::print(LOG_PRINT,"%d,%s\n",n,buf);
+			close(sock);
+			return true;
 		}
+		//Debug::print(LOG_PRINT, "FIREF");
+		return false;
 	}
-	return true;
+	else {
+		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
+chat_r rec: recieve message from server\r\n\"");
+		return true;
+	}
 }
-//ƒŒƒV[ƒuŠÖ”
-void Client::receive() 
+
+Rec::Rec() :buf(), n(0)
 {
-	sock1 = socket(AF_INET, SOCK_STREAM, 0);
-
-	//ƒ\ƒPƒbƒg‚Ìİ’è
-	server.sin_family = AF_INET;
-	server.sin_port = htons(12345);
-	server.sin_addr.s_addr = inet_addr("10.0.0.10");
-
-	connect(sock1, (struct sockaddr *)&server, sizeof(server));
-	memset(buf, 0, sizeof(buf));
-	n = read(sock1, buf, sizeof(buf));
-
-	printf("%d, %s\n", n, buf);
-	close(sock1);
+	setName("chat_r");
+	setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
 }
-Client::Client()
+
+Rec::~Rec()
 {
 }
 
-Client::~Client()
-{
-}
-
-
-//ƒT[ƒo[‚ÆƒNƒ‰ƒCƒAƒ“ƒg‚ğ‚Ü‚Æ‚ß‚½ƒNƒ‰ƒX
+/*
+//ç¹§ã‚ªç¹ã‚·ç¹èˆŒãƒ»ç¸ºã‚£ç¹§ãƒƒç¹ã‚¥ç¹§ã€ç¹§ã€Œç¹ã‚¦ç¹åŒ»ï½’ç¸ºã‚»ç¸ºã‚£ç¹§âˆšâ—†ç¹§ãƒƒç¹ã‚¥ç¹§ã‚±
 bool Chat::onInit(const struct timespec& time)
 {
-	gServer.setRunMode(true);
-	//gClient.setRunMode(true);
-	return true;
+gSend.setRunMode(true);
+//gRec.setRunMode(true);
+return true;
 }
 void Chat::onClean()
 {
 }
-
 bool Chat::onCommand(const std::vector<std::string>& args)
 {
-	if (args.size() == 2)
-	{
-		//ƒT[ƒo[
-		if (args[1].compare("sen") == 0)
-		{
-			gServer.send();
-		}
-		//ƒNƒ‰ƒCƒAƒ“ƒg
-		else if (args[1].compare("rec") == 0)
-		{
-			//gClient.receive();
-		}
-		return true;
-	}
-	else
-	{
-		Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
+if (args.size() == 2)
+{
+//ç¹§ã‚ªç¹ã‚·ç¹èˆŒãƒ»
+if (args[1].compare("sen") == 0)
+{
+gSend.send();
+}
+//ç¹§ãƒƒç¹ã‚¥ç¹§ã€ç¹§ã€Œç¹ã‚¦ç¹ãƒ»
+else if (args[1].compare("rec") == 0)
+{
+//gRec.receive();
+}
+return true;
+}
+else
+{
+Debug::print(LOG_PRINT, "chat              : show chat state\r\n\
 chat sen: send messeage to client\r\n\
 chat rec: recieve message from server\r\n\"");
-	}
-	return false;
 }
-//‰Šú‰»‚·‚é‚à‚Ì‚Í‚¿‚á‚ñ‚ÆŒˆ‚ß‚é
+return false;
+}
+//è›»æ™„æ‚„è›¹æ‚¶â˜†ç¹§ä¹ï½‚ç¸ºãƒ§ç¸ºãƒƒç¸ºã€‚ç¹§ãƒ»ï½“ç¸ºã‚£è±ã‚³ç¹§âˆšï½‹
 Chat::Chat()
 {
-	setName("chat");
-	setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
+setName("chat");
+setPriority(TASK_PRIORITY_CHAT, TASK_INTERVAL_CHAT);
 }
 Chat::~Chat()
 {
 }
+*/
 
+<<<<<<< HEAD
 
 Server gServer;
 //ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆãEã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ä½œã‚‹ã¨ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãŒçµ‚äºE™ã‚E
 Client gClient;
+=======
+Send gSend;
+Rec gRec;
+>>>>>>> 9f5415597d9c3f3c09ea29e4cf41b4daa9645f6e
 //Chat gChat;

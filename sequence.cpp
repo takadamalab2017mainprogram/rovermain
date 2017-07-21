@@ -45,8 +45,8 @@ bool Testing::onInit(const struct timespec& time)
 	//gNeckServo.setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
 	//マルチーズ追加
-	printf("FIRE");
-	gChat.setRunMode(true);
+	gSend.setRunMode(true);
+	gRec.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gGyroSensor.setRunMode(true);
