@@ -173,13 +173,6 @@ Chat::~Chat()
 }
 */
 
-<<<<<<< HEAD
-
-Server gServer;
-//クライアント�Eインスタンスを作るとプログラムが終亁E��めE
-Client gClient;
-=======
 Send gSend;
 Rec gRec;
->>>>>>> 9f5415597d9c3f3c09ea29e4cf41b4daa9645f6e
 //Chat gChat;
