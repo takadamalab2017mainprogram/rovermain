@@ -80,9 +80,9 @@ void Send::send()
 		Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
 			inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 	}
-	strcpy(buf, "I'm a server.\n");
-	write(sock1, buf, sizeof(buf));
 	close(sock1);
+	strcpy(buf, "I'm a server.\n");
+	write(sock2, buf, sizeof(buf));
 	close(sock2);
 }
 
