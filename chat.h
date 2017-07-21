@@ -40,7 +40,7 @@ protected:
 
 	//void error_check(sock);
 public:
-	void send();
+	bool send();
 	Send();
 	~Send();
 
@@ -66,7 +66,7 @@ protected:
 
 	virtual bool onCommand(const std::vector<std::string>& args);
 public:
-	void receive();
+	bool receive();
 	Rec();
 	~Rec();
 };

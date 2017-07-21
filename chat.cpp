@@ -44,7 +44,7 @@ chat_s sen: send messeage to client\r\n");
 	}
 }
 
-void Send::send()
+bool Send::send()
 {
 	//soket作成時のエラーを表示
 	if ((sock1 = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -56,7 +56,7 @@ void Send::send()
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(12345);
 	addr.sin_addr.s_addr = INADDR_ANY;
-
+	//bindが残ってしまう仕様を変更、すぐに接続できるようになる
 	setsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
 	//bind時のエラー
 	if (bind(sock1, (struct sockaddr *)&addr, sizeof(addr)) < 0)
@@ -79,10 +79,11 @@ void Send::send()
 		//相手のIPアドレスとポート番号を表示
 		Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 	}
-	close(sock1);
-	strcpy(buf, "I'm a server.\n");
-	write(sock2, buf, sizeof(buf));
-	close(sock2);
+		close(sock1);
+		strcpy(buf, "I'm a server.\n");
+		write(sock2, buf, sizeof(buf));
+		close(sock2);
+		return true;
 }
 
 Send::Send():buf()
@@ -127,7 +128,7 @@ chat_r rec: recieve message from server\r\n");
 	}
 }
 
-void Rec::receive()
+bool Rec::receive()
 {
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -158,6 +159,7 @@ void Rec::receive()
 	{
 	Debug::print(LOG_PRINT, "%d,%s\n", n, buf);
 	close(sock);
+	return true;
 	}
 }
 
