@@ -56,6 +56,9 @@ void Send::send()
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(12345);
 	addr.sin_addr.s_addr = INADDR_ANY;
+
+	setsockopt(sock0,
+		SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
 	//bind時のエラーを表示
 	if (bind(sock1, (struct sockaddr *)&addr, sizeof(addr)) < 0)
 	{
