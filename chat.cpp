@@ -38,7 +38,7 @@ bool Send::onCommand(const vector<string>& args)
 				perror("socket");
 				exit(1);
 			}
-			memset((char*)&addr, 0, sizeof(addr));
+			//memset((char*)&addr, 0, sizeof(addr));
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
@@ -119,7 +119,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			{
 				perror("socket"); exit(1);
 			}
-			memset((char*)&server, 0, sizeof(server));
+			//memset((char*)&server, 0, sizeof(server));
 
 
 			server.sin_family = AF_INET;
