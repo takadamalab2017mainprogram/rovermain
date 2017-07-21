@@ -77,8 +77,7 @@ void Send::send()
 	else
 	{
 		//相手のIPアドレスとポート番号を表示
-		Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
-			inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+		Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 	}
 	close(sock1);
 	strcpy(buf, "I'm a server.\n");
@@ -148,12 +147,12 @@ void Rec::receive()
 	n = read(sock, buf, sizeof(buf));
 	if(n > 0)
 	{
-	printf("ソケットからデータを読み取った")
+		printf("ソケットからデータを読み取った");
 	} 
 	else if (n < 0) 
 	{
-	perror("read");
-	printf("何も送られてないです。sendプログラムを実行してください");
+		perror("read");
+		printf("何も送られてないです。sendプログラムを実行してください");
 	}
 	else if (n == 0)
 	{
