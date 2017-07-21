@@ -53,7 +53,7 @@ bool Send::onCommand(const vector<string>& args)
 				perror("listen"); exit(1);
 			}
 			len = sizeof(client);
-			if (sock1 = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len) < 0)
+			if (sock2 = accept(sock1, (struct sockaddr *)&client, (socklen_t *)&len) < 0)
 			{
 				perror("accept"); exit(1);
 			}
@@ -108,11 +108,6 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 	{
 		if (args[1].compare("rec") == 0)
 		{
-			if (argc<2)
-			{
-				printf("%s SERVER\n", argv[0]);
-				exit(1);
-			}
 			if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			{
 				perror("socket"); exit(1);
