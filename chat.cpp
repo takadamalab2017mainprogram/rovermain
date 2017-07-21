@@ -143,6 +143,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 			{
 				Debug::print(LOG_PRINT, "%d,%s\n", n, buf);
 				close(sock);
+			}
 			return true;
 		}
 		//Debug::print(LOG_PRINT, "FIREF");
