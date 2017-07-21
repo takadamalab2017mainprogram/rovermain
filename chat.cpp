@@ -197,5 +197,5 @@ Chat::~Chat()
 
 Server gServer;
 //クライアント�Eインスタンスを作るとプログラムが終亁E��めE
-//Client gClient;
-Chat gChat;
+Client gClient;
+//Chat gChat;
