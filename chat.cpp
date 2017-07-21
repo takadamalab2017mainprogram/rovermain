@@ -38,6 +38,7 @@ bool Send::onCommand(const vector<string>& args)
 				perror("socket");
 				exit(1);
 			}
+			memset((char*)&addr, 0, sizeof(addr));
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
@@ -78,7 +79,7 @@ chat_s sen: send messeage to client\r\n");
 	}
 }
 
-Send::Send()
+Send::Send():buf()
 {
 	setName("chat_s");
 	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
