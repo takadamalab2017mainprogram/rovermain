@@ -30,7 +30,7 @@ bool Send::onCommand(const vector<string>& args)
 {
 	if (args.size() == 2)
 	{
-		if (args[1].compare("send") == 0)
+		if (args[1].compare("sen") == 0)
 		{		
 			sock0 = socket(AF_INET, SOCK_STREAM, 0);
 			//ここまでは動いている
@@ -51,16 +51,15 @@ bool Send::onCommand(const vector<string>& args)
 		return false;
 	}
 	else {
-		Debug::print(LOG_PRINT, "chat: show chat state\r\n\
-		chat send : send messeage to client\r\n\
-		rec : recieve message from server\r\n");
+		Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
+chat_s sen: send messeage to client\r\n\"");
 		return true;
 	}
 }
 
 Send::Send()
 {
-	setName("chat");
+	setName("chat_s");
 	setPriority(TASK_PRIORITY_SEND, TASK_INTERVAL_SEND);
 }
 
@@ -112,17 +111,16 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 		return false;
 	}
 	else {
-		//Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
-//chat_r rec: recieve message from server\r\n\"");
+		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
+chat_r rec: recieve message from server\r\n\"");
 		return true;
 	}
 }
 
 Rec::Rec() :buf(), n(0)
 {
-	//setName("chat_r");
+	setName("chat_r");
 	setPriority(TASK_PRIORITY_REC, TASK_INTERVAL_REC);
-	
 }
 
 Rec::~Rec()
