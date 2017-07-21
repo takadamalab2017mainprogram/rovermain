@@ -22,10 +22,10 @@ private:
 	int len;
 	//
 	int sock;
-	//エラー処理で用いるnn
-	int nn;
 	//while文で用いる数（文字を送る回数)
 	int k;
+	//文字列
+	char buf[32];
 protected:
 	//引数は何を入れるんだろう
 	virtual bool onInit(const struct timespec& time);

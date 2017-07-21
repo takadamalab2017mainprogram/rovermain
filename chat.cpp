@@ -31,28 +31,49 @@ bool Send::onCommand(const vector<string>& args)
 	if (args.size() == 2)
 	{
 		if (args[1].compare("sen") == 0)
-		{		
-			sock0 = socket(AF_INET, SOCK_STREAM, 0);
-			//ここまでは動いている
+		{	
+			//soket作成時のエラーを表示
+			if ((sock0 = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			{
+				perror("socket");
+				exit(1);
+			}
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
-			bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-			listen(sock0, 5);
+			//bind時のエラーを表示
+			if (bind(sock0, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+			{
+				perror("bind");    exit(1);
+			}
+			//listenのエラーを表示
+			if (listen(sock0, 5) < 0)
+			{
+				perror("listen"); exit(1);
+			}
 			len = sizeof(client);
-			sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len);
-			Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
-				inet_ntoa(client.sin_addr), ntohs(client.sin_port));
-			nn = write(sock, "HELLO", 5);
-			close(sock);
+			if (sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len) < 0)
+			{
+				perror("accept"); exit(1);
+			}
+			else
+			{
+				//相手のIPアドレスとポート番号を表示
+				Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
+					inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+			}
 			close(sock0);
+
+			strcpy(buf, "I'm a server.\n");
+			write(sock, buf, sizeof(buf));
+			close(sock);
 			return true;
 		}
 		return false;
 	}
 	else {
 		Debug::print(LOG_PRINT, "chat_s              : show chat state\r\n\
-chat_s sen: send messeage to client\r\n\"");
+chat_s sen: send messeage to client\r\n");
 		return true;
 	}
 }
@@ -82,13 +103,11 @@ void Rec::onClean()
 
 bool Rec::onCommand(const std::vector<std::string>& args)
 {
-	//Debug::print(LOG_PRINT, "FIRE_soto");
 	if (args.size() == 2)
 	{
 		if (args[1].compare("rec") == 0)
 		{
 			sock = socket(AF_INET, SOCK_STREAM, 0);
-			//ここまでは動いている
 			server.sin_family = AF_INET;
 			server.sin_port = htons(12345);
 			server.sin_addr.s_addr = inet_addr("10.0.0.12");
@@ -112,7 +131,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 	}
 	else {
 		Debug::print(LOG_PRINT, "chat_r              : show chat state\r\n\
-chat_r rec: recieve message from server\r\n\"");
+chat_r rec: recieve message from server\r\n");
 		return true;
 	}
 }
