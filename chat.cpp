@@ -145,14 +145,21 @@ void Rec::receive()
 	{
 		perror("connect"); exit(1);
 	}
-	read(sock, buf, sizeof(buf));
-	//if (n < 0) {
-	//perror("read");
-	//printf("何も送られてないです。sendプログラムを実行してください");
-	//return 1;
-	//}
+	n = read(sock, buf, sizeof(buf));
+	if(n > 0)
+	{
+	printf("ソケットからデータを読み取った")
+	} 
+	else if (n < 0) 
+	{
+	perror("read");
+	printf("何も送られてないです。sendプログラムを実行してください");
+	}
+	else if (n == 0)
+	{
 	Debug::print(LOG_PRINT, "%d,%s\n", n, buf);
 	close(sock);
+	}
 }
 
 Rec::Rec() :buf(), n(0)
