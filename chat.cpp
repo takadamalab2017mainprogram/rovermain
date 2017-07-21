@@ -33,7 +33,7 @@ bool Send::onCommand(const vector<string>& args)
 		if (args[1].compare("sen") == 0)
 		{	
 			//soket作成時のエラーを表示
-			if ((sock0 = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			if ((sock1 = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			{
 				perror("socket");
 				exit(1);
@@ -43,17 +43,17 @@ bool Send::onCommand(const vector<string>& args)
 			addr.sin_port = htons(12345);
 			addr.sin_addr.s_addr = INADDR_ANY;
 			//bind時のエラーを表示
-			if (bind(sock0, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+			if (bind(sock1, (struct sockaddr *)&addr, sizeof(addr)) < 0)
 			{
 				perror("bind");    exit(1);
 			}
 			//listenのエラーを表示
-			if (listen(sock0, 5) < 0)
+			if (listen(sock1, 5) < 0)
 			{
 				perror("listen"); exit(1);
 			}
 			len = sizeof(client);
-			if (sock = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len) < 0)
+			if (sock1 = accept(sock0, (struct sockaddr *)&client, (socklen_t *)&len) < 0)
 			{
 				perror("accept"); exit(1);
 			}
@@ -63,11 +63,11 @@ bool Send::onCommand(const vector<string>& args)
 				Debug::print(LOG_PRINT, "accepted connection from %s, port=%d\n",
 					inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 			}
-			close(sock0);
+			close(sock1);
 
 			strcpy(buf, "I'm a server.\n");
-			write(sock, buf, sizeof(buf));
-			close(sock);
+			write(sock2, buf, sizeof(buf));
+			close(sock2);
 			return true;
 		}
 		return false;
@@ -108,21 +108,31 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 	{
 		if (args[1].compare("rec") == 0)
 		{
-			sock = socket(AF_INET, SOCK_STREAM, 0);
+			if (argc<2)
+			{
+				printf("%s SERVER\n", argv[0]);
+				exit(1);
+			}
+			if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			{
+				perror("socket"); exit(1);
+			}
+			memset((char*)&server, 0, sizeof(server));
+
+
 			server.sin_family = AF_INET;
 			server.sin_port = htons(12345);
 			server.sin_addr.s_addr = inet_addr("10.0.0.12");
-
-			connect(sock, (struct sockaddr *)&server, sizeof(server));
-
-			memset(buf, 0, sizeof(buf));
-			//ここまで動いている
-			n = read(sock, buf, sizeof(buf));
-			if (n < 0) {
-				perror("read");
-				printf("何も送られてないです。sendプログラムを実行してください");
-				return 1;
+			if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0)
+			{
+				perror("connect"); exit(1);
 			}
+			read(sock, buf, sizeof(buf));
+			//if (n < 0) {
+				//perror("read");
+				//printf("何も送られてないです。sendプログラムを実行してください");
+				//return 1;
+			//}
 			Debug::print(LOG_PRINT,"%d,%s\n",n,buf);
 			close(sock);
 			return true;

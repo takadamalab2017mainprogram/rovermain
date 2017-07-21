@@ -14,14 +14,15 @@ class Send : public TaskBase
 {
 private:
 	//Linuxでソケットはintで表現されるファイルディスクリプタ
-	int sock0;
+	
 	//構造体で簡単に
 	struct sockaddr_in addr;
 	struct sockaddr_in client;
 	//
 	int len;
 	//
-	int sock;
+	int sock1;
+	int sock2;
 	//while文で用いる数（文字を送る回数)
 	int k;
 	//文字列
