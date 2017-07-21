@@ -20,6 +20,7 @@ private:
 	struct sockaddr_in client;
 	//
 	int len;
+	bool yes = 1;
 	//
 	int sock1;
 	int sock2;
