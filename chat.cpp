@@ -103,6 +103,7 @@ bool Rec::onCommand(const std::vector<std::string>& args)
 				printf("何も送られてないです。sendプログラムを実行してください");
 				return 1;
 			}
+			Debug::print(LOG_PRINT,"%d,%s\n",n,buf);
 			close(sock);
 			return true;
 		}
