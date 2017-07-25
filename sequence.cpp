@@ -930,8 +930,11 @@ int Navigating::play() {
 		//ランダム目標で始まるー＞｛目標設定->目標に行く｝リピート
 		float *lastrover1 = get_pos();//rover1最後の座標
 		int target = oneturn(map, lastrover1, width, height, &rob1);//rover1の目標
-	　　//ローバー１目標設定
-		rob1.set_goal(target % width, target / width);
+		//ローバー１目標設定
+		VECTOR3 pos;
+		pos.x = target % width;
+		pos.y = target / width;
+		//set_goal(target % width, target / width);
 		////ローバー２目標設定
 		//float pos[] = { target % width, target / width };
 		//double *polar = xy_to_ang(pos, width, height);
