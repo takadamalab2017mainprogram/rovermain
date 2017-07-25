@@ -17,6 +17,7 @@
 #include "subsidiary_sequence.h"
 #include "delayed_execution.h"
 #include "constants.h"
+#include "mathmagic.cpp"
 
 Testing gTestingState;
 Waiting gWaitingState;
