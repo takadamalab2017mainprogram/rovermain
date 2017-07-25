@@ -576,6 +576,8 @@ bool Navigating::onInit(const struct timespec& time)
 	mArmStopFlag = true;
 
 	mLastPos.clear();
+
+	map = new int[width * height];//地図arang
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
@@ -856,6 +858,93 @@ bool Navigating::onCommand(const std::vector<std::string>& args)
 	return true;
 }
 
+void Navigating::set_v(double vt) {
+	//ローバーの速度を変更
+	v = (float)vt;
+}
+
+float Navigating::* get_pos() {
+	//今のGPS座標を教える
+	gGPSSensor.get(currentPos, false)
+		static float pos_now[2];
+	pos_now[0] = x; pos_now[1] = y;
+	return pos_now;
+}
+
+double Navigating::get_dis() {
+	//ローバーとゴールの距離を得る
+	double dis = pow(pow(x - goal_x, 2) + pow(y - goal_y, 2), 0.5);
+	return dis;
+}
+
+void Navigating::draw(int width, int height) {
+	//ローバーの位置を更新
+
+	float * pos = get_pos();
+	x = pos[0]; y = pos[1];
+	rad = xy_to_ang(pos, width, height)[0];
+	bigang = xy_to_ang(pos, width, height)[1];
+	//ang % (2 * M_PI);
+}
+
+int Navigating::oneturn(int map[], float lastrover1[], int width, int height, rover *rob1) {
+	//今回のローバーの位置をゲット、前回の位置と比較して通った点をmapにupdate
+	//更新したmapを使って次の目標点を検索、mapでのpixel番号をreturn
+
+	//rover1によるmap更新
+	float *nowrover1 = rob1->get_pos();
+	for (int i = 0; i < width * height; i++) {
+		int pix[] = { i % width , i / width };
+		float dis = point_to_line(pix, lastrover1, nowrover1);
+		if (dis < 40) {
+			map[i] = 1;
+		}
+	}
+	//目標点検索
+	float mid[] = { width / 2, height / 2 };
+	int target = 0;
+	float tar_dis = width * height;
+	for (int i = 0; i < width * height; i++) {
+		if (map[i] == 0) {//如果是未知区域        
+			double dis_mid = pix_to_xy(i, mid, width);//ピクセルと中心の距離
+			double dis_rover = pix_to_xy(i, nowrover1, width);//计算此点和rover1的距离
+			double dis = dis_rover + dis_mid;//総合距離      
+			if (dis < tar_dis) {
+				target = i;
+				tar_dis = dis;
+			}
+		}
+	}
+	return target;
+}
+int Navigating::play() {
+
+	map = new int[width * height];//地図arang
+
+	if (Time::dt(time, mLastCheckTime) < 0.2) {
+		return;
+	}
+	else {
+		mLastCheckTime = time;
+		//ランダム目標で始まるー＞｛目標設定->目標に行く｝リピート
+		float *lastrover1 = get_pos();//rover1最後の座標
+		int target = oneturn(map, lastrover1, width, height, &rob1);//rover1の目標
+	　　//ローバー１目標設定
+		rob1.set_goal(target % width, target / width);
+		////ローバー２目標設定
+		//float pos[] = { target % width, target / width };
+		//double *polar = xy_to_ang(pos, width, height);
+		//polar[0] += 35;
+		//double *pos2 = ang_to_xy(polar, width, height);
+		//rob2.set_goal(pos2[0], pos2[1]);
+		////速度矯正
+		//double dis1 = rob1.get_dis();
+		//double dis2 = rob2.get_dis();
+		//rob2.set_v(dis2 / (dis1 + dis2) * speed * 2);
+		//rob1.set_v(dis1 / (dis1 + dis2) * speed * 2);
+	};
+
+}
 //次の状態に移行
 void Navigating::nextState()
 {

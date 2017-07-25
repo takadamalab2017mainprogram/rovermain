@@ -104,6 +104,18 @@ private:
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
 
+	//rover状態
+	float x, y, ang, v;
+	double goal_x, goal_y;
+	double bigang, rad;//角坐标系的角度和半径
+	float r = 1;//機体半径
+
+	//map状態
+	int width = 500;
+	int height = 500;
+	int * map;
+	float speed = 10;//rover speed
+
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
