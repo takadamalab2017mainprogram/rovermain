@@ -1236,7 +1236,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
   mY = (wiringPiI2CReadReg8(mFileHandle, 0x45) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x46);
   mZ = (wiringPiI2CReadReg8(mFileHandle, 0x47) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x48);
 	VECTOR3 newRv;
-	newRV.x =  GYRO_RANGE * mX;
+	newRv.x =  GYRO_RANGE * mX;
 	newRv.y =  GYRO_RANGE * mY;
 	newRv.z =  GYRO_RANGE * mZ;
   if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
@@ -1272,7 +1272,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mLastSampleTime = time;
   
 }
-void NineAxisSensor::getFIFO()
+void NineAxisSensor::getFIFO(const struct timespec& time)
 {
 	 unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
 	 VECTOR3 newRv;
@@ -1290,14 +1290,14 @@ void NineAxisSensor::getFIFO()
 		newA.x += AXEL_RANGE * tmp[0];
 		newA.y += AXEL_RANGE * tmp[1];
 		newA.z += AXEL_RANGE * tmp[2];
-		newRV.x +=  GYRO_RANGE * tmp[4];
+		newRv.x +=  GYRO_RANGE * tmp[4];
 		newRv.y +=  GYRO_RANGE * tmp[5];
 		newRv.z +=  GYRO_RANGE * tmp[6];
-
+/*
 		//ドリフト誤差計算中であれば配列にデータを突っ込む
 		if (mIsCalculatingOffset)
 		{
-			mRVelHistory.push_back(sample);
+			mRVelHistory.push_back(data_samples);
 			if (mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
 			{
 				//平均値を取ってみる
@@ -1316,7 +1316,7 @@ void NineAxisSensor::getFIFO()
 
 		//ドリフト誤差を補正
 		newRv -= mRVelOffset;
-
+*/
 		++data_samples;		
 
 	 }
