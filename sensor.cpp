@@ -1459,6 +1459,27 @@ void NineAxisSensor::normalize(VECTOR3& pos)
 	pos.y = normalize(pos.y);
 	pos.z = normalize(pos.z);
 }
+bool NineAxisSensor::getRPos(VECTOR3& pos) const
+{
+	if (isActive())
+	{
+		pos = mRAngle;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getRx() const
+{
+	return mRAngle.x;
+}
+double NineAxisSensor::getRy() const
+{
+	return mRAngle.y;
+}
+double NineAxisSensor::getRz() const
+{
+	return mRAngle.z;
+}
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {
   if (args.size() == 3)
