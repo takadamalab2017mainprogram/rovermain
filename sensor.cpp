@@ -1254,11 +1254,11 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
   Debug::print(LOG_SUMMARY, "\
   AccelNorm %f \
   Accel %f %f %f\
-	Angle Velocity %f %f %f\
+	Angle %f %f %f\
 	Compass %f %f %f \r\n",
   mAccel.norm(),
   getAx() ,getAy(), getAz(),
-	 getRvx(), getRvy(), getRvz(),
+	 getRx(), getRy(), getRz(),
 	 getMx(), getMy(), getMz());
   }
 	//積分
@@ -1281,6 +1281,7 @@ void NineAxisSensor::getFIFO(const struct timespec& time)
 	 while(fifo_count >= 14)
 	 {
 		 short tmp[14];
+		 VECTOR3 sampleRv;
 		 for(int i = 0; i < 7 ;i++)
 		 {
 			 short high = (wiringPiI2CReadReg8(mFileHandle, 0x74) << 8) ;
@@ -1290,14 +1291,15 @@ void NineAxisSensor::getFIFO(const struct timespec& time)
 		newA.x += AXEL_RANGE * tmp[0];
 		newA.y += AXEL_RANGE * tmp[1];
 		newA.z += AXEL_RANGE * tmp[2];
-		newRv.x +=  GYRO_RANGE * tmp[4];
-		newRv.y +=  GYRO_RANGE * tmp[5];
-		newRv.z +=  GYRO_RANGE * tmp[6];
-/*
+		sampleRv.x +=  GYRO_RANGE * tmp[4];
+		sampleRv.y +=  GYRO_RANGE * tmp[5];
+		sampleRv.z +=  GYRO_RANGE * tmp[6];
+		newRv += sampleRv;
+
 		//ドリフト誤差計算中であれば配列にデータを突っ込む
 		if (mIsCalculatingOffset)
 		{
-			mRVelHistory.push_back(data_samples);
+			mRVelHistory.push_back(sampleRv);
 			if (mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
 			{
 				//平均値を取ってみる
@@ -1316,7 +1318,7 @@ void NineAxisSensor::getFIFO(const struct timespec& time)
 
 		//ドリフト誤差を補正
 		newRv -= mRVelOffset;
-*/
+
 		++data_samples;		
 
 	 }
@@ -1486,29 +1488,76 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 	{
 		if (args[1].compare("monitor") == 0)
 		{
-      if(args[2].compare("true") == 0)
-      {
-		  	isMonitoring =true;
-      }
-      else if(args[2].compare("false") == 0)
-      {
-        isMonitoring = false;
-      }
-        return true;
+			if(args[2].compare("true") == 0)
+			{
+				isMonitoring =true;
+			}
+			else if(args[2].compare("false") == 0)
+			{
+				isMonitoring = false;
+			}
+			return true;
 		}
-  }else{
+
+		if (args[1].compare("cutoff") == 0)
+		{
+			mCutOffThreshold = atof(args[2].c_str());
+			Debug::print(LOG_SUMMARY, "Gyro: cutoff threshold is %f\r\n", mCutOffThreshold);
+			return true;
+		}
+		return false;
+  }
+  else if(args.size() == 2)
+  {
+	if (args[1].compare("reset") == 0)
+	{
+		setZero();
+		return true;
+	}
+	else if (args[1].compare("calib") == 0)
+	{
+		if (!isActive())return false;
+		calibrate();
+		return true;
+	}
+	return false;
+  }
+  	else if (args.size() == 5)
+	{
+		if (args[1].compare("calib") == 0)
+		{
+			mRVelOffset.x = atof(args[2].c_str());
+			mRVelOffset.y = atof(args[3].c_str());
+			mRVelOffset.z = atof(args[4].c_str());
+			Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n", mRVelOffset.x, mRVelOffset.y, mRVelOffset.z);
+			return true;
+		}
+		return false;
+	}
+  else{
 	Debug::print(LOG_SUMMARY, "Accel %f %f %f\r\n\
 	Angle Velocity %f %f %f\r\n\
-	Roll Pitch Yaw %f %f %f\r\n\
+	Angle %f %f %f\r\n\
 	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
-	 getRoll(), getPitch(), getYaw(),
+	 getRx(), getRy(), getRz(),
 	 getMx(), getMy(), getMz());
-	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n",args[0].c_str());
+	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n\
+	nineaxis reset  : set angle to zero point\r\n\
+  	nineaxis cutoff : set cutoff threshold\r\n\
+  	nineaxis calib  : calibrate gyro *do NOT move*\r\n\
+	nineaxis calib [x_offset] [y_offset] [z_offset] : calibrate gyro by specified params\r\n",args[0].c_str());
   }
   return true;
 }
-
+void NineAxisSensor::cariblate()
+{
+	mIsCalculatingOffset = true;	
+}
+void NineAxisSensor::setZero()
+{
+	mRAngle.x = mRAngle.y = mRAngle.z = 0;
+}
 NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
 {
   isMonitoring = false;
