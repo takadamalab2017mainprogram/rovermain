@@ -461,53 +461,8 @@ void Separating::onUpdate(const struct timespec& time)
 			//次状態に遷移
 			gMultiServo.stop();
 			mLastUpdateTime = time;
-			mCurStep = STEP_PRE_PARA_JUDGE;
-			gWakingState.setRunMode(true);
-		}
-		break;
-	case STEP_PRE_PARA_JUDGE:
-		//起き上がり動作を実行し、画像処理を行う前に1秒待機して画像のブレを防止する
-		if (gWakingState.isActive())mLastUpdateTime = time;//起き上がり動作中は待機する
-		if (Time::dt(time, mLastUpdateTime) > 1)//起き上がり動作後1秒待機する
-		{
-			//次状態に遷移
-			mLastUpdateTime = time;
-			mCurStep = STEP_PARA_JUDGE;
-			//gCameraCapture.startWarming();
-		}
-		break;
-	case STEP_PARA_JUDGE:
-		//ローバーを起こし終わったら，パラシュート検知を行い，存在する場合は回避行動に遷移する
-		if (Time::dt(time, mLastUpdateTime) > 2)
-		{
-			//パラシュートの存在チェックを行う
-			//IplImage* pImage = gCameraCapture.getFrame();
-			//if (gImageProc.isParaExist(pImage))
-			//{
-				//回避動作に遷移
-			//	gBuzzer.start(20, 20, 5);
-			//	mCurStep = STEP_PARA_DODGE;
-			//	mLastUpdateTime = time;
-			//	gTurningState.setRunMode(true);
-			//	Debug::print(LOG_SUMMARY, "Para check: Found!!\r\n");
-			//}
-			//else
-			//{
-				//次状態(ナビ)に遷移
-		  //	Debug::print(LOG_SUMMARY, "Para check: Not Found!!\r\n");
-		  //		nextState();
-		  //	}
-			//パラ検知に用いた画像を保存する
-			//gCameraCapture.save(NULL, pImage);
-		}
-		break;
-	case STEP_PARA_DODGE:
-		if (!gTurningState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Para check: Turn Finished!\r\n");
-			gMotorDrive.drive(100);
-			mLastUpdateTime = time;
 			mCurStep = STEP_GO_FORWARD;
+			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
@@ -515,6 +470,11 @@ void Separating::onUpdate(const struct timespec& time)
 		{
 			gMotorDrive.drive(0);
 			nextState();
+		}
+		else
+		{
+			gMotorDrive.drive(100);
+			
 		}
 		break;
 	};
@@ -553,7 +513,6 @@ bool Navigating::onInit(const struct timespec& time)
 	setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
-	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
@@ -570,7 +529,7 @@ bool Navigating::onInit(const struct timespec& time)
 	//gNeckServo.start(1);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();		//スタビを走行時の位置に移動
-
+	gNineAxisSensor.setRunMode(true);
 	mLastNaviMoveCheckTime = time;
 	mLastArmServoMoveTime = time;
 	mLastArmServoStopTime  = time;
@@ -798,7 +757,7 @@ void Navigating::navigationMove(double distance) const
 	VECTOR3 currentPos = mLastPos.back();
 	double currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);
 	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
-	double deltaDirection = GyroSensor::normalize(newDirection - currentDirection);
+	double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirection);
 	deltaDirection = std::max(std::min(deltaDirection, NAVIGATING_MAX_DELTA_DIRECTION), -1 * NAVIGATING_MAX_DELTA_DIRECTION);
 
 	//新しい速度を計算
