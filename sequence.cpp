@@ -518,7 +518,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gEncoderMonitoringState.setRunMode(true);
+//	gEncoderMonitoringState.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
@@ -540,10 +540,7 @@ bool Navigating::onInit(const struct timespec& time)
 }
 void Navigating::onUpdate(const struct timespec& time)
 {
-	//gArmServo.start(ARM_RUN_ANGLE);
-	//gNeckServo.start(NECK_RUN_ANGLE);
 	VECTOR3 currentPos;
-
 	
 	//ゴールが設定されているか確認
 	if (!mIsGoalPos)
@@ -555,18 +552,6 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	if (Time::dt(time, mLastArmServoStopTime) > 10.0 && mArmMoveFlag == true){
-                mLastArmServoMoveTime = time;
-                //gArmServo.start(ARM_RUN_ANGLE);
-                mArmMoveFlag = false;
-                mArmStopFlag = true;
-        }
-        if(Time::dt(time, mLastArmServoMoveTime) > 0.5 && mArmStopFlag == true){
-                //gArmServo.stop();
-                mLastArmServoStopTime = time;
-                mArmStopFlag = false;
-                mArmMoveFlag = true;
-        }
 
 	bool isNewData = gGPSSensor.isNewPos();
 	//新しい位置を取得できなければ処理を返す
@@ -586,10 +571,6 @@ void Navigating::onUpdate(const struct timespec& time)
 			//gPredictingState.setRunMode(true);
 			distance_from_goal_to_start = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
 			mLastNaviMoveCheckTime = time;
-			mLastArmServoMoveTime = time;
-			mLastArmServoStopTime = time;
-			mArmStopFlag = true;
-			//gArmServo.stop();
 		}
 		mLastPos.push_back(currentPos);
 	}
@@ -675,7 +656,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			gEscapingRandomState.setRunMode(false);
 			//gSServo.moveRun();  //スタビを通常の状態に戻す
 			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
+//			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
 			gBuzzer.start(20, 10, 3);
 		}//
 	}
@@ -765,7 +746,7 @@ void Navigating::navigationMove(double distance) const
 	if (distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)
 	{
 		speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;	//接近したら速度を落とす
-		gEncoderMonitoringState.setRunMode(false);		//エンコーダによるスタック判定をOFF
+//		gEncoderMonitoringState.setRunMode(false);		//エンコーダによるスタック判定をOFF
 	}
 
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
@@ -830,6 +811,7 @@ void Navigating::nextState()
 
 	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Goal!\r\n");
+	gTestingState.setRunMode(true);
 }
 void Navigating::setGoal(const VECTOR3& pos)
 {
