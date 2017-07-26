@@ -1235,9 +1235,10 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mX = (wiringPiI2CReadReg8(mFileHandle, 0x43) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x44);
   mY = (wiringPiI2CReadReg8(mFileHandle, 0x45) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x46);
   mZ = (wiringPiI2CReadReg8(mFileHandle, 0x47) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x48);
-	mRVel.x =  GYRO_RANGE * mX;
-	mRVel.y =  GYRO_RANGE * mY;
-	mRVel.z =  GYRO_RANGE * mZ;
+	VECTOR3 newRv;
+	newRV.x =  GYRO_RANGE * mX;
+	newRv.y =  GYRO_RANGE * mY;
+	newRv.z =  GYRO_RANGE * mZ;
   if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
   {
 	mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x04) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x03);
@@ -1260,7 +1261,91 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	 getRvx(), getRvy(), getRvz(),
 	 getMx(), getMy(), getMz());
   }
+	//積分
+	if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
+	{
+		double dt = Time::dt(time, mLastSampleTime);
+		mRAngle += (newRv + mRVel) / 2 * dt;
+		normalize(mRAngle);
+	}
+	mRVel = newRv;
+	mLastSampleTime = time;
+  
 }
+void NineAxisSensor::getFIFO()
+{
+	 unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
+	 VECTOR3 newRv;
+	 VECTOR3 newA;
+	 int data_samples;
+	 while(fifo_count >= 14)
+	 {
+		 short tmp[14];
+		 for(int i = 0; i < 7 ;i++)
+		 {
+			 short high = (wiringPiI2CReadReg8(mFileHandle, 0x74) << 8) ;
+			 tmp[i] = high | wiringPiI2CReadReg8(mFileHandle, 0x74);
+
+		 }
+		newA.x += AXEL_RANGE * tmp[0];
+		newA.y += AXEL_RANGE * tmp[1];
+		newA.z += AXEL_RANGE * tmp[2];
+		newRV.x +=  GYRO_RANGE * tmp[4];
+		newRv.y +=  GYRO_RANGE * tmp[5];
+		newRv.z +=  GYRO_RANGE * tmp[6];
+
+		//ドリフト誤差計算中であれば配列にデータを突っ込む
+		if (mIsCalculatingOffset)
+		{
+			mRVelHistory.push_back(sample);
+			if (mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
+			{
+				//平均値を取ってみる
+				std::list<VECTOR3>::iterator it = mRVelHistory.begin();
+				while (it != mRVelHistory.end())
+				{
+					mRVelOffset += *it;
+					++it;
+				}
+				mRVelOffset /= mRVelHistory.size();//ドリフト誤差補正量を適用
+				mRVelHistory.clear();
+				mIsCalculatingOffset = false;
+				Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n", mRVelOffset.x, mRVelOffset.y, mRVelOffset.z);
+			}
+		}
+
+		//ドリフト誤差を補正
+		newRv -= mRVelOffset;
+
+		++data_samples;		
+
+	 }
+	if (data_samples != 0)
+	{
+		newA /= data_samples;
+		mAccel = newA;
+		mAccelAve = mAccel * mAccelAlpha + mAccelAve * (1 - mAccelAlpha);
+		
+		//平均
+		newRv /= data_samples;
+
+		newRv.x = abs(newRv.x) < mCutOffThreshold ? 0 : newRv.x;
+		newRv.y = abs(newRv.y) < mCutOffThreshold ? 0 : newRv.y;
+		newRv.z = abs(newRv.z) < mCutOffThreshold ? 0 : newRv.z;
+
+		//積分
+		if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
+		{
+			double dt = Time::dt(time, mLastSampleTime);
+			mRAngle += (newRv + mRVel) / 2 * dt;
+			normalize(mRAngle);
+		}
+		mRVel = newRv;
+		
+		mLastSampleTime = time;
+	}
+ }
+
 bool NineAxisSensor::getAccel(VECTOR3& acc) const
 {
 	if (isActive())
@@ -1358,7 +1443,22 @@ double NineAxisSensor::getMz() const
 {
 	return mMagnet.z;
 }
-
+void NineAxisSensor::setMonitoring(bool val)
+{
+	isMonitoring = val;
+	return;
+}
+double NineAxisSensor::normalize(double pos)
+{
+	while (pos >= 180 || pos < -180)pos += (pos > 0) ? -360 : 360;
+	return pos;
+}
+void NineAxisSensor::normalize(VECTOR3& pos)
+{
+	pos.x = normalize(pos.x);
+	pos.y = normalize(pos.y);
+	pos.z = normalize(pos.z);
+}
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {
   if (args.size() == 3)

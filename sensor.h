@@ -277,8 +277,11 @@ private:
 	VECTOR3 mRVel, mRAngle;
 	VECTOR3 mMagnet;
 	struct timespec mLastSampleTime;
-	std::list<VECTOR3> mRVelHistory;
-	VECTOR3 mRVelOffset;
+	//ドリフト誤差補正用
+	std::list<VECTOR3> mRVelHistory;//過去の角速度
+	VECTOR3 mRVelOffset;//サンプルあたりのドリフト誤差の推定値
+	double mCutOffThreshold;
+	bool mIsCalculatingOffset;//ドリフト誤差計算中フラグ
 	float mYaw;
 	float mPitch;
 	float mRoll;
@@ -323,7 +326,8 @@ public:
 	float getRoll() const;
 	float getPitch() const;
 	float getYaw() const;
-  bool isMonitoring;
+	bool isMonitoring;
+	void getFIFO();
 	NineAxisSensor();
 	~NineAxisSensor();
 };
