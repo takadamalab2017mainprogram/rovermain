@@ -189,7 +189,7 @@ MotorEncoder::~MotorEncoder()
 bool MotorDrive::onInit(const struct timespec& time)
 {
 	//ジャイロを使うように設定
-	gGyroSensor.setRunMode(true);
+	gNineAxisSensor.setRunMode(true);
 
 	//初期化
 	if (!mMotorR.init(PIN_PWM_A1, PIN_PWM_A2) || !mMotorL.init(PIN_PWM_B1, PIN_PWM_B2))
@@ -223,7 +223,7 @@ void MotorDrive::onClean()
 void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxControlRatio)
 {
 	//ずれ情報を更新
-	double angle = gGyroSensor.normalize(dangle);
+	double angle = gNineAxisSensor.normalize(dangle);
 	mDiff3 = mDiff2; mDiff2 = mDiff1; mDiff1 = angle;
 
 	//ずれ情報を元に新しいモーター出力を設定(PID)
@@ -253,7 +253,7 @@ void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxCon
 }
 void MotorDrive::updatePIDGyroMove()
 {
-	updatePIDState(mPIDGyro, gGyroSensor.getRz() - mAngle, mMaxPIDControlRatioGyro);
+	updatePIDState(mPIDGyro, gNineAxisSensor.getRz() - mAngle, mMaxPIDControlRatioGyro);
 }
 
 void MotorDrive::onUpdate(const struct timespec& time)
@@ -319,8 +319,8 @@ void MotorDrive::setPIDPose(double p, double i, double d)
 }
 void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 {
-	if(reset) mAngle = gGyroSensor.getRz();
-	else mAngle = GyroSensor::normalize(angle + mAngle);
+	if(reset) mAngle = gNineAxisSensor.getRz();
+	else mAngle = NineAxisSensor::normalize(angle + mAngle);
 
 	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
 	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f, %d)\r\n", mAngle, mDrivePower);
