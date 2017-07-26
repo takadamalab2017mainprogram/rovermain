@@ -327,7 +327,8 @@ public:
 	float getPitch() const;
 	float getYaw() const;
 	bool isMonitoring;
-	void getFIFO();
+	void getFIFO(const struct timespec& time);
+  void setMonitoring(bool val);
 	NineAxisSensor();
 	~NineAxisSensor();
 };
