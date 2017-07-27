@@ -20,7 +20,7 @@ const static int VERSION = 01;
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
 const static int PIN_PWM_A1 = 12;//モータPWM
 const static int PIN_PWM_A2 = 3;
-const static int PIN_PULSE_A = 1;//モータエンコーダ Right
+const static int PIN_PULSE_A = 6;//モータエンコーダ Right
 const static int PIN_PULSE_B = 4;//
 const static int PIN_PWM_B1 = 2;//モータPWM
 const static int PIN_PWM_B2 = 0;                              //Clear!
