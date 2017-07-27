@@ -1142,48 +1142,11 @@ bool NineAxisSensor::onInit(const struct timespec& time)
 
  wiringPiI2CWriteReg8(mFileHandle,0x6B,0x00);
   wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x24); // Enable Master I2C, disable primary I2C I/F, and reset FIFO.
-  wiringPiI2CWriteReg8(mFileHandle,0x19, 9); // SMPLRT_DIV = 9, 100Hz sampling;
+  wiringPiI2CWriteReg8(mFileHandle,0x19, 19); // SMPLRT_DIV = 9, 100Hz sampling;
   wiringPiI2CWriteReg8(mFileHandle,0x1A, (1 << 6) | (1 << 0)); // FIFO_mode = 1 (accept overflow), Use LPF, Bandwidth_gyro = 184 Hz, Bandwidth_temperature = 188 Hz,
   wiringPiI2CWriteReg8(mFileHandle,0x1B, (3 << 3)); // FS_SEL = 3 (2000dps)
   wiringPiI2CWriteReg8(mFileHandle,0x1C, (3 << 3)); // AFS_SEL = 3 (16G)
-/*
-  wiringPiI2CWriteReg8(mFileHandle,0x24, (0xC8 | 13)); // Multi-master, Wait for external sensor, I2C stop then start cond., clk 400KHz
-
-  { // AK8963 setup
-    wiringPiI2CWriteReg8(mFileHandle,0x31, 0x0C | 0x80); // Set the I2C slave 4 address of AK8963 and set for read.
-
-    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x00); //I2C slave 4 register address from where to begin data transfer
-    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
-    delay(20);
-    if(wiringPiI2CReadReg8(mFileHandle,0x35) == 0x48){
-    Debug::print(LOG_SUMMARY, "compass enable\n");
-    }
-    else{
-    Debug::print(LOG_SUMMARY, "compass diable\n");
-    }
-    wiringPiI2CWriteReg8(mFileHandle,0x31, 0x0C); // Set the I2C slave 4 address of AK8963 and set for write.
-
-    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x0B); //I2C slave 4 register address from where to begin data transfer
-   wiringPiI2CWriteReg8(mFileHandle,0x33, 0x01); // Reset AK8963
-    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
-    delay(20);
-
-    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x0A); //I2C slave 0 register address from where to begin data transfer
-    wiringPiI2CWriteReg8(mFileHandle,0x33, 0x12); // Register value to continuous measurement mode 1 (8Hz) in 16bit
-    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
-    delay(20);
-
-    //wiringPiI2CWriteReg8(mFileHandle,0x34, 0x0F); // sampling rate is 100 / (1 + 15) Hz
-
-    wiringPiI2CWriteReg8(mFileHandle,0x25, 0x0C | 0x80); // Set the I2C slave 0 address of AK8963 and set for read.
-
-    wiringPiI2CWriteReg8(mFileHandle,0x26, 0x03); //I2C slave 0 register address from where to begin data transfer
-    wiringPiI2CWriteReg8(mFileHandle,0x27, 0x87); // Enable I2C and set 7 byte,
-    // which makes the AK8963A unlatch the data registers for the next measurement by reading ST2 register (0x09).
-    //wiringPiI2CWriteReg8(mFileHandle,I2C_MST_DELAY_CTRL, 0x81); // Delayed sampling is applied to Slave 0.
-  }
-*/
-  wiringPiI2CWriteReg8(mFileHandle,0x23, 0xF9); // FIFO enabled for temperature(2), gyro(2 * 3), accelerometer(2 * 3), slave 0(7, delayed sample). Total 21 bytes.
+  wiringPiI2CWriteReg8(mFileHandle,0x23, 0x78); // FIFO enabled for , gyro(2 * 3), accelerometer(2 * 3),  Total 12 bytes.
   wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x40); // Enable FIFO 
 
   wiringPiI2CWriteReg8(mFileHandle,0x37, 0x02);
@@ -1217,6 +1180,8 @@ void NineAxisSensor::onClean()
 }
 void NineAxisSensor::onUpdate(const struct timespec& time)
 {
+  if(!isFIFOEnable)
+  {
   unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
   wiringPiI2CWriteReg8(mFileHandle,0x72,0);
   wiringPiI2CWriteReg8(mFileHandle,0x73,0);
@@ -1250,18 +1215,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mMagnet.z = COMPASS_RANGE * mZ;
   wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
   }
-  if(isMonitoring){
-  Debug::print(LOG_SUMMARY, "\
-  AccelNorm %f \
-  Accel %f %f %f\
-	Angle %f %f %f\
-	Compass %f %f %f \r\n",
-  mAccel.norm(),
-  getAx() ,getAy(), getAz(),
-	 getRx(), getRy(), getRz(),
-	 getMx(), getMy(), getMz());
-  }
-	//積分
+ 	//積分
 	if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
 	{
 		double dt = Time::dt(time, mLastSampleTime);
@@ -1270,30 +1224,52 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	}
 	mRVel = newRv;
 	mLastSampleTime = time;
-  
+  }
+  else 
+  {
+    getFIFO(time);
+  }
+  if(isMonitoring){
+  Debug::print(LOG_SUMMARY, "\
+  AccelNorm %f \
+  Accel %f %f %f\
+	Angle %f %f %f\
+	Compass %f %f %f \r\n",
+  mAccel.norm(),
+  getAx() ,getAy(), getAz(),
+	 getRvx(), getRvy(), getRvz(),
+	 getMx(), getMy(), getMz());
+  }
+ 
 }
 void NineAxisSensor::getFIFO(const struct timespec& time)
 {
 	 unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
+//   Debug::print(LOG_SUMMARY,"FIFO count %d\n",fifo_count); 
+  if(fifo_count >=512)
+  {
+    onInit(time);
+    return;
+  }
 	 VECTOR3 newRv;
 	 VECTOR3 newA;
-	 int data_samples;
-	 while(fifo_count >= 14)
+	 int data_samples = 0;
+	 while(fifo_count >= 12)
 	 {
-		 short tmp[14];
+		 short tmp[6];
 		 VECTOR3 sampleRv;
-		 for(int i = 0; i < 7 ;i++)
+		 for(int i = 0; i < 6 ;i++)
 		 {
-			 short high = (wiringPiI2CReadReg8(mFileHandle, 0x74) << 8) ;
+			 unsigned short high = (wiringPiI2CReadReg8(mFileHandle, 0x74) << 8) ;
 			 tmp[i] = high | wiringPiI2CReadReg8(mFileHandle, 0x74);
 
 		 }
 		newA.x += AXEL_RANGE * tmp[0];
 		newA.y += AXEL_RANGE * tmp[1];
 		newA.z += AXEL_RANGE * tmp[2];
-		sampleRv.x +=  GYRO_RANGE * tmp[4];
-		sampleRv.y +=  GYRO_RANGE * tmp[5];
-		sampleRv.z +=  GYRO_RANGE * tmp[6];
+		sampleRv.x +=  GYRO_RANGE * tmp[3];
+		sampleRv.y +=  GYRO_RANGE * tmp[4];
+		sampleRv.z +=  GYRO_RANGE * tmp[5];
 		newRv += sampleRv;
 
 		//ドリフト誤差計算中であれば配列にデータを突っ込む
@@ -1321,6 +1297,7 @@ void NineAxisSensor::getFIFO(const struct timespec& time)
 
 		++data_samples;		
 
+    fifo_count -= 12;
 	 }
 	if (data_samples != 0)
 	{
@@ -1498,7 +1475,19 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 			}
 			return true;
 		}
-
+    if(args[1].compare("FIFO") ==0)
+    {
+      if(args[2].compare("true") == 0)
+      {
+        setFIFOmode(true);
+      }
+      if(args[2].compare("false") == 0)
+      {
+        setFIFOmode(false);
+    
+      }
+      return true;
+    }
 		if (args[1].compare("cutoff") == 0)
 		{
 			mCutOffThreshold = atof(args[2].c_str());
@@ -1550,7 +1539,7 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
   }
   return true;
 }
-void NineAxisSensor::cariblate()
+void NineAxisSensor::calibrate()
 {
 	mIsCalculatingOffset = true;	
 }
@@ -1558,11 +1547,17 @@ void NineAxisSensor::setZero()
 {
 	mRAngle.x = mRAngle.y = mRAngle.z = 0;
 }
+void NineAxisSensor::setFIFOmode(bool val)
+{
+  isFIFOEnable = val;
+}
 NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
 {
   isMonitoring = false;
+  isFIFOEnable = true;
   setName("nineaxis");
   setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
+  mAccelAlpha = 1;
 }
 NineAxisSensor::~NineAxisSensor()
 {

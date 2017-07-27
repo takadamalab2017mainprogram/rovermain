@@ -285,6 +285,7 @@ private:
 	float mYaw;
 	float mPitch;
 	float mRoll;
+  bool isFIFOEnable;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -329,6 +330,8 @@ public:
 	bool isMonitoring;
 	void getFIFO(const struct timespec& time);
   void setMonitoring(bool val);
+  void calibrate();
+  void setFIFOmode(bool val);
 	NineAxisSensor();
 	~NineAxisSensor();
 };
