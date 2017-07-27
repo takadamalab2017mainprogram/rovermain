@@ -93,13 +93,14 @@ private:
 	struct timespec mEscapingRandomStartTime;//EscapingRandomの開始時刻
 	struct timespec mLastArmServoMoveTime;
 	struct timespec mLastArmServoStopTime;
+	struct timespec last_roll_time;
 
 	//ゴール位置
 	VECTOR3 mGoalPos;
 	bool mIsGoalPos;
 	bool mArmMoveFlag;
 	bool mArmStopFlag;
-  double distance_from_goal_to_start;
+    double distance_from_goal_to_start;
 
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
@@ -133,8 +134,8 @@ public:
 	float *get_pos();
 	double get_dis();
 	void draw(int width, int height);
-	int oneturn(int map[], float lastrover1[], int width, int height, rover *rob1);
-	int play();
+	int oneturn(int map[], float lastrover1[], int width, int height);
+	void play();
 
 	Navigating();
 	~Navigating();
