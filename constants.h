@@ -18,24 +18,24 @@ const static int VERSION = 01;
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A1 = 21;//モータPWM
-const static int PIN_PWM_A2 = 14;
-const static int PIN_PULSE_A = 0;//モータエンコーダ Right
-const static int PIN_PULSE_B = 7;//
-const static int PIN_PWM_B1 = 13;//モータPWM
-const static int PIN_PWM_B2 = 12;                              //Clear!
+const static int PIN_PWM_A1 = 12;//モータPWM
+const static int PIN_PWM_A2 = 3;
+const static int PIN_PULSE_A = 1;//モータエンコーダ Right
+const static int PIN_PULSE_B = 4;//
+const static int PIN_PWM_B1 = 2;//モータPWM
+const static int PIN_PWM_B2 = 0;                              //Clear!
 const static int PIN_BUZZER = 5;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 29;//XBeeスリープピン
-const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
+const static int PIN_LIGHT_SENSOR = 37;//Cdsセンサピン                  Clear!
 const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
 //const static int PIN_JOHN_SERVO = 25;//                                 Clear!
 //const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
 //const static int PIN_NECK_SERVO = 1;//                                  Clear!
 //const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
-const static int PIN_LED_R = 24;// LED
-const static int PIN_LED_G = 22;// LED
-const static int PIN_LED_B = 23;// LED
+const static int PIN_LED_R = 27;// LED
+const static int PIN_LED_G = 29;// LED
+const static int PIN_LED_B = 28;// LED
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
