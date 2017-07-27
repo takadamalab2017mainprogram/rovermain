@@ -883,11 +883,14 @@ double Navigating::get_dis() {
 
 void Navigating::draw(int width, int height) {
 	//ローバーの位置を更新
+	VECTOR3 pos;
+	gGPSSensor.get(pos);
+	//float * pos = get_pos();
+	float pos_now[2];
+	pos_now[0] = pos.x; pos_now[1] = pos.y;
 
-	float * pos = get_pos();
-	x = pos[0]; y = pos[1];
-	rad = xy_to_ang(pos, width, height)[0];
-	bigang = xy_to_ang(pos, width, height)[1];
+	rad = xy_to_ang(pos_now, width, height)[0];
+	bigang = xy_to_ang(pos_now, width, height)[1];
 	//ang % (2 * M_PI);
 }
 
