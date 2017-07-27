@@ -9,6 +9,7 @@
 #include "utils.h"
 #include <pthread.h>
 #include <list>
+#include <libgpsmm.h>
 
 //MPL115A2からデータを取得するクラス
 //気圧の値はhPa単位で+-10hPaの誤差が存在
@@ -56,6 +57,8 @@ private:
 	float mGpsCourse;
 	bool mIsNewData;//新しい座標データがあれば真
 	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
+	gpsmm gps_rec;
+	struct gps_data_t *newdata;
 
 	void showState() const;//補足した衛星数と座標を表示
 protected:

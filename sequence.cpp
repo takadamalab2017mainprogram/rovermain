@@ -56,7 +56,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gDistanceSensor.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	//gCameraSave_Sequence.setRunMode(true);
-
+  gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
 	gSerialCommand.setRunMode(true);
@@ -203,18 +203,19 @@ bool Waiting::onInit(const struct timespec& time)
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
-	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
 	gMultiServo.fold();//スタビたたんでいる状態
   gNineAxisSensor.setRunMode(true);
-  gNineAxisSensor.isMonitoring = true;
+//  gNineAxisSensor.isMonitoring = true;
+  Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
+  system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
 }
 void Waiting::nextState()
 {
 	gBuzzer.start(100);
-
+  Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...\r\n");
+  system("sudo ruby -d /home/pi/network/build_network.rb &");
 	//スリープを解除
 	//gXbeeSleep.setState(false);//Xbeeをスリープモードにするならコメントアウトを解除すること
 
