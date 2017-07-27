@@ -363,13 +363,13 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 
 	if (!mFlag)
 	{
-		gMotorDrive.drive(0);
+		gMotorDrive.drive(30);
 		gMultiServo.start(0);
 	}
 	else
 	{
 		gMotorDrive.drive(100);
-		gMultiServo.start(50);
+		gMultiServo.start(1);
 		mTryCount++;
 
 		if (mTryCount % 5 == 0)

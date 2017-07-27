@@ -30,3 +30,4 @@ alias wadachistart escapingbystabi start
 alias imomusi escapingbystabi start
 alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
+alias ms multiservo
