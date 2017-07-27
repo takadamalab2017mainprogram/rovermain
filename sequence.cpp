@@ -864,7 +864,7 @@ void Navigating::set_v(double vt) {
 	v = (float)vt;
 }
 
-float Navigating::* get_pos() {
+float Navigating::*get_pos() {
 	//今のGPS座標を教える
 	gGPSSensor.get(currentPos, false)
 		static float pos_now[2];
