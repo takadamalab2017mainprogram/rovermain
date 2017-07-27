@@ -170,24 +170,26 @@ PressureSensor::~PressureSensor()
 {
 }
 
+
+#include <wiringPi.h>
+#include <wiringSerial.h>
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <sstream>
+
+#include <libgpsmm.h>
 //////////////////////////////////////////////
 // GPS Sensor
 //////////////////////////////////////////////
 bool GPSSensor::onInit(const struct timespec& time)
 {
 	mLastCheckTime = time;
-	if ((mFileHandle = wiringPiI2CSetup(0x20)) == -1)
-	{
+
+
+	if (gps_rec.stream(WATCH_ENABLE | WATCH_JSON) == NULL) {
 		Debug::print(LOG_SUMMARY, "Failed to setup GPS Sensor\r\n");
-		return false;
 	}
-
-	//座標を更新するように設定(一応2回書き込み)
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x05);
-
-	//バージョン情報を表示
-	Debug::print(LOG_SUMMARY, "GPS Firmware Version:%d\r\n", wiringPiI2CReadReg8(mFileHandle, 0x03));
 
 	mPos.x = mPos.y = mPos.z = 0;
 	mIsNewData = false;
@@ -196,51 +198,27 @@ bool GPSSensor::onInit(const struct timespec& time)
 }
 void GPSSensor::onClean()
 {
-	//動作を停止するコマンドを発行
-	wiringPiI2CWriteReg8(mFileHandle, 0x01, 0x06);
-
-	close(mFileHandle);
+	Debug::print(LOG_SUMMARY, "onclean\r\n");
 }
 void GPSSensor::onUpdate(const struct timespec& time)
 {
-	unsigned char status = wiringPiI2CReadReg8(mFileHandle, 0x00);
-	if (status & 0x06)// Found Position
-	{
-		//座標を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
 
-		//経度
-		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07);
-		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 0x07))mPos.x = read / 10000000.0;
-
-		//緯度
-		read = (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B);
-		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 0x0B))mPos.y = read / 10000000.0;
-
-		//高度
-		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21);
-		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 0x21))mPos.z = read;
-
-		//Ground course
-		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 35);
-		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 35))mGpsCourse = read / 10.0f;
-
-		//Ground speed
-		read = (short)wiringPiI2CReadReg16LE(mFileHandle, 31);
-		if (read == (short)wiringPiI2CReadReg16LE(mFileHandle, 31))mGpsSpeed = read / 100.0f;
-
-		//新しいデータが届いたことを記録する
-		if (status & 0x01)mIsNewData = true;
+	if ((newdata = gps_rec.read()) == NULL) {
+		return;
 	}
-	//衛星個数を更新(読み取り時のデータ乱れ防止用に2回読み取って等しい値が取れた場合のみ採用する)
-	if (wiringPiI2CReadReg8(mFileHandle, 0x00) == status)mSatelites = (unsigned char)status >> 4;
-
-	if(mSatelites > 0)
-	{
-		//Time
-		int read = (int)wiringPiI2CReadReg32LE(mFileHandle, 39);
-		if (read == (int)wiringPiI2CReadReg32LE(mFileHandle, 39))mGpsTime = read;
+	else {
+		mPos.x = newdata->fix.latitude;
+		mPos.y = newdata->fix.longitude;
+		mPos.z = newdata->fix.altitude;
+		mSatelites = newdata->satellites_visible;
+		mGpsSpeed = newdata->fix.speed;
+		mGpsCourse = newdata->fix.track;
+		mIsNewData = true;
 	}
 
+	if (mSatelites > 0) {
+		mGpsTime = newdata->fix.time;
+	}
 
 	if (mIsLogger)
 	{
@@ -312,7 +290,7 @@ void GPSSensor::showState() const
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
 }
-GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false)
+GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false), gps_rec("localhost", DEFAULT_GPSD_PORT)
 {
 	setName("gps");
 	setPriority(TASK_PRIORITY_SENSOR, TASK_INTERVAL_SENSOR);
@@ -1142,48 +1120,11 @@ bool NineAxisSensor::onInit(const struct timespec& time)
 
  wiringPiI2CWriteReg8(mFileHandle,0x6B,0x00);
   wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x24); // Enable Master I2C, disable primary I2C I/F, and reset FIFO.
-  wiringPiI2CWriteReg8(mFileHandle,0x19, 9); // SMPLRT_DIV = 9, 100Hz sampling;
+  wiringPiI2CWriteReg8(mFileHandle,0x19, 19); // SMPLRT_DIV = 9, 100Hz sampling;
   wiringPiI2CWriteReg8(mFileHandle,0x1A, (1 << 6) | (1 << 0)); // FIFO_mode = 1 (accept overflow), Use LPF, Bandwidth_gyro = 184 Hz, Bandwidth_temperature = 188 Hz,
   wiringPiI2CWriteReg8(mFileHandle,0x1B, (3 << 3)); // FS_SEL = 3 (2000dps)
   wiringPiI2CWriteReg8(mFileHandle,0x1C, (3 << 3)); // AFS_SEL = 3 (16G)
-/*
-  wiringPiI2CWriteReg8(mFileHandle,0x24, (0xC8 | 13)); // Multi-master, Wait for external sensor, I2C stop then start cond., clk 400KHz
-
-  { // AK8963 setup
-    wiringPiI2CWriteReg8(mFileHandle,0x31, 0x0C | 0x80); // Set the I2C slave 4 address of AK8963 and set for read.
-
-    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x00); //I2C slave 4 register address from where to begin data transfer
-    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
-    delay(20);
-    if(wiringPiI2CReadReg8(mFileHandle,0x35) == 0x48){
-    Debug::print(LOG_SUMMARY, "compass enable\n");
-    }
-    else{
-    Debug::print(LOG_SUMMARY, "compass diable\n");
-    }
-    wiringPiI2CWriteReg8(mFileHandle,0x31, 0x0C); // Set the I2C slave 4 address of AK8963 and set for write.
-
-    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x0B); //I2C slave 4 register address from where to begin data transfer
-   wiringPiI2CWriteReg8(mFileHandle,0x33, 0x01); // Reset AK8963
-    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
-    delay(20);
-
-    wiringPiI2CWriteReg8(mFileHandle,0x32, 0x0A); //I2C slave 0 register address from where to begin data transfer
-    wiringPiI2CWriteReg8(mFileHandle,0x33, 0x12); // Register value to continuous measurement mode 1 (8Hz) in 16bit
-    wiringPiI2CWriteReg8(mFileHandle,0x34, 0x80); // Enable I2C slave 4
-    delay(20);
-
-    //wiringPiI2CWriteReg8(mFileHandle,0x34, 0x0F); // sampling rate is 100 / (1 + 15) Hz
-
-    wiringPiI2CWriteReg8(mFileHandle,0x25, 0x0C | 0x80); // Set the I2C slave 0 address of AK8963 and set for read.
-
-    wiringPiI2CWriteReg8(mFileHandle,0x26, 0x03); //I2C slave 0 register address from where to begin data transfer
-    wiringPiI2CWriteReg8(mFileHandle,0x27, 0x87); // Enable I2C and set 7 byte,
-    // which makes the AK8963A unlatch the data registers for the next measurement by reading ST2 register (0x09).
-    //wiringPiI2CWriteReg8(mFileHandle,I2C_MST_DELAY_CTRL, 0x81); // Delayed sampling is applied to Slave 0.
-  }
-*/
-  wiringPiI2CWriteReg8(mFileHandle,0x23, 0xF9); // FIFO enabled for temperature(2), gyro(2 * 3), accelerometer(2 * 3), slave 0(7, delayed sample). Total 21 bytes.
+  wiringPiI2CWriteReg8(mFileHandle,0x23, 0x78); // FIFO enabled for , gyro(2 * 3), accelerometer(2 * 3),  Total 12 bytes.
   wiringPiI2CWriteReg8(mFileHandle,0x6A, 0x40); // Enable FIFO 
 
   wiringPiI2CWriteReg8(mFileHandle,0x37, 0x02);
@@ -1217,6 +1158,8 @@ void NineAxisSensor::onClean()
 }
 void NineAxisSensor::onUpdate(const struct timespec& time)
 {
+  if(!isFIFOEnable)
+  {
   unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
   wiringPiI2CWriteReg8(mFileHandle,0x72,0);
   wiringPiI2CWriteReg8(mFileHandle,0x73,0);
@@ -1235,9 +1178,10 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mX = (wiringPiI2CReadReg8(mFileHandle, 0x43) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x44);
   mY = (wiringPiI2CReadReg8(mFileHandle, 0x45) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x46);
   mZ = (wiringPiI2CReadReg8(mFileHandle, 0x47) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x48);
-	mRVel.x =  GYRO_RANGE * mX;
-	mRVel.y =  GYRO_RANGE * mY;
-	mRVel.z =  GYRO_RANGE * mZ;
+	VECTOR3 newRv;
+	newRv.x =  GYRO_RANGE * mX;
+	newRv.y =  GYRO_RANGE * mY;
+	newRv.z =  GYRO_RANGE * mZ;
   if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
   {
 	mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x04) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x03);
@@ -1249,18 +1193,128 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mMagnet.z = COMPASS_RANGE * mZ;
   wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
   }
+ 	//積分
+	if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
+	{
+		double dt = Time::dt(time, mLastSampleTime);
+		mRAngle += (newRv + mRVel) / 2 * dt;
+		normalize(mRAngle);
+	}
+	mRVel = newRv;
+	mLastSampleTime = time;
+  }
+  else 
+  {
+    getFIFO(time);
+  }
+  if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
+  {
+	short mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x04) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x03);
+	short mY = (wiringPiI2CReadReg8(mFileHandleCompass, 0x06) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x05);
+	short mZ = (wiringPiI2CReadReg8(mFileHandleCompass, 0x08) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x07);
+#define COMPASS_RANGE 0.15
+	mMagnet.x = COMPASS_RANGE * mX;
+	mMagnet.y = COMPASS_RANGE * mY;
+	mMagnet.z = COMPASS_RANGE * mZ;
+  wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
+  }
+
   if(isMonitoring){
   Debug::print(LOG_SUMMARY, "\
   AccelNorm %f \
   Accel %f %f %f\
-	Angle Velocity %f %f %f\
+	Angle %f %f %f\
 	Compass %f %f %f \r\n",
   mAccel.norm(),
   getAx() ,getAy(), getAz(),
-	 getRvx(), getRvy(), getRvz(),
+	 getRx(), getRy(), getRz(),
 	 getMx(), getMy(), getMz());
   }
+ 
 }
+void NineAxisSensor::getFIFO(const struct timespec& time)
+{
+	 unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
+//   Debug::print(LOG_SUMMARY,"FIFO count %d\n",fifo_count); 
+  if(fifo_count >=512)
+  {
+    onInit(time);
+    return;
+  }
+	 VECTOR3 newRv;
+	 VECTOR3 newA;
+	 int data_samples = 0;
+	 while(fifo_count >= 12)
+	 {
+		 short tmp[6];
+		 VECTOR3 sampleRv;
+		 for(int i = 0; i < 6 ;i++)
+		 {
+			 unsigned short high = (wiringPiI2CReadReg8(mFileHandle, 0x74) << 8) ;
+			 tmp[i] = high | wiringPiI2CReadReg8(mFileHandle, 0x74);
+
+		 }
+		newA.x += AXEL_RANGE * tmp[0];
+		newA.y += AXEL_RANGE * tmp[1];
+		newA.z += AXEL_RANGE * tmp[2];
+		sampleRv.x +=  GYRO_RANGE * tmp[3];
+		sampleRv.y +=  GYRO_RANGE * tmp[4];
+		sampleRv.z +=  GYRO_RANGE * tmp[5];
+		newRv += sampleRv;
+
+		//ドリフト誤差計算中であれば配列にデータを突っ込む
+		if (mIsCalculatingOffset)
+		{
+			mRVelHistory.push_back(sampleRv);
+			if (mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
+			{
+				//平均値を取ってみる
+				std::list<VECTOR3>::iterator it = mRVelHistory.begin();
+				while (it != mRVelHistory.end())
+				{
+					mRVelOffset += *it;
+					++it;
+				}
+				mRVelOffset /= mRVelHistory.size();//ドリフト誤差補正量を適用
+				mRVelHistory.clear();
+				mIsCalculatingOffset = false;
+				Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n", mRVelOffset.x, mRVelOffset.y, mRVelOffset.z);
+			}
+		}
+
+		//ドリフト誤差を補正
+		newRv -= mRVelOffset;
+
+		++data_samples;		
+
+    fifo_count -= 12;
+	 }
+	if (data_samples != 0)
+	{
+		newA /= data_samples;
+		mAccel = newA;
+		mAccelAve = mAccel * mAccelAlpha + mAccelAve * (1 - mAccelAlpha);
+		
+		//平均
+		newRv /= data_samples;
+
+		newRv.x = abs(newRv.x) < mCutOffThreshold ? 0 : newRv.x;
+		newRv.y = abs(newRv.y) < mCutOffThreshold ? 0 : newRv.y;
+		newRv.z = abs(newRv.z) < mCutOffThreshold ? 0 : newRv.z;
+
+		//積分
+		if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
+		{
+			double dt = Time::dt(time, mLastSampleTime);
+			mRAngle += (newRv + mRVel) / 2 * dt;
+			normalize(mRAngle);
+		}
+		mRVel = newRv;
+		
+		mLastSampleTime = time;
+	}
+ }
+
 bool NineAxisSensor::getAccel(VECTOR3& acc) const
 {
 	if (isActive())
@@ -1358,41 +1412,142 @@ double NineAxisSensor::getMz() const
 {
 	return mMagnet.z;
 }
-
+void NineAxisSensor::setMonitoring(bool val)
+{
+	isMonitoring = val;
+	return;
+}
+double NineAxisSensor::normalize(double pos)
+{
+	while (pos >= 180 || pos < -180)pos += (pos > 0) ? -360 : 360;
+	return pos;
+}
+void NineAxisSensor::normalize(VECTOR3& pos)
+{
+	pos.x = normalize(pos.x);
+	pos.y = normalize(pos.y);
+	pos.z = normalize(pos.z);
+}
+bool NineAxisSensor::getRPos(VECTOR3& pos) const
+{
+	if (isActive())
+	{
+		pos = mRAngle;
+		return true;
+	}
+	return false;
+}
+double NineAxisSensor::getRx() const
+{
+	return mRAngle.x;
+}
+double NineAxisSensor::getRy() const
+{
+	return mRAngle.y;
+}
+double NineAxisSensor::getRz() const
+{
+	return mRAngle.z;
+}
 bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 {
   if (args.size() == 3)
 	{
 		if (args[1].compare("monitor") == 0)
 		{
+			if(args[2].compare("true") == 0)
+			{
+				isMonitoring =true;
+			}
+			else if(args[2].compare("false") == 0)
+			{
+				isMonitoring = false;
+			}
+			return true;
+		}
+    if(args[1].compare("FIFO") ==0)
+    {
       if(args[2].compare("true") == 0)
       {
-		  	isMonitoring =true;
+        setFIFOmode(true);
       }
-      else if(args[2].compare("false") == 0)
+      if(args[2].compare("false") == 0)
       {
-        isMonitoring = false;
+        setFIFOmode(false);
+    
       }
-        return true;
+      return true;
+    }
+		if (args[1].compare("cutoff") == 0)
+		{
+			mCutOffThreshold = atof(args[2].c_str());
+			Debug::print(LOG_SUMMARY, "Gyro: cutoff threshold is %f\r\n", mCutOffThreshold);
+			return true;
 		}
-  }else{
+		return false;
+  }
+  else if(args.size() == 2)
+  {
+	if (args[1].compare("reset") == 0)
+	{
+		setZero();
+		return true;
+	}
+	else if (args[1].compare("calib") == 0)
+	{
+		if (!isActive())return false;
+		calibrate();
+		return true;
+	}
+	return false;
+  }
+  	else if (args.size() == 5)
+	{
+		if (args[1].compare("calib") == 0)
+		{
+			mRVelOffset.x = atof(args[2].c_str());
+			mRVelOffset.y = atof(args[3].c_str());
+			mRVelOffset.z = atof(args[4].c_str());
+			Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n", mRVelOffset.x, mRVelOffset.y, mRVelOffset.z);
+			return true;
+		}
+		return false;
+	}
+  else{
 	Debug::print(LOG_SUMMARY, "Accel %f %f %f\r\n\
 	Angle Velocity %f %f %f\r\n\
-	Roll Pitch Yaw %f %f %f\r\n\
+	Angle %f %f %f\r\n\
 	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
-	 getRoll(), getPitch(), getYaw(),
+	 getRx(), getRy(), getRz(),
 	 getMx(), getMy(), getMz());
-	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n",args[0].c_str());
+	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n\
+	nineaxis reset  : set angle to zero point\r\n\
+  	nineaxis cutoff : set cutoff threshold\r\n\
+  	nineaxis calib  : calibrate gyro *do NOT move*\r\n\
+	nineaxis calib [x_offset] [y_offset] [z_offset] : calibrate gyro by specified params\r\n",args[0].c_str());
   }
   return true;
 }
-
+void NineAxisSensor::calibrate()
+{
+	mIsCalculatingOffset = true;	
+}
+void NineAxisSensor::setZero()
+{
+	mRAngle.x = mRAngle.y = mRAngle.z = 0;
+}
+void NineAxisSensor::setFIFOmode(bool val)
+{
+  isFIFOEnable = val;
+}
 NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccelAlpha(0.5), mRVel(), mRAngle(), mMagnet(), mRVelHistory(), mRVelOffset(), mYaw(0), mPitch(0), mRoll(0)
 {
   isMonitoring = false;
+  isFIFOEnable = true;
   setName("nineaxis");
   setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
+  mAccelAlpha = 1;
 }
 NineAxisSensor::~NineAxisSensor()
 {
