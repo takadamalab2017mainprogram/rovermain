@@ -872,7 +872,7 @@ float Navigating::get_pos() {
 	
 	float pos_now[2];
 	pos_now[0] = pos.x; pos_now[1] = pos.y;
-	return pos_now;
+	return pos;
 }
 
 double Navigating::get_dis() {

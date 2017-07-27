@@ -131,7 +131,7 @@ protected:
 public:
 	void setGoal(const VECTOR3& pos);
 	void set_v(double vt);
-	float *get_pos();
+	float get_pos();
 	double get_dis();
 	void draw(int width, int height);
 	int oneturn(int map[], float lastrover1[], int width, int height);
