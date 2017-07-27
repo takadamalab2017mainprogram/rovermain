@@ -864,15 +864,15 @@ void Navigating::set_v(double vt) {
 	//ローバーの速度を変更
 	v = (float)vt;
 }
-
-float Navigating::get_pos() {
-	//今のGPS座標を教える
-	VECTOR3 pos;
-	gGPSSensor.get(pos);
-	
-	float pos_now[2];
-	pos_now[0] = pos.x; pos_now[1] = pos.y;
-	return pos;
+//
+//float Navigating::get_pos() {
+//	//今のGPS座標を教える
+//	VECTOR3 pos;
+//	gGPSSensor.get(pos);
+//	
+//	float pos_now[2];
+//	pos_now[0] = pos.x; pos_now[1] = pos.y;
+//	return pos;
 }
 
 double Navigating::get_dis() {
@@ -899,7 +899,11 @@ int Navigating::oneturn(int map[], float lastrover1[], int width, int height) {
 	//更新したmapを使って次の目標点を検索、mapでのpixel番号をreturn
 
 	//rover1によるmap更新
-	float *nowrover1 = get_pos();
+	VECTOR3 pos;
+	gGPSSensor.get(pos);
+	float nowrover1[2];
+	nowrover1[0] = pos.x; nowrover1[1] = pos.y;
+
 	for (int i = 0; i < width * height; i++) {
 		int pix[] = { i % width , i / width };
 		float dis = point_to_line(pix, lastrover1, nowrover1);
@@ -934,12 +938,16 @@ void Navigating::play(const struct timespec& time) {
 	else {
 		last_roll_time = time;
 		//ランダム目標で始まるー＞｛目標設定->目標に行く｝リピート
-		float *lastrover1 = get_pos();//rover1最後の座標
+		VECTOR3 pos;
+		gGPSSensor.get(pos);
+		float lastrover1[2];
+		lastrover1[0] = pos.x; lastrover1[1] = pos.y;//rover1最後の座標
 		int target = oneturn(map, lastrover1, width, height);//rover1の目標
 		//ローバー１目標設定
 		VECTOR3 pos;
 		pos.x = target % width;
 		pos.y = target / width;
+
 		//set_goal(target % width, target / width);
 		////ローバー２目標設定
 		//float pos[] = { target % width, target / width };
