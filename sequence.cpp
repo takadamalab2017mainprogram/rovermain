@@ -873,7 +873,7 @@ void Navigating::set_v(double vt) {
 //	float pos_now[2];
 //	pos_now[0] = pos.x; pos_now[1] = pos.y;
 //	return pos;
-}
+//}
 
 double Navigating::get_dis() {
 	//ローバーとゴールの距離を得る
