@@ -87,18 +87,18 @@ bool Testing::onCommand(const std::vector<std::string>& args)
 			if (gPressureSensor.isActive())Debug::print(LOG_SUMMARY, " Pressure (%f) hPa\r\n", gPressureSensor.get());
 			else Debug::print(LOG_SUMMARY, " Pressure is NOT working\r\n");
 
-			if (gGyroSensor.isActive())
+			if (gNineAxisSensor.isActive())
 			{
-				gGyroSensor.getRPos(vec);
+				gNineAxisSensor.getRPos(vec);
 				Debug::print(LOG_SUMMARY, " Gyro pos (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
-				gGyroSensor.getRVel(vec);
+				gNineAxisSensor.getRVel(vec);
 				Debug::print(LOG_SUMMARY, " Gyro vel (%f %f %f) dps\r\n", vec.x, vec.y, vec.z);
 			}
 			else Debug::print(LOG_SUMMARY, " Gyro is NOT working\r\n");
 
-			if (gAccelerationSensor.isActive())
+			if (gNineAxisSensor.isActive())
 			{
-				gAccelerationSensor.getAccel(vec);
+				gNineAxisSensor.getAccel(vec);
 				Debug::print(LOG_SUMMARY, " Accel val (%f %f %f) d\r\n", vec.x, vec.y, vec.z);
 			}
 			else Debug::print(LOG_SUMMARY, " Accel is NOT working\r\n");

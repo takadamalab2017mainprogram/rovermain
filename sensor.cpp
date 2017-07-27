@@ -1229,6 +1229,18 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
   {
     getFIFO(time);
   }
+  if(wiringPiI2CReadReg8(mFileHandleCompass, 0x02)| 0x01)
+  {
+	short mX = (wiringPiI2CReadReg8(mFileHandleCompass, 0x04) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x03);
+	short mY = (wiringPiI2CReadReg8(mFileHandleCompass, 0x06) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x05);
+	short mZ = (wiringPiI2CReadReg8(mFileHandleCompass, 0x08) << 8) | wiringPiI2CReadReg8(mFileHandleCompass, 0x07);
+#define COMPASS_RANGE 0.15
+	mMagnet.x = COMPASS_RANGE * mX;
+	mMagnet.y = COMPASS_RANGE * mY;
+	mMagnet.z = COMPASS_RANGE * mZ;
+  wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
+  }
+
   if(isMonitoring){
   Debug::print(LOG_SUMMARY, "\
   AccelNorm %f \
@@ -1237,7 +1249,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	Compass %f %f %f \r\n",
   mAccel.norm(),
   getAx() ,getAy(), getAz(),
-	 getRvx(), getRvy(), getRvz(),
+	 getRx(), getRy(), getRz(),
 	 getMx(), getMy(), getMz());
   }
  
