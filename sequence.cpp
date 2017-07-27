@@ -944,9 +944,9 @@ void Navigating::play(const struct timespec& time) {
 		lastrover1[0] = pos.x; lastrover1[1] = pos.y;//rover1最後の座標
 		int target = oneturn(map, lastrover1, width, height);//rover1の目標
 		//ローバー１目標設定
-		VECTOR3 pos;
-		pos.x = target % width;
-		pos.y = target / width;
+		float goal[2];
+		goal[0] = target % width;
+		goal[1] = target / width;
 
 		//set_goal(target % width, target / width);
 		////ローバー２目標設定
