@@ -865,7 +865,7 @@ void Navigating::set_v(double vt) {
 	v = (float)vt;
 }
 
-float Navigating::*get_pos() {
+float Navigating::get_pos() {
 	//今のGPS座標を教える
 	VECTOR3 pos;
 	gGPSSensor.get(pos);
@@ -921,7 +921,7 @@ int Navigating::oneturn(int map[], float lastrover1[], int width, int height) {
 	}
 	return target;
 }
-void Navigating::play() {
+void Navigating::play(const struct timespec& time) {
 
 	map = new int[width * height];//地図arang
 

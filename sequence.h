@@ -135,7 +135,7 @@ public:
 	double get_dis();
 	void draw(int width, int height);
 	int oneturn(int map[], float lastrover1[], int width, int height);
-	void play();
+	void play(const struct timespec& time);
 
 	Navigating();
 	~Navigating();
