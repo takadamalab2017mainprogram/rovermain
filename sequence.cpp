@@ -664,7 +664,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	else
 	{
 		//通常のナビゲーション
-		if (mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+		if (mLastPos.size() < 10)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
 	}
 	//}
