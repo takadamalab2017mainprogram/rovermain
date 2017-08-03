@@ -15,7 +15,7 @@
 #include "actuator.h"
 #include "motor.h"
 //#include "image_proc.h"
-#include "pose_detector.h"
+//#include "pose_detector.h"
 
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
