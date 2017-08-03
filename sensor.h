@@ -9,6 +9,7 @@
 #include "utils.h"
 #include <pthread.h>
 #include <list>
+#include <libgpsmm.h>
 
 //MPL115A2からデータを取得するクラス
 //気圧の値はhPa単位で+-10hPaの誤差が存在
@@ -56,6 +57,8 @@ private:
 	float mGpsCourse;
 	bool mIsNewData;//新しい座標データがあれば真
 	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
+	gpsmm gps_rec;
+	struct gps_data_t *newdata;
 
 	void showState() const;//補足した衛星数と座標を表示
 protected:
@@ -277,11 +280,15 @@ private:
 	VECTOR3 mRVel, mRAngle;
 	VECTOR3 mMagnet;
 	struct timespec mLastSampleTime;
-	std::list<VECTOR3> mRVelHistory;
-	VECTOR3 mRVelOffset;
+	//ドリフト誤差補正用
+	std::list<VECTOR3> mRVelHistory;//過去の角速度
+	VECTOR3 mRVelOffset;//サンプルあたりのドリフト誤差の推定値
+	double mCutOffThreshold;
+	bool mIsCalculatingOffset;//ドリフト誤差計算中フラグ
 	float mYaw;
 	float mPitch;
 	float mRoll;
+  bool isFIFOEnable;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -323,7 +330,11 @@ public:
 	float getRoll() const;
 	float getPitch() const;
 	float getYaw() const;
-  bool isMonitoring;
+	bool isMonitoring;
+	void getFIFO(const struct timespec& time);
+  void setMonitoring(bool val);
+  void calibrate();
+  void setFIFOmode(bool val);
 	NineAxisSensor();
 	~NineAxisSensor();
 };

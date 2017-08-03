@@ -3,6 +3,7 @@ motor p 0.003 0.0 0.0
 motor pp 0.008 0 0
 motor cpose 0.8
 wakinglie 30
+navigating 35.657619 139.542807
 //
 // ------------------- notes -------------------
 //hogehjoge
@@ -29,3 +30,4 @@ alias wadachistart escapingbystabi start
 alias imomusi escapingbystabi start
 alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
+alias ms multiservo

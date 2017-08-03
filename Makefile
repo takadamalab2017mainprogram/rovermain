@@ -1,18 +1,16 @@
 include Makefile.common
 
 CXX = g++
-CXXFLAGS = -Wall -O2 -std=c++0x
+CXXFLAGS = -Wall -O2 -std=c++0x -llibgps 
 
 all:$(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $(OBJS) -lpthread -lwiringPi -lrt 
+	$(CXX) -o $@ $(OBJS) -lpthread -lwiringPi -lrt `pkg-config --libs libgps` 
 
 .c.o:
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-#sensor.o:sensor.cpp
-#	$(CXX) $(CXXFLAGS) -o sensor.o sensor.cpp MotionSensor/libMotionSensor.a libI2Cdev.a -lpthread -lwiringPi -lrt 
 .PHONY : clean
 clean: 
 	@rm -rf *.o *~ $(TARGET)
