@@ -27,7 +27,7 @@ WakingFromLie gWakingFromLieState;
 //WadachiPredicting gPredictingState;
 //PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
-MovementLogging gMovementLoggingState;
+//MovementLogging gMovementLoggingState;
 //EncoderMonitoring gEncoderMonitoringState;
 //CameraSave_Sequence gCameraSave_Sequence;
 
