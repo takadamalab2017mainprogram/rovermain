@@ -277,8 +277,8 @@ bool Falling::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
+	//gGyroSensor.setRunMode(true);
+	//gAccelerationSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
@@ -291,8 +291,8 @@ bool Falling::onInit(const struct timespec& time)
 	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
-  gNineAxisSensor.setRunMode(true);
-  gNineAxisSensor.isMonitoring = false;
+    gNineAxisSensor.setRunMode(true);
+    gNineAxisSensor.isMonitoring = false;
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
@@ -312,6 +312,7 @@ void Falling::onUpdate(const struct timespec& time)
 	}
 
 	//閾値以下ならカウント
+	Debug::print(LOG_PRINT,"vx:%f vy:%f vz%f",gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz());
 	if (abs(gNineAxisSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
 	{
 		if (mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
@@ -332,6 +333,7 @@ void Falling::onUpdate(const struct timespec& time)
 	mLastPressure = newPressure;
 
 	//エンコーダの値の差が一定以上ならカウント
+
 	long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();
 	if (abs(newMotorPulseL - mLastMotorPulseL) > FALLING_MOTOR_PULSE_THRESHOLD && abs(newMotorPulseR - mLastMotorPulseR) > FALLING_MOTOR_PULSE_THRESHOLD)
 	{
@@ -406,8 +408,8 @@ bool Separating::onInit(const struct timespec& time)
 	//gNeckServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
+	//gGyroSensor.setRunMode(true);
+	//gAccelerationSensor.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 
