@@ -732,11 +732,11 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		//���O���ۑ�
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
-		if (gGPSSensor.isActive())write(mFilenameGPS, "%ld,%f,%f,%f\r\n", time.tv_sec,vec.x, vec.y, vec.z);
+		if (gGPSSensor.isActive())write(mFilenameGPS, "%ld.%ld,%f,%f,%f\r\n", time.tv_sec,time.tv_nsec,vec.x, vec.y, vec.z);
 		else write(mFilenameGPS, "unavailable\r\n");
 
 
-		if (gPressureSensor.isActive())write(mFilenamePressure, "%ld,%f\r\n", time.tv_sec,gPressureSensor.get());
+		if (gPressureSensor.isActive())write(mFilenamePressure, "%ld.%ld,%f\r\n", time.tv_sec,time.tv_nsec,gPressureSensor.get());
 		else write(mFilenamePressure, "unavailable\r\n");
 
 
