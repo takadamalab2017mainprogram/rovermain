@@ -11,7 +11,6 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
-#include "pose_detector.h"
 
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
