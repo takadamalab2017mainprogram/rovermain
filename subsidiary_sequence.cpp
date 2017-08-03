@@ -21,7 +21,7 @@ Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 Waking gWakingState;
-WakingFromLie gWakingFromLieState;
+//WakingFromLie gWakingFromLieState;
 //Turning gTurningState;
 //Avoiding gAvoidingState;
 //WadachiPredicting gPredictingState;
@@ -487,7 +487,7 @@ bool Waking::onInit(const struct timespec& time)
 	gNineAxisSensor.setRunMode(true);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();
-	gPoseDetecting.setRunMode(true);
+	//gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
@@ -504,19 +504,21 @@ void Waking::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_CHECK_LIE:
+		/*
 		if (gPoseDetecting.isLie())
 		{
 			gWakingFromLieState.setRunMode(true);
 			mCurStep = STEP_WAIT_LIE;
 			return;
 		}
+		*/
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);//角度調節
 		gMultiServo.start(BACK_STABI_RUN_ANGLE);
 		//gArmServo.start(ARM_FOLD_ANGLE);
 		//gNeckServo.start(NECK_FOLD_ANGLE);
 		// Do following case without breaking
 	case STEP_WAIT_LIE:
-		if (gWakingFromLieState.isActive())return;
+		//if (gWakingFromLieState.isActive())return;
 		//begin waking
 		gMotorDrive.drive(mStartPower);		//���[�^�o��
 		mAngleOnBegin=gNineAxisSensor.getRz(); //gGyroSensor.getRz();
@@ -589,7 +591,7 @@ void Waking::onUpdate(const struct timespec& time)
 		{
 			return;
 		}
-
+		/*
 		if (!gPoseDetecting.isFlip())
 		{
 			Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
@@ -619,7 +621,7 @@ void Waking::onUpdate(const struct timespec& time)
 			//gArmServo.start(ARM_FOLD_ANGLE);
 			//gNeckServo.start(NECK_FOLD_ANGLE);
 			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n", mWakeRetryCount, WAKING_RETRY_COUNT, power);
-		}
+		}*/
 		break;
 	}
 }
@@ -699,6 +701,7 @@ Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDe
 Waking::~Waking()
 {
 }
+/*
 bool WakingFromLie::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -710,7 +713,7 @@ bool WakingFromLie::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	//gSServo.setRunMode(true);
 	//gSServo.start(0, 0);
-	gPoseDetecting.setRunMode(true);
+	//gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
@@ -723,8 +726,10 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_FORWARD:
+		
 		if (!gPoseDetecting.isLie())mNotLieCount++;
 		else mNotLieCount = 0;
+	
 		gMotorDrive.drive(mCurrentPower, mCurrentPower);
 
 		if (mNotLieCount > 100 || mCurrentPower >= MOTOR_MAX_POWER)
@@ -785,6 +790,7 @@ WakingFromLie::WakingFromLie() : mShortestSpeedUpPeriod(10)
 WakingFromLie::~WakingFromLie()
 {
 }
+*/
 
 /*
 bool Turning::onInit(const struct timespec& time)

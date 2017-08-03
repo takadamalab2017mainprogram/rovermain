@@ -106,6 +106,7 @@ public:
 
 //���[�o�[�̎p������
 //�p�����䂪���������ƃ^�X�N���I�����܂�
+/*
 class WakingFromLie : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -126,6 +127,7 @@ public:
 	WakingFromLie();
 	~WakingFromLie();
 };
+*/
 
 //���[�o�[�̂��̏����]
 //���������ƃ^�X�N���I�����܂�
@@ -269,7 +271,7 @@ public:
 */
 extern Escaping gEscapingState;
 extern Waking gWakingState;
-extern WakingFromLie gWakingFromLieState;
+//extern WakingFromLie gWakingFromLieState;
 //extern Turning gTurningState;
 //extern Avoiding gAvoidingState;
 //extern WadachiPredicting gPredictingState;
