@@ -740,7 +740,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		else write(mFilenamePressure, "unavailable\r\n");
 
 
-		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",time.tv_sec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
+		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld.%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",time.tv_sec,time.tv_nsec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
 		else write(mFilenameNineAxis, "unavailable\r\n");
 	}
 }
@@ -763,12 +763,8 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 
 	Filename("log_gps", ".txt").get(mFilenameGPS);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGPS.c_str());
-	Filename("log_gyro", ".txt").get(mFilenameGyro);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGyro.c_str());
 	Filename("log_pressure", ".txt").get(mFilenamePressure);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenamePressure.c_str());
-	Filename("log_acceleration", ".txt").get(mFilenameAccel);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameAccel.c_str());
 	Filename("log_nineaxis", ".txt").get(mFilenameNineAxis);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameNineAxis.c_str());
 }
