@@ -49,8 +49,8 @@ bool Testing::onInit(const struct timespec& time)
 	//gClient.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
+	//gGyroSensor.setRunMode(true);
+	//gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
 	//gWebCamera.setRunMode(true);
 	//gDistanceSensor.setRunMode(true);
@@ -333,21 +333,22 @@ void Falling::onUpdate(const struct timespec& time)
 	mLastPressure = newPressure;
 
 	//エンコーダの値の差が一定以上ならカウント
-
+	/*
 	long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();
 	if (abs(newMotorPulseL - mLastMotorPulseL) > FALLING_MOTOR_PULSE_THRESHOLD && abs(newMotorPulseR - mLastMotorPulseR) > FALLING_MOTOR_PULSE_THRESHOLD)
 	{
 		if (mContinuousMotorPulseCount < FALLING_MOTOR_PULSE_COUNT)++mContinuousMotorPulseCount;
 	}
 	else mContinuousMotorPulseCount = 0;
+	*/
 
 	//判定状態を表示
 	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n", mContinuousPressureCount, FALLING_PRESSURE_COUNT, newPressure);
 	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n", mCoutinuousGyroCount, FALLING_GYRO_COUNT);
-	Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d (%lld,%lld)\r\n", mContinuousMotorPulseCount, FALLING_MOTOR_PULSE_COUNT, newMotorPulseL - mLastMotorPulseL, newMotorPulseR - mLastMotorPulseR);
+	//Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d (%lld,%lld)\r\n", mContinuousMotorPulseCount, FALLING_MOTOR_PULSE_COUNT, newMotorPulseL - mLastMotorPulseL, newMotorPulseR - mLastMotorPulseR);
 
-	mLastMotorPulseL = newMotorPulseL;
-	mLastMotorPulseR = newMotorPulseR;
+	//mLastMotorPulseL = newMotorPulseL;
+	//mLastMotorPulseR = newMotorPulseR;
 
 	//GPS情報ログ
 	VECTOR3 pos;

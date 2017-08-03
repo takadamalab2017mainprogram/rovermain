@@ -129,6 +129,7 @@ public:
 
 //���[�o�[�̂��̏����]
 //���������ƃ^�X�N���I�����܂�
+/*
 class Turning : public TaskBase
 {
 	bool mIsTurningLeft;
@@ -144,9 +145,11 @@ public:
 	Turning();
 	~Turning();
 };
+*/
 
 //�Q���O���m���̉��𓮍�
 //���������ƃ^�X�N���I�����܂�
+/*
 class Avoiding : public TaskBase
 {
 	struct timespec mLastUpdateTime;//�s���J�n����
@@ -161,6 +164,7 @@ public:
 	Avoiding();
 	~Avoiding();
 };
+*/
 
 /*
 //�L�O�B�e
@@ -193,6 +197,7 @@ public:
 };
 
 // �O�i����1�b���ƂɃ^�C�����]���A�����x�̒l���擾
+/*
 class MovementLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -215,6 +220,7 @@ public:
 	MovementLogging();
 	~MovementLogging();
 };
+*/
 
 class EncoderMonitoring : public TaskBase
 {
@@ -264,13 +270,13 @@ public:
 extern Escaping gEscapingState;
 extern Waking gWakingState;
 extern WakingFromLie gWakingFromLieState;
-extern Turning gTurningState;
-extern Avoiding gAvoidingState;
+//extern Turning gTurningState;
+//extern Avoiding gAvoidingState;
 //extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
 //extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
-extern MovementLogging gMovementLoggingState;
-extern EncoderMonitoring gEncoderMonitoringState;
+//extern MovementLogging gMovementLoggingState;
+//extern EncoderMonitoring gEncoderMonitoringState;
 //extern CameraSave_Sequence gCameraSave_Sequence;
