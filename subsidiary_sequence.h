@@ -253,22 +253,7 @@ public:
 	~EncoderMonitoring();
 };
 
-/*
-class CameraSave_Sequence : public TaskBase{
-	struct timespec mLastUpdateTime;
-	double timing;
-	bool mIsUpdateCamera;
-	bool mIsUpdateWadati;
-	
-protected:
-  virtual bool onInit(const struct timespec& time);
-  virtual void onUpdate(const struct timespec& time);
-  virtual bool onCommand(const std::vector<std::string>& args);
-public:
-  CameraSave_Sequence();
-  ~CameraSave_Sequence();
-};
-*/
+
 extern Escaping gEscapingState;
 extern Waking gWakingState;
 //extern WakingFromLie gWakingFromLieState;
@@ -277,7 +262,6 @@ extern Waking gWakingState;
 //extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
-//extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
 //extern MovementLogging gMovementLoggingState;
 //extern EncoderMonitoring gEncoderMonitoringState;
