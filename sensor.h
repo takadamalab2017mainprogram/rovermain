@@ -90,6 +90,7 @@ public:
 // X: to Left
 // Y: to Back
 // Z: to Top
+/*
 class GyroSensor : public TaskBase
 {
 private:
@@ -175,6 +176,7 @@ public:
 	AccelerationSensor();
 	~AccelerationSensor();
 };
+*/
 
 //Cdsからデータを取得するクラス
 class LightSensor : public TaskBase
@@ -198,6 +200,7 @@ public:
 };
 
 //Webカメラの動画をキャプチャするクラス
+/*
 class WebCamera : public TaskBase
 {
 protected:
@@ -338,12 +341,12 @@ public:
 	NineAxisSensor();
 	~NineAxisSensor();
 };
-extern GyroSensor gGyroSensor;
+//extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
 //extern WebCamera gWebCamera;
-extern DistanceSensor gDistanceSensor;
+//extern DistanceSensor gDistanceSensor;
 //extern CameraCapture gCameraCapture;
-extern AccelerationSensor gAccelerationSensor;
+//extern AccelerationSensor gAccelerationSensor;
 extern NineAxisSensor gNineAxisSensor;

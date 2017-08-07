@@ -15,15 +15,21 @@
 #include "sensor.h"
 #include "utils.h"
 #include <stdarg.h>
+#include <wiringSerial.h>
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <libgpsmm.h>
+
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
-GyroSensor gGyroSensor;
+//GyroSensor gGyroSensor;
 LightSensor gLightSensor;
 //WebCamera gWebCamera;
-DistanceSensor gDistanceSensor;
+//DistanceSensor gDistanceSensor;
 //CameraCapture gCameraCapture;
-AccelerationSensor gAccelerationSensor;
-Filename gCaptureFilename = Filename("capture", ".png");
+//AccelerationSensor gAccelerationSensor;
+//Filename gCaptureFilename = Filename("capture", ".png");
 NineAxisSensor gNineAxisSensor;
 //using namespace cv;
 
@@ -171,14 +177,7 @@ PressureSensor::~PressureSensor()
 }
 
 
-#include <wiringPi.h>
-#include <wiringSerial.h>
-#include <iostream>
-#include <iomanip>
-#include <ctime>
-#include <sstream>
 
-#include <libgpsmm.h>
 //////////////////////////////////////////////
 // GPS Sensor
 //////////////////////////////////////////////
@@ -277,10 +276,12 @@ int GPSSensor::getTime() const
 {
 	return mGpsTime;
 }
+/*
 float GPSSensor::getCourse() const
 {
 	return GyroSensor::normalize(mGpsCourse);
 }
+*/
 float GPSSensor::getSpeed() const
 {
 	return mGpsSpeed;
@@ -302,7 +303,7 @@ GPSSensor::~GPSSensor()
 //////////////////////////////////////////////
 // Gyro Sensor
 //////////////////////////////////////////////
-
+/*
 bool GyroSensor::onInit(const struct timespec& time)
 {
 	mRVel.x = mRVel.y = mRVel.z = 0;
@@ -653,6 +654,7 @@ AccelerationSensor::AccelerationSensor() : mFileHandle(-1),mAccel(), mAccelAve()
 AccelerationSensor::~AccelerationSensor()
 {
 }
+*/
 
 ///////////////////////////////////////////////
 // CdS Sensor
@@ -688,7 +690,7 @@ LightSensor::~LightSensor()
 ///////////////////////////////////////////////
 // Webカメラ
 ///////////////////////////////////////////////
-
+/*
 bool WebCamera::onCommand(const std::vector<std::string>& args)
 {
 	if (!isActive())return false;
@@ -1101,6 +1103,7 @@ CameraCapture::~CameraCapture()
 	if(mpResizedImage != NULL)cvReleaseImage(&mpResizedImage);
 }
 */
+
 bool NineAxisSensor::onInit(const struct timespec& time)
 {
 		if ((mFileHandle = wiringPiI2CSetup(0b01101000)) == -1)
