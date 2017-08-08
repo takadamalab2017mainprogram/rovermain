@@ -341,7 +341,7 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 	int size = args.size();
 	if (size == 1)
 	{
-	  //Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
+	  Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
 	  //Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
 	}
 	else if (size >= 2)
