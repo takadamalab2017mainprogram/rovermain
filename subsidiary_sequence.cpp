@@ -338,6 +338,8 @@ bool Waking::onInit(const struct timespec& time)
 	//gSServo.moveRun();
 	//gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
+	mLastUpdateTime = time;
+	gMotorDrive.drive(-100);
 
 	return true;
 }
@@ -347,8 +349,18 @@ void Waking::onClean()
 }
 void Waking::onUpdate(const struct timespec& time)
 {
-	double power;
-	const static double WAKING_THRESHOLD = 200;
+
+
+	if (Time::dt(time, mLastUpdateTime) >= 2) {
+		gMotorDrive.drive(0);
+		gWakingState(false);
+		return;
+	}
+	else {
+		return;		
+	}
+
+
 
 	switch (mCurStep)
 	{
