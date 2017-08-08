@@ -1,9 +1,6 @@
 #pragma once
 #include <time.h>
 #include <list>
-//#include <opencv2/opencv.hpp>
-//#include <opencv/cvaux.h>
-//#include <opencv/highgui.h>
 #include "task.h"
 #include "utils.h"
 
@@ -198,31 +195,6 @@ public:
 	~SensorLogging();
 };
 
-// �O�i����1�b���ƂɃ^�C�����]���A�����x�̒l���擾
-/*
-class MovementLogging : public TaskBase
-{
-	struct timespec mLastUpdateTime;
-	std::string mFilenameEncoder, mFilenameAcceleration;
-
-	double mPrevPowerL, mPrevPowerR;
-
-	//�O���̃p���X��
-	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
-
-	bool mBuzzerFlag;	//�u�U�[��ON,OFF���Ǘ� 				true:ON, false:OFF
-	bool mPrintFlag;	//TeraTerm���̕\����ON,OFF���Ǘ�	true:ON, false:OFF
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-
-	void write(const std::string& filename, const char* fmt, ...);
-public:
-	MovementLogging();
-	~MovementLogging();
-};
-*/
 
 class EncoderMonitoring : public TaskBase
 {
@@ -256,13 +228,7 @@ public:
 
 extern Escaping gEscapingState;
 extern Waking gWakingState;
-//extern WakingFromLie gWakingFromLieState;
-//extern Turning gTurningState;
-//extern Avoiding gAvoidingState;
-//extern WadachiPredicting gPredictingState;
+
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
 extern SensorLogging gSensorLoggingState;
-//extern MovementLogging gMovementLoggingState;
-//extern EncoderMonitoring gEncoderMonitoringState;
-//extern CameraSave_Sequence gCameraSave_Sequence;
