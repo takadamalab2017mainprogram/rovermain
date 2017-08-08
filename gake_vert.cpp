@@ -70,7 +70,6 @@ int main6( int argc, char** argv ) {
 			newValue_h = 0;
 		}
 
-		//newValue_sum = newValue_h + newValue_s + newValue_v;
 		newValue_sum = newValue_h + newValue_v;
 
 		cvLine(pHImage,cvPoint(i,lastValue_h),cvPoint(i+1,newValue_h),cvScalar(255),1,CV_AA ,0);
@@ -98,8 +97,6 @@ int main6( int argc, char** argv ) {
 		newValue_sum = 0;
 	}
 
-	//Draw found gake
-	//cvRectangle(pCaptureFrame, cvPoint(0, 0),cvPoint(capSize.width, gake),cvScalar(0), CV_FILLED, CV_AA);
 
 	//Show result
 	cvNamedWindow( "origin", CV_WINDOW_AUTOSIZE );
