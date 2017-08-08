@@ -1372,7 +1372,7 @@ double NineAxisSensor::getMagnetTheta()
 double NineAxisSensor::getMagnetPhi()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return acos(magnet.y / sqrt(magnet.x * magnet.x + magnet.y * magnet.y);
+	return acos(magnet.y / sqrt(magnet.x * magnet.x + magnet.y * magnet.y));
 }
 double NineAxisSensor::getMagnetNorm()
 {
@@ -1552,7 +1552,7 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
 	 getRx(), getRy(), getRz(),
-	 getMagnetNorm(), getMagnetTheta(), getMagnetPhi());
+	 getMagnetNorm(), getMagnetTheta()/3.14 * 180, getMagnetPhi()/ 3.14 * 180);
 	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n\
 	nineaxis reset  : set angle to zero point\r\n\
   	nineaxis cutoff : set cutoff threshold\r\n\
