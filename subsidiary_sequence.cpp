@@ -327,7 +327,7 @@ void Waking::onUpdate(const struct timespec& time)
 
 	if (Time::dt(time, mLastUpdateTime) >= 2) {
 		gMotorDrive.drive(0);
-		gWakingState.setRunMode(false)
+		gWakingState.setRunMode(false);
 		return;
 	}
 	else {
