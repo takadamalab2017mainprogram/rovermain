@@ -151,5 +151,5 @@ extern Waiting gWaitingState;
 extern Falling gFallingState;
 extern Separating gSeparatingState;
 extern Navigating gNavigatingState;
-extern Waking gWaitingState;
+extern Waking gWakingState;
 
