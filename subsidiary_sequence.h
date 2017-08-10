@@ -76,31 +76,6 @@ public:
 	~EscapingRandom();
 };
 
-//���[�o�[�̎p������
-//�p�����䂪���������ƃ^�X�N���I�����܂�
-class Waking : public TaskBase
-{
-	struct timespec mLastUpdateTime;
-	enum STEP{ STEP_CHECK_LIE, STEP_WAIT_LIE, STEP_START, STEP_STOP, STEP_DEACCELERATE, STEP_VERIFY };
-	enum STEP mCurStep;
-	double mAngleOnBegin;
-	unsigned int mWakeRetryCount;
-	int mStartPower;				//�N���オ���J�n���̃��[�^�o�͗�
-	double mAngleThreshold;			//�N���オ�芮���Ƃ����p�x(ZX)
-	double mDeaccelerateDuration;	//�����ɗv���鎞��
-
-	void setPower(int p);
-	void setAngle(double a);
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-	virtual void onClean();
-	void nextState();
-public:
-	Waking();
-	~Waking();
-};
 
 //���[�o�[�̎p������
 //�p�����䂪���������ƃ^�X�N���I�����܂�

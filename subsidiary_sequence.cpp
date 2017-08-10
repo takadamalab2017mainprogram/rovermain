@@ -15,7 +15,6 @@
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
-Waking gWakingState;
 SensorLogging gSensorLoggingState;
 
 
@@ -237,115 +236,6 @@ EscapingRandom::~EscapingRandom()
 {
 }
 
-bool Waking::onInit(const struct timespec& time)
-{
-	mCurStep = STEP_CHECK_LIE;
-
-	gMotorDrive.setRunMode(true);
-	gMultiServo.setRunMode(true);
-	gMultiServo.start(BACK_STABI_RUN_ANGLE);
-	gNineAxisSensor.setRunMode(true);
-	mWakeRetryCount = 0;
-	mLastUpdateTime = time;
-	gMotorDrive.drive(100);
-
-	return true;
-}
-void Waking::onClean()
-{
-	gMotorDrive.drive(0);
-}
-void Waking::onUpdate(const struct timespec& time)
-{
-
-	if (Time::dt(time, mLastUpdateTime) >= 2) {
-		gMotorDrive.drive(0);
-		gWakingState.setRunMode(false);
-		Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
-		return;
-	}
-	else {
-		return;		
-	}
-
-}
-bool Waking::onCommand(const std::vector<std::string>& args)
-{
-	if (args.size() == 4)
-	{
-		if (args[1].compare("set") == 0)
-		{
-			if (args[2].compare("power") == 0)//mStartPower
-			{
-				setPower(atoi(args[3].c_str()));
-				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
-				return true;
-			}
-			else if (args[2].compare("angle") == 0)//mAngleThreshold
-			{
-				setAngle(atof(args[3].c_str()));
-				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
-				return true;
-			}
-			else if (args[2].compare("d_time") == 0)//mDeaccelerateDuration
-			{
-				mDeaccelerateDuration = atof(args[3].c_str());
-				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
-				return true;
-			}
-		}
-	}
-	else if (args.size() == 2)
-	{
-		if (args[1].compare("show") == 0)
-		{
-			Debug::print(LOG_SUMMARY, "mStartPower: %d\r\n", mStartPower);
-			Debug::print(LOG_SUMMARY, "mAngleThreshold: %f\r\n", mAngleThreshold);
-			Debug::print(LOG_SUMMARY, "mDeaccelerateDuration: %f\r\n", mDeaccelerateDuration);
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "waking set power [1-100]: set start motor power\r\n\
-							  							  waking set angle [0-180]: set AngleThreshold\r\n\
-														  							  waking set d_time [time]: set mDeaccelerateDuration\r\n\
-																					  							  waking show             : show parameters\r\n");
-	return true;
-}
-void Waking::setPower(int p)
-{
-	if (p >= MOTOR_MAX_POWER)
-	{
-		mStartPower = MOTOR_MAX_POWER;
-		return;
-	}
-	else if (p < 1)
-	{
-		mStartPower = 1;
-		return;
-	}
-	mStartPower = p;
-}
-void Waking::setAngle(double a)
-{
-	if (a >= 180)
-	{
-		mAngleThreshold = 180;
-	}
-	else if (a < 0)
-	{
-		mAngleThreshold = 0;
-	}
-	mAngleThreshold = a;
-}
-
-Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDeaccelerateDuration(0.5)
-{
-	setName("waking");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
-}
-Waking::~Waking()
-{
-}
 
 
 
