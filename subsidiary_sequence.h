@@ -203,8 +203,6 @@ public:
 
 
 extern Escaping gEscapingState;
-extern Waking gWakingState;
-
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
 extern SensorLogging gSensorLoggingState;
