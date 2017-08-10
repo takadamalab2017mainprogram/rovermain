@@ -291,7 +291,9 @@ private:
 	float mYaw;
 	float mPitch;
 	float mRoll;
-  bool isFIFOEnable;
+	bool isFIFOEnable;
+	VECTOR3 mMagnetMax;
+	VECTOR3 mMagnetMin;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -338,6 +340,10 @@ public:
   void setMonitoring(bool val);
   void calibrate();
   void setFIFOmode(bool val);
+	void calcMagnetOffset(VECTOR3& newMagnet);
+	double getMagnetTheta();
+	double getMagnetPhi();
+	double getMagnetNorm();
 	NineAxisSensor();
 	~NineAxisSensor();
 };

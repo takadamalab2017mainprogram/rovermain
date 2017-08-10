@@ -31,3 +31,5 @@ alias imomusi escapingbystabi start
 alias hebi escapingbystabi start
 alias wadachistop escapingbystabi stop
 alias ms multiservo
+navigating 35.656993 139.541533
+

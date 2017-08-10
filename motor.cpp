@@ -242,7 +242,7 @@ void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxCon
 	if (controlRatio <= 0)controlRatio = 0;
 
 	//モータ出力を適用
-	if (mControlPower > 0)
+	if (mControlPower < 0)
 	{
 		//Turn Right
 		mMotorL.set(mRatioL * drivePowerRatio);
@@ -323,8 +323,8 @@ void MotorDrive::setPIDPose(double p, double i, double d)
 }
 void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 {
-	if(reset) mAngle = gNineAxisSensor.getRz();
-	else mAngle = NineAxisSensor::normalize(angle + mAngle);
+	if(reset) mAngle = NineAxisSensor::normalize(angle + gNineAxisSensor.getRz());
+	else mAngle = NineAxisSensor::normalize(angle);
 
 	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
 	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f, %d)\r\n", mAngle, mDrivePower);

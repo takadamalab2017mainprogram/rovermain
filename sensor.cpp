@@ -1220,6 +1220,8 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	mMagnet.y = COMPASS_RANGE * mY;
 	mMagnet.z = COMPASS_RANGE * mZ;
   wiringPiI2CReadReg8(mFileHandleCompass, 0x09);
+	calcMagnetOffset(mMagnet);
+
   }
 
   if(isMonitoring){
@@ -1351,6 +1353,33 @@ double NineAxisSensor::getPhi() const
 {
     return atan2f(sqrt(pow(mAccelAve.x, 2) + pow(mAccelAve.y, 2)), mAccelAve.z);
 }
+void NineAxisSensor::calcMagnetOffset(VECTOR3& newMagnet)
+{
+	//Calc Offset
+	mMagnetMax.x = mMagnetMax.x > newMagnet.x ? mMagnetMax.x : newMagnet.x;
+	mMagnetMax.y = mMagnetMax.y > newMagnet.y ? mMagnetMax.y : newMagnet.y;
+	mMagnetMax.z = mMagnetMax.z > newMagnet.z ? mMagnetMax.z : newMagnet.z;
+
+	mMagnetMin.x = mMagnetMin.x < newMagnet.x ? mMagnetMin.x : newMagnet.x;
+	mMagnetMin.y = mMagnetMin.y < newMagnet.y ? mMagnetMin.y : newMagnet.y;
+	mMagnetMin.z = mMagnetMin.z < newMagnet.z ? mMagnetMin.z : newMagnet.z;
+}
+double NineAxisSensor::getMagnetTheta()
+{
+	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
+	return acos(magnet.z / magnet.norm());
+}
+double NineAxisSensor::getMagnetPhi()
+{
+	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
+	return acos(magnet.y / sqrt(magnet.x * magnet.x + magnet.y * magnet.y));
+}
+double NineAxisSensor::getMagnetNorm()
+{
+	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
+	return magnet.norm();	
+}
+
 bool NineAxisSensor::getRawAccel(VECTOR3& acc) const
 {
 	if(isActive())
@@ -1523,7 +1552,7 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
 	 getRx(), getRy(), getRz(),
-	 getMx(), getMy(), getMz());
+	 getMagnetNorm(), getMagnetTheta()/3.14 * 180, getMagnetPhi()/ 3.14 * 180);
 	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n\
 	nineaxis reset  : set angle to zero point\r\n\
   	nineaxis cutoff : set cutoff threshold\r\n\
