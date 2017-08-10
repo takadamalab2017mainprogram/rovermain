@@ -247,7 +247,7 @@ bool Waking::onInit(const struct timespec& time)
 	gNineAxisSensor.setRunMode(true);
 	mWakeRetryCount = 0;
 	mLastUpdateTime = time;
-	gMotorDrive.drive(-100);
+	gMotorDrive.drive(100);
 
 	return true;
 }

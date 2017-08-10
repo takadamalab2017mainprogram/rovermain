@@ -96,6 +96,7 @@ protected:
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string>& args);
 	virtual void onClean();
+	void nextState();
 public:
 	Waking();
 	~Waking();
