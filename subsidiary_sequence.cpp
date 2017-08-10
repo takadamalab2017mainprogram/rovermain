@@ -168,7 +168,6 @@ bool EscapingByStabi::onCommand(const std::vector<std::string>& args)
 		if (args[1].compare("start") == 0)
 		{
 			gEscapingByStabiState.setRunMode(true);
-			//gSServo.start(0, 0);
 			return true;
 		}
 		if (args[1].compare("s") == 0)
@@ -262,6 +261,7 @@ void Waking::onUpdate(const struct timespec& time)
 	if (Time::dt(time, mLastUpdateTime) >= 2) {
 		gMotorDrive.drive(0);
 		gWakingState.setRunMode(false);
+		nextState();
 		return;
 	}
 	else {
@@ -336,6 +336,13 @@ void Waking::setAngle(double a)
 		mAngleThreshold = 0;
 	}
 	mAngleThreshold = a;
+}
+void Waking::nextState()
+{
+	//次の状態を設定
+	gSeparatingState.setRunMode(true);
+
+	Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
 }
 Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDeaccelerateDuration(0.5)
 {

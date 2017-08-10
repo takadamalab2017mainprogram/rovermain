@@ -322,7 +322,7 @@ void Falling::nextState()
 	gBuzzer.start(100);
 
 	//次の状態を設定
-	gSeparatingState.setRunMode(true);
+	gWakingState.setRunMode(true);
 
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
 }
