@@ -261,6 +261,7 @@ void Waking::onUpdate(const struct timespec& time)
 	if (Time::dt(time, mLastUpdateTime) >= 2) {
 		gMotorDrive.drive(0);
 		gWakingState.setRunMode(false);
+		Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
 		return;
 	}
 	else {
