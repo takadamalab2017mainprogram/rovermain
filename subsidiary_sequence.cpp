@@ -28,7 +28,7 @@ bool Escaping::onInit(const struct timespec& time)
 }
 void Escaping::onClean()
 {
-	break;
+	;
 }
 void Escaping::onUpdate(const struct timespec& time)
 {
