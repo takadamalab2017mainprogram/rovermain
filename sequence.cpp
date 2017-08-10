@@ -325,6 +325,7 @@ void Falling::nextState()
 	gWakingState.setRunMode(true);
 
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
+	gSeparatingState.setRunMode(true);
 }
 Falling::Falling() : mLastPressure(0), mLastMotorPulseL(0), mLastMotorPulseR(0), mContinuousPressureCount(0), mCoutinuousGyroCount(0), mContinuousMotorPulseCount(0)
 {

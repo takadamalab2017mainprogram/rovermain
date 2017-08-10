@@ -16,7 +16,6 @@ Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 Waking gWakingState;
-SensorLogging gSensorLoggingState;
 
 
 bool Escaping::onInit(const struct timespec& time)
@@ -340,7 +339,6 @@ void Waking::setAngle(double a)
 void Waking::nextState()
 {
 	//次の状態を設定
-	gSeparatingState.setRunMode(true);
 
 	Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
 }
