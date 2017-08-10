@@ -322,10 +322,10 @@ void Falling::nextState()
 	gBuzzer.start(100);
 
 	//次の状態を設定
-	gWakingState.setRunMode(true);
-
-	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
+	//gWakingState.setRunMode(true);
 	gSeparatingState.setRunMode(true);
+	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
+	
 }
 Falling::Falling() : mLastPressure(0), mLastMotorPulseL(0), mLastMotorPulseR(0), mContinuousPressureCount(0), mCoutinuousGyroCount(0), mContinuousMotorPulseCount(0)
 {
