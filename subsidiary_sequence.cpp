@@ -28,7 +28,7 @@ bool Escaping::onInit(const struct timespec& time)
 }
 void Escaping::onClean()
 {
-	gWakingState.setRunMode(false);
+	break;
 }
 void Escaping::onUpdate(const struct timespec& time)
 {
@@ -64,7 +64,6 @@ void Escaping::onUpdate(const struct timespec& time)
   break;
  case STEP_PRE_CAMERA:
    //�摜�B�e�p�ɋN���オ�蓮�����s���A���b�ҋ@����
-   if (gWakingState.isActive())mLastUpdateTime = time;//�N���オ�蓮�쒆�͑ҋ@����
    if (Time::dt(time, mLastUpdateTime) > 2)//�N���オ�芮�����A���莞�Ԃ��o�߂��Ă�����
      {
        Debug::print(LOG_SUMMARY, "Escaping: camera warming...\r\n");
