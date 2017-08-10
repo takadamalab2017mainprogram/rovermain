@@ -530,7 +530,6 @@ void Separating::onUpdate(const struct timespec& time)
 			gMultiServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_GO_FORWARD;
-			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
