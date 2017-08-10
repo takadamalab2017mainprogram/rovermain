@@ -21,6 +21,7 @@ Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
+SensorLogging gSensorLoggingState;
 
 //////////////////////////////////////////////
 // Testing
