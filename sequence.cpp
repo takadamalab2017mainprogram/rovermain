@@ -323,8 +323,8 @@ void Falling::nextState()
 	gBuzzer.start(100);
 
 	//次の状態を設定
-	gWaitingState.setRunMode(true);
-	gSeparatingState.setRunMode(true);
+	gWakingState.setRunMode(true);
+	
 	
 
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
@@ -364,8 +364,7 @@ void Waking::onUpdate(const struct timespec& time)
 
 	if (Time::dt(time, mLastUpdateTime) >= 2) {
 		gMotorDrive.drive(0);
-		gWakingState.setRunMode(false);
-		Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
+		nextState();
 		return;
 	}
 	else {
@@ -373,6 +372,17 @@ void Waking::onUpdate(const struct timespec& time)
 	}
 
 }
+
+void Waking::nextState()
+{
+	//次の状態を設定
+	gWakingState.setRunMode(false);
+	gSeparatingState.setRunMode(true);
+
+	Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
+
+}
+
 bool Waking::onCommand(const std::vector<std::string>& args)
 {
 	if (args.size() == 4)
