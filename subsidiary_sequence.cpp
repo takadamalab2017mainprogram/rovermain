@@ -217,15 +217,15 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		if (RandomCount < 2){
 			//0,1回目は左右一斉運動
 			int motordirection = pow(-1, rand() % 2);
-			int motorforce0 = rand() % 100 * motordirection;
-			int motorforce1 = motorforce0;
+			motorforce0 = rand() % 100 * motordirection;
+			motorforce1 = motorforce0;
 		}
 		else if (RandomCount < 5) {
 			//2,3,4回目はタイヤ左右別々方向出力
 			int motordirection0 = pow(-1, rand() % 2);
 			int motordirection1 = motordirection0 * (-1);
-			int motorforce0 = rand() % 100 * motordirection0;
-			int motorforce1 = rand() % 100 * motordirection1;
+			motorforce0 = rand() % 100 * motordirection0;
+			motorforce1 = rand() % 100 * motordirection1;
 		}
 
 		//出力を挙げる
