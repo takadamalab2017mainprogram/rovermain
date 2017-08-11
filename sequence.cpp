@@ -892,6 +892,7 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 		temp.z = c;
 
 		GoalList.push_back(temp);
+		Debug::print(LOG_SUMMARY, "Set Goal from Goalist ( %f %f )\r\n", temp.x, temp.y);
 
 	}
 
