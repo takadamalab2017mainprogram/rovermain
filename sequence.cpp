@@ -662,6 +662,10 @@ void Navigating::onUpdate(const struct timespec& time)
 			gBuzzer.start(20, 10, 3);
 		}//
 	}
+	else if (isStuckByGPS()) {
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
+		gBuzzer.start(20, 10, 8);
+	}
 	else
 	{
 		//通常のナビゲーション
