@@ -156,6 +156,11 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping TryCount: %d\r\n", mTryCount);
 		}
+		if (mTryCount > Escaping_Chance_limit)
+		{
+			gEscapingByStabiState.setRunMode(false);
+			gEscapingRandomState.setRunMode(true);
+		}
 	}
 	mFlag = !mFlag;
 }
@@ -204,27 +209,41 @@ bool EscapingRandom::onInit(const struct timespec& time)
 }
 void EscapingRandom::onUpdate(const struct timespec& time)
 {
-	switch (mCurStep)
+	if (Time::dt(time, mLastUpdateTime) >= 5)
 	{
-	case STEP_TURN:
-		//���̏����]���s��
-		if (Time::dt(time, mLastUpdateTime) >= 3)
-		{
-			mCurStep = STEP_FORWARD;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(100);
-		}
-		break;
-	case STEP_FORWARD:
-		//�O�i���s��
-		if (Time::dt(time, mLastUpdateTime) >= 3)
-		{
-			mCurStep = STEP_TURN;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(100, -100);
-		}
-		break;
+		mLastUpdateTime = time;
+		int stabiswitch = rand() % 2;
+		int motordirection = pow(-1, rand());
+		int motorforce = rand() % 100 * motordirection;
+
+		gMultiServo.start(stabiswitch);
+		gMotorDrive.drive(motorforce);
+
+		Debug::print(LOG_SUMMARY, "Escaping Random choiced by stabi %d, motor %d \r\n", stabiswitch, motorforce);
+		
 	}
+
+	//switch (mCurStep)
+	//{
+	//case STEP_TURN:
+	//	//���̏����]���s��
+	//	if (Time::dt(time, mLastUpdateTime) >= 5)
+	//	{
+	//		mCurStep = STEP_FORWARD;
+	//		mLastUpdateTime = time;
+	//		gMotorDrive.drive(100);
+	//	}
+	//	break;
+	//case STEP_FORWARD:
+	//	//�O�i���s��
+	//	if (Time::dt(time, mLastUpdateTime) >= 3)
+	//	{
+	//		mCurStep = STEP_TURN;
+	//		mLastUpdateTime = time;
+	//		gMotorDrive.drive(100, -100);
+	//	}
+	//	break;
+	//}
 }
 EscapingRandom::EscapingRandom()
 {

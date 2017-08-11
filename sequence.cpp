@@ -652,19 +652,18 @@ void Navigating::onUpdate(const struct timespec& time)
 	
 	if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
 	{
-		{
-			
-			//ローバーがひっくり返っている可能性があるため、しばらく前進する
-			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
-			gEscapingByStabiState.setRunMode(false);
-			gEscapingRandomState.setRunMode(false);
-			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-			gBuzzer.start(20, 10, 3);
-		}
+		//ローバーがひっくり返っている可能性があるため、しばらく前進する
+		gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
+		gEscapingByStabiState.setRunMode(false);
+		gEscapingRandomState.setRunMode(false);
+		Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
+		gBuzzer.start(20, 10, 3);
+		
 	}
 	else if (isStuckByGPS()) {
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
+		gEscapingByStabiState.setRunMode(true);
 	}
 	else
 	{
