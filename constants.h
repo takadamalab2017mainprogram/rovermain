@@ -137,6 +137,7 @@ const static unsigned int TASK_INTERVAL_MOTOR = 0;
 const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
+const static unsigned int Escaping_Chance_limit = 10;
 
 //////////////////////////////////////////////
 //その他
