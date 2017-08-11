@@ -667,7 +667,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	else
 	{
 		//通常のナビゲーション
-		if (mLastPos.size() < 10)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+		if (mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
 	}
 	//}
@@ -676,6 +676,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	currentPos = mLastPos.back();
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
+
 }
 bool Navigating::removeError()
 {
@@ -740,9 +741,25 @@ void Navigating::navigationMove(double distance) const
 
 	//新しい角度を計算
 	VECTOR3 currentPos = mLastPos.back();
-	double currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);
-	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
-	double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirection);
+	double currentDirection;
+	double newDirection;
+switch (2) {
+	case 1://従来手法 サンプルをとって方向推定
+		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);//ゴールの方向
+		currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);//ローバーの方向
+		break;
+	case 2://gpsdライブラリのcourseを使った方向推定
+		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
+		currentDirection = 270 - gGPSSensor.getCourse();
+		break;
+	case 3://上の2手法の平均をとってる
+		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
+		currentDirection = ((270 - gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
+		break;
+	default:
+		break;
+	}
+double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirection);
 	deltaDirection = std::max(std::min(deltaDirection, NAVIGATING_MAX_DELTA_DIRECTION), -1 * NAVIGATING_MAX_DELTA_DIRECTION);
 
 	//新しい速度を計算
