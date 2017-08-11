@@ -68,6 +68,7 @@ class EscapingRandom : public TaskBase
 
 	enum STEP{ STEP_TURN = 0, STEP_FORWARD };
 	enum STEP mCurStep;
+	unsigned int RandomCount;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
