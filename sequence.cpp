@@ -208,14 +208,14 @@ bool Waiting::onInit(const struct timespec& time)
   gNineAxisSensor.setRunMode(true);
 //  gNineAxisSensor.isMonitoring = true;
   Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
-  system("sudo ruby /home/pi/network/disconnect.rb &");
+  //system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
 }
 void Waiting::nextState()
 {
 	gBuzzer.start(100);
   Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...\r\n");
-  system("sudo ruby -d /home/pi/network/build_network.rb &");
+  //system("sudo ruby -d /home/pi/network/build_network.rb &");
 	//スリープを解除
 	//gXbeeSleep.setState(false);//Xbeeをスリープモードにするならコメントアウトを解除すること
 

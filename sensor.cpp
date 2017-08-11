@@ -20,7 +20,7 @@
 #include <iomanip>
 #include <ctime>
 #include <libgpsmm.h>
-
+#include "actuator.h"
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
 //GyroSensor gGyroSensor;
@@ -1284,6 +1284,7 @@ void NineAxisSensor::getFIFO(const struct timespec& time)
 				mRVelHistory.clear();
 				mIsCalculatingOffset = false;
 				Debug::print(LOG_SUMMARY, "Gyro: offset is (%f %f %f)\r\n", mRVelOffset.x, mRVelOffset.y, mRVelOffset.z);
+        gBuzzer.start(10,2,10);
 			}
 		}
 
