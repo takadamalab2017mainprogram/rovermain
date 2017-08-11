@@ -133,7 +133,6 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	mFlag = false;
 	mTryCount = 0;
-	RandomCount = 0;
 	return true;
 }
 void EscapingByStabi::onUpdate(const struct timespec& time)
@@ -242,7 +241,6 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 	if (RandomCount > 4) {
 		gEscapingRandomState.setRunMode(false);
 		gEscapingByStabiState.setRunMode(true);
-		mTryCount = 0;
 	}
 
 	//switch (mCurStep)
