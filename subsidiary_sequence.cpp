@@ -160,7 +160,6 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 		{
 			gEscapingByStabiState.setRunMode(false);
 			gEscapingRandomState.setRunMode(true);
-			RandomCount = 0;
 		}
 	}
 	mFlag = !mFlag;
@@ -224,7 +223,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 		else if (RandomCount < 5) {
 			//2,3,4回目はタイヤ左右別々方向出力
 			int motordirection0 = pow(-1, rand() % 2);
-			int motordirection1 = motordirection0　* -1;
+			int motordirection1 = motordirection0　* (-1);
 			int motorforce0 = rand() % 100 * motordirection0;
 			int motorforce1 = rand() % 100 * motordirection1;
 		}
