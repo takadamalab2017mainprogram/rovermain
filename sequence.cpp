@@ -21,6 +21,12 @@
 #include "delayed_execution.h"
 #include "constants.h"
 
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <iterator>
+#include <iostream>
+
 Testing gTestingState;
 Waiting gWaitingState;
 Falling gFallingState;
@@ -546,6 +552,21 @@ void Navigating::onUpdate(const struct timespec& time)
 {
 	VECTOR3 currentPos;
 	
+	//５秒置きに、GoalList を読み込む
+	if (Time::dt(time, mLastArmServoStopTime) > 5.0) {
+		std::list<VECTOR3> GoalList;
+		std::list<VECTOR3> PassedList;
+		//ファイルから　GoalList を読み込む、GoalList に保存する
+		getGoalList(GoalList);
+
+		//GoalListの最初にイテレータを置く
+		std::list<VECTOR3>::iterator itr;
+		itr = GoalList.begin();
+		//最初の座標をゴールにする
+		mGoalPos = *itr;
+		mIsGoalPos = true;
+	}
+
 	//ゴールが設定されているか確認
 	if (!mIsGoalPos)
 	{
@@ -589,8 +610,24 @@ void Navigating::onUpdate(const struct timespec& time)
 		gMotorDrive.drive(0);
 		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 		Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n", currentPos.x, currentPos.y);
-		nextState();
-		return;
+		
+		//ファイナルゴールなら終わり
+		if (GoalList.size() == 0) //リスト最後に辿り付いた、ファイナルゴールに到達、終了する
+		{
+			nextState();
+			return;
+		}
+		else
+		{	//GoalListのイテレータを増やす、つぎのゴースを設定
+			++itr;
+
+			//passedGoal のリストに保存する、passedGoal.txtファイルの中身に追加
+			writePassedGoal(PassedGoal, mGoalPos);
+
+			//探索済みのものを消す、ファイルの中身も消す
+			deleteGoalList(GoalList);
+
+		}
 	}
 	//数秒たっていなければ処理を返す
 	//if (Time::dt(time, mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
@@ -827,6 +864,82 @@ Navigating::Navigating() : mGoalPos(), mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+}
+void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
+
+	//goallist 読み込む
+
+	//ファイルの読み込み
+	std::ifstream ifs("GoalList.txt");
+	if (!ifs) {
+		std::cout << "can not find file";
+	}
+
+	//txtファイルを1行ずつ読み込む
+	std::string str;
+
+
+	while (getline(ifs, str)) {
+		//一行ずつ読み込む、VECTOR３に代入、GoalListに保存する
+		VECTOR3 temp = VECTOR3();
+
+		double a, b;
+		int c;
+		sscanf(str.c_str(), "%lf, %lf, %d", &a, &b, &c);
+
+		temp.x = a;
+		temp.y = b;
+		temp.z = c;
+
+		GoalList.push_back(temp);
+
+	}
+
+}
+//PassedGoal.txt に通過したゴールを書き込む
+void Navigating::writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos) {
+	PassedGoal.push_back(mGoalPos);
+
+	//一旦PassedGoal.txt を削除し
+	if (remove("PassedGoal.txt") == 0) {
+		//削除成功した
+	}
+	else {
+		std::cout << "failled delete PassedGoal.txt" << std::endl;
+	}
+
+	std::string filename = "PassedGoal.txt";
+	std::ofstream write_file;
+	write_file.open(filename, std::ios::out);
+
+	for (auto itr = PassedGoal.begin(); itr != PassedGoal.end(); ++itr) {
+		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
+	}
+}
+
+//GoalList（削除済み）をGoalList.txtに書き込む
+void Navigating::deleteGoalList(std::list<VECTOR3>& GoalList) {
+	//GoalList から通過したゴールを削除
+	GoalList.pop_front();
+
+	//一旦GoalList.txt を削除し
+	if (remove("GoalList.txt") == 0) {
+		//削除成功した
+	}
+	else {
+		std::cout << "failled delete GoalList.txt" << std::endl;
+	}
+
+	std::string filename = "GoalList.txt";
+	std::ofstream write_file;
+	write_file.open(filename, std::ios::out);
+
+	for (auto itr = GoalList.begin(); itr != GoalList.end(); ++itr) {
+		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
+	}
+
+
+
 }
 Navigating::~Navigating()
 {
