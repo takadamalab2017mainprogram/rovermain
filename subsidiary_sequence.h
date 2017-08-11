@@ -72,6 +72,8 @@ class EscapingRandom : public TaskBase
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+	int motorforce0;
+	int motorforce1;
 public:
 	EscapingRandom();
 	~EscapingRandom();
