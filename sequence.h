@@ -102,6 +102,8 @@ private:
 	std::list<VECTOR3> GoalList;
 	//通過したゴールを保存するリスト
 	std::list<VECTOR3> PassedGoal;
+	//GoalList のイテレータ
+	std::list<VECTOR3>::iterator itr;
 
 	bool mIsGoalPos;
 	bool mArmMoveFlag;
