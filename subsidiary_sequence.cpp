@@ -204,7 +204,8 @@ bool EscapingRandom::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	mLastUpdateTime = time;
 	mCurStep = STEP_TURN;
-	gMotorDrive.drive(100, -100);
+	//gMotorDrive.drive(100, -100);
+	RandomCount = 0;
 	return true;
 }
 void EscapingRandom::onUpdate(const struct timespec& time)
