@@ -133,6 +133,7 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	mFlag = false;
 	mTryCount = 0;
+	RandomCount = 0;
 	return true;
 }
 void EscapingByStabi::onUpdate(const struct timespec& time)
@@ -160,6 +161,7 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 		{
 			gEscapingByStabiState.setRunMode(false);
 			gEscapingRandomState.setRunMode(true);
+			RandomCount = 0;
 		}
 	}
 	mFlag = !mFlag;
@@ -209,18 +211,38 @@ bool EscapingRandom::onInit(const struct timespec& time)
 }
 void EscapingRandom::onUpdate(const struct timespec& time)
 {
-	if (Time::dt(time, mLastUpdateTime) >= 5)
-	{
+	if (Time::dt(time, mLastUpdateTime) >= 5){
 		mLastUpdateTime = time;
-		int stabiswitch = rand() % 2;
-		int motordirection = pow(-1, rand());
-		int motorforce = rand() % 100 * motordirection;
 
+		//出力を選ぶ
+		int stabiswitch = rand() % 2;//スタビ
+		if (RandomCount < 2){
+			//0,1回目は左右一斉運動
+			int motordirection = pow(-1, rand() % 2);
+			int motorforce0 = rand() % 100 * motordirection;
+			int motorforce1 = motorforce0;
+		}
+		else if (RandomCount < 5) {
+			//2,3,4回目はタイヤ左右別々方向出力
+			int motordirection0 = pow(-1, rand() % 2);
+			int motordirection1 = motordirection0　* -1;
+			int motorforce0 = rand() % 100 * motordirection0;
+			int motorforce1 = rand() % 100 * motordirection1;
+		}
+
+		//出力を挙げる
 		gMultiServo.start(stabiswitch);
-		gMotorDrive.drive(motorforce);
+		gMotorDrive.drive(motorforce0, motorforce1);
 
-		Debug::print(LOG_SUMMARY, "Escaping Random choiced by stabi %d, motor %d \r\n", stabiswitch, motorforce);
-		
+		Debug::print(LOG_SUMMARY, "Escaping Random turn %d, choiced by stabi %d, motor0 %d, motor1 %d \r\n", 
+			RandomCount, stabiswitch, motorforce0, motorforce1);
+		RandomCount++;//カウント	
+	}
+
+	if (RandomCount > 4) {
+		gEscapingRandomState.setRunMode(false);
+		gEscapingByStabiState.setRunMode(true);
+		mTryCount = 0;
 	}
 
 	//switch (mCurStep)
