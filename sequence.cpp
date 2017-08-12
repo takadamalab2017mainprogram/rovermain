@@ -925,14 +925,14 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 		VECTOR3 temp = VECTOR3();
 
 		double a, b, c;
-		sscanf(str.c_str(), "%.10lf, %.10lf, %.10lf", &a, &b, &c);
+		sscanf(str.c_str(), "%lf, %lf, %lf", &a, &b, &c);
 
 		temp.x = a;
 		temp.y = b;
 		temp.z = c;
 
 		GoalList.push_back(temp);
-		Debug::print(LOG_SUMMARY, "Get Goal from Goalist ( %.10lf %.10lf )\r\n", temp.x, temp.y);
+		Debug::print(LOG_SUMMARY, "Get Goal from Goalist ( %.8lf %.8lf )\r\n", temp.x, temp.y);
 
 	}
 
