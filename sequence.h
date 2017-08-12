@@ -130,10 +130,10 @@ protected:
 	//ファイルから　GPSの座標を読んで、リストに保存する
 	void getGoalList(std::list<VECTOR3>& GoalList);
 	//ファイルに　通過したゴールの座標を書き込み
-	void writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos);
+	//void writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos);
 
 	//GoalList.txtの中身　GoalListから通過したゴールを削除する,GoalList を書き込む
-	void deleteGoalList(std::list<VECTOR3>& GoalList);
+	//void deleteGoalList(std::list<VECTOR3>& GoalList);
 public:
 
 	void setGoal(const VECTOR3& pos);
