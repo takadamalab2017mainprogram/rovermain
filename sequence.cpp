@@ -923,7 +923,7 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 	while (getline(ifs, str)) {
 		//一行ずつ読み込む、VECTOR３に代入、GoalListに保存する
 		VECTOR3 temp = VECTOR3();
-
+		Debug::print(LOG_SUMMARY, "%s\r\n",str);
 		double a, b, c;
 		sscanf(str.c_str(), "%lf, %lf, %lf", &a, &b, &c);
 
