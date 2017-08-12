@@ -62,7 +62,7 @@ bool Testing::onInit(const struct timespec& time)
 	//gDistanceSensor.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	//gCameraSave_Sequence.setRunMode(true);
-	gNineAxisSensor.setRunMode(true);
+  gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
 	gSerialCommand.setRunMode(true);
@@ -211,17 +211,17 @@ bool Waiting::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gMultiServo.fold();//スタビたたんでいる状態
-	gNineAxisSensor.setRunMode(true);
-	//  gNineAxisSensor.isMonitoring = true;
-	Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
-	system("sudo ruby /home/pi/network/disconnect.rb &");
+  gNineAxisSensor.setRunMode(true);
+//  gNineAxisSensor.isMonitoring = true;
+  Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
+  system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
 }
 void Waiting::nextState()
 {
 	gBuzzer.start(100);
-	Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...\r\n");
-	system("sudo ruby -d /home/pi/network/build_network.rb &");
+  Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...\r\n");
+  system("sudo ruby -d /home/pi/network/build_network.rb &");
 	//スリープを解除
 	//gXbeeSleep.setState(false);//Xbeeをスリープモードにするならコメントアウトを解除すること
 
@@ -297,8 +297,8 @@ bool Falling::onInit(const struct timespec& time)
 	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
 	//gSServo.setRunMode(true);
 
-	gNineAxisSensor.setRunMode(true);
-	gNineAxisSensor.isMonitoring = false;
+    gNineAxisSensor.setRunMode(true);
+    gNineAxisSensor.isMonitoring = false;
 	return true;
 }
 void Falling::onUpdate(const struct timespec& time)
@@ -484,7 +484,7 @@ void Separating::onUpdate(const struct timespec& time)
 		else
 		{
 			gMotorDrive.drive(100);
-
+			
 		}
 		break;
 	};
@@ -528,8 +528,8 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	//	gEncoderMonitoringState.setRunMode(true);
-		//gJohnServo.setRunMode(true);
+//	gEncoderMonitoringState.setRunMode(true);
+	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
@@ -542,21 +542,11 @@ bool Navigating::onInit(const struct timespec& time)
 	gNineAxisSensor.setRunMode(true);
 	mLastNaviMoveCheckTime = time;
 	mLastArmServoMoveTime = time;
-	mLastArmServoStopTime = time;
+	mLastArmServoStopTime  = time;
 	mLastUpdateTime = time;
 	mArmStopFlag = true;
 	mGoalFlag = false;
 	mLastPos.clear();
-	getGoalList(GoalList);
-
-	//GoalListの最初にイテレータを置く
-	//std::list<VECTOR3>::iterator itr;
-	itr = GoalList.begin();
-	//最初の座標をゴールにする
-	mGoalPos = *itr;
-	Debug::print(LOG_SUMMARY, "init goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
-	mIsGoalPos = true;
-
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
@@ -566,63 +556,45 @@ void Navigating::onUpdate(const struct timespec& time)
 	//５秒置きに、GoalList を読み込む
 	if (Time::dt(time, mLastUpdateTime) > 5.0) {
 		//ファイルから　GoalList を読み込む、GoalList に保存する
-		getGoalList(GoalList);
-		//GoalListの最初にイテレータを置く
-		//std::list<VECTOR3>::iterator itr;
-		itr = GoalList.begin();
-		//最初の座標をゴールにする
-		VECTOR3 firstGoal = *itr;
+        getGoalList(GoalList);
 
-		if (firstGoal.z == -1) {
-			//見つかりません、とりあえず停止
-			gMotorDrive.drive(0);
-			Debug::print(LOG_SUMMARY, "(%f)can not find the object, stop rover",firstGoal.z);
-
-		}
-		else if (firstGoal.z == -2) {
-
-			//Goal 判定した、終わり
-			nextState();
-			Debug::print(LOG_SUMMARY, "(%f)fing the object, mission finished \r\n",firstGoal.z);
-			return;
-		}
-		else {
-			Debug::print(LOG_SUMMARY, "(%f) goal is setted at ( %f,%f ) \r\n", firstGoal.z,firstGoal.x, firstGoal.y);
-			mGoalPos = *itr;
-			mIsGoalPos = true;
-		}
-		
-
+                //GoalListの最初にイテレータを置く
+                //std::list<VECTOR3>::iterator itr;
+        itr = GoalList.begin();
+                //最初の座標をゴールにする
+        mGoalPos = *itr;
+        Debug::print(LOG_SUMMARY, "goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
+        mIsGoalPos = true;
 		if (mGoalFlag)//途中のゴールに到達した
 		{
 			//ゴール判定
 			gMotorDrive.drive(0);
 
 			Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n", currentPos.x, currentPos.y);
-			//なんかの処理で、途中のゴールに到達したを通知する
-			
-			mGoalFlag=false;
+
 			//ファイナルゴールなら終わり
-			//if (GoalList.size() == 0) //リスト最後に辿り付いた、ファイナルゴールに到達、終了する
-			//{
-			//	nextState();
-			//	Debug::print(LOG_SUMMARY, "Final Goal Navigating Finished!\r\n");
-			//	return;
-			//}
-			//else
-			//{	//GoalListのイテレータを増やす、つぎのゴースを設定
-			//	++itr;
+			if (GoalList.size() == 0) //リスト最後に辿り付いた、ファイナルゴールに到達、終了する
+			{
+				nextState();
+				Debug::print(LOG_SUMMARY, "Final Goal Navigating Finished!\r\n");
+				return;
+			}
+			else
+			{	//GoalListのイテレータを増やす、つぎのゴースを設定
+				++itr;
 
-			//	//passedGoal のリストに保存する、passedGoal.txtファイルの中身に追加
-			//	writePassedGoal(PassedGoal, mGoalPos);
+				//passedGoal のリストに保存する、passedGoal.txtファイルの中身に追加
+				writePassedGoal(PassedGoal, mGoalPos);
 
-			//	//探索済みのものを消す、ファイルの中身も消す
-			//	deleteGoalList(GoalList);
+				//探索済みの				deleteGoalList(GoalList);
 
-			//	mGoalFlag = false;
+				mGoalFlag = false;
 
-			//}
+			}
 		}
+
+		//std::list<VECTOR3> GoalList;
+		//std::list<VECTOR3> PassedList;
 
 		mLastUpdateTime = time;
 	}
@@ -664,17 +636,17 @@ void Navigating::onUpdate(const struct timespec& time)
 	//ゴールとの距離を確認
 	double distance = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
 	//double p = distance/distance_from_goal_to_start;
-
+	
 	//途中のゴールに到達しているかのフラグ
 	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
 		mGoalFlag = true;
 	}
-
+	
 	//数秒たっていなければ処理を返す
 	//if (Time::dt(time, mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	//mLastNaviMoveCheckTime = time;
 
-		//gCameraCapture.wadatisave();	
+       	//gCameraCapture.wadatisave();	
 
 	//異常値排除
 	if (removeError())
@@ -738,7 +710,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			gEscapingRandomState.setRunMode(false);
 			//gSServo.moveRun();  //スタビを通常の状態に戻す
 			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-			//			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
+//			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
 			gBuzzer.start(20, 10, 3);
 		}//
 	}
@@ -892,7 +864,7 @@ void Navigating::nextState()
 	gMotorDrive.drive(0);
 
 	Time::showNowTime();
-	Debug::print(LOG_SUMMARY, "in nextState finished\r\n");
+	Debug::print(LOG_SUMMARY, "Final Goal! Finish! \r\n");
 	gTestingState.setRunMode(true);
 }
 void Navigating::setGoal(const VECTOR3& pos)
@@ -913,7 +885,7 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 	//ファイルの読み込み
 	std::ifstream ifs("GoalList.txt");
 	if (!ifs) {
-		Debug::print(LOG_SUMMARY, "can not find GoalList.txt \r\n");
+		std::cout << "can not find file";
 	}
 
 	//txtファイルを1行ずつ読み込む
@@ -924,8 +896,9 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 		//一行ずつ読み込む、VECTOR３に代入、GoalListに保存する
 		VECTOR3 temp = VECTOR3();
 
-		double a, b, c;
-		sscanf(str.c_str(), "%f, %f, %f", &a, &b, &c);
+		double a, b;
+		int c;
+		sscanf(str.c_str(), "%lf, %lf, %d", &a, &b, &c);
 
 		temp.x = a;
 		temp.y = b;
@@ -938,48 +911,51 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 
 }
 //PassedGoal.txt に通過したゴールを書き込む
-//void Navigating::writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos) {
-//	PassedGoal.push_back(mGoalPos);
-//
-//	//一旦PassedGoal.txt を削除し
-//	if (remove("PassedGoal.txt") == 0) {
-//		//削除成功した
-//	}
-//	else {
-//		std::cout << "failled delete PassedGoal.txt" << std::endl;
-//	}
-//
-//	std::string filename = "PassedGoal.txt";
-//	std::ofstream write_file;
-//	write_file.open(filename, std::ios::out);
-//
-//	for (auto itr = PassedGoal.begin(); itr != PassedGoal.end(); ++itr) {
-//		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
-//		Debug::print(LOG_SUMMARY, "PassedGoal ( %f %f )\r\n", itr->x, itr->y);
-//	}
-//}
+void Navigating::writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos) {
+	PassedGoal.push_back(mGoalPos);
+
+	//一旦PassedGoal.txt を削除し
+	if (remove("PassedGoal.txt") == 0) {
+		//削除成功した
+	}
+	else {
+		std::cout << "failled delete PassedGoal.txt" << std::endl;
+	}
+
+	std::string filename = "PassedGoal.txt";
+	std::ofstream write_file;
+	write_file.open(filename, std::ios::out);
+
+	for (auto itr = PassedGoal.begin(); itr != PassedGoal.end(); ++itr) {
+		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
+		Debug::print(LOG_SUMMARY, "PassedGoal ( %f %f )\r\n", itr->x, itr->y);
+	}
+}
 
 //GoalList（削除済み）をGoalList.txtに書き込む
-//void Navigating::deleteGoalList(std::list<VECTOR3>& GoalList) {
-//	//GoalList から通過したゴールを削除
-//	GoalList.pop_front();
-//
-//	//一旦GoalList.txt を削除し
-//	if (remove("GoalList.txt") == 0) {
-//		//削除成功した
-//	}
-//	else {
-//		std::cout << "failled delete GoalList.txt" << std::endl;
-//	}
-//
-//	std::string filename = "GoalList.txt";
-//	std::ofstream write_file;
-//	write_file.open(filename, std::ios::out);
-//
-//	for (auto itr = GoalList.begin(); itr != GoalList.end(); ++itr) {
-//		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
-//	}
-//}
+void Navigating::deleteGoalList(std::list<VECTOR3>& GoalList) {
+	//GoalList から通過したゴールを削除
+	GoalList.pop_front();
+
+	//一旦GoalList.txt を削除し
+	if (remove("GoalList.txt") == 0) {
+		//削除成功した
+	}
+	else {
+		std::cout << "failled delete GoalList.txt" << std::endl;
+	}
+
+	std::string filename = "GoalList.txt";
+	std::ofstream write_file;
+	write_file.open(filename, std::ios::out);
+
+	for (auto itr = GoalList.begin(); itr != GoalList.end(); ++itr) {
+		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
+	}
+
+
+
+}
 Navigating::~Navigating()
 {
 }
