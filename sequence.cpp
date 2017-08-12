@@ -547,15 +547,34 @@ bool Navigating::onInit(const struct timespec& time)
 	mArmStopFlag = true;
 	mGoalFlag = false;
 	mLastPos.clear();
+	getGoalList(GoalList);
+
+                //GoalListの最初にイテレータを置く
+                //std::list<VECTOR3>::iterator itr;
+        itr = GoalList.begin();
+                //最初の座標をゴールにする
+        mGoalPos = *itr;
+        Debug::print(LOG_SUMMARY, "init goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
+        mIsGoalPos = true;
+
 	return true;
 }
 void Navigating::onUpdate(const struct timespec& time)
 {
 	VECTOR3 currentPos;
 	
-
 	//５秒置きに、GoalList を読み込む
 	if (Time::dt(time, mLastUpdateTime) > 5.0) {
+		//ファイルから　GoalList を読み込む、GoalList に保存する
+        getGoalList(GoalList);
+
+                //GoalListの最初にイテレータを置く
+                //std::list<VECTOR3>::iterator itr;
+        itr = GoalList.begin();
+                //最初の座標をゴールにする
+        mGoalPos = *itr;
+        Debug::print(LOG_SUMMARY, "goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
+        mIsGoalPos = true;
 		if (mGoalFlag)//途中のゴールに到達した
 		{
 			//ゴール判定
@@ -585,18 +604,6 @@ void Navigating::onUpdate(const struct timespec& time)
 			}
 		}
 
-		//std::list<VECTOR3> GoalList;
-		//std::list<VECTOR3> PassedList;
-		//ファイルから　GoalList を読み込む、GoalList に保存する
-		getGoalList(GoalList);
-
-		//GoalListの最初にイテレータを置く
-		//std::list<VECTOR3>::iterator itr;
-		itr = GoalList.begin();
-		//最初の座標をゴールにする
-		mGoalPos = *itr;
-		Debug::print(LOG_SUMMARY, "goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
-		mIsGoalPos = true;
 		mLastUpdateTime = time;
 	}
 
