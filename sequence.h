@@ -108,6 +108,7 @@ private:
 	bool mIsGoalPos;
 	bool mArmMoveFlag;
 	bool mArmStopFlag;
+	bool mGoalFlag;
 	double distance_from_goal_to_start;
 
 
