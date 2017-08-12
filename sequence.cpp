@@ -742,18 +742,15 @@ void Navigating::navigationMove(double distance) const
 	//新しい角度を計算
 	VECTOR3 currentPos = mLastPos.back();
 	double currentDirection;
-	double newDirection;
+	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);//ゴールの方向
 switch (2) {
 	case 1://従来手法 サンプルをとって方向推定
-		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);//ゴールの方向
 		currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);//ローバーの方向
 		break;
 	case 2://gpsdライブラリのcourseを使った方向推定
-		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
-		currentDirection =  gGPSSensor.getCourse();
+		currentDirection =  -gGPSSensor.getCourse();
 		break;
 	case 3://上の2手法の平均をとってる
-		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
 		currentDirection = (( gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
 		break;
 	default:
