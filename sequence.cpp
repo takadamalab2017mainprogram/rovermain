@@ -639,7 +639,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	//double p = distance/distance_from_goal_to_start;
 	
 	//途中のゴールに到達しているかのフラグ
-	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD;) {
+	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
 		mGoalFlag = true;
 	}
 	
