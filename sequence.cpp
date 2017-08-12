@@ -565,7 +565,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		itr = GoalList.begin();
 		//最初の座標をゴールにする
 		mGoalPos = *itr;
-		Debug::print(LOG_SUMMARY, "goal is setted at %lf,%lf",mGoalPos.x,mGoalPos.y);
+		Debug::print(LOG_SUMMARY, "goal is setted at ( %lf,%lf ) \r\n",mGoalPos.x,mGoalPos.y);
 		mIsGoalPos = true;
 		mLastUpdateTime = time;
 	}
@@ -918,6 +918,7 @@ void Navigating::writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalP
 
 	for (auto itr = PassedGoal.begin(); itr != PassedGoal.end(); ++itr) {
 		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
+		Debug::print(LOG_SUMMARY, "PassedGoal ( %f %f )\r\n", itr->x, itr->y);
 	}
 }
 
