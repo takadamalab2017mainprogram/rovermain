@@ -750,11 +750,11 @@ switch (2) {
 		break;
 	case 2://gpsdライブラリのcourseを使った方向推定
 		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
-		currentDirection = 270 - gGPSSensor.getCourse();
+		currentDirection =  gGPSSensor.getCourse();
 		break;
 	case 3://上の2手法の平均をとってる
 		newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
-		currentDirection = ((270 - gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
+		currentDirection = (( gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
 		break;
 	default:
 		break;
