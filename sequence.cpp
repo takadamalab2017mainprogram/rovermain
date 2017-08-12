@@ -554,7 +554,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	VECTOR3 currentPos;
 	
 	//５秒置きに、GoalList を読み込む
-	if (Time::dt(time, mLastArmServoStopTime) > 5.0) {
+	if (Time::dt(time, mLastUpdateTime) > 5.0) {
 		std::list<VECTOR3> GoalList;
 		std::list<VECTOR3> PassedList;
 		//ファイルから　GoalList を読み込む、GoalList に保存する
@@ -565,6 +565,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		itr = GoalList.begin();
 		//最初の座標をゴールにする
 		mGoalPos = *itr;
+		Debug::print(LOG_SUMMARY, "goal is setted at %lf,%lf",mGoalPos.x,mGoalPos.y);
 		mIsGoalPos = true;
 		mLastUpdateTime = time;
 	}
