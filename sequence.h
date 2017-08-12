@@ -94,7 +94,7 @@ private:
 	struct timespec mEscapingRandomStartTime;//EscapingRandomの開始時刻
 	struct timespec mLastArmServoMoveTime;
 	struct timespec mLastArmServoStopTime;
-
+	struct timespec mLastUpdateTime;
 	//ゴール位置
 	VECTOR3 mGoalPos;//現在のゴール
 

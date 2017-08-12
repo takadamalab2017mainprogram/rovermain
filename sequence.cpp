@@ -543,6 +543,7 @@ bool Navigating::onInit(const struct timespec& time)
 	mLastNaviMoveCheckTime = time;
 	mLastArmServoMoveTime = time;
 	mLastArmServoStopTime  = time;
+	mLastUpdateTime = time;
 	mArmStopFlag = true;
 
 	mLastPos.clear();
@@ -565,6 +566,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//最初の座標をゴールにする
 		mGoalPos = *itr;
 		mIsGoalPos = true;
+		mLastUpdateTime = time;
 	}
 
 	//ゴールが設定されているか確認
@@ -892,7 +894,7 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 		temp.z = c;
 
 		GoalList.push_back(temp);
-		Debug::print(LOG_SUMMARY, "Set Goal from Goalist ( %f %f )\r\n", temp.x, temp.y);
+		Debug::print(LOG_SUMMARY, "Get Goal from Goalist ( %f %f )\r\n", temp.x, temp.y);
 
 	}
 
