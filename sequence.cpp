@@ -978,10 +978,7 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 //	for (auto itr = GoalList.begin(); itr != GoalList.end(); ++itr) {
 //		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
 //	}
-
-
-
-}
+//}
 Navigating::~Navigating()
 {
 }
