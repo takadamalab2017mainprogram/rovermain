@@ -768,6 +768,7 @@ double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirectio
 	}
 
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
+  Debug::print(LOG_SUMMARY, "current angle = %f goal angle = %f",currentDirection, newDirection);
 	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n", distance * DEGREE_2_METER, deltaDirection, deltaDirection > 0 ? "LEFT" : "RIGHT");
 
 	//方向と速度を変更
