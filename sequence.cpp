@@ -674,6 +674,9 @@ void Navigating::onUpdate(const struct timespec& time)
 	//途中のゴールに到達しているかのフラグ
 	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
 		mGoalFlag = true;
+		char s[40];
+		sprintf(s,"ruby /home/pi/network/inform.rb %f",firstGoal.z);
+		system(s);
 	}
 
 	//数秒たっていなければ処理を返す
@@ -917,9 +920,9 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 	//goallist 読み込む
 
 	//ファイルの読み込み
-	std::ifstream ifs("GoalList.txt");
+	std::ifstream ifs("../goal_list");
 	if (!ifs) {
-		Debug::print(LOG_SUMMARY, "can not find GoalList.txt \r\n");
+		Debug::print(LOG_SUMMARY, "can not find goal_list \r\n");
 	}
 
 	//txtファイルを1行ずつ読み込む
