@@ -576,14 +576,20 @@ void Navigating::onUpdate(const struct timespec& time)
 		if (firstGoal.z == -1) {
 			//見つかりません、とりあえず停止
 			gMotorDrive.drive(0);
-			Debug::print(LOG_SUMMARY, "(%f)can not find the object, stop rover",firstGoal.z);
-
+			Debug::print(LOG_SUMMARY, "(%f)can not find the object, stop rover\r\n",firstGoal.z);
 		}
 		else if (firstGoal.z == -2) {
 
 			//Goal 判定した、終わり
 			nextState();
-			Debug::print(LOG_SUMMARY, "(%f)fing the object, mission finished \r\n",firstGoal.z);
+			Debug::print(LOG_SUMMARY, "(%f)Find the object, mission finished\r\n",firstGoal.z);
+			return;
+		}
+		else if (firstGoal.z == -3) {
+
+			//ルート計算中、待機する
+			gMotorDrive.drive(0);
+			Debug::print(LOG_SUMMARY, "(%f)Calculating the route, waiting... r\n", firstGoal.z);
 			return;
 		}
 		else {
