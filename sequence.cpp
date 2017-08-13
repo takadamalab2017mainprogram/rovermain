@@ -667,7 +667,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	else
 	{
 		//通常のナビゲーション
-		if (mLastPos.size() < 2)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+		if (mLastPos.size() < mGpsCountMax)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
 	}
 	//}
@@ -743,7 +743,7 @@ void Navigating::navigationMove(double distance) const
 	VECTOR3 currentPos = mLastPos.back();
 	double currentDirection;
 	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);//ゴールの方向
-switch (2) {
+switch (mMethod) {
 	case 1://従来手法 サンプルをとって方向推定
 		currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);//ローバーの方向
 		break;
@@ -753,6 +753,9 @@ switch (2) {
 	case 3://上の2手法の平均をとってる
 		currentDirection = (( gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
 		break;
+  case 4://use magnet
+    currentDirection = -gNineAxisSensor.getMagnetPhi();
+    break;
 	default:
 		break;
 	}
@@ -800,20 +803,44 @@ bool Navigating::onCommand(const std::vector<std::string>& args)
 			nextState();
 			return true;
 		}
+    else if(args[1].compare("method") == 0)
+    {
+      Debug::print(LOG_SUMMARY,"now method is %d\r\n",mMethod);
+      return true;
+    }
+    else if(args[1].compare("count") == 0)
+    {
+      Debug::print(LOG_SUMMARY,"gps count max is %d\r\n",mGpsCountMax);
+      return true;
+    }
 	}
 	if (args.size() == 3)
 	{
-		VECTOR3 pos;
-		pos.x = atof(args[1].c_str());
-		pos.y = atof(args[2].c_str());
+    if(args[1].compare("method") == 0)
+    {
+      mMethod = atof(args[2].c_str());
+      return true;
+    }
+    else if (args[1].compare("count") == 0)
+    {
+      mGpsCountMax = atof(args[2].c_str());
+      return true;
+    }
+    else{ 
+		  VECTOR3 pos;
+		  pos.x = atof(args[1].c_str());
+		  pos.y = atof(args[2].c_str());
 
-		setGoal(pos);
+	  	setGoal(pos);
 		return true;
+    }
 	}
 	Debug::print(LOG_PRINT, "navigating                 : get goal\r\n\
 							navigating [pos x] [pos y] : set goal at specified position\r\n\
 							navigating here            : set goal at current position\r\n\
-							navigating goal            : call nextState\r\n");
+							navigating goal            : call nextState\r\n\
+              navigating method [n]      : set navigation method\r\n\
+              navigating count [n]       : set GPS count max\r\n");
 	return true;
 }
 
@@ -842,6 +869,7 @@ Navigating::Navigating() : mGoalPos(), mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+  mMethod = 1;
 }
 Navigating::~Navigating()
 {

@@ -103,6 +103,8 @@ private:
 
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
+  int mMethod;
+  unsigned int mGpsCountMax;
 
 protected:
 	virtual bool onInit(const struct timespec& time);
