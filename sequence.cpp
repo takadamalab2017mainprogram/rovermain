@@ -870,6 +870,7 @@ Navigating::Navigating() : mGoalPos(), mIsGoalPos(false), mLastPos()
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
   mMethod = 1;
+  mGpsCountMax = 5;
 }
 Navigating::~Navigating()
 {

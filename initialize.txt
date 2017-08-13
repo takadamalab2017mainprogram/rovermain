@@ -1,6 +1,6 @@
 start testing
 motor p 0.005 0.0 0.0
-motor r 80 100
+motor r 60 100
 //motor pp 0.008 0 0
 motor cpose 0.8
 wakinglie 30
