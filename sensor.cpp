@@ -1371,7 +1371,7 @@ double NineAxisSensor::getMagnetTheta()
 double NineAxisSensor::getMagnetPhi()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return acos(magnet.y / sqrt(magnet.x * magnet.x + magnet.y * magnet.y));
+	return atan2(magnet.x,magnet.y);
 }
 double NineAxisSensor::getMagnetNorm()
 {
