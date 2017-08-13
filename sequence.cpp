@@ -589,8 +589,8 @@ void Navigating::onUpdate(const struct timespec& time)
 
 			//ルート計算中、待機する
 			gMotorDrive.drive(0);
-			Debug::print(LOG_SUMMARY, "(%f)Calculating the route, waiting... r\n", firstGoal.z);
-			return;
+			Debug::print(LOG_SUMMARY, "(%f)Calculating the route, waiting... \r\n", firstGoal.z);
+			
 		}
 		else {
 			Debug::print(LOG_SUMMARY, "(%f) goal is setted at ( %f,%f ) \r\n", firstGoal.z,firstGoal.x, firstGoal.y);
