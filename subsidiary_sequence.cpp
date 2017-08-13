@@ -190,7 +190,7 @@ unsigned int EscapingByStabi::getTryCount()
 }
 EscapingByStabi::EscapingByStabi()
 {
-	setName("esc1");
+	setName("esc");
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
 }
 EscapingByStabi::~EscapingByStabi()

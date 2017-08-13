@@ -343,13 +343,10 @@ Falling::~Falling()
 /////////////////////////////
 bool Waking::onInit(const struct timespec& time)
 {
-	mCurStep = STEP_CHECK_LIE;
-
 	gMotorDrive.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gMultiServo.start(BACK_STABI_RUN_ANGLE);
 	gNineAxisSensor.setRunMode(true);
-	mWakeRetryCount = 0;
 	mLastUpdateTime = time;
 	gMotorDrive.drive(100);
 
@@ -385,74 +382,10 @@ void Waking::nextState()
 
 bool Waking::onCommand(const std::vector<std::string>& args)
 {
-	if (args.size() == 4)
-	{
-		if (args[1].compare("set") == 0)
-		{
-			if (args[2].compare("power") == 0)//mStartPower
-			{
-				setPower(atoi(args[3].c_str()));
-				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
-				return true;
-			}
-			else if (args[2].compare("angle") == 0)//mAngleThreshold
-			{
-				setAngle(atof(args[3].c_str()));
-				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
-				return true;
-			}
-			else if (args[2].compare("d_time") == 0)//mDeaccelerateDuration
-			{
-				mDeaccelerateDuration = atof(args[3].c_str());
-				Debug::print(LOG_SUMMARY, "Command executed!\r\n");
-				return true;
-			}
-		}
-	}
-	else if (args.size() == 2)
-	{
-		if (args[1].compare("show") == 0)
-		{
-			Debug::print(LOG_SUMMARY, "mStartPower: %d\r\n", mStartPower);
-			Debug::print(LOG_SUMMARY, "mAngleThreshold: %f\r\n", mAngleThreshold);
-			Debug::print(LOG_SUMMARY, "mDeaccelerateDuration: %f\r\n", mDeaccelerateDuration);
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "waking set power [1-100]: set start motor power\r\n\
-							  							  waking set angle [0-180]: set AngleThreshold\r\n\
-														  							  waking set d_time [time]: set mDeaccelerateDuration\r\n\
-																					  							  waking show             : show parameters\r\n");
 	return true;
 }
-void Waking::setPower(int p)
-{
-	if (p >= MOTOR_MAX_POWER)
-	{
-		mStartPower = MOTOR_MAX_POWER;
-		return;
-	}
-	else if (p < 1)
-	{
-		mStartPower = 1;
-		return;
-	}
-	mStartPower = p;
-}
-void Waking::setAngle(double a)
-{
-	if (a >= 180)
-	{
-		mAngleThreshold = 180;
-	}
-	else if (a < 0)
-	{
-		mAngleThreshold = 0;
-	}
-	mAngleThreshold = a;
-}
 
-Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDeaccelerateDuration(0.5)
+Waking::Waking()
 {
 	setName("waking");
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
@@ -649,8 +582,12 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
 	}
-	
-	if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
+  if (isStuckByGPS()) {
+    Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
+    gBuzzer.start(20, 10, 8);
+    gEscapingByStabiState.setRunMode(true);
+  }
+  else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
 	{
 		//ローバーがひっくり返っている可能性があるため、しばらく前進する
 		gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
@@ -659,11 +596,6 @@ void Navigating::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
 		gBuzzer.start(20, 10, 3);
 		
-	}
-	else if (isStuckByGPS()) {
-		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
-		gBuzzer.start(20, 10, 8);
-		gEscapingByStabiState.setRunMode(true);
 	}
 	else
 	{
