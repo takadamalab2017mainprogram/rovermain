@@ -545,15 +545,10 @@ bool Navigating::onInit(const struct timespec& time)
 	mLastArmServoStopTime = time;
 	mLastUpdateTime = time;
 	mArmStopFlag = true;
-	mGoalFlag = false;
 	mLastPos.clear();
-	getGoalList(GoalList);
+	getGoal(goal);
 
-	//GoalListの最初にイテレータを置く
-	//std::list<VECTOR3>::iterator itr;
-	itr = GoalList.begin();
 	//最初の座標をゴールにする
-	mGoalPos = *itr;
 	Debug::print(LOG_SUMMARY, "init goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
 	mIsGoalPos = true;
 
@@ -566,70 +561,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	//５秒置きに、GoalList を読み込む
 	if (Time::dt(time, mLastUpdateTime) > 5.0) {
 		//ファイルから　GoalList を読み込む、GoalList に保存する
-		getGoalList(GoalList);
-		//GoalListの最初にイテレータを置く
-		//std::list<VECTOR3>::iterator itr;
-		itr = GoalList.begin();
-		//最初の座標をゴールにする
-		firstGoal = *itr;
-
-		if (firstGoal.z == -1) {
-			//見つかりません、とりあえず停止
-			gMotorDrive.drive(0);
-			Debug::print(LOG_SUMMARY, "(%f)can not find the object, stop rover\r\n",firstGoal.z);
-		}
-		else if (firstGoal.z == -2) {
-
-			//Goal 判定した、終わり
-			nextState();
-			Debug::print(LOG_SUMMARY, "(%f)Find the object, mission finished\r\n",firstGoal.z);
-			return;
-		}
-		else if (firstGoal.z == -3) {
-
-			//ルート計算中、待機する
-			gMotorDrive.drive(0);
-			Debug::print(LOG_SUMMARY, "(%f)Calculating the route, waiting... \r\n", firstGoal.z);
-			
-		}
-		else {
-			Debug::print(LOG_SUMMARY, "(%f) goal is setted at ( %f,%f ) \r\n", firstGoal.z,firstGoal.x, firstGoal.y);
-			mGoalPos = *itr;
-			mIsGoalPos = true;
-		}
-		
-
-		if (mGoalFlag)//途中のゴールに到達した
-		{
-			//ゴール判定
-			gMotorDrive.drive(0);
-
-			Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n", currentPos.x, currentPos.y);
-			//なんかの処理で、途中のゴールに到達したを通知する
-			
-			mGoalFlag=false;
-			//ファイナルゴールなら終わり
-			//if (GoalList.size() == 0) //リスト最後に辿り付いた、ファイナルゴールに到達、終了する
-			//{
-			//	nextState();
-			//	Debug::print(LOG_SUMMARY, "Final Goal Navigating Finished!\r\n");
-			//	return;
-			//}
-			//else
-			//{	//GoalListのイテレータを増やす、つぎのゴースを設定
-			//	++itr;
-
-			//	//passedGoal のリストに保存する、passedGoal.txtファイルの中身に追加
-			//	writePassedGoal(PassedGoal, mGoalPos);
-
-			//	//探索済みのものを消す、ファイルの中身も消す
-			//	deleteGoalList(GoalList);
-
-			//	mGoalFlag = false;
-
-			//}
-		}
-
+		getGoal(goal);
 		mLastUpdateTime = time;
 	}
 
@@ -673,10 +605,11 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	//途中のゴールに到達しているかのフラグ
 	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
-		mGoalFlag = true;
 		char s[40];
-		sprintf(s,"ruby /home/pi/network/inform.rb %f",firstGoal.z);
+		sprintf(s,"ruby /home/pi/network/inform.rb %d",(int)goal.z);
 		system(s);
+    Debug::print(LOG_SUMMARY, "Block %d completed!\r\n",(int)goal.z);
+    getGoal(goal);
 	}
 
 	//数秒たっていなければ処理を返す
@@ -959,7 +892,7 @@ Navigating::Navigating() : mGoalPos(), mIsGoalPos(false), mLastPos()
   mMethod = 1;
   mGpsCountMax = 5;
 }
-void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
+void Navigating::getGoal(VECTOR3& goal) {
 
 	//goallist 読み込む
 
@@ -971,23 +904,49 @@ void Navigating::getGoalList(std::list<VECTOR3>& GoalList) {
 
 	//txtファイルを1行ずつ読み込む
 	std::string str;
+  double tmp_z=goal.z;
 
-
+  int count=0;
 	while (getline(ifs, str)) {
+    count++;
 		//一行ずつ読み込む、VECTOR３に代入、GoalListに保存する
-		VECTOR3 temp = VECTOR3();
 		//Debug::print(LOG_SUMMARY, "%s\r\n",str.c_str());
 		double a, b, c;
 		sscanf(str.c_str(), "%lf, %lf, %lf", &a, &b, &c);
-
-		temp.x = a;
-		temp.y = b;
-		temp.z = c;
-
-		GoalList.push_back(temp);
-		Debug::print(LOG_SUMMARY, "Get Goal from Goalist ( %.8lf %.8lf )\r\n", temp.x, temp.y);
-
+    if(c==tmp_z) // 更新なければここで終了
+      return;
+		goal.x = a;
+		goal.y = b;
+		goal.z = c;
+    Debug::print(LOG_SUMMARY,"Get Goal from Goalist ( %.8lf %.8lf ); ID=%d\r\n",goal.x,goal.y,(int)goal.z);
+    if(count>0)
+      break;
 	}
+
+  if (goal.z == -1) {
+    //見つかりません、とりあえず停止
+    gMotorDrive.drive(0);
+    Debug::print(LOG_SUMMARY, "(%d)can not find the object, stop rover\r\n",(int)goal.z);
+    nextState();
+    return;
+  }
+  else if (goal.z == -2) {
+
+    //Goal 判定した、終わり
+    Debug::print(LOG_SUMMARY, "(%d)Find the object, mission finished\r\n",(int)goal.z);
+    nextState();
+    return;
+  }
+  else if(goal.z==-3) {
+
+    //ルート計算中、待機する
+    gMotorDrive.drive(0);
+    Debug::print(LOG_SUMMARY,"(%d)Calculating the route, waiting... \r\n",(int)goal.z);
+  } else{
+    Debug::print(LOG_SUMMARY, "(%d) goal is setted at ( %f,%f ) \r\n", (int)goal.z,goal.x, goal.y);
+    mGoalPos=goal;
+    mIsGoalPos = true;
+  }
 
 }
 //PassedGoal.txt に通過したゴールを書き込む

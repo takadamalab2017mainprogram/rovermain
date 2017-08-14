@@ -97,19 +97,15 @@ private:
 	struct timespec mLastUpdateTime;
 	//ゴール位置
 	VECTOR3 mGoalPos;//現在のゴール
-  VECTOR3 firstGoal;
 
 					 //goallist を保存する
-	std::list<VECTOR3> GoalList;
+	VECTOR3 goal;
 	//通過したゴールを保存するリスト
 	std::list<VECTOR3> PassedGoal;
-	//GoalList のイテレータ
-	std::list<VECTOR3>::iterator itr;
 
 	bool mIsGoalPos;
 	bool mArmMoveFlag;
 	bool mArmStopFlag;
-	bool mGoalFlag;
 	double distance_from_goal_to_start;
 
 //GPS座標から計算された過去数回分の位置
@@ -132,7 +128,7 @@ protected:
 	void nextState();
 
 	//ファイルから　GPSの座標を読んで、リストに保存する
-	void getGoalList(std::list<VECTOR3>& GoalList);
+	void getGoal(VECTOR3& goal);
 	//ファイルに　通過したゴールの座標を書き込み
 	//void writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos);
 

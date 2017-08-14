@@ -18,20 +18,16 @@ const static int VERSION = 01;
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_B1 = 3;//モータPWM
-const static int PIN_PWM_B2 = 12;
+const static int PIN_PWM_A1 = 12;//モータPWM
+const static int PIN_PWM_A2 = 3;
 const static int PIN_PULSE_A = 6;//モータエンコーダ Right
 const static int PIN_PULSE_B = 4;//
-const static int PIN_PWM_A1 = 0;//モータPWM
-const static int PIN_PWM_A2 = 2;                              //Clear!
+const static int PIN_PWM_B1 = 2;//モータPWM
+const static int PIN_PWM_B2 = 0;                              //Clear!
 const static int PIN_BUZZER = 5;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 29;//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
 const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
-//const static int PIN_JOHN_SERVO = 25;//                                 Clear!
-//const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
-//const static int PIN_NECK_SERVO = 1;//                                  Clear!
-//const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
 const static int PIN_LED_R = 27;// LED
 const static int PIN_LED_G = 29;// LED
@@ -106,7 +102,7 @@ const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変�
 const static unsigned int SEPARATING_SERVO_COUNT = 30;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
-const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 2 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 7 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.8;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 1;//進行方向を変更する間隔(秒) 2016/08/31 5->1
@@ -141,6 +137,7 @@ const static unsigned int TASK_INTERVAL_MOTOR = 0;
 const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
+const static unsigned int Escaping_Chance_limit = 10;
 
 //////////////////////////////////////////////
 //その他
