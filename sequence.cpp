@@ -655,8 +655,8 @@ bool Navigating::isStuckByGPS() const
 		it++;
 	}
 	averagePos2 /= i - border;
-	Debug::print("lastgpss", mLastPos);
-	Debug::print("averageposdis", calcDistanceXY(averagePos1, averagePos2));
+	Debug::print(LOG_SUMMARY,"aver12 %f ,%f,%f,%f", averagePos1.x,averagePos1.y, averagePos2.x,averagePos2.y);
+	Debug::print(LOG_SUMMARY,"averageposdis %f", calcDistanceXY(averagePos1, averagePos2));
 	return VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
 void Navigating::navigationMove(double distance) const
