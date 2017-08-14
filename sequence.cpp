@@ -525,6 +525,7 @@ bool Navigating::onInit(const struct timespec& time)
 	mLastArmServoStopTime  = time;
 	mArmStopFlag = true;
 
+	mStuckFlag = false;
 	mLastPos.clear();
 	return true;
 }
@@ -562,6 +563,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			mLastNaviMoveCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
+		Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d \r\n",mLastPos.size());
 	}
 
 
@@ -637,13 +639,13 @@ bool Navigating::removeError()
 	}
 	return false;
 }
-bool Navigating::isStuckByGPS() const
+bool Navigating::isStuckByGPS() 
 {
 	//スタック判定
 	VECTOR3 averagePos1, averagePos2;
 	unsigned int i, border;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
-
+	
 	//過去の位置が２個以上なら、2つに分けて、その平均の差を計算する
 	if (mLastPos.size()>8) {
 		for (i = 0; i < mLastPos.size() / 2; ++i)
@@ -662,11 +664,26 @@ bool Navigating::isStuckByGPS() const
 		averagePos2 /= i - border;
 		double dist = VECTOR3::calcDistanceXY(averagePos1, averagePos2);
 		Debug::print(LOG_SUMMARY, "ave1(%f ,%f), ave2(%f ,%f)", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
-		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f", mLastPos.size(), dist);
-		return VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
+		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f", mLastPos.size()
+			, dist);
+		 
+		if (VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
+			Debug::print(LOG_SUMMARY, "mLastPos.size()>8, mStuckFlag = true\r\n");
+			mStuckFlag = true;//移動量が閾値以下ならスタックと判定
+		}
+		else {
+			Debug::print(LOG_SUMMARY, "mLastPos.size()>8, mStuckFlag = false\r\n");
+			mStuckFlag = false;
+		}
+			
+		return mStuckFlag;
 	}
-	//過去の位置足りない、スタック判断しない
-	return false;
+	else {
+		//判断の位置数がある数以下なら、前回の結果を返す、判断しない
+		Debug::print(LOG_SUMMARY, "mLastPos.size() <<8, mStuckFlag is unknow = %d \r\n",mStuckFlag);
+		return mStuckFlag;
+	}
+
 }
 void Navigating::navigationMove(double distance) const
 {

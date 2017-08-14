@@ -114,16 +114,19 @@ private:
 	bool mArmStopFlag;
   double distance_from_goal_to_start;
 
+  bool mStuckFlag;
+
 	//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
 
 protected:
+	
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
 	virtual bool onCommand(const std::vector<std::string>& args);
 
 	void navigationMove(double distance) const; //通常時の移動処理
-	bool isStuckByGPS() const;//スタック判定(GPS)
+	bool isStuckByGPS() ;//スタック判定(GPS)
 	bool removeError();//異常値の除去
 
 	//次の状態に移行
