@@ -97,6 +97,7 @@ private:
 	struct timespec mLastUpdateTime;
 	//ゴール位置
 	VECTOR3 mGoalPos;//現在のゴール
+  VECTOR3 firstGoal;
 
 					 //goallist を保存する
 	std::list<VECTOR3> GoalList;

@@ -571,7 +571,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//std::list<VECTOR3>::iterator itr;
 		itr = GoalList.begin();
 		//最初の座標をゴールにする
-		VECTOR3 firstGoal = *itr;
+		firstGoal = *itr;
 
 		if (firstGoal.z == -1) {
 			//見つかりません、とりあえず停止
