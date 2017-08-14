@@ -150,8 +150,8 @@ void GPSSensor::onUpdate(const struct timespec& time)
 		return;
 	}
 	else {
-		if (!_isnan(newdata->fix.latitude) && !_isnan(newdata->fix.longitude) &&
-			!_isnan(newdata->fix.altitude)) {
+		if (!isnan(newdata->fix.latitude) && !isnan(newdata->fix.longitude) &&
+			!isnan(newdata->fix.altitude)) {
 			mPos.x = newdata->fix.latitude;
 			mPos.y = newdata->fix.longitude;
 			mPos.z = newdata->fix.altitude;
