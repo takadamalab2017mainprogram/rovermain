@@ -207,7 +207,6 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	}
 	else 
   {
-    if(mPos.x != newdata->fix.latitude && mPos.y != newdata->fix.longitude && mPos.z != newdata -> fix.altitude)
     {
   		mPos.x = newdata->fix.latitude;
     	mPos.y = newdata->fix.longitude;
