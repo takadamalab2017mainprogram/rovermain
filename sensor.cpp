@@ -205,15 +205,19 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	if ((newdata = gps_rec.read()) == NULL) {
 		return;
 	}
-	else {
-		mPos.x = newdata->fix.latitude;
-		mPos.y = newdata->fix.longitude;
-		mPos.z = newdata->fix.altitude;
-		mSatelites = newdata->satellites_visible;
-		mGpsSpeed = newdata->fix.speed;
-		mGpsCourse = newdata->fix.track;
-		mIsNewData = true;
-	}
+	else 
+  {
+    if(mPos.x != newdata->fix.latitude && mPos.y != newdata->fix.longtitude && mPos.z != newdata -> fix.altitude)
+    {
+  		mPos.x = newdata->fix.latitude;
+    	mPos.y = newdata->fix.longitude;
+  		mPos.z = newdata->fix.altitude;
+  		mSatelites = newdata->satellites_visible;
+  		mGpsSpeed = newdata->fix.speed;
+  		mGpsCourse = newdata->fix.track;
+  		mIsNewData = true;
+    }
+  }
 
 	if (mSatelites > 0) {
 		mGpsTime = newdata->fix.time;
