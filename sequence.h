@@ -107,6 +107,7 @@ private:
 	bool mArmMoveFlag;
 	bool mArmStopFlag;
 	double distance_from_goal_to_start;
+  bool firstTime; // 初めて位置が取れたとき
 
 //GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;

@@ -546,6 +546,7 @@ bool Navigating::onInit(const struct timespec& time)
 	mLastUpdateTime = time;
 	mArmStopFlag = true;
 	mLastPos.clear();
+  firstTime=true;
 	getGoal(goal);
 
 	//最初の座標をゴールにする
@@ -584,6 +585,13 @@ void Navigating::onUpdate(const struct timespec& time)
 	//新しい座標であればバッファに追加
 	if (isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
 	{
+    if(firstTime){
+      Debug::print(LOG_SUMMARY, "Calculating route...\r\n",(int)goal.z);
+      char s[100];
+      sprintf(s,"ruby /home/pi/network/main.rb %f %f &",currentPos.y,currentPos.x);
+      system(s);
+      firstTime=false;
+    }
 		//最初の座標を取得したら移動を開始する
 		if (mLastPos.empty())
 		{
@@ -605,7 +613,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 	//途中のゴールに到達しているかのフラグ
 	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
-		char s[40];
+		char s[60];
 		sprintf(s,"ruby /home/pi/network/inform.rb %d",(int)goal.z);
 		system(s);
     Debug::print(LOG_SUMMARY, "Block %d completed!\r\n",(int)goal.z);
