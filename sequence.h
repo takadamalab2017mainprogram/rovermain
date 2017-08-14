@@ -128,11 +128,8 @@ protected:
 	bool isStuckByGPS() const;//スタック判定(GPS)
 	bool removeError();//異常値の除去
 
-					   //次の状態に移行
+	//次の状態に移行
 	void nextState();
-
-	//GPS座標から計算された過去数回分の位置
-	std::list<VECTOR3> mLastPos;
 
 	//ファイルから　GPSの座標を読んで、リストに保存する
 	void getGoalList(std::list<VECTOR3>& GoalList);
