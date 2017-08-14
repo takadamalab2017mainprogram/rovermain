@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <ctime>
 #include <libgpsmm.h>
+#include <float.h> 
 
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
