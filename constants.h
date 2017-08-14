@@ -106,7 +106,7 @@ const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変�
 const static unsigned int SEPARATING_SERVO_COUNT = 30;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
-const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 7 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 2 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.8;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 1;//進行方向を変更する間隔(秒) 2016/08/31 5->1

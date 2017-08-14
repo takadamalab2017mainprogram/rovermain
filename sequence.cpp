@@ -667,7 +667,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	else
 	{
 		//通常のナビゲーション
-		if (mLastPos.size() < 10)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+		if (mLastPos.size() < mGpsCountMax)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
 	}
 	//}
@@ -676,6 +676,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	currentPos = mLastPos.back();
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
+
 }
 bool Navigating::removeError()
 {
@@ -740,9 +741,25 @@ void Navigating::navigationMove(double distance) const
 
 	//新しい角度を計算
 	VECTOR3 currentPos = mLastPos.back();
-	double currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);
-	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);
-	double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirection);
+	double currentDirection;
+	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);//ゴールの方向
+switch (mMethod) {
+	case 1://従来手法 サンプルをとって方向推定
+		currentDirection = -VECTOR3::calcAngleXY(averagePos, currentPos);//ローバーの方向
+		break;
+	case 2://gpsdライブラリのcourseを使った方向推定
+		currentDirection =  -gGPSSensor.getCourse();
+		break;
+	case 3://上の2手法の平均をとってる
+		currentDirection = (( gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
+		break;
+  case 4://use magnet
+    currentDirection = -gNineAxisSensor.getMagnetPhi();
+    break;
+	default:
+		break;
+	}
+double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirection);
 	deltaDirection = std::max(std::min(deltaDirection, NAVIGATING_MAX_DELTA_DIRECTION), -1 * NAVIGATING_MAX_DELTA_DIRECTION);
 
 	//新しい速度を計算
@@ -754,6 +771,7 @@ void Navigating::navigationMove(double distance) const
 	}
 
 	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
+  Debug::print(LOG_SUMMARY, "current angle = %f goal angle = %f",currentDirection, newDirection);
 	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n", distance * DEGREE_2_METER, deltaDirection, deltaDirection > 0 ? "LEFT" : "RIGHT");
 
 	//方向と速度を変更
@@ -785,20 +803,44 @@ bool Navigating::onCommand(const std::vector<std::string>& args)
 			nextState();
 			return true;
 		}
+    else if(args[1].compare("method") == 0)
+    {
+      Debug::print(LOG_SUMMARY,"now method is %d\r\n",mMethod);
+      return true;
+    }
+    else if(args[1].compare("count") == 0)
+    {
+      Debug::print(LOG_SUMMARY,"gps count max is %d\r\n",mGpsCountMax);
+      return true;
+    }
 	}
 	if (args.size() == 3)
 	{
-		VECTOR3 pos;
-		pos.x = atof(args[1].c_str());
-		pos.y = atof(args[2].c_str());
+    if(args[1].compare("method") == 0)
+    {
+      mMethod = atof(args[2].c_str());
+      return true;
+    }
+    else if (args[1].compare("count") == 0)
+    {
+      mGpsCountMax = atof(args[2].c_str());
+      return true;
+    }
+    else{ 
+		  VECTOR3 pos;
+		  pos.x = atof(args[1].c_str());
+		  pos.y = atof(args[2].c_str());
 
-		setGoal(pos);
+	  	setGoal(pos);
 		return true;
+    }
 	}
 	Debug::print(LOG_PRINT, "navigating                 : get goal\r\n\
 							navigating [pos x] [pos y] : set goal at specified position\r\n\
 							navigating here            : set goal at current position\r\n\
-							navigating goal            : call nextState\r\n");
+							navigating goal            : call nextState\r\n\
+              navigating method [n]      : set navigation method\r\n\
+              navigating count [n]       : set GPS count max\r\n");
 	return true;
 }
 
@@ -827,6 +869,8 @@ Navigating::Navigating() : mGoalPos(), mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+  mMethod = 1;
+  mGpsCountMax = 5;
 }
 Navigating::~Navigating()
 {

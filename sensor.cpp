@@ -205,15 +205,18 @@ void GPSSensor::onUpdate(const struct timespec& time)
 	if ((newdata = gps_rec.read()) == NULL) {
 		return;
 	}
-	else {
-		mPos.x = newdata->fix.latitude;
-		mPos.y = newdata->fix.longitude;
-		mPos.z = newdata->fix.altitude;
-		mSatelites = newdata->satellites_visible;
-		mGpsSpeed = newdata->fix.speed;
-		mGpsCourse = newdata->fix.track;
-		mIsNewData = true;
-	}
+	else 
+  {
+    {
+  		mPos.x = newdata->fix.latitude;
+    	mPos.y = newdata->fix.longitude;
+  		mPos.z = newdata->fix.altitude;
+  		mSatelites = newdata->satellites_visible;
+  		mGpsSpeed = newdata->fix.speed;
+  		mGpsCourse = newdata->fix.track;
+  		mIsNewData = true;
+    }
+  }
 
 	if (mSatelites > 0) {
 		mGpsTime = newdata->fix.time;
@@ -276,12 +279,10 @@ int GPSSensor::getTime() const
 {
 	return mGpsTime;
 }
-/*
 float GPSSensor::getCourse() const
 {
-	return GyroSensor::normalize(mGpsCourse);
+	return mGpsCourse;
 }
-*/
 float GPSSensor::getSpeed() const
 {
 	return mGpsSpeed;
@@ -1233,7 +1234,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
   mAccel.norm(),
   getAx() ,getAy(), getAz(),
 	 getRx(), getRy(), getRz(),
-	 getMx(), getMy(), getMz());
+	 getMagnetNorm(), getMagnetTheta(), getMagnetPhi());
   }
  
 }
@@ -1368,12 +1369,12 @@ void NineAxisSensor::calcMagnetOffset(VECTOR3& newMagnet)
 double NineAxisSensor::getMagnetTheta()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return acos(magnet.z / magnet.norm());
+	return acos(magnet.z / magnet.norm())/M_PI*180;
 }
 double NineAxisSensor::getMagnetPhi()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return acos(magnet.y / sqrt(magnet.x * magnet.x + magnet.y * magnet.y));
+	return atan2(magnet.x,magnet.y)/M_PI *180;
 }
 double NineAxisSensor::getMagnetNorm()
 {
@@ -1553,7 +1554,7 @@ bool NineAxisSensor::onCommand(const std::vector<std::string>& args)
 	Compass %f %f %f \r\n",getAx() ,getAy(), getAz(),
 	 getRvx(), getRvy(), getRvz(),
 	 getRx(), getRy(), getRz(),
-	 getMagnetNorm(), getMagnetTheta()/3.14 * 180, getMagnetPhi()/ 3.14 * 180);
+	 getMagnetNorm(), getMagnetTheta(), getMagnetPhi());
 	Debug::print(LOG_SUMMARY, "Usage:\r\n %s monitor [true/false] : enable/disable monitoring mode\r\n\
 	nineaxis reset  : set angle to zero point\r\n\
   	nineaxis cutoff : set cutoff threshold\r\n\
