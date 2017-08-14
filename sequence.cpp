@@ -582,12 +582,12 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
 	}
-  if (isStuckByGPS()) {
-    Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
-    gBuzzer.start(20, 10, 8);
-    gEscapingByStabiState.setRunMode(true);
-  }
-  else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
+	if (isStuckByGPS()) {
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
+		gBuzzer.start(20, 10, 8);
+		gEscapingByStabiState.setRunMode(true);
+	}
+	else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
 	{
 		//ローバーがひっくり返っている可能性があるため、しばらく前進する
 		gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
@@ -655,7 +655,8 @@ bool Navigating::isStuckByGPS() const
 		it++;
 	}
 	averagePos2 /= i - border;
-
+	Debug::print("lastgpss", mLastPos);
+	Debug::print("averageposdis", calcDistanceXY(averagePos1, averagePos2));
 	return VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
 void Navigating::navigationMove(double distance) const
