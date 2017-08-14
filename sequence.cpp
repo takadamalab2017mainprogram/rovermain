@@ -549,7 +549,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 
 	//新しい座標であればバッファに追加
-	if (isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
+	if (isNewData && isfinite(currentPos.x) && isfinite(currentPos.y) && isfinite(currentPos.z))
 	{
 		//最初の座標を取得したら移動を開始する
 		if (mLastPos.empty())
@@ -576,7 +576,6 @@ void Navigating::onUpdate(const struct timespec& time)
 		nextState();
 		return;
 	}
-
 	//異常値排除
 	if (removeError())
 	{
@@ -600,12 +599,14 @@ void Navigating::onUpdate(const struct timespec& time)
 	else
 	{
 		//通常のナビゲーション
-		if (mLastPos.size() < 10)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
+		if (mLastPos.size() < 10)return;
+		//過去の座標が10以上(現在の座標をあわせて)なければ処理を返す(進行方向決定不可能)
+		//元の方向で進む
+		
 		navigationMove(distance);//過去の座標から進行方向を変更する
 	}
-	//}
-
-	//座標データをひとつ残して削除
+	
+	//方向変更したら、座標データをひとつ残して、mlastposのリストを削除
 	currentPos = mLastPos.back();
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
@@ -642,23 +643,30 @@ bool Navigating::isStuckByGPS() const
 	VECTOR3 averagePos1, averagePos2;
 	unsigned int i, border;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
-	for (i = 0; i < mLastPos.size() / 2; ++i)
-	{
-		averagePos1 += *it;
-		it++;
-	}
-	averagePos1 /= border = i;
 
-	for (; i < mLastPos.size(); ++i)
-	{
-		averagePos2 += *it;
-		it++;
+	//過去の位置が２個以上なら、2つに分けて、その平均の差を計算する
+	if (mLastPos.size()>8) {
+		for (i = 0; i < mLastPos.size() / 2; ++i)
+		{
+			averagePos1 += *it;
+			it++;
+		}
+		border = i;
+		averagePos1 /= border;
+
+		for (; i < mLastPos.size(); ++i)
+		{
+			averagePos2 += *it;
+			it++;
+		}
+		averagePos2 /= i - border;
+		double dist = VECTOR3::calcDistanceXY(averagePos1, averagePos2);
+		Debug::print(LOG_SUMMARY, "aver12 %f ,%f,%f,%f", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
+		Debug::print(LOG_SUMMARY, "averageposdis %f", dist);
+		return VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 	}
-	averagePos2 /= i - border;
-	double dist = VECTOR3::calcDistanceXY(averagePos1, averagePos2);
-	Debug::print(LOG_SUMMARY,"aver12 %f ,%f,%f,%f", averagePos1.x,averagePos1.y, averagePos2.x,averagePos2.y);
-	Debug::print(LOG_SUMMARY,"averageposdis %f", dist);
-	return VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
+	//過去の位置足りない、スタック判断しない
+	return false;
 }
 void Navigating::navigationMove(double distance) const
 {
