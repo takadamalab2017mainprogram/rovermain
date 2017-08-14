@@ -106,6 +106,7 @@ public:
 
 //���[�o�[�̎p������
 //�p�����䂪���������ƃ^�X�N���I�����܂�
+/*
 class WakingFromLie : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -126,9 +127,11 @@ public:
 	WakingFromLie();
 	~WakingFromLie();
 };
+*/
 
 //���[�o�[�̂��̏����]
 //���������ƃ^�X�N���I�����܂�
+/*
 class Turning : public TaskBase
 {
 	bool mIsTurningLeft;
@@ -144,9 +147,11 @@ public:
 	Turning();
 	~Turning();
 };
+*/
 
 //�Q���O���m���̉��𓮍�
 //���������ƃ^�X�N���I�����܂�
+/*
 class Avoiding : public TaskBase
 {
 	struct timespec mLastUpdateTime;//�s���J�n����
@@ -161,6 +166,7 @@ public:
 	Avoiding();
 	~Avoiding();
 };
+*/
 
 /*
 //�L�O�B�e
@@ -193,6 +199,7 @@ public:
 };
 
 // �O�i����1�b���ƂɃ^�C�����]���A�����x�̒l���擾
+/*
 class MovementLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -215,6 +222,7 @@ public:
 	MovementLogging();
 	~MovementLogging();
 };
+*/
 
 class EncoderMonitoring : public TaskBase
 {
@@ -245,32 +253,16 @@ public:
 	~EncoderMonitoring();
 };
 
-/*
-class CameraSave_Sequence : public TaskBase{
-	struct timespec mLastUpdateTime;
-	double timing;
-	bool mIsUpdateCamera;
-	bool mIsUpdateWadati;
-	
-protected:
-  virtual bool onInit(const struct timespec& time);
-  virtual void onUpdate(const struct timespec& time);
-  virtual bool onCommand(const std::vector<std::string>& args);
-public:
-  CameraSave_Sequence();
-  ~CameraSave_Sequence();
-};
-*/
+
 extern Escaping gEscapingState;
 extern Waking gWakingState;
-extern WakingFromLie gWakingFromLieState;
-extern Turning gTurningState;
-extern Avoiding gAvoidingState;
+//extern WakingFromLie gWakingFromLieState;
+//extern Turning gTurningState;
+//extern Avoiding gAvoidingState;
 //extern WadachiPredicting gPredictingState;
 extern EscapingRandom gEscapingRandomState;
 extern EscapingByStabi gEscapingByStabiState;
-//extern PictureTaking gPictureTakingState;
 extern SensorLogging gSensorLoggingState;
-extern MovementLogging gMovementLoggingState;
-extern EncoderMonitoring gEncoderMonitoringState;
+//extern MovementLogging gMovementLoggingState;
+//extern EncoderMonitoring gEncoderMonitoringState;
 //extern CameraSave_Sequence gCameraSave_Sequence;

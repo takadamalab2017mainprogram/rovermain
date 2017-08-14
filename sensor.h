@@ -9,6 +9,7 @@
 #include "utils.h"
 #include <pthread.h>
 #include <list>
+#include <libgpsmm.h>
 
 //MPL115A2からデータを取得するクラス
 //気圧の値はhPa単位で+-10hPaの誤差が存在
@@ -56,6 +57,8 @@ private:
 	float mGpsCourse;
 	bool mIsNewData;//新しい座標データがあれば真
 	bool mIsLogger;//真なら1秒ごとにgpsコマンドを実行
+	gpsmm gps_rec;
+	struct gps_data_t *newdata;
 
 	void showState() const;//補足した衛星数と座標を表示
 protected:
@@ -87,6 +90,7 @@ public:
 // X: to Left
 // Y: to Back
 // Z: to Top
+/*
 class GyroSensor : public TaskBase
 {
 private:
@@ -172,6 +176,7 @@ public:
 	AccelerationSensor();
 	~AccelerationSensor();
 };
+*/
 
 //Cdsからデータを取得するクラス
 class LightSensor : public TaskBase
@@ -195,6 +200,7 @@ public:
 };
 
 //Webカメラの動画をキャプチャするクラス
+/*
 class WebCamera : public TaskBase
 {
 protected:
@@ -277,11 +283,17 @@ private:
 	VECTOR3 mRVel, mRAngle;
 	VECTOR3 mMagnet;
 	struct timespec mLastSampleTime;
-	std::list<VECTOR3> mRVelHistory;
-	VECTOR3 mRVelOffset;
+	//ドリフト誤差補正用
+	std::list<VECTOR3> mRVelHistory;//過去の角速度
+	VECTOR3 mRVelOffset;//サンプルあたりのドリフト誤差の推定値
+	double mCutOffThreshold;
+	bool mIsCalculatingOffset;//ドリフト誤差計算中フラグ
 	float mYaw;
 	float mPitch;
 	float mRoll;
+	bool isFIFOEnable;
+	VECTOR3 mMagnetMax;
+	VECTOR3 mMagnetMin;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onClean();
@@ -323,15 +335,24 @@ public:
 	float getRoll() const;
 	float getPitch() const;
 	float getYaw() const;
+	bool isMonitoring;
+	void getFIFO(const struct timespec& time);
+  void setMonitoring(bool val);
+  void calibrate();
+  void setFIFOmode(bool val);
+	void calcMagnetOffset(VECTOR3& newMagnet);
+	double getMagnetTheta();
+	double getMagnetPhi();
+	double getMagnetNorm();
 	NineAxisSensor();
 	~NineAxisSensor();
 };
-extern GyroSensor gGyroSensor;
+//extern GyroSensor gGyroSensor;
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
 //extern WebCamera gWebCamera;
-extern DistanceSensor gDistanceSensor;
+//extern DistanceSensor gDistanceSensor;
 //extern CameraCapture gCameraCapture;
-extern AccelerationSensor gAccelerationSensor;
+//extern AccelerationSensor gAccelerationSensor;
 extern NineAxisSensor gNineAxisSensor;

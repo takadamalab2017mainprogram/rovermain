@@ -4,9 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-//#include <opencv2/opencv.hpp>
-//#include <opencv/cvaux.h>
-//#include <opencv/highgui.h>
 #include <stdarg.h>
 #include "subsidiary_sequence.h"
 #include "utils.h"
@@ -14,141 +11,21 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
-//#include "image_proc.h"
-#include "pose_detector.h"
 
 Escaping gEscapingState;
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 Waking gWakingState;
-WakingFromLie gWakingFromLieState;
-Turning gTurningState;
-Avoiding gAvoidingState;
+//WakingFromLie gWakingFromLieState;
+//Turning gTurningState;
+//Avoiding gAvoidingState;
 //WadachiPredicting gPredictingState;
 //PictureTaking gPictureTakingState;
 SensorLogging gSensorLoggingState;
-MovementLogging gMovementLoggingState;
-EncoderMonitoring gEncoderMonitoringState;
+//MovementLogging gMovementLoggingState;
+//EncoderMonitoring gEncoderMonitoringState;
 //CameraSave_Sequence gCameraSave_Sequence;
 
-/*bool WadachiPredicting::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gCameraCapture.startWarming();
-
-	return true;
-}
-*/
-/*
-void WadachiPredicting::onUpdate(const struct timespec& time)
-{
-	if (gAvoidingState.isActive())return;
-	if (!mIsAvoidingEnable)
-	{
-		if (Time::dt(time, mLastUpdateTime) >= 2.5)
-		{
-			mLastUpdateTime = time;
-			IplImage* pImage = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL, pImage);
-			if (!gImageProc.isWadachiExist(pImage))return;
-			//�Q�����O���m����
-			gCameraCapture.startWarming();
-		}
-		return;
-	}
-
-	switch (mCurStep)
-	{
-	case STEP_RUNNING:
-		if (Time::dt(time, mLastUpdateTime) > 60)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Stoping started\r\n");
-			mCurStep = STEP_STOPPING;
-			mLastUpdateTime = time;
-			gMotorDrive.drive(0);
-		}
-		break;
-	case STEP_STOPPING:
-		if (Time::dt(time, mLastUpdateTime) > 3)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Waking started\r\n");
-			mCurStep = STEP_WAKING;
-			mLastUpdateTime = time;
-			gWakingState.setRunMode(true);
-		}
-		break;
-	case STEP_WAKING:
-		if (!gWakingState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Checking started\r\n");
-			mCurStep = STEP_CHECKING;
-			mLastUpdateTime = time;
-			gCameraCapture.startWarming();
-		}
-		break;
-	case STEP_CHECKING:
-		if (Time::dt(time, mLastUpdateTime) > 3)
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Avoiding started\r\n");
-			mLastUpdateTime = time;
-			IplImage* pImage = gCameraCapture.getFrame();
-			gCameraCapture.save(NULL, pImage);
-			if (gImageProc.isWadachiExist(pImage))
-			{
-				//�Q�����O���m����
-				gAvoidingState.setRunMode(true);
-				mCurStep = STEP_AVOIDING;
-			}
-			else
-			{
-				mCurStep = STEP_RUNNING;
-				gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
-			}
-		}
-		break;
-	case STEP_AVOIDING:
-		if (!gAvoidingState.isActive())
-		{
-			Debug::print(LOG_SUMMARY, "Predicting: Avoiding finished\r\n");
-			mCurStep = STEP_RUNNING;
-			mLastUpdateTime = time;
-		}
-		break;
-	}
-}
-*/
-/*
-bool WadachiPredicting::onCommand(const std::vector<std::string>& args)
-{
-	if (args.size() == 2)
-	{
-		if (args[1].compare("enable") == 0)
-		{
-			mIsAvoidingEnable = true;
-			return true;
-		}
-		if (args[1].compare("disable") == 0)
-		{
-			mIsAvoidingEnable = false;
-			return true;
-		}
-	}
-	Debug::print(LOG_SUMMARY, "predicting [enable/disable]  : switch avoiding mode\r\n");
-	return false;
-}
-bool WadachiPredicting::isWorking(const struct timespec& time)
-{
-	return mIsAvoidingEnable && (mCurStep != STEP_RUNNING || (mCurStep == STEP_RUNNING && Time::dt(time, mLastUpdateTime) < 6));
-}
-WadachiPredicting::WadachiPredicting() : mIsAvoidingEnable(false), mCurStep(STEP_RUNNING)
-{
-	setName("predicting");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
-}
-WadachiPredicting::~WadachiPredicting()
-{
-}
-*/
 
 bool Escaping::onInit(const struct timespec& time)
 {
@@ -156,14 +33,14 @@ bool Escaping::onInit(const struct timespec& time)
 	mCurStep = STEP_BACKWARD;
 	gMotorDrive.drive(-100);
 	//gCameraCapture.setRunMode(true);
-	gGyroSensor.setRunMode(true);
+	//gGyroSensor.setRunMode(true);
 	mEscapingTriedCount = 0;
 	return true;
 }
 void Escaping::onClean()
 {
 	gWakingState.setRunMode(false);
-	gTurningState.setRunMode(false);
+	//gTurningState.setRunMode(false);
 }
 void Escaping::onUpdate(const struct timespec& time)
 {
@@ -235,6 +112,7 @@ void Escaping::onUpdate(const struct timespec& time)
    */
  case STEP_CAMERA_TURN:
    //�摜�����̌��ʁA���]�����K�v���������ꍇ
+	 /*
 		if (Time::dt(time, mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		  {
 		    //gCameraCapture.startWarming();
@@ -242,6 +120,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		    gMotorDrive.drivePIDGyro(0, 100, true);
 		    mLastUpdateTime = time;
 		  }
+		  */
 		break;
  case STEP_CAMERA_FORWARD:
 		//�摜�����̌��ʁA���i�����K�v���������ꍇ
@@ -254,6 +133,7 @@ void Escaping::onUpdate(const struct timespec& time)
 		break;
 	case STEP_CAMERA_TURN_HERE:
 		//�摜�����̌��ʁA���̏����]�����K�v���������ꍇ
+		/*
 		if (Time::dt(time, mLastUpdateTime) > 0.4 || abs(gGyroSensor.getRz() - mAngle) > 70)
 		{
 		  //gCameraCapture.startWarming();
@@ -278,6 +158,7 @@ void Escaping::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 
 		}
+		*/
 		break;
 	}
 }
@@ -305,34 +186,6 @@ void Escaping::stuckMoveRandom()
 		break;
 	}
 }
-/*
-void Escaping::stuckMoveCamera(IplImage* pImage)
-{
-	switch (gImageProc.wadachiExiting(pImage)) {
-	case -1:
-		Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-		gMotorDrive.drive(-100, 100);
-		mCurStep = STEP_CAMERA_TURN;
-		break;
-	case 1:
-		Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-		gMotorDrive.drive(100, -100);
-		mCurStep = STEP_CAMERA_TURN;
-		break;
-	case 0:
-		Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn here\r\n");
-		gTurningState.setRunMode(true);
-		gTurningState.setDirection(true);
-		mCurStep = STEP_CAMERA_TURN_HERE;
-		break;
-	default://�J�����g���Ȃ�����
-		mCurStep = STEP_RANDOM;
-		mCurRandomStep = RANDOM_STEP_FORWARD;
-		break;
-
-	}
-	}
-*/
 Escaping::Escaping()
 {
 	setName("escaping");
@@ -363,13 +216,13 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 
 	if (!mFlag)
 	{
-		gMotorDrive.drive(0);
+		gMotorDrive.drive(30);
 		gMultiServo.start(0);
 	}
 	else
 	{
 		gMotorDrive.drive(100);
-		gMultiServo.start(50);
+		gMultiServo.start(1);
 		mTryCount++;
 
 		if (mTryCount % 5 == 0)
@@ -473,16 +326,17 @@ bool Waking::onInit(const struct timespec& time)
 	mCurStep = STEP_CHECK_LIE;
 
 	gMotorDrive.setRunMode(true);
-	gGyroSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
+	//gGyroSensor.setRunMode(true);
+	//gAccelerationSensor.setRunMode(true);
 	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	//gArmServo.setRunMode(true);
 	//gNeckServo.setRunMode(true);
 	gMultiServo.start(BACK_STABI_RUN_ANGLE);
+	gNineAxisSensor.setRunMode(true);
 	//gSServo.setRunMode(true);
 	//gSServo.moveRun();
-	gPoseDetecting.setRunMode(true);
+	//gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
@@ -499,22 +353,24 @@ void Waking::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_CHECK_LIE:
+		/*
 		if (gPoseDetecting.isLie())
 		{
 			gWakingFromLieState.setRunMode(true);
 			mCurStep = STEP_WAIT_LIE;
 			return;
 		}
+		*/
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);//角度調節
 		gMultiServo.start(BACK_STABI_RUN_ANGLE);
 		//gArmServo.start(ARM_FOLD_ANGLE);
 		//gNeckServo.start(NECK_FOLD_ANGLE);
 		// Do following case without breaking
 	case STEP_WAIT_LIE:
-		if (gWakingFromLieState.isActive())return;
+		//if (gWakingFromLieState.isActive())return;
 		//begin waking
 		gMotorDrive.drive(mStartPower);		//���[�^�o��
-		mAngleOnBegin = gGyroSensor.getRz();
+		mAngleOnBegin=gNineAxisSensor.getRz(); //gGyroSensor.getRz();
 
 		mLastUpdateTime = time;
 		mCurStep = STEP_START;
@@ -526,7 +382,8 @@ void Waking::onUpdate(const struct timespec& time)
 			setRunMode(false);
 			gMotorDrive.drive(0);
 		}
-		if (gAccelerationSensor.getPhi() < mAngleThreshold)	//�p�x�������ȉ��ɂȂ����璅�n�Ɣ���(�����x�Z���T���̗p)
+		//if (gAccelerationSensor.getPhi() < mAngleThreshold)	//�p�x�������ȉ��ɂȂ����璅�n�Ɣ���(�����x�Z���T���̗p)
+		if (gNineAxisSensor.getPhi() < mAngleThreshold)	//�p�x�������ȉ��ɂȂ����璅�n�Ɣ���(�����x�Z���T���̗p)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
 			gBuzzer.start(30, 20, 2);
@@ -550,7 +407,8 @@ void Waking::onUpdate(const struct timespec& time)
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0);
 		}
-		if (abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//���]�����m���ꂽ�ꍇ���N���オ���J�n�����Ɣ��f(�W���C�����̗p)
+		//if (abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//���]�����m���ꂽ�ꍇ���N���オ���J�n�����Ɣ��f(�W���C�����̗p)
+		if (abs(gNineAxisSensor.getRvx()) > WAKING_THRESHOLD)//���]�����m���ꂽ�ꍇ���N���オ���J�n�����Ɣ��f(�W���C�����̗p)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			gBuzzer.start(30, 20, 2);
@@ -582,7 +440,7 @@ void Waking::onUpdate(const struct timespec& time)
 		{
 			return;
 		}
-
+		/*
 		if (!gPoseDetecting.isFlip())
 		{
 			Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
@@ -597,7 +455,7 @@ void Waking::onUpdate(const struct timespec& time)
 		{
 			mLastUpdateTime = time;
 			mCurStep = STEP_START;
-			mAngleOnBegin = gGyroSensor.getRvx();
+			mAngleOnBegin = gNineAxisSensor.getRvx();//gGyroSensor.getRvx();
 			power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//���s�񐔂��ƂɃ��[�^�o�͂��グ��
 			gMotorDrive.drive(power);
 
@@ -612,7 +470,7 @@ void Waking::onUpdate(const struct timespec& time)
 			//gArmServo.start(ARM_FOLD_ANGLE);
 			//gNeckServo.start(NECK_FOLD_ANGLE);
 			Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n", mWakeRetryCount, WAKING_RETRY_COUNT, power);
-		}
+		}*/
 		break;
 	}
 }
@@ -692,6 +550,7 @@ Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDe
 Waking::~Waking()
 {
 }
+/*
 bool WakingFromLie::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -703,7 +562,7 @@ bool WakingFromLie::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	//gSServo.setRunMode(true);
 	//gSServo.start(0, 0);
-	gPoseDetecting.setRunMode(true);
+	//gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
@@ -716,8 +575,10 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_FORWARD:
+		
 		if (!gPoseDetecting.isLie())mNotLieCount++;
 		else mNotLieCount = 0;
+	
 		gMotorDrive.drive(mCurrentPower, mCurrentPower);
 
 		if (mNotLieCount > 100 || mCurrentPower >= MOTOR_MAX_POWER)
@@ -778,17 +639,20 @@ WakingFromLie::WakingFromLie() : mShortestSpeedUpPeriod(10)
 WakingFromLie::~WakingFromLie()
 {
 }
+*/
 
+/*
 bool Turning::onInit(const struct timespec& time)
 {
 	mTurnPower = 0;
-	gGyroSensor.setRunMode(true);
-	mAngle = gGyroSensor.getRz();
+	//gGyroSensor.setRunMode(true);
+	mAngle=gNineAxisSensor.getRz();//gGyroSensor.getRz();
 	mLastUpdateTime = time;
 	return true;
 }
 void Turning::onUpdate(const struct timespec& time)
 {
+	//double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
 	double turnedAngle = abs(GyroSensor::normalize(gGyroSensor.getRz() - mAngle));
 	if (Time::dt(time, mLastUpdateTime) >= 5 || turnedAngle > 15)
 	{
@@ -815,7 +679,9 @@ Turning::Turning()
 Turning::~Turning()
 {
 }
+*/
 
+/*
 bool Avoiding::onInit(const struct timespec& time)
 {
 	mLastUpdateTime = time;
@@ -859,68 +725,22 @@ Avoiding::Avoiding()
 Avoiding::~Avoiding()
 {
 }
-
-/*
-bool PictureTaking::onInit(const struct timespec& time)
-{
-	mLastUpdateTime = time;
-	gCameraCapture.setRunMode(true);
-	gBuzzer.setRunMode(true);
-	gWakingState.setRunMode(true);
-	mStepCount = 0;
-	return true;
-}
-void PictureTaking::onUpdate(const struct timespec& time)
-{
-	if (gWakingState.isActive())return;
-	if (Time::dt(time, mLastUpdateTime) > 1)
-	{
-		mLastUpdateTime = time;
-		++mStepCount;
-		gBuzzer.start(mStepCount > 25 ? 30 : 10);
-
-		if (mStepCount == 25)
-		{
-			gCameraCapture.startWarming();
-		}
-		if (mStepCount >= 30)
-		{
-			Debug::print(LOG_SUMMARY, "Say cheese!\r\n");
-			setRunMode(false);
-			gBuzzer.start(300);
-			gCameraCapture.save();
-		}
-	}
-}
-PictureTaking::PictureTaking() : mStepCount(0)
-{
-	setName("kinen");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
-}
-PictureTaking::~PictureTaking()
-{
-}
 */
+
 bool SensorLogging::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
 
 	write(mFilenameGPS, "Log started\r\n");
-	write(mFilenameGyro, "Log started\r\n");
 	write(mFilenamePressure, "Log started\r\n");
-	write(mFilenameAccel, "Log started\r\n");
-	//write(mFilenameEncoder,"Log started\r\n");
-  write(mFilenameNineAxis, "Log started\r\n");
+	write(mFilenameNineAxis, "Log started\r\n");
+	write(mFilenameNineAxis, "time/sec,Ax/G,Ay/G,Az/G,Rvx/deg/sec,Rvy/deg/sec,Rvz/deg/sec,Rx/deg,Ry/deg,Rz/deg,Mx/uT,My/uT,Mz/uT");
 
-	gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-  gNineAxisSensor.setRunMode(true);
+    gNineAxisSensor.setRunMode(true);
 	mLastUpdateTime = time;
-	//mLastEncL = gMotorDrive.getL();
-	//mLastEncR = gMotorDrive.getR();
 	return true;
 }
 void SensorLogging::onUpdate(const struct timespec& time)
@@ -932,25 +752,15 @@ void SensorLogging::onUpdate(const struct timespec& time)
 		//���O���ۑ�
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
-		if (gGPSSensor.isActive())write(mFilenameGPS, "%f,%f,%f\r\n", vec.x, vec.y, vec.z);
+		if (gGPSSensor.isActive())write(mFilenameGPS, "%ld.%ld,%f,%f,%f\r\n", time.tv_sec,time.tv_nsec,vec.x, vec.y, vec.z);
 		else write(mFilenameGPS, "unavailable\r\n");
 
-		if (gGyroSensor.isActive())write(mFilenameGyro, "%f,%f,%f,%f,%f,%f\r\n", gGyroSensor.getRvx(), gGyroSensor.getRvy(), gGyroSensor.getRvz(), gGyroSensor.getRx(), gGyroSensor.getRy(), gGyroSensor.getRz());
-		else write(mFilenameGyro, "unavailable\r\n");
-
-		if (gPressureSensor.isActive())write(mFilenamePressure, "%f\r\n", gPressureSensor.get());
+    if (gPressureSensor.isActive())write(mFilenamePressure, "%ld.%ld,%f\r\n", time.tv_sec,time.tv_nsec,gPressureSensor.get());
 		else write(mFilenamePressure, "unavailable\r\n");
 
-		if (gAccelerationSensor.isActive())write(mFilenameAccel, "%f,%f,%f\r\n", gAccelerationSensor.getAx(), gAccelerationSensor.getAy(), gAccelerationSensor.getAz());
-		else write(mFilenameAccel, "unavailable\r\n");
 
-		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
-		//if(gMotorDrive.isActive())
-		//{
-		//	write(mFilenameEncoder,"%llu,%llu\r\n",gMotorDrive.getL() - mLastEncL,gMotorDrive.getR() - mLastEncR);
-		//	mLastEncL = gMotorDrive.getL();
-		//	mLastEncR = gMotorDrive.getR();
-		//}else write(mFilenameEncoder,"unavailable\r\n");
+		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld.%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",time.tv_sec,time.tv_nsec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
+		else write(mFilenameNineAxis, "unavailable\r\n");
 	}
 }
 void SensorLogging::write(const std::string& filename, const char* fmt, ...)
@@ -972,21 +782,16 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 
 	Filename("log_gps", ".txt").get(mFilenameGPS);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGPS.c_str());
-	Filename("log_gyro", ".txt").get(mFilenameGyro);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGyro.c_str());
 	Filename("log_pressure", ".txt").get(mFilenamePressure);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenamePressure.c_str());
-	Filename("log_acceleration", ".txt").get(mFilenameAccel);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameAccel.c_str());
 	Filename("log_nineaxis", ".txt").get(mFilenameNineAxis);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameNineAxis.c_str());
-	//Filename("log_encoder_by_sensorlogging",".txt").get(mFilenameEncoder);
-	//Debug::print(LOG_SUMMARY, "%s\r\n",mFilenameEncoder.c_str());
 }
 SensorLogging::~SensorLogging()
 {
 }
 
+/*
 bool MovementLogging::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
@@ -994,10 +799,10 @@ bool MovementLogging::onInit(const struct timespec& time)
 	write(mFilenameEncoder, "Log started\r\n");
 	write(mFilenameAcceleration, "Log started\r\n");
 
-	gGyroSensor.setRunMode(true);
+	//gGyroSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
-	gAccelerationSensor.setRunMode(true);
+	//gAccelerationSensor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	mLastUpdateTime = time;
@@ -1156,6 +961,8 @@ MovementLogging::~MovementLogging()
 {
 }
 
+/*
+
 bool EncoderMonitoring::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "EncoderMonitoring: Start!\r\n");
@@ -1251,7 +1058,7 @@ bool EncoderMonitoring::onCommand(const std::vector<std::string>& args)
 		{
 			Debug::print(LOG_PRINT, "Command Executed!\r\n");
 			gMotorDrive.drive(0);
-			gEncoderMonitoringState.setRunMode(false);
+			//gEncoderMonitoringState.setRunMode(false);
 			return true;
 		}
 		else if (args[1].compare("print") == 0)
@@ -1402,6 +1209,7 @@ EncoderMonitoring::EncoderMonitoring() : mLastSamplingTime(), mLastUpdateTime(),
 EncoderMonitoring::~EncoderMonitoring()
 {
 }
+*/
 /*
 bool CameraSave_Sequence::onInit(const struct timespec& time) {
 	Debug::print(LOG_SUMMARY, "Start Camera Save Sequence...");

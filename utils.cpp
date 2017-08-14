@@ -29,13 +29,19 @@ void Debug::print(LOG_LEVEL level, const char* fmt, ...)
 	va_list argp;
 	va_start(argp, fmt);
 	vsprintf(buf, fmt, argp);
+  timespec nowtime;
+  clock_gettime(CLOCK_REALTIME,&nowtime);
+  char timebuf[MAX_STRING_LENGTH];
+  sprintf(timebuf,"%ld.%ld:",nowtime.tv_sec,nowtime.tv_nsec);
 
 	//画面に出力
 	printf(buf);
+
 	//ログファイルに出力
 	if (level != LOG_PRINT)
 	{
 		std::ofstream of(mFilename.c_str(), std::ios::out | std::ios::app);
+    of << timebuf;
 		of << buf;
 	}
 }
@@ -292,6 +298,10 @@ bool VECTOR3::operator==(const VECTOR3& v) const
 bool VECTOR3::operator!=(const VECTOR3& v) const
 {
 	return (x != v.x) || (y != v.y) || (z != v.z);
+}
+double VECTOR3::norm()
+{
+  return sqrt(x*x + y*y + z*z);
 }
 VECTOR3 VECTOR3::normalize() const
 {

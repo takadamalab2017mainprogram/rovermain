@@ -18,12 +18,12 @@ const static int VERSION = 01;
 // ハードウェア系設定
 //////////////////////////////////////////////
 //ピン番号(WiringPiのピン番号、GPIOとは違います)
-const static int PIN_PWM_A1 = 21;//モータPWM
-const static int PIN_PWM_A2 = 14;
-const static int PIN_PULSE_A = 0;//モータエンコーダ Right
-const static int PIN_PULSE_B = 7;//
-const static int PIN_PWM_B1 = 13;//モータPWM
-const static int PIN_PWM_B2 = 12;                              //Clear!
+const static int PIN_PWM_B1 = 3;//モータPWM
+const static int PIN_PWM_B2 = 12;
+const static int PIN_PULSE_A = 6;//モータエンコーダ Right
+const static int PIN_PULSE_B = 4;//
+const static int PIN_PWM_A1 = 0;//モータPWM
+const static int PIN_PWM_A2 = 2;                              //Clear!
 const static int PIN_BUZZER = 5;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 29;//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
@@ -33,9 +33,9 @@ const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clea
 //const static int PIN_NECK_SERVO = 1;//                                  Clear!
 //const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
-const static int PIN_LED_R = 24;// LED
-const static int PIN_LED_G = 22;// LED
-const static int PIN_LED_B = 23;// LED
+const static int PIN_LED_R = 27;// LED
+const static int PIN_LED_G = 29;// LED
+const static int PIN_LED_B = 28;// LED
 
 //モータ設定
 const static int MOTOR_MAX_POWER = 100;
@@ -56,6 +56,10 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.5;	//通常時のスタビ角度
 
+const static double STABI_RUNNING_ANGLE = 0.7;//走ってるときの角度
+const static double STABI_RELEASE_ANGLE = -0.9;//パラ切り離し
+const static double STABI_HOLD_ANGLE = 1.0;//
+const static double STABI_FOLD_ANGLE = -0.7;//たたんでいる
 //スタビ学習用の設定
 const static int POPULATION_NUM = 6; // 個体数
 const static int ACTION_NUM = 6; // 行動回数
@@ -87,7 +91,7 @@ const static double NECK_RUN_ANGLE = -0.2;
 //////////////////////////////////////////////
 // シーケンス系設定
 //////////////////////////////////////////////
-const static unsigned int WAITING_LIGHT_COUNT = 5000;//何回連続で光っていると判定されたときに放出判定とするか
+const static unsigned int WAITING_LIGHT_COUNT = 1000;//何回連続で光っていると判定されたときに放出判定とするか
 const static unsigned int WAITING_ABORT_TIME = 7200;//強制的に放出判定とする時間（秒）
 
 const static unsigned int FALLING_DELTA_PRESSURE_THRESHOLD = 2;//前回との気圧の差がこれ以内なら停止中とカウント(1秒間隔でサンプリング)
@@ -99,10 +103,10 @@ const static unsigned int FALLING_MOTOR_PULSE_THRESHOLD = 1000;//１秒辺りの
 const static unsigned int FALLING_MOTOR_PULSE_COUNT = 10;//モータパルスの値が閾値以下のサンプルがこれだけ連続したら着地と判定
 
 const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変える間隔(秒)
-const static unsigned int SEPARATING_SERVO_COUNT = 16;//サーボの向きを変える回数
+const static unsigned int SEPARATING_SERVO_COUNT = 30;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
-const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 7 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 2 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.8;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 1;//進行方向を変更する間隔(秒) 2016/08/31 5->1

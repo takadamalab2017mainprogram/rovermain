@@ -103,6 +103,7 @@ Motor::~Motor()
 {
 }
 
+/*
 MotorEncoder* MotorEncoder::getInstance()
 {
 	static MotorEncoder singleton;
@@ -185,11 +186,12 @@ MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B), mEncoderPinR(PIN_PULSE
 MotorEncoder::~MotorEncoder()
 {
 }
+*/
 
 bool MotorDrive::onInit(const struct timespec& time)
 {
 	//ジャイロを使うように設定
-	gGyroSensor.setRunMode(true);
+	gNineAxisSensor.setRunMode(true);
 
 	//初期化
 	if (!mMotorR.init(PIN_PWM_A1, PIN_PWM_A2) || !mMotorL.init(PIN_PWM_B1, PIN_PWM_B2))
@@ -197,11 +199,13 @@ bool MotorDrive::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motors\r\n");
 		return false;
 	}
+	/*
 	if (!mpMotorEncoder->init())
 	{
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motor Encoders\r\n");
 		return false;
 	}
+	*/
 	
 	if (clock_gettime(CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
 	{
@@ -215,7 +219,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 
 void MotorDrive::onClean()
 {
-  	mpMotorEncoder->clean();
+  	//mpMotorEncoder->clean();
 	mMotorL.clean();
 	mMotorR.clean();
 }
@@ -223,7 +227,7 @@ void MotorDrive::onClean()
 void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxControlRatio)
 {
 	//ずれ情報を更新
-	double angle = gGyroSensor.normalize(dangle);
+	double angle = gNineAxisSensor.normalize(dangle);
 	mDiff3 = mDiff2; mDiff2 = mDiff1; mDiff1 = angle;
 
 	//ずれ情報を元に新しいモーター出力を設定(PID)
@@ -253,7 +257,7 @@ void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxCon
 }
 void MotorDrive::updatePIDGyroMove()
 {
-	updatePIDState(mPIDGyro, gGyroSensor.getRz() - mAngle, mMaxPIDControlRatioGyro);
+	updatePIDState(mPIDGyro, gNineAxisSensor.getRz() - mAngle, mMaxPIDControlRatioGyro);
 }
 
 void MotorDrive::onUpdate(const struct timespec& time)
@@ -319,8 +323,8 @@ void MotorDrive::setPIDPose(double p, double i, double d)
 }
 void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 {
-	if(reset) mAngle = gGyroSensor.getRz();
-	else mAngle = GyroSensor::normalize(angle + mAngle);
+	if(reset) mAngle = NineAxisSensor::normalize(angle + gNineAxisSensor.getRz());
+	else mAngle = NineAxisSensor::normalize(angle);
 
 	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
 	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f, %d)\r\n", mAngle, mDrivePower);
@@ -338,7 +342,7 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 	if (size == 1)
 	{
 	  Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
-	  Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
+	  //Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
 	}
 	else if (size >= 2)
 	{
@@ -432,7 +436,7 @@ motor [l] [r]      : drive motor by specified ratio\r\n\
 motor [cpose/cgyro] [param]   : set max control ratio\r\n");
 	return true;
 }
-
+/*
 long long MotorDrive::getL()
 {
 	return mpMotorEncoder->getL();
@@ -449,11 +453,12 @@ long long MotorDrive::getDeltaPulseR()
 {
 	return mpMotorEncoder->getDeltaPulseR();
 }
+*/
 MotorDrive::MotorDrive() : mMotorL(), mMotorR(), mDriveMode(DRIVE_RATIO), mRatioL(100), mRatioR(100), mPIDGyro(0.003, 0, 0), mPIDPose(0.006, 0, 0), mMaxPIDControlRatioGyro(1), mMaxPIDControlRatioPose(0.5), mDiff1(0), mDiff2(0), mDiff3(0), mAngle(0), mControlPower(0), mDrivePower(0)
 {
 	setName("motor");
 	setPriority(TASK_PRIORITY_MOTOR, TASK_INTERVAL_MOTOR);
 
-	mpMotorEncoder = MotorEncoder::getInstance();
+	//mpMotorEncoder = MotorEncoder::getInstance();
 }
 MotorDrive::~MotorDrive(){}
