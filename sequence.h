@@ -1,6 +1,7 @@
 #pragma once
 #include <time.h>
 #include <list>
+#include <iostream>
 //#include <opencv2/opencv.hpp>
 //#include <opencv/cvaux.h>
 //#include <opencv/highgui.h>
@@ -93,16 +94,28 @@ private:
 	struct timespec mEscapingRandomStartTime;//EscapingRandomの開始時刻
 	struct timespec mLastArmServoMoveTime;
 	struct timespec mLastArmServoStopTime;
-
+	struct timespec mLastUpdateTime;
 	//ゴール位置
-	VECTOR3 mGoalPos;
+	VECTOR3 mGoalPos;//現在のゴール
+  VECTOR3 firstGoal;
+
+					 //goallist を保存する
+	std::list<VECTOR3> GoalList;
+	//通過したゴールを保存するリスト
+	std::list<VECTOR3> PassedGoal;
+	//GoalList のイテレータ
+	std::list<VECTOR3>::iterator itr;
+
 	bool mIsGoalPos;
 	bool mArmMoveFlag;
 	bool mArmStopFlag;
-  double distance_from_goal_to_start;
+	bool mGoalFlag;
+	double distance_from_goal_to_start;
 
-	//GPS座標から計算された過去数回分の位置
+//GPS座標から計算された過去数回分の位置
 	std::list<VECTOR3> mLastPos;
+  
+//方向推定手法切り替え
   int mMethod;
   unsigned int mGpsCountMax;
 
@@ -115,9 +128,21 @@ protected:
 	bool isStuckByGPS() const;//スタック判定(GPS)
 	bool removeError();//異常値の除去
 
-	//次の状態に移行
+					   //次の状態に移行
 	void nextState();
+
+	//GPS座標から計算された過去数回分の位置
+	std::list<VECTOR3> mLastPos;
+
+	//ファイルから　GPSの座標を読んで、リストに保存する
+	void getGoalList(std::list<VECTOR3>& GoalList);
+	//ファイルに　通過したゴールの座標を書き込み
+	//void writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos);
+
+	//GoalList.txtの中身　GoalListから通過したゴールを削除する,GoalList を書き込む
+	//void deleteGoalList(std::list<VECTOR3>& GoalList);
 public:
+
 	void setGoal(const VECTOR3& pos);
 
 	Navigating();
