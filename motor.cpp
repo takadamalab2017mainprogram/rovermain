@@ -242,7 +242,7 @@ void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxCon
 	if (controlRatio <= 0)controlRatio = 0;
 
 	//モータ出力を適用
-	if (mControlPower < 0)
+	if (mControlPower > 0)
 	{
 		//Turn Right
 		mMotorL.set(mRatioL * drivePowerRatio);

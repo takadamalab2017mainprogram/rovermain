@@ -112,6 +112,12 @@ private:
 	bool mGoalFlag;
 	double distance_from_goal_to_start;
 
+//GPS座標から計算された過去数回分の位置
+	std::list<VECTOR3> mLastPos;
+  
+//方向推定手法切り替え
+  int mMethod;
+  unsigned int mGpsCountMax;
 
 protected:
 	virtual bool onInit(const struct timespec& time);

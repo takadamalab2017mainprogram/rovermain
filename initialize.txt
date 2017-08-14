@@ -1,9 +1,4 @@
 start testing
-motor p 0.003 0.0 0.0
-motor pp 0.008 0 0
-motor cpose 0.8
-wakinglie 30
-//navigating 35.657619 139.542807
 //
 // ------------------- notes -------------------
 //hogehjoge
@@ -13,7 +8,18 @@ wakinglie 30
 //
 //
 //*** parameter ***
-//
+motor p 0.005 0.0 0.0
+motor r 100 100
+//motor pp 0.008 0 0
+motor cpose 0.8
+wakinglie 30
+//西食堂
+//navigating 35.656993 139.541533
+//中門
+//navigating 35.657619 139.542807
+//鬼太郎公園
+navigating 35.66045 139.53934
+alias nc nineaxis calib//
 //
 //
 //*** alias ***
