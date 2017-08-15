@@ -789,6 +789,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
 	{
 		double dt = Time::dt(time, mLastSampleTime);
+		
 		mRAngle += (newRv + mRVel) / 2 * dt;
 		normalize(mRAngle);
 	}

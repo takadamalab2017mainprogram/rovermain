@@ -24,8 +24,6 @@ public:
 	~WadachiPredicting();
 };
 
-//�Q�E�o����
-//���̃^�X�N���L���̊Ԃ̓i�r�Q�[�V�������܂���
 class Escaping : public TaskBase
 {
 	struct timespec mLastUpdateTime;//�O���̍s�������̕ω�����
@@ -109,7 +107,7 @@ public:
 };
 
 
-/*
+//横転復帰
 class WakingFromLie : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -130,7 +128,7 @@ public:
 	WakingFromLie();
 	~WakingFromLie();
 };
-*/
+
 
 
 /*

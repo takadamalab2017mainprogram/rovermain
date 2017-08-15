@@ -165,10 +165,6 @@ EscapingRandom::~EscapingRandom()
 {
 }
 
-
-
-
-
 bool SensorLogging::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
@@ -238,17 +234,9 @@ bool Waking::onInit(const struct timespec& time)
 	mCurStep = STEP_CHECK_LIE;
 
 	gMotorDrive.setRunMode(true);
-	//gGyroSensor.setRunMode(true);
-	//gAccelerationSensor.setRunMode(true);
-	//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	//gArmServo.setRunMode(true);
-	//gNeckServo.setRunMode(true);
 	gMultiServo.start(BACK_STABI_RUN_ANGLE);
 	gNineAxisSensor.setRunMode(true);
-	//gSServo.setRunMode(true);
-	//gSServo.moveRun();
-	//gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
@@ -281,21 +269,21 @@ void Waking::onUpdate(const struct timespec& time)
 	case STEP_WAIT_LIE:
 		//if (gWakingFromLieState.isActive())return;
 		//begin waking
-		gMotorDrive.drive(mStartPower);		//���[�^�o��
+		gMotorDrive.drive(mStartPower);		
 		mAngleOnBegin = gNineAxisSensor.getRz(); //gGyroSensor.getRz();
 
 		mLastUpdateTime = time;
 		mCurStep = STEP_START;
 		break;
 	case STEP_STOP:
-		if (Time::dt(time, mLastUpdateTime) > 2)//2�b�܂킵�Ă����n�����m�����Ȃ��ꍇ�͂������߂�
+		if (Time::dt(time, mLastUpdateTime) > 2)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to land\r\n");
 			setRunMode(false);
 			gMotorDrive.drive(0);
 		}
-		//if (gAccelerationSensor.getPhi() < mAngleThreshold)	//�p�x�������ȉ��ɂȂ����璅�n�Ɣ���(�����x�Z���T���̗p)
-		if (gNineAxisSensor.getPhi() < mAngleThreshold)	//�p�x�������ȉ��ɂȂ����璅�n�Ɣ���(�����x�Z���T���̗p)
+		//if (gAccelerationSensor.getPhi() < mAngleThreshold)	
+		if (gNineAxisSensor.getPhi() < mAngleThreshold)	
 		{
 			Debug::print(LOG_SUMMARY, "Waking Landed!\r\n");
 			gBuzzer.start(30, 20, 2);
@@ -305,22 +293,22 @@ void Waking::onUpdate(const struct timespec& time)
 
 		}
 
-		//���]�����p�x�ɉ����ă��[�^�̏o�͂��ω�������
+		
 		//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
 		//gMotorDrive.drive(power);
 		break;
 
 		double dt;
 	case STEP_START:
-		if (Time::dt(time, mLastUpdateTime) > 0.5)//���莞�ԉ��]�����m�����Ȃ��ꍇ�����]�s�\�Ɣ��f
+		if (Time::dt(time, mLastUpdateTime) > 0.5)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Timeout : unable to spin\r\n");
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0);
 		}
-		//if (abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)//���]�����m���ꂽ�ꍇ���N���オ���J�n�����Ɣ��f(�W���C�����̗p)
-		if (abs(gNineAxisSensor.getRvx()) > WAKING_THRESHOLD)//���]�����m���ꂽ�ꍇ���N���オ���J�n�����Ɣ��f(�W���C�����̗p)
+		//if (abs(gGyroSensor.getRvx()) > WAKING_THRESHOLD)
+		if (abs(gNineAxisSensor.getRvx()) > WAKING_THRESHOLD)
 		{
 			Debug::print(LOG_SUMMARY, "Waking Detected Rotation!\r\n");
 			gBuzzer.start(30, 20, 2);
@@ -329,7 +317,7 @@ void Waking::onUpdate(const struct timespec& time)
 		}
 		break;
 
-	case STEP_DEACCELERATE:	//�������茸������
+	case STEP_DEACCELERATE:	
 		dt = Time::dt(time, mLastUpdateTime);
 		if (dt > mDeaccelerateDuration)
 		{
@@ -347,8 +335,7 @@ void Waking::onUpdate(const struct timespec& time)
 		break;
 
 	case STEP_VERIFY:
-		//�N���オ�肪�����������ۂ�������
-		if (Time::dt(time, mLastUpdateTime) <= 2.5)	//���[�o�̎p�������肷���܂ň��莞�ԑ҂�
+		if (Time::dt(time, mLastUpdateTime) <= 2.5)	
 		{
 			return;
 		}
@@ -361,14 +348,14 @@ void Waking::onUpdate(const struct timespec& time)
 		//gJohnServo.start(FRONT_STABI_RUN_ANGLE);
 		gMultiServo.start(BACK_STABI_RUN_ANGLE); // 角度調節
 		//gArmServo.start(ARM_RUN_ANGLE);
-		//gSServo.moveRun(); // �N���オ�萬���������X�^�r���x�[�X�̊p�x�ɖ߂�
+		//gSServo.moveRun(); //
 		}
 		else
 		{
 		mLastUpdateTime = time;
 		mCurStep = STEP_START;
 		mAngleOnBegin = gNineAxisSensor.getRvx();//gGyroSensor.getRvx();
-		power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	//���s�񐔂��ƂɃ��[�^�o�͂��グ��
+		power = std::min((unsigned int)100, mStartPower + ((mWakeRetryCount + 1) * 5));	
 		gMotorDrive.drive(power);
 
 		if (++mWakeRetryCount > WAKING_RETRY_COUNT)
@@ -423,9 +410,9 @@ bool Waking::onCommand(const std::vector<std::string>& args)
 		}
 	}
 	Debug::print(LOG_SUMMARY, "waking set power [1-100]: set start motor power\r\n\
-							  							  waking set angle [0-180]: set AngleThreshold\r\n\
-														  							  waking set d_time [time]: set mDeaccelerateDuration\r\n\
-																					  							  waking show             : show parameters\r\n");
+							  waking set angle [0-180]: set AngleThreshold\r\n\
+							waking set d_time [time]: set mDeaccelerateDuration\r\n\
+						waking show             : show parameters\r\n");
 	return true;
 }
 void Waking::setPower(int p)
