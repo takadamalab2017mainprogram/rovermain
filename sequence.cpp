@@ -580,11 +580,12 @@ void Navigating::onUpdate(const struct timespec& time)
 		nextState();
 		return;
 	}
-	//異常値排除
+	//異常値排除,2個以下なら、	removeError()=false
 	if (removeError())
 	{
 		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
+		return;
 	}
 
 	if (isStuckByGPS()) {
@@ -592,6 +593,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
 		gEscapingByStabiState.setRunMode(true);
+		return;//chou
 	}
 	else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 	{	//isStuckByGPS() ==false のとき、ここに入る、脱出完了だから、escaping を終了する
@@ -602,6 +604,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
 		gBuzzer.start(20, 10, 3);
+		return;//chou
 		
 	}
 	else
@@ -628,7 +631,9 @@ void Navigating::onUpdate(const struct timespec& time)
 }
 bool Navigating::removeError()
 {
-	if (mLastPos.size() <= 2)return false;//最低2点は残す
+	if (mLastPos.size() <= 2)
+		Debug::print(LOG_SUMMARY, "in removeError,mLastpos <= 2, size()= %d",mLastPos.size());
+		return false;//最低2点は残す
 	std::list<VECTOR3>::iterator it = mLastPos.begin();
 	VECTOR3 average, sigma;
 	while (it != mLastPos.end())
@@ -661,7 +666,7 @@ bool Navigating::isStuckByGPS()
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
 	
 	//過去の位置が２個以上なら、2つに分けて、その平均の差を計算する
-	if (mLastPos.size()>8) {
+	//if (mLastPos.size()>8) {
 		for (i = 0; i < mLastPos.size() / 2; ++i)
 		{
 			averagePos1 += *it;
@@ -681,22 +686,22 @@ bool Navigating::isStuckByGPS()
 		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f", mLastPos.size()
 			, dist);
 		 
-		if (VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
-			Debug::print(LOG_SUMMARY, "mLastPos.size()>8, mStuckFlag = true\r\n");
+		if (isfinite(dist) && dist<NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
+			Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = true\r\n",mLastPos.size());
 			mStuckFlag = true;//移動量が閾値以下ならスタックと判定
 		}
 		else {
-			Debug::print(LOG_SUMMARY, "mLastPos.size()>8, mStuckFlag = false\r\n");
+			Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = false\r\n",mLastPos.size());
 			mStuckFlag = false;
 		}
 			
 		return mStuckFlag;
-	}
-	else {
+	//}
+	//else {
 		//判断の位置数がある数以下なら、前回の結果を返す、判断しない
-		Debug::print(LOG_SUMMARY, "mLastPos.size() <<8, mStuckFlag is unknow = %d \r\n",mStuckFlag);
-		return mStuckFlag;
-	}
+	//	Debug::print(LOG_SUMMARY, "mLastPos.size() <<8, mStuckFlag is unknow = %d \r\n",mStuckFlag);
+	//	return mStuckFlag;
+	//}
 
 }
 void Navigating::navigationMove(double distance) const
