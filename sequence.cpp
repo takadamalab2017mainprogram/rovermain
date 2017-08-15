@@ -580,54 +580,94 @@ void Navigating::onUpdate(const struct timespec& time)
 		nextState();
 		return;
 	}
+
+	//数秒たっていなければ処理を返す
+	if(Time::dt(time,mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
+	mLastNaviMoveCheckTime = time;
+
 	//異常値排除,2個以下なら、	removeError()=false
 	if (removeError())
 	{
 		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
-		return;
+		//return;
 	}
-
-	if (isStuckByGPS()) {
+#pragma region スタックしたときの処理
+	else if (isStuckByGPS()) {
+		if (!gEscapingRandomState.isActive())
+		{
+			gEscapingByStabiState.setRunMode(true);
+		}
 		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
-		gEscapingByStabiState.setRunMode(true);
+
+#pragma region esc by stabi と　esc by random の２つに繰り返す
+		if (gEscapingByStabiState.isActive())		//EscapingByStabi中
+		{
+			if (gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_MAX_COUNT)
+			{
+				//EscapingRandomに移行
+				gEscapingByStabiState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping Random Start! \r\n");
+				gEscapingRandomState.setRunMode(true);
+				mEscapingRandomStartTime = time;
+			}
+		}
+		else if (gEscapingRandomState.isActive())	//EscapingRandom中
+		{
+			if (Time::dt(time, mEscapingRandomStartTime) > ESCAPING_RANDOM_TIME_THRESHOLD)
+			{
+				//EscapingByStabiに移行
+				gEscapingRandomState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping ByStabi Start! \r\n");
+				gEscapingByStabiState.setRunMode(true);
+			}
+		}
+#pragma endregion
+
+
+
 		return;//chou
 	}
-	else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
-	{	//isStuckByGPS() ==false のとき、ここに入る、脱出完了だから、escaping を終了する
-		//ローバーがひっくり返っている可能性があるため、しばらく前進する
-		gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
-		gEscapingByStabiState.setRunMode(false);
-		gEscapingRandomState.setRunMode(false);
-		Time::showNowTime();
-		Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-		gBuzzer.start(20, 10, 3);
-		return;//chou
-		
-	}
+#pragma endregion
+
+#pragma region スタックしないときの処理
 	else
 	{
-		//スタックしない、escaping 終了したとき、通常のナビゲーション
-		if (mLastPos.size() < 10)
+		if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 		{
+			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
+			gEscapingByStabiState.setRunMode(false);
+			gEscapingRandomState.setRunMode(false);
 			Time::showNowTime();
-			Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size<10 return to navigating \r\n");
-			return;
+			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
+			gBuzzer.start(20, 10, 3);
 		}
-		//過去の座標が10以上(現在の座標をあわせて)なければ処理を返す(進行方向決定不可能)
-		//元の方向で進む
-		
-		navigationMove(distance);//過去の座標から進行方向を変更する
+		else
+		{
+			//スタックしない、escaping 終了したとき、通常のナビゲーション
+			if (mLastPos.size() < 10)
+			{
+				Time::showNowTime();
+				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size<10 return to navigating \r\n");
+				return;
+			}
+			//過去の座標が10以上(現在の座標をあわせて)なければ処理を返す(進行方向決定不可能)
+			//元の方向で進む
+
+			navigationMove(distance);//過去の座標から進行方向を変更する
+		}
 	}
+#pragma endregion
+
 	
 	//方向変更したら、座標データをひとつ残して、mlastposのリストを削除
 	currentPos = mLastPos.back();
 	mLastPos.clear();
+	mLastPos.push_back(currentPos);
 	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "NAVIGATING: drection changed,in mLastPos.clear(), currentPos(%f,%f)\r\n",currentPos.x,currentPos.y);
-	mLastPos.push_back(currentPos);
 }
 bool Navigating::removeError()
 {

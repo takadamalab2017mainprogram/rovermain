@@ -164,10 +164,6 @@ EscapingRandom::~EscapingRandom()
 {
 }
 
-
-
-
-
 bool SensorLogging::onInit(const struct timespec& time)
 {
 	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
