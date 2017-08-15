@@ -54,6 +54,7 @@ class EscapingByStabi : public TaskBase
 	struct timespec mLastUpdateTime;//�O���̍s�������̕ω�����
 	bool mFlag;
 	unsigned int mTryCount;
+	unsigned int Escaping_Chance_limit;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -67,13 +68,17 @@ public:
 //�Q�E�o�E�o�i�������_���j
 class EscapingRandom : public TaskBase
 {
-	struct timespec mLastUpdateTime;//�O���̍s�������̕ω�����
+	struct timespec mLastUpdateTime;
 
-	enum STEP{ STEP_TURN = 0, STEP_FORWARD };
+	enum STEP { STEP_TURN = 0, STEP_FORWARD };
 	enum STEP mCurStep;
+	unsigned int RandomCount;
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
+	int motorforce0;
+	int motorforce1;
 public:
 	EscapingRandom();
 	~EscapingRandom();

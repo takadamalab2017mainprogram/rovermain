@@ -26,6 +26,7 @@ bool EscapingByStabi::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	mFlag = false;
 	mTryCount = 0;
+	Escaping_Chance_limit = 10;
 	return true;
 }
 void EscapingByStabi::onUpdate(const struct timespec& time)
