@@ -7,7 +7,7 @@
 #include "task.h"
 #include "utils.h"
 
-//�Q���O���m����
+
 class WadachiPredicting : public TaskBase
 {
 	struct timespec mLastUpdateTime;//�O���̃`�F�b�N����
@@ -48,7 +48,7 @@ public:
 	~Escaping();
 };
 
-//�Q�E�o�E�o�i�X�^�r�g�pver�j
+
 class EscapingByStabi : public TaskBase
 {
 	struct timespec mLastUpdateTime;//�O���̍s�������̕ω�����
@@ -65,7 +65,7 @@ public:
 	~EscapingByStabi();
 };
 
-//�Q�E�o�E�o�i�������_���j
+
 class EscapingRandom : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -84,8 +84,7 @@ public:
 	~EscapingRandom();
 };
 
-//���[�o�[�̎p������
-//�p�����䂪���������ƃ^�X�N���I�����܂�
+
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -93,9 +92,9 @@ class Waking : public TaskBase
 	enum STEP mCurStep;
 	double mAngleOnBegin;
 	unsigned int mWakeRetryCount;
-	int mStartPower;				//�N���オ���J�n���̃��[�^�o�͗�
-	double mAngleThreshold;			//�N���オ�芮���Ƃ����p�x(ZX)
-	double mDeaccelerateDuration;	//�����ɗv���鎞��
+	int mStartPower;				
+	double mAngleThreshold;			
+	double mDeaccelerateDuration;	
 
 	void setPower(int p);
 	void setAngle(double a);
@@ -109,8 +108,7 @@ public:
 	~Waking();
 };
 
-//���[�o�[�̎p������
-//�p�����䂪���������ƃ^�X�N���I�����܂�
+
 /*
 class WakingFromLie : public TaskBase
 {
@@ -134,8 +132,7 @@ public:
 };
 */
 
-//���[�o�[�̂��̏����]
-//���������ƃ^�X�N���I�����܂�
+
 /*
 class Turning : public TaskBase
 {
@@ -154,8 +151,7 @@ public:
 };
 */
 
-//�Q���O���m���̉��𓮍�
-//���������ƃ^�X�N���I�����܂�
+
 /*
 class Avoiding : public TaskBase
 {
@@ -174,7 +170,7 @@ public:
 */
 
 /*
-//�L�O�B�e
+
 class PictureTaking : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -187,7 +183,7 @@ public:
 	~PictureTaking();
 };
 */
-//�Z���T�[���O
+
 class SensorLogging : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -203,7 +199,7 @@ public:
 	~SensorLogging();
 };
 
-// �O�i����1�b���ƂɃ^�C�����]���A�����x�̒l���擾
+
 /*
 class MovementLogging : public TaskBase
 {
@@ -212,11 +208,11 @@ class MovementLogging : public TaskBase
 
 	double mPrevPowerL, mPrevPowerR;
 
-	//�O���̃p���X��
+	
 	unsigned long long mPrevDeltaPulseL, mPrevDeltaPulseR;
 
-	bool mBuzzerFlag;	//�u�U�[��ON,OFF���Ǘ� 				true:ON, false:OFF
-	bool mPrintFlag;	//TeraTerm���̕\����ON,OFF���Ǘ�	true:ON, false:OFF
+	bool mBuzzerFlag;	//		true:ON, false:OFF
+	bool mPrintFlag;	//TeraTermtrue:ON, false:OFF
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
@@ -231,20 +227,20 @@ public:
 
 class EncoderMonitoring : public TaskBase
 {
-	struct timespec mLastSamplingTime;			//�p���X�����T���v�����O�����������ۑ�
-	struct timespec mLastUpdateTime;			//臒l���X�V�����������ۑ�
+	struct timespec mLastSamplingTime;			
+	struct timespec mLastUpdateTime;			
 
-	long long mStoredPulse;			//���莞�ԓ��̃p���X�ő��l(������臒l�Ɏg�p)
-	long long mCurrentMaxPulse;		//���݂̊��ԓ��̃p���X�ő��l
-	long long mPrevDeltaPulseL, mPrevDeltaPulseR;//�O���̃p���X��
+	long long mStoredPulse;			
+	long long mCurrentMaxPulse;		
+	long long mPrevDeltaPulseL, mPrevDeltaPulseR;
 
-	int mUpdateTimer;					//臒l���X�V�����Ԋu(�b)
-	long long mThresholdPulse;			//mStoredPulse���炱�̒l���������l��臒l�ɂȂ�
-	long long mIgnoredDeltaUpperPulse;	//���̒l���ȏ��p���X���������ꍇ��臒l���X�V���Ȃ�
-	long long mIgnoredDeltaLowerPulse;	//���̒l���ȏ��p���X���������ꍇ��臒l���X�V���Ȃ�
-	long long mUpperThreshold;			//臒l�̏���
-	long long mLowerThreshold;			//臒l�̉���
-	bool mIsPrint;								//true�Ȃ�1�b���ƂɃp���X�����\������
+	int mUpdateTimer;					
+	long long mThresholdPulse;			
+	long long mIgnoredDeltaUpperPulse;	
+	long long mIgnoredDeltaLowerPulse;	
+	long long mUpperThreshold;			
+	long long mLowerThreshold;			
+	bool mIsPrint;								
 protected:
 	virtual bool onInit(const struct timespec& time);
 	virtual void onUpdate(const struct timespec& time);
