@@ -449,3 +449,92 @@ Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDe
 Waking::~Waking()
 {
 }
+
+bool WakingFromLie::onInit(const struct timespec& time)
+{
+	mLastUpdateTime = time;
+	mLastDtTime = time;
+	mCurStep = STEP_FORWARD;
+	mCurrentPower = 0;
+	mNotLieCount = 0;
+
+	gMotorDrive.setRunMode(true);
+	//gSServo.setRunMode(true);
+	//gSServo.start(0, 0);
+	//gPoseDetecting.setRunMode(true);
+	mWakeRetryCount = 0;
+
+	return true;
+}
+void WakingFromLie::onUpdate(const struct timespec& time)
+{
+	double dt = Time::dt(time, mLastDtTime);
+	mLastDtTime = time;
+
+	switch (mCurStep)
+	{
+	case STEP_FORWARD:
+		//横転判定、後で加速度センサーで判断２０１７
+		if (!gPoseDetecting.isLie())mNotLieCount++;
+		else mNotLieCount = 0;
+
+		gMotorDrive.drive(mCurrentPower, mCurrentPower);
+
+		if (mNotLieCount > 100 || mCurrentPower >= MOTOR_MAX_POWER)
+		{
+			gMotorDrive.drive(0, 0);
+			mCurStep = STEP_VERIFY;
+			mLastUpdateTime = time;
+		}
+		mCurrentPower += MOTOR_MAX_POWER * dt * (WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
+
+		break;
+	case STEP_VERIFY:
+		if (Time::dt(time, mLastUpdateTime) > 3)
+		{
+			if (!gPoseDetecting.isLie())
+			{
+				Debug::print(LOG_SUMMARY, "WakingFromLie: Successed waking!!\r\n");
+				gBuzzer.start(30, 20, 4);
+				setRunMode(false);
+				return;
+			}
+
+			if (mWakeRetryCount++ >= WAKING_RETRY_COUNT)
+			{
+				setRunMode(false);
+				return;
+			}
+			Debug::print(LOG_SUMMARY, "WakingFromLie: Retrying (%d/%d)\r\n", mWakeRetryCount, WAKING_RETRY_COUNT);
+			gMotorDrive.drive(MOTOR_MAX_POWER, MOTOR_MAX_POWER);
+			mCurStep = STEP_FORWARD;
+			mLastUpdateTime = time;
+			mCurrentPower = 0;
+		}
+		break;
+	}
+}
+bool WakingFromLie::onCommand(const std::vector<std::string>& args)
+{
+	if (args.size() == 2)
+	{
+		mShortestSpeedUpPeriod = atof(args[1].c_str());
+		Debug::print(LOG_SUMMARY, "Command executed!\r\n");
+		return true;
+	}
+	Debug::print(LOG_SUMMARY, "waking [period]: set speed up period\r\n");
+	return true;
+}
+void WakingFromLie::onClean()
+{
+	gMotorDrive.drive(0);
+	//gSServo.moveRun();
+}
+WakingFromLie::WakingFromLie() : mShortestSpeedUpPeriod(10)
+{
+	setName("wakinglie");
+	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+}
+WakingFromLie::~WakingFromLie()
+{
+}
