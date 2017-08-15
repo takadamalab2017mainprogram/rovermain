@@ -563,7 +563,8 @@ void Navigating::onUpdate(const struct timespec& time)
 			mLastNaviMoveCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
-		Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d \r\n",mLastPos.size());
+		Time::showNowTime();
+		Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d mLastpos.push(currentPos)= (%f,%f)\r\n",mLastPos.size(),currentPos.x,currentPos.y);
 	}
 
 
@@ -573,6 +574,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		//ゴール判定
 		gMotorDrive.drive(0);
+		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "Navigating Finished!\r\n");
 		Debug::print(LOG_SUMMARY, "Navigating Finish Point:(%f %f)\r\n", currentPos.x, currentPos.y);
 		nextState();
@@ -581,27 +583,36 @@ void Navigating::onUpdate(const struct timespec& time)
 	//異常値排除
 	if (removeError())
 	{
+		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
 	}
+
 	if (isStuckByGPS()) {
+		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
 		gEscapingByStabiState.setRunMode(true);
 	}
-	else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
-	{
+	else if(gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
+	{	//isStuckByGPS() ==false のとき、ここに入る、脱出完了だから、escaping を終了する
 		//ローバーがひっくり返っている可能性があるため、しばらく前進する
 		gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
 		gEscapingByStabiState.setRunMode(false);
 		gEscapingRandomState.setRunMode(false);
+		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
 		gBuzzer.start(20, 10, 3);
 		
 	}
 	else
 	{
-		//通常のナビゲーション
-		if (mLastPos.size() < 10)return;
+		//スタックしない、escaping 終了したとき、通常のナビゲーション
+		if (mLastPos.size() < 10)
+		{
+			Time::showNowTime();
+			Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size<10 return to navigating \r\n");
+			return;
+		}
 		//過去の座標が10以上(現在の座標をあわせて)なければ処理を返す(進行方向決定不可能)
 		//元の方向で進む
 		
@@ -611,6 +622,8 @@ void Navigating::onUpdate(const struct timespec& time)
 	//方向変更したら、座標データをひとつ残して、mlastposのリストを削除
 	currentPos = mLastPos.back();
 	mLastPos.clear();
+	Time::showNowTime();
+	Debug::print(LOG_SUMMARY, "NAVIGATING: drection changed,in mLastPos.clear(), currentPos(%f,%f)\r\n",currentPos.x,currentPos.y);
 	mLastPos.push_back(currentPos);
 }
 bool Navigating::removeError()
@@ -632,6 +645,7 @@ bool Navigating::removeError()
 		if (VECTOR3::calcDistanceXY(average, *it) > THRESHOLD)
 		{
 			mLastPos.erase(it);
+			Debug::print(LOG_SUMMARY, "In removeError GPS, mLastPos.erase(it)\r\n");
 			removeError();
 			return true;
 		}
@@ -687,7 +701,7 @@ bool Navigating::isStuckByGPS()
 }
 void Navigating::navigationMove(double distance) const
 {
-	//過去の座標の平均値を計算する
+	//過去の座標の平均値を計算する(currentPos を除く)
 	VECTOR3 averagePos;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
 	while (it != mLastPos.end())

@@ -234,7 +234,7 @@ void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 	else mAngle = NineAxisSensor::normalize(angle + mAngle);
 
 	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
-	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f, %d)\r\n", mAngle, mDrivePower);
+	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f angle, %d power)\r\n", mAngle, mDrivePower);
 	mDriveMode = DRIVE_PID;
 
 	if(reset)
