@@ -581,7 +581,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	//数秒たっていなければ処理を返す
+	//Navigating の更新頻度、何秒置き以下の処理をする
 	if(Time::dt(time,mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastNaviMoveCheckTime = time;
 
@@ -599,7 +599,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			gEscapingByStabiState.setRunMode(true);
 		}
 		Time::showNowTime();
-		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK =true, GPS=(%f %f)\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
 
 #pragma region esc by stabi と　esc by random の２つに繰り返す
@@ -641,7 +641,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			gEscapingByStabiState.setRunMode(false);
 			gEscapingRandomState.setRunMode(false);
 			Time::showNowTime();
-			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
+			Debug::print(LOG_SUMMARY, "NAVIGATING: ESCAPING FINISHED,Navigating restart! \r\n");
 			gBuzzer.start(20, 10, 3);
 		}
 		else
@@ -650,7 +650,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			if (mLastPos.size() < 10)
 			{
 				Time::showNowTime();
-				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size<10 return to navigating \r\n");
+				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size=%d <10 NORMAL navigating \r\n",mLastPos.size());
 				return;
 			}
 			//過去の座標が10以上(現在の座標をあわせて)なければ処理を返す(進行方向決定不可能)
@@ -667,7 +667,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
 	Time::showNowTime();
-	Debug::print(LOG_SUMMARY, "NAVIGATING: drection changed,in mLastPos.clear(), currentPos(%f,%f)\r\n",currentPos.x,currentPos.y);
+	Debug::print(LOG_SUMMARY, "NAVIGATING: drection changed, mLastPos.clear(), currentPos(%f,%f)\r\n",currentPos.x,currentPos.y);
 }
 bool Navigating::removeError()
 {
@@ -722,8 +722,8 @@ bool Navigating::isStuckByGPS()
 		}
 		averagePos2 /= i - border;
 		double dist = VECTOR3::calcDistanceXY(averagePos1, averagePos2);
-		Debug::print(LOG_SUMMARY, "ave1(%f ,%f), ave2(%f ,%f)", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
-		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f", mLastPos.size()
+		Debug::print(LOG_SUMMARY, "ave1(%f ,%f), ave2(%f ,%f) \r\n", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
+		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f\r\n", mLastPos.size()
 			, dist);
 		 
 		if (isfinite(dist) && dist<NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
