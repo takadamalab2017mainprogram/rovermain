@@ -671,8 +671,7 @@ void LightSensor::onClean()
 bool LightSensor::onCommand(const std::vector<std::string>& args)
 {
 	if (!isActive())return false;
-	if (get())Debug::pri
-		nt(LOG_SUMMARY, "light is high\r\n");
+	if (get())Debug::print(LOG_SUMMARY, "light is high\r\n");
 	else Debug::print(LOG_SUMMARY, "light is low\r\n");
 	return true;
 }
