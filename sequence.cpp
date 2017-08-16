@@ -667,7 +667,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 		{
-      gMultiServo.Running()
+      gMultiServo.Running();
 			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
 			gEscapingByStabiState.setRunMode(false);
       gEscapingRandomState.setRunMode(false);
