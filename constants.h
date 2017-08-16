@@ -106,9 +106,9 @@ const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3.5 / 111111.1;//ゴー
 
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.8;//ゴール接近時の速度(最大比)
-const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 5;//進行方向を変更する間隔(秒) 2016/08/31 5->1
+const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 1;//進行方向を変更する間隔(秒) 2016/08/31 5->1
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
-const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1/ 111111.1; // NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
+const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 2/ 111111.1; // NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
 const static unsigned long long STUCK_ENCODER_PULSE_THRESHOLD = 3000; // 前回のエンコーダパルス数がこの値以上で、現在のパルス数がこの値以下ならスタック判定とする
 const static unsigned int ESCAPING_BY_STABI_MIN_COUNT = 5; //最低でもこの回数以上EscapingByStabiの動作をする
 const static unsigned int ESCAPING_BY_STABI_MAX_COUNT = 20;//この回数以上EscapingByStabiの動作を繰り返してもスタック脱出できない場合，EscapingRandomに遷移する

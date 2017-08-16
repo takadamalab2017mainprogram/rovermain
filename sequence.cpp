@@ -594,8 +594,8 @@ void Navigating::onUpdate(const struct timespec& time)
 			mLastNaviMoveCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
-		Time::showNowTime();
-		Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d mLastpos.push(currentPos)= (%f,%f)\r\n",mLastPos.size(),currentPos.x,currentPos.y);
+		//Time::showNowTime();
+		//Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d mLastpos.push(currentPos)= (%f,%f)\r\n",mLastPos.size(),currentPos.x,currentPos.y);
 	}
 
 
@@ -677,12 +677,12 @@ void Navigating::onUpdate(const struct timespec& time)
 		else
 		{
 			//スタックしない、escaping 終了したとき、通常のナビゲーション
-			if (mLastPos.size() < 10)
-			{
-				Time::showNowTime();
-				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size=%d <10 NORMAL navigating \r\n",mLastPos.size());
-				return;
-			}		
+//			if (mLastPos.size() < 10)
+//			{
+//				Time::showNowTime();
+//				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size=%d <10 NORMAL navigating \r\n",mLastPos.size());
+//				return;
+//			}		
 		if (mLastPos.size() < mGpsCountMax)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
     }
