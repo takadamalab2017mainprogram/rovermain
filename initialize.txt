@@ -20,6 +20,9 @@ wakinglie 30
 //鬼太郎公園
 navigating 35.66045 139.53934
 alias nc nineaxis calib//
+
+//ローバーの系を設定する
+pose roverid 1
 //
 //
 //*** alias ***
