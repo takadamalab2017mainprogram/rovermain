@@ -49,49 +49,6 @@ public:
   ~Motor();
 };
 
-//エンコーダ2個を管理するクラス(シングルトン)
-//wiringPiの実装の都合上、複数のインスタンスを作成すると正しく動作しません。
-
-/////監視スレッドの管理が微妙だったり、コールバック関数に引数を取れないしでWiringPiの実装が微妙
-////20170616使わないため変更
-///おかしくなるため再び追加
-
-/*
-  class MotorEncoder
-  {
-  private:
-  int mEncoderPinL, mEncoderPinR, mEncoderPin2L, mEncoderPin2R;//エンコーダのピン番号
-  long long mPulseCountL, mPulseCountR;//パルス数
-
-  MotorEncoder();
-  
-  static void pulseLCallback();//エンコーダーパルスが到着したときに呼ばれる割り込み関数
-  static void pulseRCallback();
-  public:
-  static MotorEncoder* getInstance();
-
-  //引数のパルス数を回転数に換算して返す
-  static double convertRotation(long long pulse);
-  
-  //パルスチェック開始
-  bool init();
-  //パルスチェック終了
-  void clean();
-
-  //モータのパルス数を返す(呼んでもリセットされず,蓄積されていきます)
-  long long getL();
-  long long getR();
-
-  //前回パルス数を取得した時との差分パルス数を返す(呼ぶとmPulseCountはリセットされます)
-  long long getDeltaPulseL();
-  long long getDeltaPulseR();
-  
-  //蓄積したパルス数をリセット
-  void reset();
-  
-  ~MotorEncoder();
-  };
-  */
 
 //モータ2個とセンサーを組み合わせて走行するクラス
 class MotorDrive : public TaskBase
@@ -152,13 +109,7 @@ class MotorDrive : public TaskBase
   //制御目標角度は、現在の向き+angle
   void drivePIDGyro(double angle, int power, bool reset = false);
   
-  //エンコーダの値を返す
-  /*
-  long long getR();
-  long long getL();
-  long long getDeltaPulseL();	//差分を返す
-  long long getDeltaPulseR();
-  */
+
 	
   MotorDrive();
   ~MotorDrive();

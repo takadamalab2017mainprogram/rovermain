@@ -2,9 +2,6 @@
 #include <math.h>
 #include <fstream>
 #include <functional>
-//#include <opencv2/opencv.hpp>
-//#include <opencv/cvaux.h>
-//#include <opencv/highgui.h>
 #include <stdarg.h>
 #include <wiringPi.h>
 #include <sys/socket.h>
@@ -15,8 +12,6 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
-//#include "chat.h"
-//#include "image_proc.h"
 #include "subsidiary_sequence.h"
 #include "delayed_execution.h"
 #include "constants.h"
@@ -32,9 +27,7 @@ Waiting gWaitingState;
 Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
-//Modeling gModelingState;
-//ColorAccessing gColorAccessingState;
-//extern Filename gCaptureFilename
+Waking gWakingState;
 
 //////////////////////////////////////////////
 // Testing
@@ -46,22 +39,10 @@ bool Testing::onInit(const struct timespec& time)
 	setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	//gJohnServo.setRunMode(true);
-	//gArmServo.setRunMode(true);
-	//gNeckServo.setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
-	//マルチーズ追加
-	//gServer.setRunMode(true);
-	//gClient.setRunMode(true);
 	gPressureSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
-	//gGyroSensor.setRunMode(true);
-	//gAccelerationSensor.setRunMode(true);
 	gLightSensor.setRunMode(true);
-	//gWebCamera.setRunMode(true);
-	//gDistanceSensor.setRunMode(true);
-	//gCameraCapture.setRunMode(true);
-	//gCameraSave_Sequence.setRunMode(true);
 	gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 
@@ -203,8 +184,6 @@ bool Waiting::onInit(const struct timespec& time)
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
 	gLightSensor.setRunMode(true);
-	//gXbeeSleep.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
-	//Debug::print(LOG_SUMMARY, "Disable Communication\r\ncya!\r\n");
 	gSerialCommand.setRunMode(true);//Xbeeをスリープモードにするならコメントアウトすること
 	gBuzzer.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
@@ -212,7 +191,6 @@ bool Waiting::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	gMultiServo.fold();//スタビたたんでいる状態
   gNineAxisSensor.setRunMode(true);
-//  gNineAxisSensor.isMonitoring = true;
   Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
   //system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
@@ -221,9 +199,8 @@ void Waiting::nextState()
 {
 	gBuzzer.start(100);
   Debug::print(LOG_SUMMARY, "Turning ON Wi-Fi...\r\n");
-  //system("sudo ruby -d /home/pi/network/build_network.rb &");
 	//スリープを解除
-	//gXbeeSleep.setState(false);//Xbeeをスリープモードにするならコメントアウトを解除すること
+  //system("sudo ruby -d /home/pi/network/build_network.rb &");
 
 	//次の状態を設定
 	gFallingState.setRunMode(true);
@@ -232,8 +209,6 @@ void Waiting::nextState()
 }
 void Waiting::onUpdate(const struct timespec& time)
 {
-	//XBeeをスリープモードに設定(ロケット内電波規制)
-	//gXbeeSleep.setState(true);//Xbeeをスリープモードにするならコメントアウトを解除すること
 
 	//明るい場合カウント
 	if (gLightSensor.get())
@@ -283,19 +258,11 @@ bool Falling::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
 	gPressureSensor.setRunMode(true);
-	//gGyroSensor.setRunMode(true);
-	//gAccelerationSensor.setRunMode(true);
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	//gJohnServo.setRunMode(true);
-	//gArmServo.setRunMode(true);
-	//gNeckServo.setRunMode(true);
-	//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);
-	//gMultiServo.start(BACK_STABI_FOLD_ANGLE);
-	//gSServo.setRunMode(true);
 
 	gNineAxisSensor.setRunMode(true);
 	gNineAxisSensor.isMonitoring = false;
@@ -311,14 +278,10 @@ void Falling::onUpdate(const struct timespec& time)
 	{
 		mLastPressure = gPressureSensor.get();
 		gMultiServo.moveHold();
-		//gSServo.moveFold();//スタビを格納状態で固定
-		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE); // 角度調節
 		gMultiServo.fold();//たたむ
-		//gNeckServo.start(0.5);
 	}
 
 	//閾値以下ならカウント
-	//Debug::print(LOG_PRINT,"vx:%f vy:%f vz%f",gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz());
 	if (abs(gNineAxisSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
 	{
 		if (mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
@@ -338,23 +301,10 @@ void Falling::onUpdate(const struct timespec& time)
 	else mContinuousPressureCount = 0;
 	mLastPressure = newPressure;
 
-	//エンコーダの値の差が一定以上ならカウント
-	/*
-	long long newMotorPulseL = gMotorDrive.getL(), newMotorPulseR = gMotorDrive.getR();
-	if (abs(newMotorPulseL - mLastMotorPulseL) > FALLING_MOTOR_PULSE_THRESHOLD && abs(newMotorPulseR - mLastMotorPulseR) > FALLING_MOTOR_PULSE_THRESHOLD)
-	{
-		if (mContinuousMotorPulseCount < FALLING_MOTOR_PULSE_COUNT)++mContinuousMotorPulseCount;
-	}
-	else mContinuousMotorPulseCount = 0;
-	*/
 
 	//判定状態を表示
 	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n", mContinuousPressureCount, FALLING_PRESSURE_COUNT, newPressure);
 	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n", mCoutinuousGyroCount, FALLING_GYRO_COUNT);
-	//Debug::print(LOG_SUMMARY, "MotorPulse Count %d / %d (%lld,%lld)\r\n", mContinuousMotorPulseCount, FALLING_MOTOR_PULSE_COUNT, newMotorPulseL - mLastMotorPulseL, newMotorPulseR - mLastMotorPulseR);
-
-	//mLastMotorPulseL = newMotorPulseL;
-	//mLastMotorPulseR = newMotorPulseR;
 
 	//GPS情報ログ
 	VECTOR3 pos;
@@ -380,9 +330,12 @@ void Falling::nextState()
 	gBuzzer.start(100);
 
 	//次の状態を設定
-	gSeparatingState.setRunMode(true);
+	gWakingState.setRunMode(true);
+	
+	
 
 	Debug::print(LOG_SUMMARY, "Falling Finished!\r\n");
+	
 }
 Falling::Falling() : mLastPressure(0), mLastMotorPulseL(0), mLastMotorPulseR(0), mContinuousPressureCount(0), mCoutinuousGyroCount(0), mContinuousMotorPulseCount(0)
 {
@@ -390,6 +343,61 @@ Falling::Falling() : mLastPressure(0), mLastMotorPulseL(0), mLastMotorPulseR(0),
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
 }
 Falling::~Falling()
+{
+}
+
+//////Waking///////////////////
+/////////////////////////////
+bool Waking::onInit(const struct timespec& time)
+{
+	gMotorDrive.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	gMultiServo.start(BACK_STABI_RUN_ANGLE);
+	gNineAxisSensor.setRunMode(true);
+	mLastUpdateTime = time;
+	gMotorDrive.drive(100);
+
+	return true;
+}
+void Waking::onClean()
+{
+	gMotorDrive.drive(0);
+}
+void Waking::onUpdate(const struct timespec& time)
+{
+
+	if (Time::dt(time, mLastUpdateTime) >= 2) {
+		gMotorDrive.drive(0);
+		nextState();
+		return;
+	}
+	else {
+		return;
+	}
+
+}
+
+void Waking::nextState()
+{
+	//次の状態を設定
+	gWakingState.setRunMode(false);
+	gSeparatingState.setRunMode(true);
+
+	Debug::print(LOG_SUMMARY, "Waking Finished!\r\n");
+
+}
+
+bool Waking::onCommand(const std::vector<std::string>& args)
+{
+	return true;
+}
+
+Waking::Waking()
+{
+	setName("waking");
+	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+}
+Waking::~Waking()
 {
 }
 
@@ -407,17 +415,9 @@ bool Separating::onInit(const struct timespec& time)
 	setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
-	//gSServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	//gJohnServo.setRunMode(true);
-	//gMultiServo.setRunMode(true);
-	//gArmServo.setRunMode(true);
-	//gNeckServo.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	//gGyroSensor.setRunMode(true);
-	//gAccelerationSensor.setRunMode(true);
-	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 
 	mLastUpdateTime = time;
@@ -433,8 +433,6 @@ void Separating::onUpdate(const struct timespec& time)
 	{
 	case STEP_STABI_OPEN:
 		gMultiServo.moveHold();
-		//gJohnServo.start(20); // 角度調節
-		//gSServo.moveRun();//スタビを走行時の位置に移動
 
 		mCurStep = STEP_WAIT_STABI_OPEN;
 		mLastUpdateTime = time;
@@ -472,7 +470,6 @@ void Separating::onUpdate(const struct timespec& time)
 			gMultiServo.stop();
 			mLastUpdateTime = time;
 			mCurStep = STEP_GO_FORWARD;
-			gWakingState.setRunMode(true);
 		}
 		break;
 	case STEP_GO_FORWARD:	//パラ検知後，しばらく直進する
@@ -526,25 +523,16 @@ bool Navigating::onInit(const struct timespec& time)
 	gGPSSensor.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-	//gCameraCapture.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	//	gEncoderMonitoringState.setRunMode(true);
-		//gJohnServo.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	//gArmServo.setRunMode(true);
-	//gNeckServo.setRunMode(true);
-	//gJohnServo.start(FRONT_STABI_RUN_ANGLE); // 角度調節
 	gMultiServo.Running();//走っているときの角度に設定
-	//gArmServo.start(ARM_RUN_ANGLE);
-	//gNeckServo.start(1);
-	//gSServo.setRunMode(true);
-	//gSServo.moveRun();		//スタビを走行時の位置に移動
 	gNineAxisSensor.setRunMode(true);
 	mLastNaviMoveCheckTime = time;
 	mLastArmServoMoveTime = time;
 	mLastArmServoStopTime = time;
 	mLastUpdateTime = time;
 	mArmStopFlag = true;
+	mStuckFlag = false;
 	mLastPos.clear();
   firstTime=true;
 	Debug::print(LOG_SUMMARY, "initializing goal list \r\n", mGoalPos.x, mGoalPos.y);
@@ -585,7 +573,7 @@ void Navigating::onUpdate(const struct timespec& time)
 
 
 	//新しい座標であればバッファに追加
-	if (isNewData && finite(currentPos.x) && finite(currentPos.y) && finite(currentPos.z))
+	if (isNewData && isfinite(currentPos.x) && isfinite(currentPos.y) && isfinite(currentPos.z))
 	{
     if(firstTime){
       Debug::print(LOG_SUMMARY, "Calculating route...\r\n",(int)goal.z);
@@ -602,17 +590,17 @@ void Navigating::onUpdate(const struct timespec& time)
 			Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n", currentPos.x, currentPos.y);
 			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
 			gMultiServo.Running();
-			//gPredictingState.setRunMode(true);
 			distance_from_goal_to_start = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
 			mLastNaviMoveCheckTime = time;
 		}
 		mLastPos.push_back(currentPos);
+		Time::showNowTime();
+		Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d mLastpos.push(currentPos)= (%f,%f)\r\n",mLastPos.size(),currentPos.x,currentPos.y);
 	}
 
 
 	//ゴールとの距離を確認
 	double distance = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
-	//double p = distance/distance_from_goal_to_start;
 
 	//途中のゴールに到達しているかのフラグ
 	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
@@ -623,95 +611,94 @@ void Navigating::onUpdate(const struct timespec& time)
     getGoal(goal);
 	}
 
-	//数秒たっていなければ処理を返す
-	//if (Time::dt(time, mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
-	//mLastNaviMoveCheckTime = time;
+	//Navigating の更新頻度、何秒置き以下の処理をする
+	if(Time::dt(time,mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
+	mLastNaviMoveCheckTime = time;
 
-		//gCameraCapture.wadatisave();	
-
-	//異常値排除
+	//異常値排除,2個以下なら、	removeError()=false
 	if (removeError())
 	{
+		Time::showNowTime();
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
+		//return;
 	}
-	//if (gPredictingState.isWorking(time))
-	//{
-	//	//轍回避中
-	//}
-	//else if (isStuckByGPS())//GPSスタック判定
-	//{
-	//	if ((!gEscapingRandomState.isActive()) && (!gLearningEscapeState.isActive()))
-	//	{
-	//		gEscapingByStabiState.setRunMode(true);
-	//		//gEsc4State.setRunMode(true);
-	//	}
-	//	Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK detected by GPS at (%f %f)\r\n", currentPos.x, currentPos.y);
-	//	gBuzzer.start(20, 10, 8);
-
-	//	if (gEscapingByStabiState.isActive())		//EscapingByStabi中
-	//	{
-	//		if (gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_MAX_COUNT) {
-	//			gEscapingByStabiState.setRunMode(false);
-	//			Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping w/ GA Start! \r\n");
-	//			gLearningEscapeState.setRunMode(true);
-	//		}
-	//	}
-	//	else if (gLearningEscapeState.isActive() && gLearningEscapeState.getTryCount() >= LEARNING_ESCAPING_LIMIT) {
-	//		//EscapingRandomに移行
-	//		gLearningEscapeState.setRunMode(false);
-	//		//gSServo.moveRun();  //スタビを通常の状態に戻す
-	//		Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping Random Start! \r\n");
-	//		gEscapingRandomState.setRunMode(true);
-	//		mEscapingRandomStartTime = time;
-	//	}
-	//	else if (gEscapingRandomState.isActive())//EscapingRandom中
-	//	{
-	//		if (Time::dt(time, mEscapingRandomStartTime) > ESCAPING_RANDOM_TIME_THRESHOLD)
-	//		{
-	//			//EscapingByStabiに移行
-	//			gEscapingRandomState.setRunMode(false);
-	//			Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping ByStabi Start! \r\n");
-	//			gEscapingByStabiState.setRunMode(true);
-	//		}
-	//	}
-	//}
-	//else
-	//{
-	if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())//脱出モードが完了した時
-	{
-		//if (gEscapingByStabiState.isActive() && gEscapingByStabiState.getTryCount() < ESCAPING_BY_STABI_MIN_COUNT)//少なくとも何回かは芋虫動作をする
+#pragma region スタックしたときの処理
+	else if (isStuckByGPS()) {
+		if (!gEscapingRandomState.isActive())
 		{
-			//スタック脱出処理続行
-		//}
-		//else
-		//{
-			//ローバーがひっくり返っている可能性があるため、しばらく前進する
-			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
-			gEscapingByStabiState.setRunMode(false);
-			gEscapingRandomState.setRunMode(false);
-			//gSServo.moveRun();  //スタビを通常の状態に戻す
-			Debug::print(LOG_SUMMARY, "NAVIGATING: Navigating restart! \r\n");
-			//			gEncoderMonitoringState.setRunMode(true);	//EncoderMoniteringを再開する
-			gBuzzer.start(20, 10, 3);
-		}//
+			gEscapingByStabiState.setRunMode(true);
+		}
+		Time::showNowTime();
+		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK =true, GPS=(%f %f)\r\n", currentPos.x, currentPos.y);
+		gBuzzer.start(20, 10, 8);
+
+#pragma region esc by stabi と　esc by random の２つに繰り返す
+		if (gEscapingByStabiState.isActive())		//EscapingByStabi中
+		{
+			if (gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_MAX_COUNT)
+			{
+				//EscapingRandomに移行
+				gEscapingByStabiState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping Random Start! \r\n");
+				gEscapingRandomState.setRunMode(true);
+				mEscapingRandomStartTime = time;
+			}
+		}
+		else if (gEscapingRandomState.isActive())	//EscapingRandom中
+		{
+			if (Time::dt(time, mEscapingRandomStartTime) > ESCAPING_RANDOM_TIME_THRESHOLD)
+			{
+				//EscapingByStabiに移行
+				gEscapingRandomState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "NAVIGATING: Escaping ByStabi Start! \r\n");
+				gEscapingByStabiState.setRunMode(true);
+			}
+		}
+#pragma endregion
+
+
+
+		return;//chou
 	}
+#pragma endregion
+
+#pragma region スタックしないときの処理
 	else
 	{
-		//通常のナビゲーション
+		if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
+		{
+			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
+			gEscapingByStabiState.setRunMode(false);
+				Time::showNowTime();
+			Debug::print(LOG_SUMMARY, "NAVIGATING: ESCAPING FINISHED,Navigating restart! \r\n");
+			gBuzzer.start(20, 10, 3);
+		}
+		else
+		{
+			//スタックしない、escaping 終了したとき、通常のナビゲーション
+			if (mLastPos.size() < 10)
+			{
+				Time::showNowTime();
+				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size=%d <10 NORMAL navigating \r\n",mLastPos.size());
+				return;
+			}		gEscapingRandomState.setRunMode(false);
 		if (mLastPos.size() < mGpsCountMax)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
 	}
-	//}
+#pragma endregion
 
-	//座標データをひとつ残して削除
+	
+	//方向変更したら、座標データをひとつ残して、mlastposのリストを削除
 	currentPos = mLastPos.back();
 	mLastPos.clear();
 	mLastPos.push_back(currentPos);
-
 }
+
 bool Navigating::removeError()
 {
-	if (mLastPos.size() <= 2)return false;//最低2点は残す
+	if (mLastPos.size() <= 2)
+		Debug::print(LOG_SUMMARY, "in removeError,mLastpos <= 2, size()= %d",mLastPos.size());
+		return false;//最低2点は残す
 	std::list<VECTOR3>::iterator it = mLastPos.begin();
 	VECTOR3 average, sigma;
 	while (it != mLastPos.end())
@@ -728,6 +715,7 @@ bool Navigating::removeError()
 		if (VECTOR3::calcDistanceXY(average, *it) > THRESHOLD)
 		{
 			mLastPos.erase(it);
+			Debug::print(LOG_SUMMARY, "In removeError GPS, mLastPos.erase(it)\r\n");
 			removeError();
 			return true;
 		}
@@ -735,31 +723,55 @@ bool Navigating::removeError()
 	}
 	return false;
 }
-bool Navigating::isStuckByGPS() const
+bool Navigating::isStuckByGPS() 
 {
 	//スタック判定
 	VECTOR3 averagePos1, averagePos2;
 	unsigned int i, border;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
-	for (i = 0; i < mLastPos.size() / 2; ++i)
-	{
-		averagePos1 += *it;
-		it++;
-	}
-	averagePos1 /= border = i;
+	
+	//過去の位置が２個以上なら、2つに分けて、その平均の差を計算する
+	//if (mLastPos.size()>8) {
+		for (i = 0; i < mLastPos.size() / 2; ++i)
+		{
+			averagePos1 += *it;
+			it++;
+		}
+		border = i;
+		averagePos1 /= border;
 
-	for (; i < mLastPos.size(); ++i)
-	{
-		averagePos2 += *it;
-		it++;
-	}
-	averagePos2 /= i - border;
+		for (; i < mLastPos.size(); ++i)
+		{
+			averagePos2 += *it;
+			it++;
+		}
+		averagePos2 /= i - border;
+		double dist = VECTOR3::calcDistanceXY(averagePos1, averagePos2);
+		Debug::print(LOG_SUMMARY, "ave1(%f ,%f), ave2(%f ,%f) \r\n", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
+		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f\r\n", mLastPos.size()
+			, dist);
+		 
+		if (isfinite(dist) && dist<NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
+			Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = true\r\n",mLastPos.size());
+			mStuckFlag = true;//移動量が閾値以下ならスタックと判定
+		}
+		else {
+			Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = false\r\n",mLastPos.size());
+			mStuckFlag = false;
+		}
+			
+		return mStuckFlag;
+	//}
+	//else {
+		//判断の位置数がある数以下なら、前回の結果を返す、判断しない
+	//	Debug::print(LOG_SUMMARY, "mLastPos.size() <<8, mStuckFlag is unknow = %d \r\n",mStuckFlag);
+	//	return mStuckFlag;
+	//}
 
-	return VECTOR3::calcDistanceXY(averagePos1, averagePos2) < NAVIGATING_STUCK_JUDGEMENT_THRESHOLD;//移動量が閾値以下ならスタックと判定
 }
 void Navigating::navigationMove(double distance) const
 {
-	//過去の座標の平均値を計算する
+	//過去の座標の平均値を計算する(currentPos を除く)
 	VECTOR3 averagePos;
 	std::list<VECTOR3>::const_iterator it = mLastPos.begin();
 	while (it != mLastPos.end())
@@ -798,7 +810,6 @@ double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirectio
 	if (distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)
 	{
 		speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;	//接近したら速度を落とす
-//		gEncoderMonitoringState.setRunMode(false);		//エンコーダによるスタック判定をOFF
 	}
 
 	//Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
@@ -879,9 +890,6 @@ bool Navigating::onCommand(const std::vector<std::string>& args)
 void Navigating::nextState()
 {
 	gBuzzer.start(1000);
-
-	//gColorAccessingState.setRunMode(true);
-	//gModelingState.setRunMode(true);
 
 	gMotorDrive.drive(0);//念のため2回
 	gMotorDrive.drive(0);

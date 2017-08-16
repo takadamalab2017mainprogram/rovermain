@@ -77,7 +77,6 @@ TaskManager::~TaskManager()
 }
 TaskManager* TaskManager::getInstance()
 {
-	//static TaskManager signleton;
 	static TaskManager __attribute__((section("AHBSRAM0"))) signleton;// use mbed ethernet area
 	return &signleton;
 }
@@ -109,8 +108,6 @@ bool TaskManager::command(const std::string& arg)
 	std::vector<std::string> args;
 	std::string arg_mod(arg);
 
-	//文字列の下処理
-	//std::transform(arg_mod.begin(), arg_mod.end(), arg_mod.begin(), toLower<char>);//全て小文字に変換
 #ifdef USE_ALIAS
 	applyAlias(arg_mod);//Aliasを適用
 #endif
@@ -322,7 +319,6 @@ void TaskManager::del(TaskBase* pTask)
 		}
 		++it;
 	}
-	//Debug::print(LOG_DETAIL ,"TaskManager(del): Task Not Found!\r\n");
 }
 void  TaskManager::sortByPriority()
 {
