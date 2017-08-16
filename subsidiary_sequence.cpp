@@ -258,6 +258,8 @@ void Waking::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "in STEP CHECK LIE!\r\n");
 		if (gPoseDetecting.isLie())
 		{
+		Debug::print(LOG_SUMMARY, "LieAngle= %f, LieThreshold= %f!\r\n",gPoseDetecting.getLieAngle(),gPoseDetecting.getLieThreshold());
+		Debug::print(LOG_SUMMARY, "accel = (%f, %f, %f)\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(),gNineAxisSensor.getAz());
 		gWakingFromLie.setRunMode(true);
 		mCurStep = STEP_WAIT_LIE;
 		return;
@@ -275,6 +277,7 @@ void Waking::onUpdate(const struct timespec& time)
 		gMotorDrive.drive(mStartPower);		
 		mAngleOnBegin = gNineAxisSensor.getRz(); //gGyroSensor.getRz();
 		Debug::print(LOG_SUMMARY, "in STEP WAIT LIE\r\n");
+		Debug::print(LOG_SUMMARY, "accel = (%f, %f, %f)\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz());
 		mLastUpdateTime = time;
 		mCurStep = STEP_START;
 		break;
@@ -347,7 +350,7 @@ void Waking::onUpdate(const struct timespec& time)
 		{
 		//
 		Debug::print(LOG_SUMMARY, "FlipAngle= %f , FlipThreshold= %f !\r\n", abs(gPoseDetecting.getFlipAngle()), gPoseDetecting.getmFlipThreshold());
-			
+		Debug::print(LOG_SUMMARY, "accel = (%f, %f, %f)\r\n", gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz());
 		Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
 		gBuzzer.start(30, 20, 4);
 		setRunMode(false);

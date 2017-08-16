@@ -22,6 +22,7 @@ private:
 	double mFlipThreshold, mLieThreshold;
 	//2017 
 	double mFlipAngle;
+	double mLieAngle;
 
 	VECTOR3 mLastGpsPos;
 	int mLastGpsSampleTime;
@@ -64,7 +65,10 @@ public:
 
 	bool isFlipCoord() const;
 	//横転を検知
-	bool isLie() const;
+	bool isLie();
+	double getLieAngle()const;
+	double getLieThreshold()const;
+
 
 	bool isIllegalAccel(const VECTOR3& accel) const;
 

@@ -284,18 +284,25 @@ double PoseDetecting::getFlipAngle()const {
 double PoseDetecting::getmFlipThreshold()const {
 	return mFlipThreshold;
 }
+
 bool PoseDetecting::isFlipCoord() const
 {
 	QUATERNION qTop(0,0,1,0);
 	qTop = mEstimatedAngle.inverse() * qTop * mEstimatedAngle;
 	return qTop.z < 0;
 }
-bool PoseDetecting::isLie() const
+bool PoseDetecting::isLie() 
 {
 	QUATERNION qLeft(0,1,0,0);
 	qLeft = mEstimatedAngle.inverse() * qLeft * mEstimatedAngle;
-	double lieAngle = NineAxisSensor::normalize(asin(qLeft.z) * 180 / M_PI);
-	return abs(lieAngle) > mLieThreshold && abs(lieAngle) < 180 - mLieThreshold;
+	mLieAngle = NineAxisSensor::normalize(asin(qLeft.z) * 180 / M_PI);
+	return abs(mLieAngle) > mLieThreshold && abs(mLieAngle) < 180 - mLieThreshold;
+}
+double PoseDetecting::getLieAngle()const {
+	return mLieAngle;
+}
+double PoseDetecting::getLieThreshold()const {
+	return mLieThreshold;
 }
 bool PoseDetecting::isIllegalAccel(const VECTOR3& accel) const
 {
