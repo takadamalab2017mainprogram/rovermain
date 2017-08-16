@@ -271,12 +271,18 @@ double PoseDetecting::getVelocity() const
 {
 	return mEstimatedVelocity;
 }
-bool PoseDetecting::isFlip() const
+bool PoseDetecting::isFlip() 
 {
 	QUATERNION qTop(0,0,1,0);
 	qTop = mEstimatedAngle.inverse() * qTop * mEstimatedAngle;
-	double flipAngle = NineAxisSensor::normalize(acos(qTop.z) * 180 / M_PI);
-	return abs(flipAngle) > mFlipThreshold;
+	mFlipAngle = NineAxisSensor::normalize(acos(qTop.z) * 180 / M_PI);
+	return abs(mFlipAngle) > mFlipThreshold;
+}
+double PoseDetecting::getFlipAngle()const {
+	return mFlipAngle;
+}
+double PoseDetecting::getmFlipThreshold()const {
+	return mFlipThreshold;
 }
 bool PoseDetecting::isFlipCoord() const
 {

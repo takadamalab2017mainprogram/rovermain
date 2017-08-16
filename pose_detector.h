@@ -20,6 +20,8 @@ private:
 	double mAngleLPFCoeff;
 	double mAccelUsableRange;
 	double mFlipThreshold, mLieThreshold;
+	//2017 
+	double mFlipAngle;
 
 	VECTOR3 mLastGpsPos;
 	int mLastGpsSampleTime;
@@ -55,7 +57,11 @@ public:
 	double getVelocity() const;
 
 	//ひっくり返ったことを検知
-	bool isFlip() const;
+	bool isFlip() ;
+	double getFlipAngle()const;
+	double getmFlipThreshold()const;
+
+
 	bool isFlipCoord() const;
 	//横転を検知
 	bool isLie() const;

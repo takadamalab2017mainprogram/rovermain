@@ -345,6 +345,9 @@ void Waking::onUpdate(const struct timespec& time)
 		
 		if (!gPoseDetecting.isFlip())
 		{
+		//
+		Debug::print(LOG_SUMMARY, "FlipAngle= %f , FlipThreshold= %f !\r\n", abs(gPoseDetecting.getFlipAngle()), gPoseDetecting.getmFlipThreshold());
+			
 		Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
 		gBuzzer.start(30, 20, 4);
 		setRunMode(false);
