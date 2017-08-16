@@ -11,11 +11,13 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
+#include "pose_detector.h"
 
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 SensorLogging gSensorLoggingState;
 Waking gWakingState;
+
 
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
@@ -474,7 +476,8 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_FORWARD:
-		//横転判定、後で加速度センサーで判断２０１７
+		//横転判定、後で加速度センサーで判断、PoseDetecting.cpp 1いらない、２０１７
+		//if (!gPoseDetecting.isLie())mNotLieCount++;
 		if (!gPoseDetecting.isLie())mNotLieCount++;
 		else mNotLieCount = 0;
 
