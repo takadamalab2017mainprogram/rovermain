@@ -17,7 +17,6 @@ EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 SensorLogging gSensorLoggingState;
 Waking gWakingState;
-PoseDetecting gPoseDetecting;
 
 
 bool EscapingByStabi::onInit(const struct timespec& time)
