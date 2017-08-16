@@ -131,7 +131,7 @@ void EscapingRandom::onUpdate(const struct timespec& time)
 	//if (RandomCount > 10) {
 	//	gEscapingRandomState.setRunMode(false);
 	//	gEscapingByStabiState.setRunMode(true);
-	}
+	//}
 
 
 }

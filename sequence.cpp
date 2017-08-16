@@ -536,7 +536,7 @@ bool Navigating::onInit(const struct timespec& time)
 	mLastPos.clear();
   firstTime=true;
 	Debug::print(LOG_SUMMARY, "initializing goal list \r\n", mGoalPos.x, mGoalPos.y);
-  system("sudo ruby /home/pi/network/reset_goal.rb")
+  system("sudo ruby /home/pi/network/reset_goal.rb");
 	getGoal(goal);
 
 	//最初の座標をゴールにする
@@ -623,7 +623,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//return;
 	}
 #pragma region スタックしたときの処理
-	else if (isStuckByGPS()) {
+  else if (isStuckByGPS()) {
 		if (!gEscapingRandomState.isActive())
 		{
 			gEscapingByStabiState.setRunMode(true);
@@ -669,6 +669,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		{
 			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
 			gEscapingByStabiState.setRunMode(false);
+      gEscapingRandomState.setRunMode(false);
 				Time::showNowTime();
 			Debug::print(LOG_SUMMARY, "NAVIGATING: ESCAPING FINISHED,Navigating restart! \r\n");
 			gBuzzer.start(20, 10, 3);
@@ -681,9 +682,10 @@ void Navigating::onUpdate(const struct timespec& time)
 				Time::showNowTime();
 				Debug::print(LOG_SUMMARY, "NAVIGATING: mLastPos.size=%d <10 NORMAL navigating \r\n",mLastPos.size());
 				return;
-			}		gEscapingRandomState.setRunMode(false);
+			}		
 		if (mLastPos.size() < mGpsCountMax)return;//過去の座標が1つ以上(現在の座標をあわせて2つ以上)なければ処理を返す(進行方向決定不可能)
 		navigationMove(distance);//過去の座標から進行方向を変更する
+    }
 	}
 #pragma endregion
 
