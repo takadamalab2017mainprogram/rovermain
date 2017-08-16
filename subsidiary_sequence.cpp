@@ -463,7 +463,7 @@ bool WakingFromLie::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	//gSServo.setRunMode(true);
 	//gSServo.start(0, 0);
-	//gPoseDetecting.setRunMode(true);
+	gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
