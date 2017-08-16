@@ -547,10 +547,12 @@ bool Navigating::onInit(const struct timespec& time)
 	mArmStopFlag = true;
 	mLastPos.clear();
   firstTime=true;
+	Debug::print(LOG_SUMMARY, "initializing goal list \r\n", mGoalPos.x, mGoalPos.y);
+  system("sudo ruby /home/pi/network/reset_goal.rb")
 	getGoal(goal);
 
 	//最初の座標をゴールにする
-	Debug::print(LOG_SUMMARY, "init goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
+	//Debug::print(LOG_SUMMARY, "init goal is setted at ( %lf,%lf ) \r\n", mGoalPos.x, mGoalPos.y);
 	mIsGoalPos = true;
 
 	return true;
@@ -799,8 +801,8 @@ double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirectio
 //		gEncoderMonitoringState.setRunMode(false);		//エンコーダによるスタック判定をOFF
 	}
 
-	Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
-  Debug::print(LOG_SUMMARY, "current angle = %f goal angle = %f",currentDirection, newDirection);
+	//Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
+  //Debug::print(LOG_SUMMARY, "current angle = %f goal angle = %f",currentDirection, newDirection);
 	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n", distance * DEGREE_2_METER, deltaDirection, deltaDirection > 0 ? "LEFT" : "RIGHT");
 
 	//方向と速度を変更
@@ -956,51 +958,7 @@ void Navigating::getGoal(VECTOR3& goal) {
     mGoalPos=goal;
     mIsGoalPos = true;
   }
-
 }
-//PassedGoal.txt に通過したゴールを書き込む
-//void Navigating::writePassedGoal(std::list<VECTOR3>& PassedGoal, VECTOR3& mGoalPos) {
-//	PassedGoal.push_back(mGoalPos);
-//
-//	//一旦PassedGoal.txt を削除し
-//	if (remove("PassedGoal.txt") == 0) {
-//		//削除成功した
-//	}
-//	else {
-//		std::cout << "failled delete PassedGoal.txt" << std::endl;
-//	}
-//
-//	std::string filename = "PassedGoal.txt";
-//	std::ofstream write_file;
-//	write_file.open(filename, std::ios::out);
-//
-//	for (auto itr = PassedGoal.begin(); itr != PassedGoal.end(); ++itr) {
-//		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
-//		Debug::print(LOG_SUMMARY, "PassedGoal ( %f %f )\r\n", itr->x, itr->y);
-//	}
-//}
-
-//GoalList（削除済み）をGoalList.txtに書き込む
-//void Navigating::deleteGoalList(std::list<VECTOR3>& GoalList) {
-//	//GoalList から通過したゴールを削除
-//	GoalList.pop_front();
-//
-//	//一旦GoalList.txt を削除し
-//	if (remove("GoalList.txt") == 0) {
-//		//削除成功した
-//	}
-//	else {
-//		std::cout << "failled delete GoalList.txt" << std::endl;
-//	}
-//
-//	std::string filename = "GoalList.txt";
-//	std::ofstream write_file;
-//	write_file.open(filename, std::ios::out);
-//
-//	for (auto itr = GoalList.begin(); itr != GoalList.end(); ++itr) {
-//		write_file << itr->x << "," << itr->y << "," << itr->z << std::endl;
-//	}
-//}
 Navigating::~Navigating()
 {
 }

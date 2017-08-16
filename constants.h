@@ -56,7 +56,7 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.5;	//通常時のスタビ角度
 
-const static double STABI_RUNNING_ANGLE = 0.7;//走ってるときの角度
+const static double STABI_RUNNING_ANGLE = 0;//走ってるときの角度
 const static double STABI_RELEASE_ANGLE = -0.9;//パラ切り離し
 const static double STABI_HOLD_ANGLE = 1.0;//
 const static double STABI_FOLD_ANGLE = -0.7;//たたんでいる
@@ -106,7 +106,7 @@ const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変�
 const static unsigned int SEPARATING_SERVO_COUNT = 30;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
-const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 2 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3.5 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.8;//ゴール接近時の速度(最大比)
 const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 1;//進行方向を変更する間隔(秒) 2016/08/31 5->1
