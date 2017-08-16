@@ -599,6 +599,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			Time::showNowTime();//制御開始時刻をログに出力
 			Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n", currentPos.x, currentPos.y);
 			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
+			gMultiServo.Running();
 			//gPredictingState.setRunMode(true);
 			distance_from_goal_to_start = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
 			mLastNaviMoveCheckTime = time;
