@@ -255,16 +255,17 @@ void Waking::onUpdate(const struct timespec& time)
 	switch (mCurStep)
 	{
 	case STEP_CHECK_LIE:
-		/*
+		Debug::print(LOG_SUMMARY, "in STEP CHECK LIE!\r\n");
 		if (gPoseDetecting.isLie())
 		{
-		gWakingFromLieState.setRunMode(true);
+		gWakingFromLie.setRunMode(true);
 		mCurStep = STEP_WAIT_LIE;
 		return;
 		}
-		*/
+		
 		//gJohnServo.start(FRONT_STABI_FOLD_ANGLE);//角度調節
 		gMultiServo.start(BACK_STABI_RUN_ANGLE);
+		
 		//gArmServo.start(ARM_FOLD_ANGLE);
 		//gNeckServo.start(NECK_FOLD_ANGLE);
 		// Do following case without breaking
@@ -273,7 +274,7 @@ void Waking::onUpdate(const struct timespec& time)
 		//begin waking
 		gMotorDrive.drive(mStartPower);		
 		mAngleOnBegin = gNineAxisSensor.getRz(); //gGyroSensor.getRz();
-
+		Debug::print(LOG_SUMMARY, "in STEP WAIT LIE\r\n");
 		mLastUpdateTime = time;
 		mCurStep = STEP_START;
 		break;
@@ -331,17 +332,17 @@ void Waking::onUpdate(const struct timespec& time)
 		}
 		else
 		{
-			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2/*2�Ŋ���*/)), 0);
+			int tmp_power = std::max((int)((1 - dt / mDeaccelerateDuration) * (mStartPower / 2)), 0);
 			gMotorDrive.drive(tmp_power);
 		}
 		break;
 
 	case STEP_VERIFY:
-		if (Time::dt(time, mLastUpdateTime) <= 2.5)	
-		{
-			return;
-		}
-		/*
+		//2.5秒置き　姿勢をチェックする
+		if (Time::dt(time, mLastUpdateTime) <= 2.5)	return;
+		
+		Debug::print(LOG_SUMMARY, "in STEP VERIFY !\r\n");
+		
 		if (!gPoseDetecting.isFlip())
 		{
 		Debug::print(LOG_SUMMARY, "Waking Successed!\r\n");
@@ -371,7 +372,7 @@ void Waking::onUpdate(const struct timespec& time)
 		//gArmServo.start(ARM_FOLD_ANGLE);
 		//gNeckServo.start(NECK_FOLD_ANGLE);
 		Debug::print(LOG_SUMMARY, "Waking will be retried (%d / %d) by power %f\r\n", mWakeRetryCount, WAKING_RETRY_COUNT, power);
-		}*/
+		}
 		break;
 	}
 }
