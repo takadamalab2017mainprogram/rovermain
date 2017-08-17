@@ -21,8 +21,6 @@ bool Motor::init(int powPin, int revPin)
 	ForwardPin = powPin;
 	//モーター後ろ回りピン
 	ReversePin = revPin;
-//Debug::print(LOG_SUMMARY, "これがForwardPin番号%d\r\n",ForwardPin);
-//Debug::print(LOG_SUMMARY, "これReversePin番号%d\r\n",ReversePin);
 	//前ピンを出力モードに
 	pinMode(ForwardPin, OUTPUT);
 	if (softPwmCreate(ForwardPin, 0, 100) != 0)
@@ -63,7 +61,6 @@ void Motor::update(double elapsedSeconds)
 			curFrameTarget = mCurPower;
 			//現在の出力に最大出力変化量5を足すか引くかする
 			curFrameTarget += ((mTargetPower > mCurPower) ? maxMotorPowerChange : -maxMotorPowerChange);
-      //Debug::print(LOG_SUMMARY,"MOTOR power Limitation %f %f(%d) \r\n",mCurPower,curFrameTarget,mTargetPower);
 		}
 
 		    //新しいpowerをもとにpinの状態を設定する
@@ -103,90 +100,6 @@ Motor::~Motor()
 {
 }
 
-/*
-MotorEncoder* MotorEncoder::getInstance()
-{
-	static MotorEncoder singleton;
-return &singleton;
-}
-
-void MotorEncoder::pulseLCallback()
-{
-	MotorEncoder::getInstance()->mPulseCountL++;
-	digitalRead(MotorEncoder::getInstance()->mEncoderPin2L) == 1 ? MotorEncoder::getInstance()->mPulseCountL-- : MotorEncoder::getInstance()->mPulseCountL++;
-}
-void MotorEncoder::pulseRCallback()
-{
-	MotorEncoder::getInstance()->mPulseCountR++;
-  	digitalRead(MotorEncoder::getInstance()->mEncoderPin2R)==1 ? MotorEncoder::getInstance()->mPulseCountR++ : MotorEncoder::getInstance()->mPulseCountR--;
-}		
-bool MotorEncoder::init()
-{
-mPulseCountL = mPulseCountR = 0;
-
-	//ピンのパルスを監視する
-	if (wiringPiISR(mEncoderPinL, INT_EDGE_RISING, pulseLCallback) == -1 || wiringPiISR(mEncoderPinR, INT_EDGE_RISING, pulseRCallback) == -1)
-	{
-		Debug::print(LOG_SUMMARY, "Failed to onInitialize Motor encoder\r\n");
-		return false;
-	}
-	return true;
-}
-void MotorEncoder::clean()
-{
-	//両方のピンの割り込みを無効にする
-	char command[64];
-	sprintf(command, "/usr/local/bin/gpio edge %d none", mEncoderPinL);
-	system(command);
-	sprintf(command, "/usr/local/bin/gpio edge %d none", mEncoderPinR);
-	system(command);
-
-	//スレッドが複数残ることを防止するためsleep
-	delay(100);
-}
-long long MotorEncoder::getL()
-{
-	//エンコーダーで左側のパルス数を取得
-	return mPulseCountL;
-}
-long long MotorEncoder::getR()
-{
-	//エンコーダーで右側のパルス数を取得
-	return mPulseCountR;
-}
-long long MotorEncoder::getDeltaPulseL()
-{
-	long long ret = mPulseCountL;
-	mPulseCountL = 0; //リセット
-	return ret;
-}
-long long MotorEncoder::getDeltaPulseR()
-{
-	long long ret = mPulseCountR;
-	mPulseCountR = 0; //リセット
-	return ret;
-}
-double MotorEncoder::convertRotation(long long pulse)
-{
-	//分解能とギア比で割る
-	return pulse / (double)(RESOLVING_POWER * GEAR_RATIO);
-}
-void MotorEncoder::reset()
-{
-	mPulseCountL = 0;
-	mPulseCountR = 0;
-	Debug::print(LOG_SUMMARY, "Motor Pulse Count Reset\r\n");
-}
-
-MotorEncoder::MotorEncoder() : mEncoderPinL(PIN_PULSE_B), mEncoderPinR(PIN_PULSE_A), mPulseCountL(0), mPulseCountR(0)
-{
-	pinMode(mEncoderPin2L, INPUT);
-	pinMode(mEncoderPin2R, INPUT);
-}
-MotorEncoder::~MotorEncoder()
-{
-}
-*/
 
 bool MotorDrive::onInit(const struct timespec& time)
 {
@@ -199,13 +112,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motors\r\n");
 		return false;
 	}
-	/*
-	if (!mpMotorEncoder->init())
-	{
-		Debug::print(LOG_SUMMARY, "Failed to initialize Motor Encoders\r\n");
-		return false;
-	}
-	*/
+	
 	
 	if (clock_gettime(CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
 	{
@@ -309,14 +216,14 @@ void MotorDrive::drive(int power)
 
 void MotorDrive::setPIDGyro(double p, double i, double d)
 {
-	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
+	//Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
 	mPIDGyro.x = p;
 	mPIDGyro.y = i;
 	mPIDGyro.z = d;
 }
 void MotorDrive::setPIDPose(double p, double i, double d)
 {
-	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
+	//Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
 	mPIDPose.x = p;
 	mPIDPose.y = i;
 	mPIDPose.z = d;
@@ -327,7 +234,7 @@ void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 	else mAngle = NineAxisSensor::normalize(angle);
 
 	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
-	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f, %d)\r\n", mAngle, mDrivePower);
+	//Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f angle, %d power)\r\n", mAngle, mDrivePower);
 	mDriveMode = DRIVE_PID;
 
 	if(reset)
@@ -342,7 +249,6 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 	if (size == 1)
 	{
 	  Debug::print(LOG_SUMMARY, "Current Motor Ratio : %d %d\r\n", mMotorL.getPower(), -mMotorR.getPower());
-	  //Debug::print(LOG_SUMMARY, "Current Motor Pulse : %lld %lld\r\n", mpMotorEncoder->getL(), mpMotorEncoder->getR());
 	}
 	else if (size >= 2)
 	{
@@ -436,24 +342,7 @@ motor [l] [r]      : drive motor by specified ratio\r\n\
 motor [cpose/cgyro] [param]   : set max control ratio\r\n");
 	return true;
 }
-/*
-long long MotorDrive::getL()
-{
-	return mpMotorEncoder->getL();
-}
-long long MotorDrive::getR()
-{
-	return mpMotorEncoder->getR();
-}
-long long MotorDrive::getDeltaPulseL()
-{
-	return mpMotorEncoder->getDeltaPulseL();
-}
-long long MotorDrive::getDeltaPulseR()
-{
-	return mpMotorEncoder->getDeltaPulseR();
-}
-*/
+
 MotorDrive::MotorDrive() : mMotorL(), mMotorR(), mDriveMode(DRIVE_RATIO), mRatioL(100), mRatioR(100), mPIDGyro(0.003, 0, 0), mPIDPose(0.006, 0, 0), mMaxPIDControlRatioGyro(1), mMaxPIDControlRatioPose(0.5), mDiff1(0), mDiff2(0), mDiff3(0), mAngle(0), mControlPower(0), mDrivePower(0)
 {
 	setName("motor");

@@ -28,10 +28,6 @@ const static int PIN_BUZZER = 5;//ブザー                               Clear!
 const static int PIN_XBEE_SLEEP = 29;//XBeeスリープピン
 const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
 const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
-//const static int PIN_JOHN_SERVO = 25;//                                 Clear!
-//const static int PIN_MIKE_SERVO = ;       //スタビサーボピン          Clear!
-//const static int PIN_NECK_SERVO = 1;//                                  Clear!
-//const static int PIN_ARM_SERVO = 22;//                                  Clear!
 const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
 const static int PIN_LED_R = 27;// LED
 const static int PIN_LED_G = 29;// LED
@@ -56,7 +52,7 @@ const static int SERVO_BASE_VALUE = 910 - SERVO_MOVABLE_RANGE / 2;//最小パル
 //スタビサーボ設定
 const static double STABI_BASE_ANGLE = 0.5;	//通常時のスタビ角度
 
-const static double STABI_RUNNING_ANGLE = 0.7;//走ってるときの角度
+const static double STABI_RUNNING_ANGLE = 0.5;//走ってるときの角度
 const static double STABI_RELEASE_ANGLE = -0.9;//パラ切り離し
 const static double STABI_HOLD_ANGLE = 1.0;//
 const static double STABI_FOLD_ANGLE = -0.7;//たたんでいる
@@ -106,17 +102,18 @@ const static double SEPARATING_SERVO_INTERVAL = 0.8;//サーボの向きを変�
 const static unsigned int SEPARATING_SERVO_COUNT = 30;//サーボの向きを変える回数
 const static double SEPARATING_PARA_DETECT_THRESHOLD = 0.005;//この割合以上パラシュート色が検出されたらパラが存在するものとする
 
-const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 2 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
+const static double NAVIGATING_GOAL_DISTANCE_THRESHOLD = 3.5 / 111111.1;//ゴール判定とするゴールからの距離(度) 2016/08/31 3->7
+
 const static double NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD = 10 / 111111.1;//移動速度を減速するゴールからの距離(近づいた場合、行き過ぎ防止のため減速する)
 const static double NAVIGATING_GOAL_APPROACH_POWER_RATE = 0.8;//ゴール接近時の速度(最大比)
-const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 1;//進行方向を変更する間隔(秒) 2016/08/31 5->1
+const static double NAVIGATING_DIRECTION_UPDATE_INTERVAL = 3;//進行方向を変更する間隔(秒) 2016/08/31 5->1
 const static double NAVIGATING_MAX_DELTA_DIRECTION = 90;//一回の操作で方向転換する最大の角度
-const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 0.7 / 111111.1; // NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
+const static double NAVIGATING_STUCK_JUDGEMENT_THRESHOLD = 1/ 111111.1; // NAVIGATING_DIRECTION_UPDATE_INTERVALの間に移動した距離がこの閾値以下ならスタック判定とする
 const static unsigned long long STUCK_ENCODER_PULSE_THRESHOLD = 3000; // 前回のエンコーダパルス数がこの値以上で、現在のパルス数がこの値以下ならスタック判定とする
 const static unsigned int ESCAPING_BY_STABI_MIN_COUNT = 5; //最低でもこの回数以上EscapingByStabiの動作をする
-const static unsigned int ESCAPING_BY_STABI_MAX_COUNT = 78;//この回数以上EscapingByStabiの動作を繰り返してもスタック脱出できない場合，EscapingRandomに遷移する
+const static unsigned int ESCAPING_BY_STABI_MAX_COUNT = 10;//この回数以上EscapingByStabiの動作を繰り返してもスタック脱出できない場合，EscapingRandomに遷移する
 const static unsigned int LEARNING_ESCAPING_LIMIT = 59;
-const static unsigned int ESCAPING_RANDOM_TIME_THRESHOLD = 30;//この秒数以上EscapingRandom動作をしてもスタック脱出できない場合，EscapingByStabiに遷移する
+const static unsigned int ESCAPING_RANDOM_TIME_THRESHOLD = 20;//この秒数以上EscapingRandom動作をしてもスタック脱出できない場合，EscapingByStabiに遷移する
 const static unsigned int COLOR_ACCESSING_ABORT_TIME = 300;//0mゴール検知状態を強制終了しNavigatingに復帰する時間
 const static unsigned int COLOR_ACCESSING_MAX_RETRY_COUNT = 3;//この回数以上DetectingからNavigating復帰を繰り返したらその場でゴール判定して停止する
 const static unsigned int CASCADE_ACCESSING_ABORT_TIME = 200;//0mゴール検知状態を強制終了しNavigatingに復帰する時間
@@ -141,6 +138,7 @@ const static unsigned int TASK_INTERVAL_MOTOR = 0;
 const static unsigned int TASK_INTERVAL_COMMUNICATION = 1;
 const static unsigned int TASK_INTERVAL_ACTUATOR = 0;
 const static unsigned int TASK_INTERVAL_SEQUENCE = 0;
+const static unsigned int Escaping_Chance_limit = 10;
 
 //////////////////////////////////////////////
 //その他

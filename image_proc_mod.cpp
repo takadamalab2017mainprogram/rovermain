@@ -33,10 +33,6 @@ bool ImageProc::isParaExist(IplImage* src)
 	minS = 170;	maxS = 255;
 	minV = 100;	maxV = 255;
 
-	//yellow para
-	/*minH = 20;	maxH = 33;
-	minS = 70;	maxS = 255;
-	minV = 100;	maxV = 255;*/
 
 	for (y = 0; y < tmp->height; y++) {
 		for (x = 0; x < tmp->width; x++) {
@@ -134,8 +130,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 	cvCvtColor(pImage, src_img, CV_BGR2GRAY);
 
 	cvRectangle(src_img, cvPoint(0, 0), cvPoint(PIC_SIZE_W, PIC_SIZE_H * PIC_CUT_RATE), cvScalar(0), CV_FILLED, CV_AA);
-	//CvPoint pt[(DIV_HOR_NUM+1)*2+1];
-	//cutSky(pImage,src_img,pt);
 
 	tmp_img = cvCreateImage(cvGetSize(src_img), IPL_DEPTH_16S, 1);
 	dst_img1 = cvCreateImage(cvGetSize(src_img), IPL_DEPTH_8U, 1);
@@ -195,102 +189,8 @@ bool ImageProc::isWadachiExist(IplImage* pImage)
 }
 int ImageProc::wadachiExiting(IplImage* pImage)
 {
-	/*
-	IplImage* src_img = pImage;
-	const static int DIV_NUM = 5;
-	const static int MEDIAN = 5;
-	IplImage *gray_img, *dst_img1, *tmp_img;
-	double risk[DIV_NUM];
-
-	if(src_img == NULL)
-	{
-	Debug::print(LOG_SUMMARY, "Escaping: Unable to get Image for Camera Escaping!\r\n");
-	return INT_MAX;
-	}
-	CvSize size = cvSize(src_img->width,src_img->height);
-
-	gray_img = cvCreateImage(size, IPL_DEPTH_8U, 1);
-	cvCvtColor(src_img, gray_img, CV_BGR2GRAY);
-	cvRectangle(gray_img, cvPoint(0, 0),cvPoint(src_img->width, src_img->height * 2 / 5),cvScalar(0), CV_FILLED, CV_AA);
-
-	// Medianフィルタ
-	cvSmooth (gray_img, gray_img, CV_MEDIAN, MEDIAN, 0, 0, 0);
-
-	tmp_img = cvCreateImage(size, IPL_DEPTH_16S, 1);
-	dst_img1 = cvCreateImage(size, IPL_DEPTH_8U, 1);
-
-	// SobelフィルタX方向
-	cvSobel(gray_img, tmp_img, 1, 0, 3);
-	cvConvertScaleAbs (tmp_img, dst_img1);
-	cvThreshold (dst_img1, dst_img1, 50, 255, CV_THRESH_BINARY);
-
-	//Sum
-	int width = src_img->width / DIV_NUM;
-	double risksum = 0;
-
-	for(int i = 0;i < DIV_NUM;++i)
-	{
-	cvSetImageROI(dst_img1, cvRect(width * i,0,width,src_img->height));//Set image part
-	risksum += risk[i] = sum(cv::cvarrToMat(dst_img1))[0];
-	cvResetImageROI(dst_img1);//Reset image part (normal)
-	}
-
-	//Draw graph
-	//for(int i = 0;i < DIV_NUM;++i){
-	//	cvRectangle(dst_img1, cvPoint(width * i,src_img->height - risk[i] / risksum * src_img->height),cvPoint(width * (i + 1),src_img->height),cvScalar(255), 2, CV_AA);
-	//}
-
-
-	int min_id = 0;
-	int shikiiMin = 70000;
-	int shikiiMax = 130000;
-	int shikiiMinCount = 0;
-	int shikiiMaxCount = 0;
-
-	for(int i=0; i<DIV_NUM; ++i){
-	if(risk[i] < shikiiMin)
-	shikiiMinCount++;
-	if(risk[i] > shikiiMax)
-	shikiiMaxCount++;
-	}
-
-	if(shikiiMinCount >= 3){
-	min_id = 5;
-	}else if(shikiiMaxCount >= 3){
-	Debug::print(LOG_SUMMARY, "kabe\n");
-	min_id = (risk[0] > risk[DIV_NUM - 1]) ? DIV_NUM - 1 : 0;
-	}else{
-	int i;
-	for(i=1; i<DIV_NUM; ++i){
-	if(risk[min_id] > risk[i]){
-	min_id = i;
-	}
-	}
-	}
-
-	for(i=0; i<DIV_NUM; i++){
-	Debug::print(LOG_SUMMARY, " area %d : %f\n" ,i,risk[i]);
-	}
-
-	Debug::print(LOG_SUMMARY, " min id : %d\n",min_id);
-
-	cvReleaseImage (&dst_img1);
-	cvReleaseImage (&tmp_img);
-
-	switch(min_id){
-	case 0:
-	Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Left\r\n");
-	return -1;
-	case DIV_NUM - 1:
-	Debug::print(LOG_SUMMARY, "Wadachi kaihi:Turn Right\r\n");
-	return 1;
-	default:
-	Debug::print(LOG_SUMMARY, "Wadachi kaihi:Go Straight\r\n");
-	return 0;
-	}
-	*/
-
-
+	
+	
 	// 臼居くん案
 	// 真ん中が開けている場合以外は回転
 
@@ -469,15 +369,11 @@ void ImageProc::cutSky(IplImage* pSrc, IplImage* pDest, CvPoint* pt)
 			if (value_h == 0 && value_v > DELETE_V_THRESHOLD_HIGH) //白くて明るい
 				flag = true;
 
-			//printf("h=%3d v=%3d %d \n", value_h, value_v, flag);
-
 			if (flag){ //空ゾーン判定後、pt配列に座標を格納
 				find_count++;
 				if (find_count > FIND_FLAG){
 					pt[2 * i + 1] = cvPoint(x, y + FIND_FLAG*div_height); // 空の開始座標
 					pt[2 * i + 2] = cvPoint((i + 1)*div_width, 0);        // 次に処理する列の上端座標
-					//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
-					//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
 					break;
 				}
 			}
@@ -487,8 +383,6 @@ void ImageProc::cutSky(IplImage* pSrc, IplImage* pDest, CvPoint* pt)
 
 		}
 
-		//cvShowImage( "origin", pImage );
-		//cvWaitKey(0);
 	}
 
 	// 空カット

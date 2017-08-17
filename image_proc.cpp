@@ -123,7 +123,7 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 
 	moments = cv::moments(mono_img);										//重心計算
 	int gX = moments.m10 / moments.m00;										//重心X位置計算
-	// int gY = moments.m01 / moments.m00;									//重心Y位置計算
+
 	x_gap = -160 + gX;														//中心からのX位置のずれを設定
 
 	if(count > 240*320*mFindAreaThreshold)
@@ -154,27 +154,6 @@ int ImageProc::howColorGap(IplImage* src, double *counter)
 
 	return x_gap;	//中心からのX位置のずれを返す
 
-	//////////赤味がけるアルゴリズム　現地で必要になった時用//
-	//////////使用時は正しい位置に挿入すること////////////////
-	//for(int y=0; y<240;y++)
-	//{
-	//	for(int x=0; x<320; x++)
-	//	{
-	//		int a = smooth_img.step*y+(x*3);		//参照番号を設定
-	//		if(smooth_img.data[a] >= 0+10)
-	//			smooth_img.data[a] -= 10;	//B
-	//		else
-	//			smooth_img.data[a] = 0;
-	//		if(smooth_img.data[a+1] >= 0+10)
-	//			smooth_img.data[a+1] -= 10;	//G
-	//		else
-	//			smooth_img.data[a+1] = 0;
-	//		if(smooth_img.data[a+2] <= 255-20)
-	//			smooth_img.data[a+2] += 20;	//R
-	//		else
-	//			smooth_img.data[a+2] = 255;
-	//	}
-	//}
 }
 /* ここまで　2014年実装 */
 bool ImageProc::isParaExist(IplImage* src)
@@ -204,10 +183,6 @@ bool ImageProc::isParaExist(IplImage* src)
 	minS = 170;	maxS = 255;
 	minV = 100;	maxV = 255;
 
-	//yellow para
-	/*minH = 20;	maxH = 33;
-	minS = 70;	maxS = 255;
-	minV = 100;	maxV = 255;*/
 
 	for(y = 0; y < tmp->height; y++) {
 		for(x = 0; x < tmp->width; x++) {
@@ -291,7 +266,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage) //2014年度は使用しない
 		return false;
 	}
 
-	//Debug::print(LOG_SUMMARY, "Start\n");
 
 	const static int DIV_NUM = 15;
 	const static int PIC_SIZE_W = 320;
@@ -354,11 +328,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage) //2014年度は使用しない
 		}
 	}
 
-	//Debug::print(LOG_SUMMARY, "ave : %f\n",risk_ave * RISK_AVE_RATE);
-	//Debug::print(LOG_SUMMARY, "risk : \n");
-	//for(int i=0; i<DIV_NUM; i++){
-	//	Debug::print(LOG_SUMMARY, "%f\n",risk[i]);
-	//}
 
 	if(wadachi_find){
 		Debug::print(LOG_SUMMARY, "Wadachi Found\r\n");
@@ -372,7 +341,6 @@ bool ImageProc::isWadachiExist(IplImage* pImage) //2014年度は使用しない
 	cvReleaseImage (&dst_img1);
 	cvReleaseImage (&tmp_img);
 
-	//Debug::print(LOG_SUMMARY, "Finish\n");
 
 	return wadachi_find;
 }
@@ -381,8 +349,6 @@ int ImageProc::wadachiExiting(IplImage* pImage) //2014年度は使用しない
 	const static int DIV_HOR_NUM = 5;
 	const static int MEDIAN = 5;
 	const static int DELETE_H_THRESHOLD = 50;
-	// const static int THRESHOLD_COUNT = 3;// ノイズ少のブロック数の下限
-	// const static double THRESHOLD_MIN = 700000;// ノイズ数の下限
 
 	if(pImage == NULL)
 	{
@@ -465,34 +431,7 @@ int ImageProc::wadachiExiting(IplImage* pImage) //2014年度は使用しない
 	cvReleaseImage(&pSobel);
 	cvReleaseImage(&pBin);
 
-	// 方向決定
-	/*if(count >= THRESHOLD_COUNT){
-		Debug::print(LOG_SUMMARY, "Go straight\r\n");
-		return 0;
-	}*/
 	
-/*	if(0 < minNum && minNum < DIV_HOR_NUM-1){
-			Debug::print(LOG_SUMMARY, "Go straight\r\n");
-			return 0;
-	}else{
-		int ave_left = 0, ave_right = 0;
-		for(int i=0; i<DIV_HOR_NUM; ++i){
-			if(i <= DIV_HOR_NUM/2){
-				ave_left += new_risk[i];
-			}
-			if(i >= DIV_HOR_NUM/2){
-				ave_right += new_risk[i];
-			}
-		}
-		ave_left /= 3; ave_right /= 3;
-		if(ave_left < ave_right){
-			Debug::print(LOG_SUMMARY, "Turn left\r\n");
-			return -1;
-		}else{
-			Debug::print(LOG_SUMMARY, "Turn right\r\n");
-			return 1;
-		}
-	}*/
 	if(new_risk[0] < new_risk[DIV_HOR_NUM-1]){
 		Debug::print (LOG_SUMMARY, "Turn left\r\n");
 		return -1;
@@ -632,8 +571,6 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 			if(value_h == 0 && value_v > DELETE_V_THRESHOLD_HIGH) //白くて明るい
 				flag = true;
 
-			//printf("h=%3d v=%3d %d \n", value_h, value_v, flag);
-
 			if(flag){ //空ゾーン判定後、pt配列に座標を格納
 				if(y > size.height - SHADOW_THRESHOLD_BOTTOM){
 					shadow_count++;
@@ -653,8 +590,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 				find_count = 0; // 空でないためカウント数リセット
 			}
 		}
-		//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
-		//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
+
 	}
 	if(shadow_count >= (DIV_HOR_NUM+1)/2){
 		shadow_count = 0;
@@ -683,7 +619,6 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 					flag = false;
 				if(value_h == 0 && value_v > DELETE_V_THRESHOLD_HIGH) //白くて明るい
 					flag = true;
-				//printf("h=%3d v=%3d %d \n", value_h, value_v, flag);
 
 				if(!flag){ //轍ゾーン判定後、pt配列に座標を格納
 					find_count++;
@@ -699,8 +634,7 @@ void ImageProc::cutSky(IplImage* pSrc,IplImage* pDest, CvPoint* pt) //2014年度
 					find_count = 0; // 空でないためカウント数リセット
 				}
 			}
-			//printf("pt[%d]=(%2d, %2d)\n", 2*i, pt[2*i].x, pt[2*i].y);
-			//printf("pt[%d]=(%2d, %2d)\n", 2*i+1, pt[2*i+1].x, pt[2*i+1].y);
+
 		}
 		if(shadow_count != DIV_HOR_NUM+1)
 		{
