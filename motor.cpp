@@ -216,14 +216,14 @@ void MotorDrive::drive(int power)
 
 void MotorDrive::setPIDGyro(double p, double i, double d)
 {
-	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
+	//Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
 	mPIDGyro.x = p;
 	mPIDGyro.y = i;
 	mPIDGyro.z = d;
 }
 void MotorDrive::setPIDPose(double p, double i, double d)
 {
-	Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
+	//Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
 	mPIDPose.x = p;
 	mPIDPose.y = i;
 	mPIDPose.z = d;
@@ -234,7 +234,7 @@ void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 	else mAngle = NineAxisSensor::normalize(angle);
 
 	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
-	Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f angle, %d power)\r\n", mAngle, mDrivePower);
+	//Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f angle, %d power)\r\n", mAngle, mDrivePower);
 	mDriveMode = DRIVE_PID;
 
 	if(reset)

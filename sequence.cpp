@@ -667,6 +667,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	{
 		if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 		{
+      gMultiServo.Running()
 			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
 			gEscapingByStabiState.setRunMode(false);
       gEscapingRandomState.setRunMode(false);
@@ -749,16 +750,16 @@ bool Navigating::isStuckByGPS()
 		}
 		averagePos2 /= i - border;
 		double dist = VECTOR3::calcDistanceXY(averagePos1, averagePos2);
-		Debug::print(LOG_SUMMARY, "ave1(%f ,%f), ave2(%f ,%f) \r\n", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
-		Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f\r\n", mLastPos.size()
-			, dist);
+		//Debug::print(LOG_SUMMARY, "ave1(%f ,%f), ave2(%f ,%f) \r\n", averagePos1.x, averagePos1.y, averagePos2.x, averagePos2.y);
+		//Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f\r\n", mLastPos.size()
+			//, dist);
 		 
 		if (isfinite(dist) && dist<NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
-			Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = true\r\n",mLastPos.size());
+			//Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = true\r\n",mLastPos.size());
 			mStuckFlag = true;//移動量が閾値以下ならスタックと判定
 		}
 		else {
-			Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = false\r\n",mLastPos.size());
+			//Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = false\r\n",mLastPos.size());
 			mStuckFlag = false;
 		}
 			
