@@ -419,6 +419,7 @@ bool Separating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+  gNineAxisSensor.setRunMode(true);
 
 	mLastUpdateTime = time;
 	mCurServoState = false;
