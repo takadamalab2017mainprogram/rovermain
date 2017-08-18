@@ -447,7 +447,16 @@ void Separating::onUpdate(const struct timespec& time)
 		break;
 	case STEP_SEPARATE:
 		//パラシュートを切り離す
-		if (Time::dt(time, mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
+    if(gNineAxisSensor.getAz() < 0)
+    {
+      gMotorDrive.drive(100);
+    }
+    else
+    {
+      gMotorDrive.drive(0);
+    }
+
+    if (Time::dt(time, mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
 		mLastUpdateTime = time;
 
 		mCurServoState = !mCurServoState;
