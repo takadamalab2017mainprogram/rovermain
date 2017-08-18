@@ -598,6 +598,11 @@ void Navigating::onUpdate(const struct timespec& time)
 		//Debug::print(LOG_SUMMARY, "mLastPos.Size() = %d mLastpos.push(currentPos)= (%f,%f)\r\n",mLastPos.size(),currentPos.x,currentPos.y);
 	}
 
+  // ゴールもしくは探索終了もしくはルート計算中は停止
+  if(goal.z<0){
+    gMotorDrive.drive(0);
+    return;
+  }
 
 	//ゴールとの距離を確認
 	double distance = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
