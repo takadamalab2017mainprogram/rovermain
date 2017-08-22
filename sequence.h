@@ -110,6 +110,7 @@ private:
 	struct timespec mLastUpdateTime;
 	//ゴール位置
 	VECTOR3 mGoalPos;//現在のゴール
+  VECTOR3 currentPos;
 
 					 //goallist を保存する
 	VECTOR3 goal;

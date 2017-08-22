@@ -547,7 +547,6 @@ bool Navigating::onInit(const struct timespec& time)
 }
 void Navigating::onUpdate(const struct timespec& time)
 {
-	VECTOR3 currentPos;
 
 	//５秒置きに、GoalList を読み込む
 	if (Time::dt(time, mLastUpdateTime) > 5.0) {
