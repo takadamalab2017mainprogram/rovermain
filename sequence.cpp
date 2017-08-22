@@ -557,7 +557,6 @@ bool Navigating::onInit(const struct timespec& time)
 }
 void Navigating::onUpdate(const struct timespec& time)
 {
-	VECTOR3 currentPos;
 
 	//５秒置きに、GoalList を読み込む
 	if (Time::dt(time, mLastUpdateTime) > 5.0) {
@@ -597,7 +596,8 @@ void Navigating::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Starting navigation...");
 			Time::showNowTime();//制御開始時刻をログに出力
-			Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n", currentPos.x, currentPos.y);
+			//Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n", currentPos.x, currentPos.y);
+			Debug::print(LOG_SUMMARY, " NAV START @%f,%f\r\n", currentPos.x, currentPos.y);
 			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
 			gMultiServo.Running();
 			distance_from_goal_to_start = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
@@ -644,7 +644,8 @@ void Navigating::onUpdate(const struct timespec& time)
 			gEscapingByStabiState.setRunMode(true);
 		}
 		Time::showNowTime();
-		Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK =true, GPS=(%f %f)\r\n", currentPos.x, currentPos.y);
+		//Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK =true, GPS=(%f %f)\r\n", currentPos.x, currentPos.y);
+		Debug::print(LOG_SUMMARY, " NAV STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
 
 #pragma region esc by stabi と　esc by random の２つに繰り返す
@@ -832,7 +833,11 @@ double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirectio
 
 	//Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
   //Debug::print(LOG_SUMMARY, "current angle = %f goal angle = %f",currentDirection, newDirection);
-	Debug::print(LOG_SUMMARY, "distance = %f (m)  delta angle = %f(%s)\r\n", distance * DEGREE_2_METER, deltaDirection, deltaDirection > 0 ? "LEFT" : "RIGHT");
+	Debug::print(LOG_SUMMARY, "distance = %f (m)\r\n", distance * DEGREE_2_METER);
+	if(deltaDirection>0)
+	  Debug::print(LOG_SUMMARY, " NAV LEFT %f @%f,%f\r\n", deltaDirection, currentPos.x, currentPos.y);
+	else
+	  Debug::print(LOG_SUMMARY, " NAV RIGHT %f @%f,%f\r\n", -deltaDirection, currentPos.x, currentPos.y);
 
 	//方向と速度を変更
 	gMotorDrive.drivePIDGyro(deltaDirection, speed, true);
@@ -964,6 +969,7 @@ void Navigating::getGoal(VECTOR3& goal) {
     //見つかりません、とりあえず停止
     gMotorDrive.drive(0);
     Debug::print(LOG_SUMMARY, "(%d)can not find the object, stop rover\r\n",(int)goal.z);
+    Debug::print(LOG_SUMMARY, " NAV STOP @%f,%f\r\n",currentPos.x,currentPos.y);
     nextState();
     return;
   }
@@ -971,6 +977,7 @@ void Navigating::getGoal(VECTOR3& goal) {
 
     //Goal 判定した、終わり
     Debug::print(LOG_SUMMARY, "(%d)Find the object, mission finished\r\n",(int)goal.z);
+    Debug::print(LOG_SUMMARY, " NAV TARGET @%f,%f\r\n",currentPos.x,currentPos.y);
     nextState();
     return;
   }
@@ -981,6 +988,7 @@ void Navigating::getGoal(VECTOR3& goal) {
     Debug::print(LOG_SUMMARY,"(%d)Calculating the route, waiting... \r\n",(int)goal.z);
   } else{
     Debug::print(LOG_SUMMARY, "(%d) goal is setted at ( %f,%f ) \r\n", (int)goal.z,goal.x, goal.y);
+    Debug::print(LOG_SUMMARY, " NAV SET %d @%f,%f\r\n",(int)goal.z,goal.x,goal.y);
     mGoalPos=goal;
     mIsGoalPos = true;
   }
