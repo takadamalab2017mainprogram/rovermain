@@ -137,10 +137,10 @@ void Buzzer::stop()
 		--mCount;
 	}
 }
-Buzzer::Buzzer() : mPin(PIN_BUZZER), mOnPeriodMemory(0), mOnPeriod(0), mOffPeriodMemory(0), mOffPeriod(0), mCount(0)
+Buzzer::Buzzer() : mPin(Constants::PIN_BUZZER), mOnPeriodMemory(0), mOnPeriod(0), mOffPeriodMemory(0), mOffPeriod(0), mCount(0)
 {
 	setName("buzzer");
-	setPriority(TASK_PRIORITY_ACTUATOR, TASK_INTERVAL_ACTUATOR);
+	setPriority(Constants::TASK_PRIORITY_ACTUATOR, Constants::TASK_INTERVAL_ACTUATOR);
 }
 Buzzer::~Buzzer()
 {
@@ -152,9 +152,9 @@ Buzzer::~Buzzer()
 bool MultiServo::onInit(const struct timespec& time)
 {
 	//Pin番号をセットして出力状態に
-	pinMode(mPin, PWM_OUTPUT);
+	pinMode(mPin, Constants::PWM_OUTPUT);
 	//サーボの制御にはmark:spacemode(MS)を使う
-	pwmSetMode(PWM_MODE_MS);
+	pwmSetMode(Constants::PWM_MODE_MS);
 	//範囲レジスタを設定、デフォルトは1024
 	pwmSetRange(9000);
 	pwmSetClock(32);
@@ -207,7 +207,7 @@ void MultiServo::start(double angle)
 
 	angle *= -1;
 	double tmp = 0.8*(angle + 1.0) / 2.0;
-	pwmWrite(mPin, SERVO_BASE_VALUE + tmp * SERVO_MOVABLE_RANGE);
+	pwmWrite(mPin, Constants::SERVO_BASE_VALUE + tmp * Constants::SERVO_MOVABLE_RANGE);
 }
 void MultiServo::stop()
 {
@@ -220,27 +220,27 @@ double MultiServo::get()
 //パラ切り離し時使用
 void MultiServo::moveRelease()
 {
-	start(STABI_RELEASE_ANGLE);
+	start(Constants::STABI_RELEASE_ANGLE);
 }
 //パラ切り離し時使用
 void MultiServo::moveHold()
 {
-	start(STABI_HOLD_ANGLE);
+	start(Constants::STABI_HOLD_ANGLE);
 }
 
 void MultiServo::Running()
 {
-	start(STABI_RUNNING_ANGLE);
+	start(Constants::STABI_RUNNING_ANGLE);
 }
 
 void MultiServo::fold() 
 {
-	start(STABI_FOLD_ANGLE);
+	start(Constants::STABI_FOLD_ANGLE);
 }
-MultiServo::MultiServo() : mPin(PIN_MULTI_SERVO)
+MultiServo::MultiServo() : mPin(Constants::PIN_MULTI_SERVO)
 {
 	setName("multiservo");
-	setPriority(TASK_PRIORITY_ACTUATOR, UINT_MAX);
+	setPriority(Constants::TASK_PRIORITY_ACTUATOR, UINT_MAX);
 }
 MultiServo::~MultiServo()
 {
