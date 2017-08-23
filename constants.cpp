@@ -25,8 +25,8 @@ public:
 
 	//モータ設定
 	const static int MOTOR_MAX_POWER = 100;
-	const static double MOTOR_MAX_POWER_CHANGE = (double)5;//モータ出力の最大変化量
-	const static double MOTOR_PID_MAX_ANGLE_DIFF = 90.0;// d_angle in pid is limited to this range
+	constexpr const static double MOTOR_MAX_POWER_CHANGE = (double)5;//モータ出力の最大変化量
+	constexpr const static double MOTOR_PID_MAX_ANGLE_DIFF = 90.0;// d_angle in pid is limited to this range
 
 	//エンコーダ関連 ※モータを変えたらここも変えてください。
 	const static int RESOLVING_POWER = 32;		//モータの分解能
