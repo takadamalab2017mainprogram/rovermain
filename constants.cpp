@@ -134,5 +134,5 @@ public:
 	//その他
 	//////////////////////////////////////////////
 	constexpr const static double DEGREE_2_METER = 111111.111111;//これを度に掛けるとメートルに変換できる
-	const static char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt";
+	constexpr const static char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt";
 };
