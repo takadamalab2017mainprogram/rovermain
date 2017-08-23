@@ -106,7 +106,7 @@ bool Testing::onCommand(const std::vector<std::string>& args)
 		}
 		else if (args[1].compare("version") == 0)
 		{
-			Debug::print(LOG_SUMMARY, "Version: %d\r\n", VERSION);
+			Debug::print(LOG_SUMMARY, "Version: %d\r\n", Constants::VERSION);
 			return true;
 		}
 	}
@@ -218,7 +218,7 @@ void Waiting::onUpdate(const struct timespec& time)
 	}
 	else mContinuousLightCount = 0;
 
-	if (mContinuousLightCount >= WAITING_LIGHT_COUNT)//明るい場合放出判定
+	if (mContinuousLightCount >= Constants::WAITING_LIGHT_COUNT)//明るい場合放出判定
 	{
 		nextState();
 		return;
