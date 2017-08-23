@@ -3,6 +3,7 @@
 
 class Constants {
 public:
+	const static int VERSION = 01;
 
 	//////////////////////////////////////////////
 	// ハードウェア系設定

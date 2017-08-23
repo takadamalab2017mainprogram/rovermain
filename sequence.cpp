@@ -224,7 +224,7 @@ void Waiting::onUpdate(const struct timespec& time)
 		return;
 	}
 
-	if (Time::dt(time, mStartTime) > WAITING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
+	if (Time::dt(time, mStartTime) > Constants::WAITING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
 	{
 		Debug::print(LOG_SUMMARY, "Waiting Timeout\r\n");
 		nextState();
@@ -234,7 +234,7 @@ void Waiting::onUpdate(const struct timespec& time)
 Waiting::Waiting()
 {
 	setName("waiting");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 Waiting::~Waiting() {}
 
@@ -282,9 +282,9 @@ void Falling::onUpdate(const struct timespec& time)
 	}
 
 	//閾値以下ならカウント
-	if (abs(gNineAxisSensor.getRvx()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
+	if (abs(gNineAxisSensor.getRvx()) < Constants::FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < Constants::FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
 	{
-		if (mCoutinuousGyroCount < FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
+		if (mCoutinuousGyroCount < Constants::FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
 	}
 	else mCoutinuousGyroCount = 0;
 
@@ -294,9 +294,9 @@ void Falling::onUpdate(const struct timespec& time)
 
 	//気圧の差が一定以下ならカウント
 	int newPressure = gPressureSensor.get();
-	if (abs((int)(newPressure - mLastPressure)) < FALLING_DELTA_PRESSURE_THRESHOLD)
+	if (abs((int)(newPressure - mLastPressure)) < Constants::FALLING_DELTA_PRESSURE_THRESHOLD)
 	{
-		if (mContinuousPressureCount < FALLING_PRESSURE_COUNT)++mContinuousPressureCount;
+		if (mContinuousPressureCount < Constants::FALLING_PRESSURE_COUNT)++mContinuousPressureCount;
 	}
 	else mContinuousPressureCount = 0;
 	mLastPressure = newPressure;
