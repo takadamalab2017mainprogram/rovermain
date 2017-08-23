@@ -9,6 +9,7 @@
 #include <iostream>
 #include "sequence.h"
 #include "utils.h"
+#include "constants.cpp"
 
 void sigHandler(int p_signame);
 bool setSighandle(int p_signame);
@@ -22,7 +23,7 @@ bool parseInitializer()
 {
 	TaskManager* pTaskMan = TaskManager::getInstance();
 	Debug::print(LOG_SUMMARY, "Reading initialize.txt...");
-	std::ifstream ifs(INITIALIZE_SCRIPT_FILENAME);
+	std::ifstream ifs(Constants::INITIALIZE_SCRIPT_FILENAME);
 	std::string str;
 	if (ifs.good())
 	{
