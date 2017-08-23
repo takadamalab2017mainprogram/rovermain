@@ -14,7 +14,7 @@
 #include "motor.h"
 #include "subsidiary_sequence.h"
 #include "delayed_execution.h"
-#include "constants.h"
+#include "constants.cpp"
 
 #include <string.h>
 #include <unistd.h>

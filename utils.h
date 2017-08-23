@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 #include <time.h>
-#include "constants.h"
+#include "constants.cpp"
 
 #ifdef _DEBUG
 #include <assert.h>
