@@ -2,7 +2,7 @@
 #include <softPwm.h>
 #include <stdlib.h>
 #include "actuator.h"
-#include "constants.h"
+#include "constants.cpp"
 #include "utils.h"
 
 //////////////////////////////////////////////
