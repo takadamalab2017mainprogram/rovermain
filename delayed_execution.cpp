@@ -3,6 +3,7 @@
 #include <memory>
 #include <limits.h>
 #include "delayed_execution.h"
+#include "constants.cpp"
 
 DelayedExecutor gDelayedExecutor;
 
@@ -242,7 +243,7 @@ void DelayedExecutor::clear()
 DelayedExecutor::DelayedExecutor()
 {
 	setName("delay");
-	setPriority(0, TASK_INTERVAL_SEQUENCE);
+	setPriority(0, Constants::TASK_INTERVAL_SEQUENCE);
 }
 
 DelayedExecutor::~DelayedExecutor()
