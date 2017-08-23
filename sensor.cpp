@@ -339,7 +339,6 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 {
   if(!isFIFOEnable)
   {
-  //unsigned short fifo_count = (wiringPiI2CReadReg8(mFileHandle, 0x72) << 8) | wiringPiI2CReadReg8(mFileHandle, 0x73);
   wiringPiI2CWriteReg8(mFileHandle,0x72,0);
   wiringPiI2CWriteReg8(mFileHandle,0x73,0);
 
