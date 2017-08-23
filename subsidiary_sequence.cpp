@@ -185,7 +185,7 @@ void SensorLogging::onUpdate(const struct timespec& time)
 	if (Time::dt(time, mLastUpdateTime) >= 0.1)
 	{
 		mLastUpdateTime = time;
-
+		clock_gettime(CLOCK_REALTIME,&time);
 		//���O���ۑ�
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
