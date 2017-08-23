@@ -114,7 +114,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 	}
 	
 	
-	if (clock_gettime(Constants::Constants::CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
+	if (clock_gettime(CLOCK_MONOTONIC_RAW, &mLastUpdateTime) != 0)
 	{
 		Debug::print(LOG_SUMMARY, "Unable to get time!\r\n");
 	}
