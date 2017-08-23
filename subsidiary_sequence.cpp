@@ -11,6 +11,7 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
+#include "constants.cpp"
 
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
@@ -49,11 +50,6 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping TryCount: %d\r\n", mTryCount);
 		}
-	//	if (mTryCount > Escaping_Chance_limit)
-	//	{
-	//		gEscapingByStabiState.setRunMode(false);
-	//		gEscapingRandomState.setRunMode(true);
-	//	}
 	}
 	mFlag = !mFlag;
 }
@@ -84,7 +80,7 @@ unsigned int EscapingByStabi::getTryCount()
 EscapingByStabi::EscapingByStabi()
 {
 	setName("esc");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 EscapingByStabi::~EscapingByStabi()
 {
@@ -158,7 +154,7 @@ bool EscapingRandom::onCommand(const std::vector<std::string>& args)
 EscapingRandom::EscapingRandom()
 {
 	setName("random");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 EscapingRandom::~EscapingRandom()
 {
@@ -216,7 +212,7 @@ void SensorLogging::write(const std::string& filename, const char* fmt, ...)
 SensorLogging::SensorLogging() : mLastUpdateTime()
 {
 	setName("sensorlogging");
-	setPriority(UINT_MAX, TASK_INTERVAL_SEQUENCE);
+	setPriority(UINT_MAX, Constants::TASK_INTERVAL_SEQUENCE);
 
 	Filename("log_gps", ".txt").get(mFilenameGPS);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGPS.c_str());
