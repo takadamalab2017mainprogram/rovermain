@@ -23,7 +23,8 @@ bool parseInitializer()
 {
 	TaskManager* pTaskMan = TaskManager::getInstance();
 	Debug::print(LOG_SUMMARY, "Reading initialize.txt...");
-	std::ifstream ifs(Constants::INITIALIZE_SCRIPT_FILENAME);
+	char INITIALIZE_SCRIPT_FILENAME[] = "initialize.txt"
+	std::ifstream ifs(INITIALIZE_SCRIPT_FILENAME);
 	std::string str;
 	if (ifs.good())
 	{
