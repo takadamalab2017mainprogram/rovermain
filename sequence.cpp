@@ -282,7 +282,7 @@ void Falling::onUpdate(const struct timespec& time)
 	}
 
 	//閾値以下ならカウント
-	if (abs(gNineAxisSensor.getRvx()) < Constants::FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < Constants::FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < FALLING_GYRO_THRESHOLD)
+	if (abs(gNineAxisSensor.getRvx()) < Constants::FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvy()) < Constants::FALLING_GYRO_THRESHOLD && abs(gNineAxisSensor.getRvz()) < Constants::FALLING_GYRO_THRESHOLD)
 	{
 		if (mCoutinuousGyroCount < Constants::FALLING_GYRO_COUNT)++mCoutinuousGyroCount;
 	}
@@ -303,8 +303,8 @@ void Falling::onUpdate(const struct timespec& time)
 
 
 	//判定状態を表示
-	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n", mContinuousPressureCount, FALLING_PRESSURE_COUNT, newPressure);
-	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n", mCoutinuousGyroCount, FALLING_GYRO_COUNT);
+	Debug::print(LOG_SUMMARY, "Pressure Count   %d / %d (%d hPa)\r\n", mContinuousPressureCount, Constants::FALLING_PRESSURE_COUNT, newPressure);
+	Debug::print(LOG_SUMMARY, "Gyro Count       %d / %d\r\n", mCoutinuousGyroCount, Constants::FALLING_GYRO_COUNT);
 
 	//GPS情報ログ
 	VECTOR3 pos;
@@ -312,13 +312,13 @@ void Falling::onUpdate(const struct timespec& time)
 	else Debug::print(LOG_SUMMARY, "GPS Position     Unable to get\r\n");
 
 	//カウント回数が一定以上なら次の状態に移行
-	if (mContinuousPressureCount >= FALLING_PRESSURE_COUNT && (mCoutinuousGyroCount >= FALLING_GYRO_COUNT || mContinuousMotorPulseCount >= FALLING_MOTOR_PULSE_COUNT))
+	if (mContinuousPressureCount >= Constants::FALLING_PRESSURE_COUNT && (mCoutinuousGyroCount >= Constants::FALLING_GYRO_COUNT || mContinuousMotorPulseCount >= Constants::FALLING_MOTOR_PULSE_COUNT))
 	{
 		nextState();
 		return;
 	}
 
-	if (Time::dt(time, mStartTime) > FALLING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
+	if (Time::dt(time, mStartTime) > Constants::FALLING_ABORT_TIME)//一定時間が経過したら次の状態に強制変更
 	{
 		Debug::print(LOG_SUMMARY, "Falling Timeout\r\n");
 		nextState();
@@ -340,7 +340,7 @@ void Falling::nextState()
 Falling::Falling() : mLastPressure(0), mLastMotorPulseL(0), mLastMotorPulseR(0), mContinuousPressureCount(0), mCoutinuousGyroCount(0), mContinuousMotorPulseCount(0)
 {
 	setName("falling");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 Falling::~Falling()
 {
@@ -352,7 +352,7 @@ bool Waking::onInit(const struct timespec& time)
 {
 	gMotorDrive.setRunMode(true);
 	gMultiServo.setRunMode(true);
-	gMultiServo.start(BACK_STABI_RUN_ANGLE);
+	gMultiServo.start(Constants::BACK_STABI_RUN_ANGLE);
 	gNineAxisSensor.setRunMode(true);
 	mLastUpdateTime = time;
 	gMotorDrive.drive(100);
@@ -395,7 +395,7 @@ bool Waking::onCommand(const std::vector<std::string>& args)
 Waking::Waking()
 {
 	setName("waking");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 Waking::~Waking()
 {
@@ -457,7 +457,7 @@ void Separating::onUpdate(const struct timespec& time)
 		  gMotorDrive.drive(0);
 		}
 
-		if (Time::dt(time, mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
+		if (Time::dt(time, mLastUpdateTime) < Constants::SEPARATING_SERVO_INTERVAL)return;
 		mLastUpdateTime = time;
 
 		mCurServoState = !mCurServoState;
@@ -472,9 +472,9 @@ void Separating::onUpdate(const struct timespec& time)
 		}
 
 		++mServoCount;
-		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, SEPARATING_SERVO_COUNT);
+		Debug::print(LOG_SUMMARY, "Separating...(%d/%d)\r\n", mServoCount, Constants::SEPARATING_SERVO_COUNT);
 
-		if (mServoCount >= SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
+		if (mServoCount >= Constants::SEPARATING_SERVO_COUNT)//サーボを規定回数動かした
 		{
 			//次状態に遷移
 			gMultiServo.stop();
@@ -510,7 +510,7 @@ void Separating::nextState()
 Separating::Separating() : mCurServoState(false), mServoCount(0)
 {
 	setName("separating");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 Separating::~Separating()
 {
@@ -598,7 +598,7 @@ void Navigating::onUpdate(const struct timespec& time)
 			Time::showNowTime();//制御開始時刻をログに出力
 			//Debug::print(LOG_SUMMARY, "Control Start Point:(%f %f)\r\n", currentPos.x, currentPos.y);
 			Debug::print(LOG_SUMMARY, " NAV START @%f,%f\r\n", currentPos.x, currentPos.y);
-			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
+			gMotorDrive.drivePIDGyro(0, Constants::MOTOR_MAX_POWER, true);
 			gMultiServo.Running();
 			distance_from_goal_to_start = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
 			mLastNaviMoveCheckTime = time;
@@ -618,7 +618,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	double distance = VECTOR3::calcDistanceXY(currentPos, mGoalPos);
 
 	//途中のゴールに到達しているかのフラグ
-	if (distance < NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
+	if (distance < Constants::NAVIGATING_GOAL_DISTANCE_THRESHOLD) {
 		char s[60];
 		sprintf(s,"ruby /home/pi/network/inform.rb %d",(int)goal.z);
 		system(s);
@@ -627,7 +627,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	}
 
 	//Navigating の更新頻度、何秒置き以下の処理をする
-	if(Time::dt(time,mLastNaviMoveCheckTime) < NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
+	if(Time::dt(time,mLastNaviMoveCheckTime) < Constants::NAVIGATING_DIRECTION_UPDATE_INTERVAL)return;
 	mLastNaviMoveCheckTime = time;
 
 	//異常値排除,2個以下なら、	removeError()=false
@@ -651,7 +651,7 @@ void Navigating::onUpdate(const struct timespec& time)
 	//esc by stabi と　esc by random の２つに繰り返す
 		if (gEscapingByStabiState.isActive())		//EscapingByStabi中
 		{
-			if (gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_MAX_COUNT)
+			if (gEscapingByStabiState.getTryCount() >= Constants::ESCAPING_BY_STABI_MAX_COUNT)
 			{
 				//EscapingRandomに移行
 				gEscapingByStabiState.setRunMode(false);
@@ -662,7 +662,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		}
 		else if (gEscapingRandomState.isActive())	//EscapingRandom中
 		{
-			if (Time::dt(time, mEscapingRandomStartTime) > ESCAPING_RANDOM_TIME_THRESHOLD)
+			if (Time::dt(time, mEscapingRandomStartTime) > Constants::ESCAPING_RANDOM_TIME_THRESHOLD)
 			{
 				//EscapingByStabiに移行
 				gEscapingRandomState.setRunMode(false);
@@ -679,7 +679,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
 		{
       gMultiServo.Running();
-			gMotorDrive.drivePIDGyro(0, MOTOR_MAX_POWER, true);
+			gMotorDrive.drivePIDGyro(0, Constants::MOTOR_MAX_POWER, true);
 			gEscapingByStabiState.setRunMode(false);
       gEscapingRandomState.setRunMode(false);
 				Time::showNowTime();
@@ -720,7 +720,7 @@ bool Navigating::removeError()
 	}
 	average /= mLastPos.size();
 
-	const static double THRESHOLD = 100 / DEGREE_2_METER;
+	const static double THRESHOLD = 100 / Constants::DEGREE_2_METER;
 	it = mLastPos.begin();
 	while (it != mLastPos.end())
 	{
@@ -763,7 +763,7 @@ bool Navigating::isStuckByGPS()
 		//Debug::print(LOG_SUMMARY, "posSize = %d ,distance =%f\r\n", mLastPos.size()
 			//, dist);
 		 
-		if (isfinite(dist) && dist<NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
+		if (isfinite(dist) && dist<Constants::NAVIGATING_STUCK_JUDGEMENT_THRESHOLD) {
 			//Debug::print(LOG_SUMMARY, "mLastPos.size()=%d, mStuckFlag = true\r\n",mLastPos.size());
 			mStuckFlag = true;//移動量が閾値以下ならスタックと判定
 		}
@@ -815,18 +815,18 @@ switch (mMethod) {
 		break;
 	}
 double deltaDirection = NineAxisSensor::normalize(newDirection - currentDirection);
-	deltaDirection = std::max(std::min(deltaDirection, NAVIGATING_MAX_DELTA_DIRECTION), -1 * NAVIGATING_MAX_DELTA_DIRECTION);
+	deltaDirection = std::max(std::min(deltaDirection, Constants::NAVIGATING_MAX_DELTA_DIRECTION), -1 * Constants::NAVIGATING_MAX_DELTA_DIRECTION);
 
 	//新しい速度を計算
-	double speed = MOTOR_MAX_POWER;
-	if (distance < NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)
+	double speed = Constants::MOTOR_MAX_POWER;
+	if (distance < Constants::NAVIGATING_GOAL_APPROACH_DISTANCE_THRESHOLD)
 	{
-		speed *= NAVIGATING_GOAL_APPROACH_POWER_RATE;	//接近したら速度を落とす
+		speed *= Constants::NAVIGATING_GOAL_APPROACH_POWER_RATE;	//接近したら速度を落とす
 	}
 
 	//Debug::print(LOG_SUMMARY, "NAVIGATING: Last %d samples (%f %f) Current(%f %f)\r\n", mLastPos.size(), averagePos.x, averagePos.y, currentPos.x, currentPos.y);
   //Debug::print(LOG_SUMMARY, "current angle = %f goal angle = %f",currentDirection, newDirection);
-	Debug::print(LOG_SUMMARY, "distance = %f (m)\r\n", distance * DEGREE_2_METER);
+	Debug::print(LOG_SUMMARY, "distance = %f (m)\r\n", distance * Constants::DEGREE_2_METER);
 	if(deltaDirection>0)
 	  Debug::print(LOG_SUMMARY, " NAV LEFT %f @%f,%f\r\n", deltaDirection, currentPos.x, currentPos.y);
 	else
@@ -923,7 +923,7 @@ void Navigating::setGoal(const VECTOR3& pos)
 Navigating::Navigating() : mGoalPos(), mIsGoalPos(false), mLastPos()
 {
 	setName("navigating");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
   mMethod = 1;
   mGpsCountMax = 5;
 }
