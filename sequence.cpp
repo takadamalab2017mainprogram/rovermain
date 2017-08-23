@@ -448,16 +448,16 @@ void Separating::onUpdate(const struct timespec& time)
 		break;
 	case STEP_SEPARATE:
 		//パラシュートを切り離す
-    if(gNineAxisSensor.getAz() < 0)
-    {
-      gMotorDrive.drive(100);
-    }
-    else
-    {
-      gMotorDrive.drive(0);
-    }
+		if(gNineAxisSensor.getAz() < 0)
+		{
+		  gMotorDrive.drive(100);
+		}
+		else
+		{
+		  gMotorDrive.drive(0);
+		}
 
-    if (Time::dt(time, mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
+		if (Time::dt(time, mLastUpdateTime) < SEPARATING_SERVO_INTERVAL)return;
 		mLastUpdateTime = time;
 
 		mCurServoState = !mCurServoState;
@@ -637,7 +637,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, "NAVIGATING: GPS Error value detected\r\n");
 		//return;
 	}
-#pragma region スタックしたときの処理
+    //スタックしたときの処理
   else if (isStuckByGPS()) {
 		if (!gEscapingRandomState.isActive())
 		{
@@ -648,7 +648,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		Debug::print(LOG_SUMMARY, " NAV STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
 
-#pragma region esc by stabi と　esc by random の２つに繰り返す
+	//esc by stabi と　esc by random の２つに繰り返す
 		if (gEscapingByStabiState.isActive())		//EscapingByStabi中
 		{
 			if (gEscapingByStabiState.getTryCount() >= ESCAPING_BY_STABI_MAX_COUNT)
@@ -670,15 +670,10 @@ void Navigating::onUpdate(const struct timespec& time)
 				gEscapingByStabiState.setRunMode(true);
 			}
 		}
-#pragma endregion
-
-
-
 		return;//chou
 	}
-#pragma endregion
 
-#pragma region スタックしないときの処理
+	// スタックしないときの処理
 	else
 	{
 		if (gEscapingByStabiState.isActive() || gEscapingRandomState.isActive())
@@ -704,8 +699,6 @@ void Navigating::onUpdate(const struct timespec& time)
 		navigationMove(distance);//過去の座標から進行方向を変更する
     }
 	}
-#pragma endregion
-
 	
 	//方向変更したら、座標データをひとつ残して、mlastposのリストを削除
 	currentPos = mLastPos.back();
