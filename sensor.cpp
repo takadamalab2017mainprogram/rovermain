@@ -22,6 +22,7 @@
 #include <libgpsmm.h>
 #include "actuator.h"
 #include <float.h> 
+#include "constants.cpp"
 
 PressureSensor gPressureSensor;
 GPSSensor gGPSSensor;
@@ -115,7 +116,7 @@ float PressureSensor::getTemperature() const
 PressureSensor::PressureSensor() : mA0(0), mB1(0), mB2(0), mC12(0), mPressure(0), mTemperature(0), mFileHandle(-1)
 {
 	setName("pressure");
-	setPriority(TASK_PRIORITY_SENSOR, TASK_INTERVAL_SENSOR);
+	setPriority(Constants::TASK_PRIORITY_SENSOR, Constants::TASK_INTERVAL_SENSOR);
 }
 PressureSensor::~PressureSensor()
 {
@@ -131,7 +132,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 	mLastCheckTime = time;
 
 
-	if (gps_rec.stream(WATCH_ENABLE | WATCH_JSON) == NULL) {
+	if (gps_rec.stream(Constants::WATCH_ENABLE | Constants::WATCH_JSON) == NULL) {
 		Debug::print(LOG_SUMMARY, "Failed to setup GPS Sensor\r\n");
 	}
 
@@ -238,10 +239,10 @@ void GPSSensor::showState() const
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
 }
-GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false), gps_rec("localhost", DEFAULT_GPSD_PORT)
+GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false), gps_rec("localhost", Constants::DEFAULT_GPSD_PORT)
 {
 	setName("gps");
-	setPriority(TASK_PRIORITY_SENSOR, TASK_INTERVAL_SENSOR);
+	setPriority(Constants::TASK_PRIORITY_SENSOR, Constants::TASK_INTERVAL_SENSOR);
 }
 GPSSensor::~GPSSensor()
 {
@@ -270,10 +271,10 @@ bool LightSensor::get() const
 {
 	return digitalRead(mPin) == 0;
 }
-LightSensor::LightSensor() : mPin(PIN_LIGHT_SENSOR)
+LightSensor::LightSensor() : mPin(Constants::PIN_LIGHT_SENSOR)
 {
 	setName("light");
-	setPriority(TASK_PRIORITY_SENSOR, UINT_MAX);
+	setPriority(Constants::TASK_PRIORITY_SENSOR, UINT_MAX);
 }
 LightSensor::~LightSensor()
 {
@@ -445,7 +446,7 @@ void NineAxisSensor::getFIFO(const struct timespec& time)
 		if (mIsCalculatingOffset)
 		{
 			mRVelHistory.push_back(sampleRv);
-			if (mRVelHistory.size() >= GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
+			if (mRVelHistory.size() >= Constants::GYRO_SAMPLE_COUNT_FOR_CALCULATE_OFFSET)//必要なサンプル数がそろった
 			{
 				//平均値を取ってみる
 				std::list<VECTOR3>::iterator it = mRVelHistory.begin();
@@ -542,12 +543,12 @@ void NineAxisSensor::calcMagnetOffset(VECTOR3& newMagnet)
 double NineAxisSensor::getMagnetTheta()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return acos(magnet.z / magnet.norm())/M_PI*180;
+	return acos(magnet.z / magnet.norm())/ Constants::M_PI*180;
 }
 double NineAxisSensor::getMagnetPhi()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return atan2(magnet.x,magnet.y)/M_PI *180;
+	return atan2(magnet.x,magnet.y)/ Constants::M_PI *180;
 }
 double NineAxisSensor::getMagnetNorm()
 {
@@ -753,7 +754,7 @@ NineAxisSensor::NineAxisSensor() : mFileHandle(-1),mAccel(), mAccelAve(), mAccel
   isMonitoring = false;
   isFIFOEnable = true;
   setName("nineaxis");
-  setPriority(TASK_PRIORITY_SENSOR ,TASK_INTERVAL_SENSOR);
+  setPriority(Constants::TASK_PRIORITY_SENSOR , Constants::TASK_INTERVAL_SENSOR);
   mAccelAlpha = 1;
 }
 NineAxisSensor::~NineAxisSensor()
