@@ -132,7 +132,7 @@ bool GPSSensor::onInit(const struct timespec& time)
 	mLastCheckTime = time;
 
 
-	if (gps_rec.stream(Constants::WATCH_ENABLE | Constants::WATCH_JSON) == NULL) {
+	if (gps_rec.stream(WATCH_ENABLE | WATCH_JSON) == NULL) {
 		Debug::print(LOG_SUMMARY, "Failed to setup GPS Sensor\r\n");
 	}
 
@@ -239,7 +239,7 @@ void GPSSensor::showState() const
 	if (mSatelites < 4) Debug::print(LOG_SUMMARY, "Unknown Position\r\nSatelites: %d\r\n", mSatelites);
 	else Debug::print(LOG_SUMMARY, "Satelites: %d \r\nPosition: %f %f %f,\r\nTime: %d\r\nCourse: %f\r\nSpeed: %f\r\n", mSatelites, mPos.x, mPos.y, mPos.z, mGpsTime, mGpsCourse, mGpsSpeed);
 }
-GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false), gps_rec("localhost", Constants::DEFAULT_GPSD_PORT)
+GPSSensor::GPSSensor() : mFileHandle(-1), mPos(), mSatelites(0), mIsNewData(false), gps_rec("localhost", DEFAULT_GPSD_PORT)
 {
 	setName("gps");
 	setPriority(Constants::TASK_PRIORITY_SENSOR, Constants::TASK_INTERVAL_SENSOR);
@@ -543,12 +543,12 @@ void NineAxisSensor::calcMagnetOffset(VECTOR3& newMagnet)
 double NineAxisSensor::getMagnetTheta()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return acos(magnet.z / magnet.norm())/ Constants::M_PI*180;
+	return acos(magnet.z / magnet.norm())/ M_PI*180;
 }
 double NineAxisSensor::getMagnetPhi()
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
-	return atan2(magnet.x,magnet.y)/ Constants::M_PI *180;
+	return atan2(magnet.x,magnet.y)/ M_PI *180;
 }
 double NineAxisSensor::getMagnetNorm()
 {
