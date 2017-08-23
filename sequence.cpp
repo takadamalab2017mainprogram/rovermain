@@ -796,7 +796,7 @@ void Navigating::navigationMove(double distance) const
 
 	//新しい角度を計算
 	VECTOR3 currentPos = mLastPos.back();
-	double currentDirection;
+	double currentDirection=0;
 	double newDirection = -VECTOR3::calcAngleXY(currentPos, mGoalPos);//ゴールの方向
 switch (mMethod) {
 	case 1://従来手法 サンプルをとって方向推定
@@ -808,9 +808,9 @@ switch (mMethod) {
 	case 3://上の2手法の平均をとってる
 		currentDirection = (( gGPSSensor.getCourse()) + (-VECTOR3::calcAngleXY(averagePos, currentPos))) / 2;
 		break;
-  case 4://use magnet
-    currentDirection = -gNineAxisSensor.getMagnetPhi();
-    break;
+	case 4://use magnet
+		currentDirection = -gNineAxisSensor.getMagnetPhi();
+		break;
 	default:
 		break;
 	}
