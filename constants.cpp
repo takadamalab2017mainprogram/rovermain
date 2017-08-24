@@ -1,6 +1,19 @@
 
 #include <math.h>
 
+/*
+各種定数
+*/
+#pragma once
+
+//本番はコメントアウトすること！！（Ctrl-Cによるプログラム終了が無効になります）
+#define _DEBUG 1
+
+#define _USE_MATH_DEFINES
+
+//詳細なログ表示が必要な場合はつかってください
+#define _LOG_DETAIL 1
+
 class Constants {
 public:
 	const static int VERSION = 01;
