@@ -11,6 +11,7 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
+#include <time.h>
 
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
@@ -185,18 +186,19 @@ void SensorLogging::onUpdate(const struct timespec& time)
 	if (Time::dt(time, mLastUpdateTime) >= 0.1)
 	{
 		mLastUpdateTime = time;
-		clock_gettime(CLOCK_REALTIME,&time);
+    timespec nowtime;
+		clock_gettime(CLOCK_REALTIME,&nowtime);
 		//���O���ۑ�
 		VECTOR3 vec;
 		gGPSSensor.get(vec);
-		if (gGPSSensor.isActive())write(mFilenameGPS, "%ld.%ld,%f,%f,%f\r\n", time.tv_sec,time.tv_nsec,vec.x, vec.y, vec.z);
+		if (gGPSSensor.isActive())write(mFilenameGPS, "%ld.%ld,%f,%f,%f\r\n", nowtime.tv_sec,nowtime.tv_nsec,vec.x, vec.y, vec.z);
 		else write(mFilenameGPS, "unavailable\r\n");
 
-    if (gPressureSensor.isActive())write(mFilenamePressure, "%ld.%ld,%f\r\n", time.tv_sec,time.tv_nsec,gPressureSensor.get());
+    if (gPressureSensor.isActive())write(mFilenamePressure, "%ld.%ld,%f\r\n", nowtime.tv_sec,nowtime.tv_nsec,gPressureSensor.get());
 		else write(mFilenamePressure, "unavailable\r\n");
 
 
-		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld.%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",time.tv_sec,time.tv_nsec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
+		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld.%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",nowtime.tv_sec,nowtime.tv_nsec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
 		else write(mFilenameNineAxis, "unavailable\r\n");
 	}
 }
