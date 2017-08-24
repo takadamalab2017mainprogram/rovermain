@@ -230,6 +230,10 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 SensorLogging::~SensorLogging()
 {
 }
+/*
+waking藤村verクラスを作る必要あり
+*/
+
 
 bool Waking::onInit(const struct timespec& time)
 {
