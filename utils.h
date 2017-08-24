@@ -12,7 +12,6 @@
 #include <string>
 #include <map>
 #include <time.h>
-#include "constants.h"
 
 #ifdef _DEBUG
 #include <assert.h>
