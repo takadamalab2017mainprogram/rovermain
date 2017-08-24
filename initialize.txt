@@ -10,7 +10,6 @@ nineaxis FIFO false
 //
 //*** parameter ***
 motor p 0.005 0.0 0.0
-motor r 100 100
 //motor pp 0.008 0 0
 motor cpose 0.8
 wakinglie 30
