@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "motor.h"
 #include "sensor.h"
+#include "constants.cpp"
 
 MotorDrive gMotorDrive;
 
@@ -51,7 +52,7 @@ void Motor::update(double elapsedSeconds)
 	{
 		//なめらかにモータ出力を変化させる
 		double curFrameTarget = mTargetPower;//この呼び出しで設定するモーター出力
-		double maxMotorPowerChange = MOTOR_MAX_POWER_CHANGE * mCoeff;
+		double maxMotorPowerChange = Constants::MOTOR_MAX_POWER_CHANGE * mCoeff;
 
 		//モータ出力変化量を制限
 		//最大モーター出力変化量が目標出力-現在の出力より大きければ
@@ -79,8 +80,8 @@ void Motor::clean()
 void Motor::set(int power)
 {
 	//値の範囲をチェックし、正しい範囲に丸める
-	if (power > MOTOR_MAX_POWER)power = MOTOR_MAX_POWER;
-	else if (power < -MOTOR_MAX_POWER)power = -MOTOR_MAX_POWER;
+	if (power > Constants::MOTOR_MAX_POWER)power = Constants::MOTOR_MAX_POWER;
+	else if (power < -Constants::MOTOR_MAX_POWER)power = -Constants::MOTOR_MAX_POWER;
 
 	//目標出力を設定
 	mTargetPower = power;
@@ -107,7 +108,7 @@ bool MotorDrive::onInit(const struct timespec& time)
 	gNineAxisSensor.setRunMode(true);
 
 	//初期化
-	if (!mMotorR.init(PIN_PWM_A1, PIN_PWM_A2) || !mMotorL.init(PIN_PWM_B1, PIN_PWM_B2))
+	if (!mMotorR.init(Constants::PIN_PWM_A1, Constants::PIN_PWM_A2) || !mMotorL.init(Constants::PIN_PWM_B1, Constants::PIN_PWM_B2))
 	{
 		Debug::print(LOG_SUMMARY, "Failed to initialize Motors\r\n");
 		return false;
@@ -142,7 +143,7 @@ void MotorDrive::updatePIDState(const VECTOR3& pid, double dangle, double maxCon
 	mControlPower += powerDiff;
 	
 	//モータ速度係数を用意
-	double drivePowerRatio = (double)mDrivePower / MOTOR_MAX_POWER;//モータ出力の割合
+	double drivePowerRatio = (double)mDrivePower / Constants::MOTOR_MAX_POWER;//モータ出力の割合
 
 	//モータの逆回転をせずに方向転換する
 	double controlRatio = 1 - std::min(fabs(mControlPower), maxControlRatio);
@@ -188,8 +189,8 @@ void MotorDrive::onUpdate(const struct timespec& time)
 }
 void MotorDrive::setRatio(int ratioL, int ratioR)
 {
-	mMotorL.setCoeff((double)(mRatioL = std::max(std::min(ratioL, MOTOR_MAX_POWER), 0)) / MOTOR_MAX_POWER);
-	mMotorR.setCoeff((double)(mRatioR = std::max(std::min(ratioR, MOTOR_MAX_POWER), 0)) / MOTOR_MAX_POWER);
+	mMotorL.setCoeff((double)(mRatioL = std::max(std::min(ratioL, Constants::MOTOR_MAX_POWER), 0)) / Constants::MOTOR_MAX_POWER);
+	mMotorR.setCoeff((double)(mRatioR = std::max(std::min(ratioR, Constants::MOTOR_MAX_POWER), 0)) / Constants::MOTOR_MAX_POWER);
 }
 
 double MotorDrive::getPowerL()
@@ -204,8 +205,8 @@ double MotorDrive::getPowerR()
 void MotorDrive::drive(int powerL, int powerR)
 {
 	mDriveMode = DRIVE_RATIO;
-	mMotorL.set(mRatioL * powerL / MOTOR_MAX_POWER);
-	mMotorR.set(-mRatioR * powerR / MOTOR_MAX_POWER);
+	mMotorL.set(mRatioL * powerL / Constants::MOTOR_MAX_POWER);
+	mMotorR.set(-mRatioR * powerR / Constants::MOTOR_MAX_POWER);
 
 	mAngle = 0;
 }
@@ -216,14 +217,12 @@ void MotorDrive::drive(int power)
 
 void MotorDrive::setPIDGyro(double p, double i, double d)
 {
-	//Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
 	mPIDGyro.x = p;
 	mPIDGyro.y = i;
 	mPIDGyro.z = d;
 }
 void MotorDrive::setPIDPose(double p, double i, double d)
 {
-	//Debug::print(LOG_SUMMARY, "PID params: %f %f %f\r\n", p, i, d);
 	mPIDPose.x = p;
 	mPIDPose.y = i;
 	mPIDPose.z = d;
@@ -233,8 +232,7 @@ void MotorDrive::drivePIDGyro(double angle, int power, bool reset)
 	if(reset) mAngle = NineAxisSensor::normalize(angle + gNineAxisSensor.getRz());
 	else mAngle = NineAxisSensor::normalize(angle);
 
-	mDrivePower = std::max(std::min(power, MOTOR_MAX_POWER), 0);
-	//Debug::print(LOG_SUMMARY, "PID(Gyro) is Started (%f angle, %d power)\r\n", mAngle, mDrivePower);
+	mDrivePower = std::max(std::min(power, Constants::MOTOR_MAX_POWER), 0);
 	mDriveMode = DRIVE_PID;
 
 	if(reset)
@@ -255,25 +253,25 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 		if (args[1].compare("w") == 0)
 		{
 			//前進
-			drive(MOTOR_MAX_POWER, MOTOR_MAX_POWER);
+			drive(Constants::MOTOR_MAX_POWER, Constants::MOTOR_MAX_POWER);
 			return true;
 		}
 		else if (args[1].compare("s") == 0)
 		{
 			//後退
-			drive(-MOTOR_MAX_POWER, -MOTOR_MAX_POWER);
+			drive(-Constants::MOTOR_MAX_POWER, -Constants::MOTOR_MAX_POWER);
 			return true;
 		}
 		else if (args[1].compare("a") == 0)
 		{
 			//左折
-			drive(0, MOTOR_MAX_POWER * 0.7);
+			drive(0, Constants::MOTOR_MAX_POWER * 0.7);
 			return true;
 		}
 		else if (args[1].compare("d") == 0)
 		{
 			//右折
-			drive(MOTOR_MAX_POWER * 0.7, 0);
+			drive(Constants::MOTOR_MAX_POWER * 0.7, 0);
 			return true;
 		}
 		else if (args[1].compare("h") == 0)
@@ -288,13 +286,13 @@ bool MotorDrive::onCommand(const std::vector<std::string>& args)
 			if (size == 2)
 			{
 				//PID制御開始(現在の向き)
-				drivePIDGyro(0, MOTOR_MAX_POWER, true);
+				drivePIDGyro(0, Constants::MOTOR_MAX_POWER, true);
 				return true;
 			}
 			else if (size == 3)
 			{
 				//PID(相対角度指定)
-				drivePIDGyro(atoi(args[2].c_str()), MOTOR_MAX_POWER, true);
+				drivePIDGyro(atoi(args[2].c_str()), Constants::MOTOR_MAX_POWER, true);
 				return true;
 			}
 			else if (size == 5)
@@ -346,8 +344,6 @@ motor [cpose/cgyro] [param]   : set max control ratio\r\n");
 MotorDrive::MotorDrive() : mMotorL(), mMotorR(), mDriveMode(DRIVE_RATIO), mRatioL(100), mRatioR(100), mPIDGyro(0.003, 0, 0), mPIDPose(0.006, 0, 0), mMaxPIDControlRatioGyro(1), mMaxPIDControlRatioPose(0.5), mDiff1(0), mDiff2(0), mDiff3(0), mAngle(0), mControlPower(0), mDrivePower(0)
 {
 	setName("motor");
-	setPriority(TASK_PRIORITY_MOTOR, TASK_INTERVAL_MOTOR);
-
-	//mpMotorEncoder = MotorEncoder::getInstance();
+	setPriority(Constants::TASK_PRIORITY_MOTOR, Constants::TASK_INTERVAL_MOTOR);
 }
 MotorDrive::~MotorDrive(){}

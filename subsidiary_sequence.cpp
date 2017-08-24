@@ -12,6 +12,7 @@
 #include "actuator.h"
 #include "motor.h"
 #include <time.h>
+#include "constants.cpp"
 
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
@@ -50,11 +51,6 @@ void EscapingByStabi::onUpdate(const struct timespec& time)
 		{
 			Debug::print(LOG_SUMMARY, "Escaping TryCount: %d\r\n", mTryCount);
 		}
-	//	if (mTryCount > Escaping_Chance_limit)
-	//	{
-	//		gEscapingByStabiState.setRunMode(false);
-	//		gEscapingRandomState.setRunMode(true);
-	//	}
 	}
 	mFlag = !mFlag;
 }
@@ -85,7 +81,7 @@ unsigned int EscapingByStabi::getTryCount()
 EscapingByStabi::EscapingByStabi()
 {
 	setName("esc");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 EscapingByStabi::~EscapingByStabi()
 {
@@ -159,7 +155,7 @@ bool EscapingRandom::onCommand(const std::vector<std::string>& args)
 EscapingRandom::EscapingRandom()
 {
 	setName("random");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 EscapingRandom::~EscapingRandom()
 {
@@ -172,7 +168,7 @@ bool SensorLogging::onInit(const struct timespec& time)
 	write(mFilenameGPS, "Log started\r\n");
 	write(mFilenamePressure, "Log started\r\n");
 	write(mFilenameNineAxis, "Log started\r\n");
-	write(mFilenameNineAxis, "time/sec,Ax/G,Ay/G,Az/G,Rvx/deg/sec,Rvy/deg/sec,Rvz/deg/sec,Rx/deg,Ry/deg,Rz/deg,Mx/uT,My/uT,Mz/uT");
+	write(mFilenameNineAxis, "time/sec,|A|/G,Ax/G,Ay/G,Az/G,Rvx/deg/sec,Rvy/deg/sec,Rvz/deg/sec,Rx/deg,Ry/deg,Rz/deg,Mx/uT,My/uT,Mz/uT\r\n");
 
 	gGPSSensor.setRunMode(true);
 	gPressureSensor.setRunMode(true);
@@ -197,7 +193,8 @@ void SensorLogging::onUpdate(const struct timespec& time)
     if (gPressureSensor.isActive())write(mFilenamePressure, "%ld.%ld,%f\r\n", nowtime.tv_sec,nowtime.tv_nsec,gPressureSensor.get());
 		else write(mFilenamePressure, "unavailable\r\n");
 
-
+    VECTOR3 accel;
+    gNineAxisSensor.getAccel(accel);
 		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld.%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",nowtime.tv_sec,nowtime.tv_nsec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
 		else write(mFilenameNineAxis, "unavailable\r\n");
 	}
@@ -217,7 +214,7 @@ void SensorLogging::write(const std::string& filename, const char* fmt, ...)
 SensorLogging::SensorLogging() : mLastUpdateTime()
 {
 	setName("sensorlogging");
-	setPriority(UINT_MAX, TASK_INTERVAL_SEQUENCE);
+	setPriority(UINT_MAX, Constants::TASK_INTERVAL_SEQUENCE);
 
 	Filename("log_gps", ".txt").get(mFilenameGPS);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGPS.c_str());

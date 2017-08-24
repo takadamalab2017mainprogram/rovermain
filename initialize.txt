@@ -1,4 +1,5 @@
 start testing
+nineaxis FIFO false
 //
 // ------------------- notes -------------------
 //hogehjoge

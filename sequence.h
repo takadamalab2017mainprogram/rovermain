@@ -85,7 +85,7 @@ private:
 	struct timespec mLastUpdateTime;//前回サーボの向きを更新した時間
 	bool mCurServoState;			//現在のサーボの向き(true = 1,false = 0)
 	unsigned int mServoCount;		//サーボの向きを変更した回数
-	enum STEP{STEP_STABI_OPEN = 0, STEP_WAIT_STABI_OPEN, STEP_SEPARATE, STEP_PRE_PARA_JUDGE,STEP_PARA_JUDGE,STEP_PARA_DODGE,STEP_GO_FORWARD};
+	enum STEP{STEP_STABI_OPEN = 0, STEP_WAIT_STABI_OPEN, STEP_SEPARATE,STEP_GO_FORWARD};
 	enum STEP mCurStep;
 
 protected:
@@ -110,6 +110,7 @@ private:
 	struct timespec mLastUpdateTime;
 	//ゴール位置
 	VECTOR3 mGoalPos;//現在のゴール
+  VECTOR3 currentPos;
 
 					 //goallist を保存する
 	VECTOR3 goal;

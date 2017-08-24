@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "serial_command.h"
 #include "motor.h"
+#include "constants.cpp"
 
 SerialCommand gSerialCommand;
 
@@ -115,7 +116,7 @@ SerialCommand::SerialCommand() : mCursorPos(0), mEscapeBeginPos(-1)
 
 	//タスク設定
 	setName("serial");
-	setPriority(TASK_PRIORITY_COMMUNICATION, TASK_INTERVAL_COMMUNICATION);
+	setPriority(Constants::TASK_PRIORITY_COMMUNICATION, Constants::TASK_INTERVAL_COMMUNICATION);
 }
 SerialCommand::~SerialCommand()
 {

@@ -86,98 +86,6 @@ public:
 	~GPSSensor();
 };
 
-//L3GD20からデータを取得するクラス
-// X: to Left
-// Y: to Back
-// Z: to Top
-/*
-class GyroSensor : public TaskBase
-{
-private:
-	int mFileHandle;//winringPi i2c　のファイルハンドラ
-	VECTOR3 mRVel;//角速度
-	VECTOR3 mRAngle;//角度
-	struct timespec mLastSampleTime;
-
-	//ドリフト誤差補正用
-	std::list<VECTOR3> mRVelHistory;//過去の角速度
-	VECTOR3 mRVelOffset;//サンプルあたりのドリフト誤差の推定値
-	double mCutOffThreshold;
-	bool mIsCalculatingOffset;//ドリフト誤差計算中フラグ
-protected:
-	//ジャイロセンサを初期化
-	virtual bool onInit(const struct timespec& time);
-	//センサの使用を終了する
-	virtual void onClean();
-
-	//一定間隔ごとにデータをアップデートする
-	virtual void onUpdate(const struct timespec& time);
-
-	//コマンドを処理する
-	virtual bool onCommand(const std::vector<std::string>& args);
-public:
-	//最後にアップデートされたデータを返す
-	bool getRVel(VECTOR3& vel) const;
-	double getRvx() const;
-	double getRvy() const;
-	double getRvz() const;
-
-	//////////////////////////////////////////////////
-	//角速度から計算された角度を処理する関数
-
-	//現在の角度を基準とする
-	void setZero();
-
-	//現在の角度を返す(-180〜+180)
-	bool getRPos(VECTOR3& pos) const;
-	double getRx() const;
-	double getRy() const;
-	double getRz() const;
-
-	//ドリフト誤差を補正する(静止状態で呼び出すこと)
-	void calibrate();
-
-	//引数のベクトルを(-180〜+180)の範囲に修正
-	static void normalize(VECTOR3& pos);
-	static double normalize(double pos);
-
-	GyroSensor();
-	~GyroSensor();
-};
-
-//MMA8451Qからデータを取得するクラス
-// X: to Back
-// Y: to Right
-// Z: to Top
-class AccelerationSensor : public TaskBase
-{
-private:
-	int mFileHandle;//winringPi i2c　のファイルハンドラ
-	VECTOR3 mAccel, mAccelAve;//加速度
-	double mAccelAlpha;//Coeff
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onClean();
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-public:
-	//最後にアップデートされたデータを返す
-	bool getAccel(VECTOR3& acc) const;
-	double getAx() const;
-	double getAy() const;
-	double getAz() const;
-
-	double getTheta() const; //XY
-	double getPsi() const; //YZ
-	double getPhi() const; //XZ
-
-	bool getRawAccel(VECTOR3& acc) const;
-
-	AccelerationSensor();
-	~AccelerationSensor();
-};
-*/
-
 //Cdsからデータを取得するクラス
 class LightSensor : public TaskBase
 {
@@ -199,81 +107,6 @@ public:
 	~LightSensor();
 };
 
-//Webカメラの動画をキャプチャするクラス
-/*
-class WebCamera : public TaskBase
-{
-protected:
-	virtual bool onCommand(const std::vector<std::string>& args);
-	virtual void onClean();
-public:
-	void start(const char* filename = NULL);
-	void stop();
-
-	WebCamera();
-	~WebCamera();
-};
-
-//距離センサーを操作するクラス
-class DistanceSensor : public TaskBase
-{
-	double mLastDistance;
-	struct timespec mLastSampleTime;
-	pthread_t mPthread;
-	volatile bool mIsCalculating;
-	volatile bool mIsNewData;
-
-	static void* waitingThread(void* arg);
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onClean();
-	virtual void onUpdate(const struct timespec& time);
-	virtual bool onCommand(const std::vector<std::string>& args);
-public:
-	bool ping();//距離センサーに計測を指示する
-
-	//計測された距離を返す(新しいデータであればtrueを返す)
-	//計測不能であれば-1を返す
-	bool getDistance(double& distance);
-
-	DistanceSensor();
-	~DistanceSensor();
-};
-/*
-//#include <opencv2/opencv.hpp>
-#include <opencv/cvaux.h>
-#include <opencv/highgui.h>
-class CameraCapture : public TaskBase
-{
-	CvCapture* mpCapture;
-	IplImage* mpResizedImage;
-	bool mIsWarming;
-	unsigned int mCurVideoDeviceID;//現在使用しているカメラのデバイス番号(/dev/video*)
-
-	const static int WIDTH = 640, HEIGHT = 480;
-
-	std::string gpsfilename;
-	VECTOR3 vec;
-	int count;
-protected:
-	virtual bool onInit(const struct timespec& time);
-	virtual void onClean();
-	virtual bool onCommand(const std::vector<std::string>& args);
-	virtual void onUpdate(const struct timespec& time);
-
-	void verifyCamera(bool reinitialize = true);
-public:
-	void startWarming();//getFrameする少し前に呼び出すこと.古い画像が取得されるのを防止できる
-	IplImage* getFrame(int width = 320, int height = 240);
-
-	void save(const std::string* name = NULL, IplImage* pImage = NULL, bool nolog = false);
-	void wadatisave(const std::string* name = NULL, IplImage* pImage = NULL, bool nolog = false);
-	void write(const std::string& filename, const char* fmt, ...);
-
-	CameraCapture();
-	~CameraCapture();
-};
-*/
 class NineAxisSensor : public TaskBase
 {
 private:
@@ -347,12 +180,8 @@ public:
 	NineAxisSensor();
 	~NineAxisSensor();
 };
-//extern GyroSensor gGyroSensor;
+
 extern GPSSensor gGPSSensor;
 extern PressureSensor gPressureSensor;
 extern LightSensor gLightSensor;
-//extern WebCamera gWebCamera;
-//extern DistanceSensor gDistanceSensor;
-//extern CameraCapture gCameraCapture;
-//extern AccelerationSensor gAccelerationSensor;
 extern NineAxisSensor gNineAxisSensor;
