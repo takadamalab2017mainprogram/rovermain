@@ -32,9 +32,9 @@ public:
 	const static int PIN_LIGHT_SENSOR = 25;//Cdsセンサピン                  Clear!
 	const static int PIN_MULTI_SERVO = 1;//パラ＋バックスタビ          Clear!
 	const static int PIN_DISTANCE = 8;//距離センサー(ピン番号は適当)
-	const static int PIN_LED_R = 27;// LED
-	const static int PIN_LED_G = 29;// LED
-	const static int PIN_LED_B = 28;// LED
+	const static int PIN_LED_R = 24;// LED
+	const static int PIN_LED_G = 23;// LED
+	const static int PIN_LED_B = 22;// LED
 
 	//モータ設定
 	const static int MOTOR_MAX_POWER = 100;
