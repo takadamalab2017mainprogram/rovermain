@@ -414,7 +414,7 @@ void LED::clearLED() {
 
 LED::LED() {
 	setName("led");
-	setPriority(TASK_PRIORITY_ACTUATOR, TASK_INTERVAL_ACTUATOR);
+	setPriority(Constants::TASK_PRIORITY_ACTUATOR, Constants::TASK_INTERVAL_ACTUATOR);
 }
 
 LED::~LED() {
