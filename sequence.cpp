@@ -44,7 +44,7 @@ bool Testing::onInit(const struct timespec& time)
 	gLightSensor.setRunMode(true);
 	gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
-
+	gLED.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 
@@ -189,7 +189,9 @@ bool Waiting::onInit(const struct timespec& time)
 	gDelayedExecutor.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gMultiServo.fold();//スタビたたんでいる状態
-  gNineAxisSensor.setRunMode(true);
+	gLED.setRunMode(true);
+	gNineAxisSensor.setRunMode(true);
+	gLED.hsv(0.03);
   Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
   //system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
@@ -251,6 +253,7 @@ bool Falling::onInit(const struct timespec& time)
 	mContinuousPressureCount = 0;
 	mCoutinuousGyroCount = 0;
 
+
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
 	setRunMode(true);
@@ -262,7 +265,7 @@ bool Falling::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gMultiServo.setRunMode(true);
-
+	gLED.setRunMode(true);
 	gNineAxisSensor.setRunMode(true);
 	gNineAxisSensor.isMonitoring = false;
 	return true;
@@ -351,6 +354,7 @@ bool Waking::onInit(const struct timespec& time)
 {
 	gMotorDrive.setRunMode(true);
 	gMultiServo.setRunMode(true);
+	gLED.setRunMode(true);
 	gMultiServo.start(Constants::BACK_STABI_RUN_ANGLE);
 	gNineAxisSensor.setRunMode(true);
 	mLastUpdateTime = time;
@@ -418,8 +422,8 @@ bool Separating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-  gNineAxisSensor.setRunMode(true);
-
+	gNineAxisSensor.setRunMode(true);
+	gLED.setRunMode(true);
 	mLastUpdateTime = time;
 	mCurServoState = false;
 	mServoCount = 0;
@@ -533,6 +537,7 @@ bool Navigating::onInit(const struct timespec& time)
 	gSerialCommand.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gLED.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gMultiServo.Running();//走っているときの角度に設定
 	gNineAxisSensor.setRunMode(true);
