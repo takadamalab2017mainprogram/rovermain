@@ -45,6 +45,36 @@ public:
 	~Buzzer();
 };
 
+//LEDの制御をするクラス
+class LED :public TaskBase {
+	struct timespec mLastUpdateTime1, mLastUpdateTime2;
+private:
+	int r, g, b, t;
+	double s, u, v, p;
+	float d;
+	bool rbw, bnk, hf;
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onClean();
+	virtual bool onCommand(const std::vector<std::string>& args);
+	virtual void onUpdate(const struct timespec& time);
+public:
+	void reflect();
+	void turnOff();
+	void setColor(int);
+	void setColor(int, int, int);
+	void rainbow(double);
+	void stopRainbow();
+	void brink(double);
+	void brink(double, double);
+	void stopBrink();
+	void hsv(float);
+	void stopHSV();
+	void startHSV(double);
+	void clearLED();
+	LED();
+	~LED();
+};
 
 // パラサーボ制御クラス(ハードウェアPWM)
 //20170626_パラシュートサーボとバックサーボを１つに統合(MultiServo)
