@@ -526,4 +526,4 @@ MultiServo::~MultiServo()
 
 Buzzer gBuzzer;
 MultiServo gMultiServo;
-
+LED gLED;

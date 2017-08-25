@@ -74,7 +74,7 @@ public:
 	void clearLED();
 	LED();
 	~LED();
-};
+};	
 
 // パラサーボ制御クラス(ハードウェアPWM)
 //20170626_パラシュートサーボとバックサーボを１つに統合(MultiServo)
@@ -106,3 +106,4 @@ public:
 
 extern Buzzer gBuzzer;
 extern MultiServo gMultiServo;
+extern LED gLED;
