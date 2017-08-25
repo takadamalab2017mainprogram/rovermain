@@ -910,7 +910,8 @@ void Navigating::nextState()
 	gMotorDrive.drive(0);
 
 	Time::showNowTime();
-	Debug::print(LOG_SUMMARY, "in nextState finished\r\n");
+	Debug::print(LOG_SUMMARY, "navigating finished\r\n");
+	system("sudo ruby /home/pi/network/exit_navigation.rb");
 	gTestingState.setRunMode(true);
 }
 void Navigating::setGoal(const VECTOR3& pos)
