@@ -87,6 +87,7 @@ int main(int argc, char** argv)
 	}
 
 	pTaskMan->clean();
+	system("sudo ruby /home/pi/network/exit_navigation.rb");
 
 	//書き込まれていないファイルを強制的にSDに書き込み
 	system("sync");
