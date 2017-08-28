@@ -29,6 +29,7 @@ Falling gFallingState;
 Separating gSeparatingState;
 Navigating gNavigatingState;
 Waking gWakingState;
+Blinding gBlindingState;
 
 //////////////////////////////////////////////
 // Testing
@@ -1086,7 +1087,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			VECTOR3 i;
 			timespec nowtime;
 			clock_gettime(CLOCK_REALTIME, &nowtime);
-			i.x = 0;
+			i.x = (double)nowtime.tv_nsec;
 			i.y = currentPos[0];
 			i.z = currentPos[1];
 			pos_history.push_back(i);
