@@ -1015,9 +1015,7 @@ bool Blinding::onInit(const struct timespec& time) {
 };
 
 void Blinding::set_goal(double dis, double angle) {
-	double pos[2];
-	polar_to_xy(pos, dis, angle);
-	Goal = pos;
+	polar_to_xy(Goal, dis, angle);
 };
 
 void Blinding::move() {
@@ -1083,13 +1081,13 @@ void Blinding::onUpdate(const struct timespec& time) {
 			mLastListWriteTime = time;
 			VECTOR3 i;
 			i.x = time;
-			i.y = currtPos[0];
-			i.z = currtPos[1];
-			mylist.push_back(i);
+			i.y = currentPos[0];
+			i.z = currentPos[1];
+			pos_history.push_back(i);
 		}
 
 		//目標に向かう
-		move(currentPos);
+		move();
 	//}
 };
 bool Blinding::onCommand(const std::vector<std::string>& args){
