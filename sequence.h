@@ -180,6 +180,7 @@ protected:
 	void nextState();
 	void move();
 	void polar_to_xy(double pos[], double dis, double angle);
+	bool arrived_goal();
 	
 public:
 	void set_goal(double dis, double angle);
