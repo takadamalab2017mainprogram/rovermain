@@ -159,7 +159,7 @@ public:
 	~Navigating();
 };
 
-class Blinding:{ public TaskBase
+class Blinding:public TaskBase{
 private:
 	double ConstantNineAxisPeriod = 0.5;
 	double currentPos[2];
@@ -169,6 +169,7 @@ private:
 	double averageAy = 0.9721032;
 	double averageAz = 0.6963416;
 	int myspeed = 100;
+	bool mStuckFlag;
 	struct timespec mLastListWriteTime;
 	struct timespec mLastCheckTime;
 

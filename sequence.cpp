@@ -1084,9 +1084,9 @@ void Blinding::onUpdate(const struct timespec& time) {
 			//1秒ごときposリストを更新
 			mLastListWriteTime = time;
 			VECTOR3 i;
-			i[0] = time;
-			i[1] = currtpos[0];
-			i[2] = currtpos[1];
+			i.x = time;
+			i.y = currtpos[0];
+			i.z = currtpos[1];
 			mylist.push_back(i);
 		}
 
