@@ -1082,7 +1082,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			//1秒ごときposリストを更新
 			mLastListWriteTime = time;
 			VECTOR3 i;
-			i.x = atof(time);
+			i.x = 0;
 			i.y = currentPos[0];
 			i.z = currentPos[1];
 			pos_history.push_back(i);
