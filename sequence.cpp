@@ -1107,7 +1107,8 @@ void Blinding::onUpdate(const struct timespec& time) {
 			//今の終点への距離を表示
 			double dis = pow(pow(Goal[0] - currentPos[0], 2) + 
 				pow(Goal[1] - currentPos[1], 2), 0.5);
-			Debug::print(LOG_SUMMARY, "happy cafe %f", dis  );
+			Debug::print(LOG_SUMMARY, "今の座標 %f %f\r\n　終点の座標 %f %f\r\n 今の角度 %f \r\n 目標までの距離 %f", 
+				currentPos[0], currentPos[1], Goal[0], Goal[1], currentangle, dis  );
 		};
 
 		//目標に向かう
