@@ -1007,6 +1007,7 @@ bool Blinding::onInit(const struct timespec& time) {
 	gMultiServo.setRunMode(true);
 	gMultiServo.Running();//走っているときの角度に設定
 	gNineAxisSensor.setRunMode(true);
+	gSerialCommand.setRunMode(true);
 	mStuckFlag = false;
 
 	mLastListWriteTime = time;
