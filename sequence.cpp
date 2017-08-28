@@ -1020,7 +1020,7 @@ void Blinding::set_goal(double dis, double angle) {
 
 void Blinding::move() {
 	//今の座標と目標座標からモーターの角度を変更
-	double motorangle = atan2f(Goal, currentPos);
+	double motorangle = atan2(Goal, currentPos);
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
 };
 
