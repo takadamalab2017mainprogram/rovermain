@@ -1030,6 +1030,18 @@ void Blinding::move() {
 	gMotorDrive.drive(myspeed);
 };
 
+bool Blinding::arrived_goal() {
+	//目標点に到着しているかを判断
+	double dis = pow(pow(Goal[0] - currentPos[0], 2) +
+		pow(Goal[1] - currentPos[1]), 0.5);
+
+	if (dis < 0.1) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 void Blinding::polar_to_xy(double pos[], double dis, double angle) {
 	//極座標からｘｙ座標に変換
 	pos[0] = cos(angle) * dis;
@@ -1094,7 +1106,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			pos_history.push_back(i);
 			//今の終点への距離を表示
 			double dis = pow(pow(Goal[0] - currentPos[0], 2) + 
-				pow(Goal[1] - currentPos[1]), 0.5);
+				pow(Goal[1] - currentPos[1], 2), 0.5);
 			Debug::print(LOG_SUMMARY, "happy cafe %f", dis  );
 		};
 
