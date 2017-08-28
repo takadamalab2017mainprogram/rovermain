@@ -1086,8 +1086,9 @@ void Blinding::onUpdate(const struct timespec& time) {
 	//	return;
 	//}
 	//else {
+	if (Time::dt(time, mLastCheckTime) > 0.5) {
 		//今の自分の座標を更新
-	    double periodtime = Time::dt(time, mLastCheckTime);
+		double periodtime = Time::dt(time, mLastCheckTime);
 		mLastCheckTime = time;
 		double acc = pow(pow(gNineAxisSensor.getAx() - averageAx, 2) +
 			pow(gNineAxisSensor.getAy() - averageAy, 2) +
@@ -1110,14 +1111,15 @@ void Blinding::onUpdate(const struct timespec& time) {
 			i.z = currentPos[1];
 			pos_history.push_back(i);
 			//今の終点への距離を表示
-			double dis = pow(pow(Goal[0] - currentPos[0], 2) + 
+			double dis = pow(pow(Goal[0] - currentPos[0], 2) +
 				pow(Goal[1] - currentPos[1], 2), 0.5);
-			Debug::print(LOG_SUMMARY, "今の座標 %f %f\r\n　終点の座標 %f %f\r\n 今の角度 %f \r\n 目標までの距離 %f \r\n", 
-				currentPos[0], currentPos[1], Goal[0], Goal[1], currentangle, dis  );
+			Debug::print(LOG_SUMMARY, "今の座標 %f %f\r\n　終点の座標 %f %f\r\n 今の角度 %f \r\n 目標までの距離 %f \r\n",
+				currentPos[0], currentPos[1], Goal[0], Goal[1], currentangle, dis);
 		};
 
 		//目標に向かう
 		move();
+	};
 	//}
 };
 bool Blinding::onCommand(const std::vector<std::string>& args){
