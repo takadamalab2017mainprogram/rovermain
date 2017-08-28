@@ -1027,7 +1027,7 @@ void Blinding::move() {
 	double x = Goal[0] - currentPos[0];
 	double tagangle = atan2(y, x);
 	//radを度に変換
-	tagangle = motorangle / M_PI * 180;
+	tagangle = tagangle / M_PI * 180;
 	double currentangle = gNineAxisSensor.getMagnetPhi();//今の-180~180の角度
 	gMotorDrive.drivePIDGyro(currentangle - tagangle, myspeed, true);
 	gMotorDrive.drive(myspeed);
