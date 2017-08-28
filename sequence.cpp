@@ -1027,6 +1027,7 @@ void Blinding::move() {
 	double x = Goal[0] - currentPos[0];
 	double motorangle = -atan2(y, x);
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
+	gMotorDrive.drive(myspeed);
 };
 
 void Blinding::polar_to_xy(double pos[], double dis, double angle) {
