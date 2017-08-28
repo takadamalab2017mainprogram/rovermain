@@ -1108,6 +1108,7 @@ bool Blinding::onCommand(const std::vector<std::string>& args){
 		angle = angle / 360 * M_PI;
 		set_goal(dis, angle);
 		Debug::print(LOG_SUMMARY, "seted");
+		gBlindingState.setRunMode(true);
 		return true;
 	}
 	return true;
