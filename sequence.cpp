@@ -1115,6 +1115,9 @@ Blinding::Blinding(){
 	setName("blind");
 	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 };
+Blinding::~Blinding()
+{
+};
 void Blinding::nextState(){
 	gBuzzer.start(1000);
 
