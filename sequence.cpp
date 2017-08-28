@@ -1093,8 +1093,8 @@ void Blinding::onUpdate(const struct timespec& time) {
 			i.z = currentPos[1];
 			pos_history.push_back(i);
 			//今の終点への距離を表示
-			double dis = pow(pow(Goal[0] - currentPos[0], 2)
-				           + pow(Goal[1] - currentPos[1]), 0.5);
+			double dis = pow(pow(Goal[0] - currentPos[0], 2) + 
+				pow(Goal[1] - currentPos[1]), 0.5);
 			Debug::print(LOG_SUMMARY, "happy cafe %f", dis  );
 		};
 
