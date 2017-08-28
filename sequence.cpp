@@ -1025,10 +1025,11 @@ void Blinding::move() {
 	//今の座標と目標座標からモーターの角度を変更
 	double y = currentPos[1] - Goal[1];
 	double x = Goal[0] - currentPos[0];
-	double motorangle = -atan2(y, x);
+	double motorangle = atan2(y, x);
 	//radを度に変換
 	motorangle = motorangle / M_PI * 180;
-	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
+	double currentangle = gNineAxisSensor.getMagnetPhi();//今の-180~180の角度
+	gMotorDrive.drivePIDGyro(currentangle - motorangle, myspeed, true);
 	gMotorDrive.drive(myspeed);
 };
 
