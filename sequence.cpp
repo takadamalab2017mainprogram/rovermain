@@ -1033,7 +1033,7 @@ void Blinding::move() {
 bool Blinding::arrived_goal() {
 	//目標点に到着しているかを判断
 	double dis = pow(pow(Goal[0] - currentPos[0], 2) +
-		pow(Goal[1] - currentPos[1]), 0.5);
+		pow(Goal[1] - currentPos[1], 2), 0.5);
 
 	if (dis < 0.1) {
 		return true;
