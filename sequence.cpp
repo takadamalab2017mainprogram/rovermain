@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <iterator>
 #include <iostream>
+#include <time.h>
 
 Testing gTestingState;
 Waiting gWaitingState;
@@ -1082,6 +1083,8 @@ void Blinding::onUpdate(const struct timespec& time) {
 			//1秒ごときposリストを更新
 			mLastListWriteTime = time;
 			VECTOR3 i;
+			timespec nowtime;
+			clock_gettime(CLOCK_REALTIME, &nowtime);
 			i.x = 0;
 			i.y = currentPos[0];
 			i.z = currentPos[1];
@@ -1104,6 +1107,7 @@ bool Blinding::onCommand(const std::vector<std::string>& args){
 		Debug::print(LOG_SUMMARY, "seted");
 		return true;
 	}
+	return true;
 };
 
 Blinding::Blinding(){
