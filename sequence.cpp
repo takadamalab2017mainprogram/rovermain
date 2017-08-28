@@ -1026,6 +1026,8 @@ void Blinding::move() {
 	double y = currentPos[1] - Goal[1];
 	double x = Goal[0] - currentPos[0];
 	double motorangle = -atan2(y, x);
+	//radを度に変換
+	motorangle = motorangle / M_PI * 180;
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
 	gMotorDrive.drive(myspeed);
 };
@@ -1108,7 +1110,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			//今の終点への距離を表示
 			double dis = pow(pow(Goal[0] - currentPos[0], 2) + 
 				pow(Goal[1] - currentPos[1], 2), 0.5);
-			Debug::print(LOG_SUMMARY, "今の座標 %f %f\r\n　終点の座標 %f %f\r\n 今の角度 %f \r\n 目標までの距離 %f", 
+			Debug::print(LOG_SUMMARY, "今の座標 %f %f\r\n　終点の座標 %f %f\r\n 今の角度 %f \r\n 目標までの距離 %f \r\n", 
 				currentPos[0], currentPos[1], Goal[0], Goal[1], currentangle, dis  );
 		};
 
