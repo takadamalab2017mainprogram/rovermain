@@ -163,7 +163,7 @@ class Blinding:public TaskBase{
 private:
 	double ConstantNineAxisPeriod = 0.5;
 	double currentPos[2];
-	double goal[2];
+	double Goal[2];
 	std::list<VECTOR3> pos_history;
 	double averageAx = 0.02890923;
 	double averageAy = 0.9721032;

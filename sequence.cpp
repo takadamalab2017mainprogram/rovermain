@@ -1017,12 +1017,12 @@ bool Blinding::onInit(const struct timespec& time) {
 void Blinding::set_goal(double dis, double angle) {
 	double pos[2];
 	polar_to_xy(pos, dis, angle);
-	goal = pos;
+	Goal = pos;
 };
 
 void Blinding::move() {
 	//今の座標と目標座標からモーターの角度を変更
-	double motorangle = atan2f(goal, currentPos);
+	double motorangle = atan2f(Goal, currentPos);
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
 };
 
@@ -1074,8 +1074,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			pow(gNineAxisSensor.getAz() - averageAz, 2), 0.5);
 		double periodspeed = acc * ConstantNineAxisPeriod;
 		double dx = periodspeed * periodtime;
-		double currentangle[2]
-		currentangle = gNineAxisSensor.getMagnetPhi();
+		double currentangle = gNineAxisSensor.getMagnetPhi();
 		currentPos[0] += cos(currentangle) * dx;
 		currentPos[1] += sin(currentangle) * dx;
 
@@ -1084,13 +1083,13 @@ void Blinding::onUpdate(const struct timespec& time) {
 			mLastListWriteTime = time;
 			VECTOR3 i;
 			i.x = time;
-			i.y = currtpos[0];
-			i.z = currtpos[1];
+			i.y = currtPos[0];
+			i.z = currtPos[1];
 			mylist.push_back(i);
 		}
 
 		//目標に向かう
-		Blinding.move(currentPos);
+		move(currentPos);
 	//}
 };
 bool Blinding::onCommand(const std::vector<std::string>& args){
@@ -1102,7 +1101,7 @@ bool Blinding::onCommand(const std::vector<std::string>& args){
 		double angle = atof(args[2].c_str());//単位が度
 		angle = angle / 360 * M_PI;
 		set_goal(dis, angle);
-		Debug::print("seted");
+		Debug::print(LOG_SUMMARY, "seted");
 		return true;
 	}
 };
