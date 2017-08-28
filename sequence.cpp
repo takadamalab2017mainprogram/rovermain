@@ -1015,22 +1015,21 @@ bool Blinding::onInit(const struct timespec& time) {
 };
 
 void Blinding::set_goal(double dis, double angle) {
-	double pos = polar_to_xy(dis, angle);
+	double pos[2];
+	polar_to_xy(pos, dis, angle);
 	goal = pos;
 };
 
 void Blinding::move() {
 	//今の座標と目標座標からモーターの角度を変更
-	double motorangle = atan2f(goal, currentpos);
+	double motorangle = atan2f(goal, currentPos);
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
 };
 
-void Blinding::polar_to_xy(double dis, double angle) {
+void Blinding::polar_to_xy(double pos[], double dis, double angle) {
 	//極座標からｘｙ座標に変換
-	double pos[2];
 	pos[0] = cos(angle) * dis;
 	pos[1] = sin(angle) * dis;
-	return pos;
 };
 
 void Blinding::onUpdate(const struct timespec& time) {
@@ -1068,15 +1067,15 @@ void Blinding::onUpdate(const struct timespec& time) {
 	//}
 	//else {
 		//今の自分の座標を更新
-		double periodtime = time - mLastCheckTime;
+	    double periodtime = Time::dt(time, mLastCheckTime);
 		mLastCheckTime = time;
-		double acc = pow(pow(NineAxisSensor.getAx() - averageAx, 2) +
-			pow(NineAxisSensor.getAy() - averageAy, 2) +
-			pow(NineAxisSensor.getAz() - averageAz, 2), 0.5);
+		double acc = pow(pow(gNineAxisSensor.getAx() - averageAx, 2) +
+			pow(gNineAxisSensor.getAy() - averageAy, 2) +
+			pow(gNineAxisSensor.getAz() - averageAz, 2), 0.5);
 		double periodspeed = acc * ConstantNineAxisPeriod;
 		double dx = periodspeed * periodtime;
 		double currentangle[2]
-		currentangle = NineAxisSensor.getMagnetPhi();
+		currentangle = gNineAxisSensor.getMagnetPhi();
 		currentPos[0] += cos(currentangle) * dx;
 		currentPos[1] += sin(currentangle) * dx;
 

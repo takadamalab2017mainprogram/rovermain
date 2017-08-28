@@ -179,7 +179,7 @@ protected:
 	virtual bool onCommand(const std::vector<std::string>& args);
 	void nextState();
 	void move();
-	double polar_to_xy(double dis, double angle);
+	void polar_to_xy(double pos[], double dis, double angle);
 	
 public:
 	void set_goal(double dis, double angle);
