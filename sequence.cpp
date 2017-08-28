@@ -1021,7 +1021,7 @@ void Blinding::set_goal(double dis, double angle) {
 
 void Blinding::move() {
 	//今の座標と目標座標からモーターの角度を変更
-	motorangle = atan2f(goal, currentpos);
+	double motorangle = atan2f(goal, currentpos);
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
 };
 
@@ -1068,14 +1068,14 @@ void Blinding::onUpdate(const struct timespec& time) {
 	//}
 	//else {
 		//今の自分の座標を更新
-		periodtime = time - mLastCheckTime;
+		double periodtime = time - mLastCheckTime;
 		mLastCheckTime = time;
-		double acc;
-		acc = pow(pow(NineAxisSensor.getAx() - averageAx, 2) +
+		double acc = pow(pow(NineAxisSensor.getAx() - averageAx, 2) +
 			pow(NineAxisSensor.getAy() - averageAy, 2) +
 			pow(NineAxisSensor.getAz() - averageAz, 2), 0.5);
-		periodspeed = acc * ConstantNineAxisPeriod;
-		dx = periodspeed * periodtime;
+		double periodspeed = acc * ConstantNineAxisPeriod;
+		double dx = periodspeed * periodtime;
+		double currentangle[2]
 		currentangle = NineAxisSensor.getMagnetPhi();
 		currentPos[0] += cos(currentangle) * dx;
 		currentPos[1] += sin(currentangle) * dx;

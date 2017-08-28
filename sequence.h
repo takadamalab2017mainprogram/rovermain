@@ -182,8 +182,7 @@ protected:
 	double polar_to_xy(double dis, double angle);
 	
 public:
-
-	set_goal(double dis, double angle)
+	void set_goal(double dis, double angle);
 
 	Blinding();
 	~Blinding();
