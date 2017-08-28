@@ -159,10 +159,24 @@ public:
 	~Navigating();
 };
 
+class Blinding:{
+private:
+	double ConstantNineAxisPeriod = 0.5;
+	double currentPos[2];
+	double goal[2];
+	std::list<VECTOR3> pos_history;
+	double averageAx = 0.02890923;
+	double averageAy = 0.9721032;
+	double averageAz = 0.6963416;
+	int myspeed = 100;
+	struct timespec mLastListWriteTime;
+	struct timespec mLastCheckTime;
+}
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
 extern Separating gSeparatingState;
 extern Navigating gNavigatingState;
 extern Waking gWakingState;
+extern Blinding gBlindingState;
 

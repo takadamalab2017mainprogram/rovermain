@@ -1,5 +1,6 @@
 ﻿#include <stdlib.h>
 #include <math.h>
+#include <list>
 #include <fstream>
 #include <functional>
 #include <stdarg.h>
@@ -995,3 +996,126 @@ Navigating::~Navigating()
 {
 }
 
+bool Blinding::onInit(const struct timespec& time) {
+	Debug::print(LOG_SUMMARY, "Blinding...\r\n");
+	setRunMode(true);
+	gBuzzer.setRunMode(true);
+	gMotorDrive.setRunMode(true);
+	gSensorLoggingState.setRunMode(true);
+	gLED.setRunMode(true);
+	gMultiServo.setRunMode(true);
+	gMultiServo.Running();//走っているときの角度に設定
+	gNineAxisSensor.setRunMode(true);
+	mStuckFlag = false;
+
+	mLastListWriteTime = time;
+	mLastCheckTime = time;
+};
+
+void Blinding::set_goal(double dis, double angle) {
+	double pos = polar_to_xy(dis, angle);
+	goal = pos;
+};
+
+void Blinding::move(currentpos) {
+	//今の座標と目標座標からモーターの角度を変更
+	motorangle = atan2(goal, currentpos);
+	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
+};
+
+void Blinding::polar_to_xy(double dis, double angle) {
+	//極座標からｘｙ座標に変換
+	double pos[2];
+	pos[0] = cos(angle) * dis;
+	pos[1] = sin(angle) * dis;
+	return pos;
+};
+
+void Blinding::onUpdate(const struct timespec& time) {
+	if (isStuckByGPS()) {
+		//poslistの最後の5秒の記録を全部5秒前の位置に変更
+
+		if (!gEscapingRandomState.isActive()) {
+			gEscapingByStabiState.setRunMode(true);
+		}
+		Time::showNowTime();
+		Debug::print(LOG_SUMMARY, " Blind STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
+		gBuzzer.start(20, 10, 8);
+
+		//esc by stabi と　esc by random の２つに繰り返す
+		if (gEscapingByStabiState.isActive()) {
+			//EscapingByStabi中
+			if (gEscapingByStabiState.getTryCount() >= Constants::ESCAPING_BY_STABI_MAX_COUNT) {
+				//EscapingRandomに移行
+				gEscapingByStabiState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "Blinding: Escaping Random Start! \r\n");
+				gEscapingRandomState.setRunMode(true);
+				mEscapingRandomStartTime = time;
+			}
+		}
+		else if (gEscapingRandomState.isActive()) {
+			//EscapingRandom中		
+			if (Time::dt(time, mEscapingRandomStartTime) > Constants::ESCAPING_RANDOM_TIME_THRESHOLD) {
+				//EscapingByStabiに移行
+				gEscapingRandomState.setRunMode(false);
+				Debug::print(LOG_SUMMARY, "Blinding: Escaping ByStabi Start! \r\n");
+				gEscapingByStabiState.setRunMode(true);
+			}
+		}
+		return;
+	}
+	else {
+		//今の自分の座標を更新
+		periodtime = time - mLastCheckTime;
+		mLastCheckTime = time;
+		double acc;
+		acc = pow(pow(NineAxisSensor.getAx() - averageAx, 2) +
+			pow(NineAxisSensor.getAy() - averageAy, 2) +
+			pow(NineAxisSensor.getAz() - averageAz, 2), 0.5);
+		periodspeed = acc * ConstantNineAxisPeriod;
+		dx = periodspeed * periodtime;
+		currentangle = ?;
+		currentPos[0] += cos(currentangle) * dx;
+		currentPos[1] += sin(currentangle) * dx;
+
+		if (Time::dt(time, mLastListWriteTime) > 1.0) {
+			//1秒ごときposリストを更新
+			mLastListWriteTime = time;
+			VECTOR3 i;
+			i[0] = time;
+			i[1] = currtpos[0];
+			i[2] = currtpos[1];
+			mylist.push_back(i);
+		}
+
+		//目標に向かう
+		Blinding.move(currentPos);
+	}
+}
+bool Blinding::onCommand(const std::vector<std::string>& args){
+	if (args.size() == 1){
+		Debug::print(LOG_SUMMARY, "happy cafe");		
+	}
+	if (args.size() == 3) {
+		double dis = atof(args[1].c_str());
+		double angle = atof(args[2].c_str());//単位が度
+		set_goal(dis, angle);
+		Debug::print("seted");
+		return true;
+	}
+};
+
+Blinding::Blinding(){
+	setName("blind");
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
+}
+void Blinding::nextState(){
+	gBuzzer.start(1000);
+
+	gMotorDrive.drive(0);//念のため2回
+	gMotorDrive.drive(0);
+
+	Time::showNowTime();
+	Debug::print(LOG_SUMMARY, "Blinding finished\r\n");	
+
+}
