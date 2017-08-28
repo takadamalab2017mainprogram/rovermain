@@ -994,7 +994,7 @@ void Navigating::getGoal(VECTOR3& goal) {
 }
 Navigating::~Navigating()
 {
-}
+};
 
 bool Blinding::onInit(const struct timespec& time) {
 	Debug::print(LOG_SUMMARY, "Blinding...\r\n");
@@ -1010,6 +1010,8 @@ bool Blinding::onInit(const struct timespec& time) {
 
 	mLastListWriteTime = time;
 	mLastCheckTime = time;
+
+	return true;
 };
 
 void Blinding::set_goal(double dis, double angle) {
@@ -1017,9 +1019,9 @@ void Blinding::set_goal(double dis, double angle) {
 	goal = pos;
 };
 
-void Blinding::move(currentpos) {
+void Blinding::move() {
 	//今の座標と目標座標からモーターの角度を変更
-	motorangle = atan2(goal, currentpos);
+	motorangle = atan2f(goal, currentpos);
 	gMotorDrive.drivePIDGyro(motorangle, myspeed, true);
 };
 
@@ -1032,39 +1034,39 @@ void Blinding::polar_to_xy(double dis, double angle) {
 };
 
 void Blinding::onUpdate(const struct timespec& time) {
-	if (isStuckByGPS()) {
-		//poslistの最後の5秒の記録を全部5秒前の位置に変更
+	//if (isStuckByGPS()) {
+	//	//poslistの最後の5秒の記録を全部5秒前の位置に変更
 
-		if (!gEscapingRandomState.isActive()) {
-			gEscapingByStabiState.setRunMode(true);
-		}
-		Time::showNowTime();
-		Debug::print(LOG_SUMMARY, " Blind STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
-		gBuzzer.start(20, 10, 8);
+	//	if (!gEscapingRandomState.isActive()) {
+	//		gEscapingByStabiState.setRunMode(true);
+	//	}
+	//	Time::showNowTime();
+	//	Debug::print(LOG_SUMMARY, " Blind STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
+	//	gBuzzer.start(20, 10, 8);
 
-		//esc by stabi と　esc by random の２つに繰り返す
-		if (gEscapingByStabiState.isActive()) {
-			//EscapingByStabi中
-			if (gEscapingByStabiState.getTryCount() >= Constants::ESCAPING_BY_STABI_MAX_COUNT) {
-				//EscapingRandomに移行
-				gEscapingByStabiState.setRunMode(false);
-				Debug::print(LOG_SUMMARY, "Blinding: Escaping Random Start! \r\n");
-				gEscapingRandomState.setRunMode(true);
-				mEscapingRandomStartTime = time;
-			}
-		}
-		else if (gEscapingRandomState.isActive()) {
-			//EscapingRandom中		
-			if (Time::dt(time, mEscapingRandomStartTime) > Constants::ESCAPING_RANDOM_TIME_THRESHOLD) {
-				//EscapingByStabiに移行
-				gEscapingRandomState.setRunMode(false);
-				Debug::print(LOG_SUMMARY, "Blinding: Escaping ByStabi Start! \r\n");
-				gEscapingByStabiState.setRunMode(true);
-			}
-		}
-		return;
-	}
-	else {
+	//	//esc by stabi と　esc by random の２つに繰り返す
+	//	if (gEscapingByStabiState.isActive()) {
+	//		//EscapingByStabi中
+	//		if (gEscapingByStabiState.getTryCount() >= Constants::ESCAPING_BY_STABI_MAX_COUNT) {
+	//			//EscapingRandomに移行
+	//			gEscapingByStabiState.setRunMode(false);
+	//			Debug::print(LOG_SUMMARY, "Blinding: Escaping Random Start! \r\n");
+	//			gEscapingRandomState.setRunMode(true);
+	//			mEscapingRandomStartTime = time;
+	//		}
+	//	}
+	//	else if (gEscapingRandomState.isActive()) {
+	//		//EscapingRandom中		
+	//		if (Time::dt(time, mEscapingRandomStartTime) > Constants::ESCAPING_RANDOM_TIME_THRESHOLD) {
+	//			//EscapingByStabiに移行
+	//			gEscapingRandomState.setRunMode(false);
+	//			Debug::print(LOG_SUMMARY, "Blinding: Escaping ByStabi Start! \r\n");
+	//			gEscapingByStabiState.setRunMode(true);
+	//		}
+	//	}
+	//	return;
+	//}
+	//else {
 		//今の自分の座標を更新
 		periodtime = time - mLastCheckTime;
 		mLastCheckTime = time;
@@ -1090,8 +1092,8 @@ void Blinding::onUpdate(const struct timespec& time) {
 
 		//目標に向かう
 		Blinding.move(currentPos);
-	}
-}
+	//}
+};
 bool Blinding::onCommand(const std::vector<std::string>& args){
 	if (args.size() == 1){
 		Debug::print(LOG_SUMMARY, "happy cafe");		
@@ -1099,7 +1101,7 @@ bool Blinding::onCommand(const std::vector<std::string>& args){
 	if (args.size() == 3) {
 		double dis = atof(args[1].c_str());
 		double angle = atof(args[2].c_str());//単位が度
-		angle = angle / 360 * Pi;
+		angle = angle / 360 * M_PI;
 		set_goal(dis, angle);
 		Debug::print("seted");
 		return true;
@@ -1109,7 +1111,7 @@ bool Blinding::onCommand(const std::vector<std::string>& args){
 Blinding::Blinding(){
 	setName("blind");
 	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
-}
+};
 void Blinding::nextState(){
 	gBuzzer.start(1000);
 
@@ -1119,4 +1121,4 @@ void Blinding::nextState(){
 	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "Blinding finished\r\n");	
 
-}
+};

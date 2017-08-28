@@ -159,7 +159,7 @@ public:
 	~Navigating();
 };
 
-class Blinding:{
+class Blinding:{ public TaskBase
 private:
 	double ConstantNineAxisPeriod = 0.5;
 	double currentPos[2];
@@ -171,7 +171,22 @@ private:
 	int myspeed = 100;
 	struct timespec mLastListWriteTime;
 	struct timespec mLastCheckTime;
-}
+
+protected:
+	virtual bool onInit(const struct timespec& time);
+	virtual void onUpdate(const struct timespec& time);
+	virtual bool onCommand(const std::vector<std::string>& args);
+	void nextState();
+	void move();
+	double polar_to_xy(double dis, double angle);
+	
+public:
+
+	set_goal(double dis, double angle)
+
+	Blinding();
+	~Blinding();
+};
 extern Testing gTestingState;
 extern Waiting gWaitingState;
 extern Falling gFallingState;
