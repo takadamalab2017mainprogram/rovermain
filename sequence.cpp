@@ -1074,7 +1074,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			pow(NineAxisSensor.getAz() - averageAz, 2), 0.5);
 		periodspeed = acc * ConstantNineAxisPeriod;
 		dx = periodspeed * periodtime;
-		currentangle = ?;
+		currentangle = NineAxisSensor.getTheta();
 		currentPos[0] += cos(currentangle) * dx;
 		currentPos[1] += sin(currentangle) * dx;
 
@@ -1099,6 +1099,7 @@ bool Blinding::onCommand(const std::vector<std::string>& args){
 	if (args.size() == 3) {
 		double dis = atof(args[1].c_str());
 		double angle = atof(args[2].c_str());//単位が度
+		angle = angle / 360 * Pi;
 		set_goal(dis, angle);
 		Debug::print("seted");
 		return true;
