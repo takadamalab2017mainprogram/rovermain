@@ -1090,7 +1090,8 @@ void Blinding::onUpdate(const struct timespec& time) {
 			pow(gNineAxisSensor.getAz() - averageAz, 2), 0.5);
 		double periodspeed = acc * ConstantNineAxisPeriod;
 		double dx = periodspeed * periodtime;
-		double currentangle = gNineAxisSensor.getMagnetPhi();
+		double currentangle = gNineAxisSensor.getMagnetPhi();//-180~180の角度
+		currentangle = currentangle / 180 * M_PI;
 		currentPos[0] += cos(currentangle) * dx;
 		currentPos[1] += sin(currentangle) * dx;
 
