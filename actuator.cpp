@@ -151,9 +151,9 @@ Buzzer::~Buzzer()
 // フルカラーLED
 //////////////////////////////
 bool LED::onInit(const struct timespec& time) {
-	pinMode(Constants::PIN_LED_R, PWM_OUTPUT);
-	pinMode(Constants::PIN_LED_G, PWM_OUTPUT);
-	pinMode(Constants::PIN_LED_B, PWM_OUTPUT);
+	pinMode(Constants::PIN_LED_R, OUTPUT);
+	pinMode(Constants::PIN_LED_G, OUTPUT);
+	pinMode(Constants::PIN_LED_B, OUTPUT);
 	softPwmCreate(Constants::PIN_LED_R, 0, 256);
 	softPwmCreate(Constants::PIN_LED_G, 0, 256);
 	softPwmCreate(Constants::PIN_LED_B, 0, 256);
