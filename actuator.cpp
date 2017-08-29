@@ -482,7 +482,7 @@ void MultiServo::start(double angle)
 
 	angle *= -1;
 	double tmp = 0.8*(angle + 1.0) / 2.0;
-	pwmWrite(mPin, Constants::SERVO_BASE_VALUE + tmp * Constants::SERVO_MOVABLE_RANGE);
+	softpwmWrite(mPin, Constants::SERVO_BASE_VALUE + tmp * Constants::SERVO_MOVABLE_RANGE);
 }
 void MultiServo::stop()
 {
