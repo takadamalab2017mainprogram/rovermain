@@ -157,9 +157,9 @@ bool LED::onInit(const struct timespec& time) {
 	softPwmCreate(Constants::PIN_LED_R, 0, 256);
 	softPwmCreate(Constants::PIN_LED_G, 0, 256);
 	softPwmCreate(Constants::PIN_LED_B, 0, 256);
-	softPwmWrite(Constants::PIN_LED_R, LOW);
-	softPwmWrite(Constants::PIN_LED_G, LOW);
-	softPwmWrite(Constants::PIN_LED_B, LOW);
+	pwmWrite(Constants::PIN_LED_R, LOW);
+	pwmWrite(Constants::PIN_LED_G, LOW);
+	pwmWrite(Constants::PIN_LED_B, LOW);
 	mLastUpdateTime1 = mLastUpdateTime2 = time;
 	r = g = b = t = s = u = v = p = d = 0;
 	rbw = bnk = hf = false;
@@ -167,9 +167,9 @@ bool LED::onInit(const struct timespec& time) {
 }
 
 void LED::onClean() {
-	softPwmWrite(Constants::PIN_LED_R, LOW);
-	softPwmWrite(Constants::PIN_LED_G, LOW);
-	softPwmWrite(Constants::PIN_LED_B, LOW);
+	pwmWrite(Constants::PIN_LED_R, LOW);
+	pwmWrite(Constants::PIN_LED_G, LOW);
+	pwmWrite(Constants::PIN_LED_B, LOW);
 	rbw = false;
 }
 
@@ -270,9 +270,9 @@ bool LED::onCommand(const std::vector<std::string>& args) {
 }
 
 void LED::reflect() {
-	softPwmWrite(Constants::PIN_LED_R, r);
-	softPwmWrite(Constants::PIN_LED_G, g);
-	softPwmWrite(Constants::PIN_LED_B, b);
+	pwmWrite(Constants::PIN_LED_R, r);
+	pwmWrite(Constants::PIN_LED_G, g);
+	pwmWrite(Constants::PIN_LED_B, b);
 }
 
 void LED::setColor(int x) {
@@ -291,9 +291,9 @@ void LED::setColor(int c1, int c2, int c3) {
 
 
 void LED::turnOff() {
-	softPwmWrite(Constants::PIN_LED_R, 0);
-	softPwmWrite(Constants::PIN_LED_G, 0);
-	softPwmWrite(Constants::PIN_LED_B, 0);
+	pwmWrite(Constants::PIN_LED_R, 0);
+	pwmWrite(Constants::PIN_LED_G, 0);
+	pwmWrite(Constants::PIN_LED_B, 0);
 }
 
 
