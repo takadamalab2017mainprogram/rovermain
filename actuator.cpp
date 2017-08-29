@@ -157,9 +157,9 @@ bool LED::onInit(const struct timespec& time) {
 	softPwmCreate(Constants::PIN_LED_R, 0, 256);
 	softPwmCreate(Constants::PIN_LED_G, 0, 256);
 	softPwmCreate(Constants::PIN_LED_B, 0, 256);
-	digitalWrite(Constants::PIN_LED_R, LOW);
-	digitalWrite(Constants::PIN_LED_G, LOW);
-	digitalWrite(Constants::PIN_LED_B, LOW);
+	softPwmWrite(Constants::PIN_LED_R, LOW);
+	softPwmWrite(Constants::PIN_LED_G, LOW);
+	softPwmWrite(Constants::PIN_LED_B, LOW);
 	mLastUpdateTime1 = mLastUpdateTime2 = time;
 	r = g = b = t = s = u = v = p = d = 0;
 	rbw = bnk = hf = false;
@@ -167,9 +167,9 @@ bool LED::onInit(const struct timespec& time) {
 }
 
 void LED::onClean() {
-	digitalWrite(Constants::PIN_LED_R, LOW);
-	digitalWrite(Constants::PIN_LED_G, LOW);
-	digitalWrite(Constants::PIN_LED_B, LOW);
+	softPwmWrite(Constants::PIN_LED_R, LOW);
+	softPwmWrite(Constants::PIN_LED_G, LOW);
+	softPwmWrite(Constants::PIN_LED_B, LOW);
 	rbw = false;
 }
 
