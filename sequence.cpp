@@ -47,7 +47,7 @@ bool Testing::onInit(const struct timespec& time)
 	gLED.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
-	gWakingFromLieState.setRunMode(true);
+	//gWakingFromLieState.setRunMode(true);
 
 	std::function<void()> f = [&]()
 	{
