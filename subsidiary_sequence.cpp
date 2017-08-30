@@ -466,10 +466,7 @@ bool WakingFromLie::onInit(const struct timespec& time)
 	mCurStep = STEP_FORWARD;
 	mCurrentPower = 0;
 	mNotLieCount = 0;
-
 	gMotorDrive.setRunMode(true);
-	//gSServo.setRunMode(true);
-	//gSServo.start(0, 0);
 	gPoseDetecting.setRunMode(true);
 	mWakeRetryCount = 0;
 
@@ -497,6 +494,7 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 			mCurStep = STEP_VERIFY;
 			mLastUpdateTime = time;
 		}
+		//段々モータの速さを早くする
 		mCurrentPower += MOTOR_MAX_POWER * dt * (WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
 
 		break;
@@ -539,7 +537,6 @@ bool WakingFromLie::onCommand(const std::vector<std::string>& args)
 void WakingFromLie::onClean()
 {
 	gMotorDrive.drive(0);
-	//gSServo.moveRun();
 }
 WakingFromLie::WakingFromLie() : mShortestSpeedUpPeriod(10)
 {
