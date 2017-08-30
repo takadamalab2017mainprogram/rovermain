@@ -89,11 +89,8 @@ unsigned int EscapingByStabi::getTryCount()
 EscapingByStabi::EscapingByStabi()
 {
 	setName("esc");
-<<<<<<< HEAD
-	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
-=======
+
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
->>>>>>> waking
 }
 EscapingByStabi::~EscapingByStabi()
 {
@@ -113,9 +110,6 @@ bool EscapingRandom::onInit(const struct timespec& time)
 void EscapingRandom::onUpdate(const struct timespec& time)
 {
 	if (Time::dt(time, mLastUpdateTime) >= 5){
-<<<<<<< HEAD
-		mLastUpdateTime = time;
-=======
 		mLastUpdateTime = time;
 
 		//出力を選ぶ
@@ -247,7 +241,6 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gMultiServo.start(BACK_STABI_RUN_ANGLE);
-	gNineAxisSensor.setRunMode(true);
 	mWakeRetryCount = 0;
 
 	return true;
@@ -305,8 +298,6 @@ void Waking::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 			mCurStep = STEP_VERIFY;
 			gMotorDrive.drive(0);
->>>>>>> waking
-
 		//出力を選ぶ
 		int stabiswitch = rand() % 2;//スタビ
 		if (RandomCount < 5){
@@ -314,14 +305,7 @@ void Waking::onUpdate(const struct timespec& time)
 			motorforce0 = ((rand() % 50)+50) * pow(-1, rand() % 2);
 			motorforce1 = motorforce0;
 		}
-<<<<<<< HEAD
-		else{
-			//5-9回目はタイヤ左右別々方向出力
-			motorforce0 = rand() % 100 * pow(-1, rand() % 2);
-			motorforce1 = rand() % 100 * pow(-1, rand() % 2);
-=======
 
-		
 		//power = std::min(0,std::max(100,MOTOR_MAX_POWER - abs(gGyroSensor.getRvx() - mAngleOnBegin) / 130 + 50));
 		//gMotorDrive.drive(power);
 		break;
@@ -342,119 +326,7 @@ void Waking::onUpdate(const struct timespec& time)
 			gBuzzer.start(30, 20, 2);
 			mLastUpdateTime = time;
 			mCurStep = STEP_DEACCELERATE;
->>>>>>> waking
 		}
-
-<<<<<<< HEAD
-		//出力を上げる
-		gMultiServo.start(stabiswitch);
-		gMotorDrive.drive(motorforce0, motorforce1);
-
-		Debug::print(LOG_SUMMARY, "Escaping Random turn %d, choiced by stabi %d, motor0 %d, motor1 %d \r\n", 
-			RandomCount, stabiswitch, motorforce0, motorforce1);
-		RandomCount++;//カウント	
-	}
-
-	//if (RandomCount > 10) {
-	//	gEscapingRandomState.setRunMode(false);
-	//	gEscapingByStabiState.setRunMode(true);
-	//}
-
-
-}
-bool EscapingRandom::onCommand(const std::vector<std::string>& args)
-{
-  if (args.size() == 2)
-  {
-    if (args[1].compare("start") == 0)
-    {
-      gEscapingRandomState.setRunMode(true);
-      return true;
-    }
-    if (args[1].compare("s") == 0)
-    {
-      gMotorDrive.drive(0);
-      Debug::print(LOG_SUMMARY, "Escaping Random Finished!\r\n");
-      gEscapingRandomState.setRunMode(false);
-      return true;
-    }
-  }
-  Debug::print(LOG_SUMMARY, "random start       : start Escaping by stabi mode\r\n\random s        : stop  Escaping by stabi mode\r\n");
-  return false;
-}
-EscapingRandom::EscapingRandom()
-{
-	setName("random");
-	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
-}
-EscapingRandom::~EscapingRandom()
-{
-}
-
-bool SensorLogging::onInit(const struct timespec& time)
-{
-	Debug::print(LOG_SUMMARY, "Log: Enabled\r\n");
-
-	write(mFilenameGPS, "Log started\r\n");
-	write(mFilenamePressure, "Log started\r\n");
-	write(mFilenameNineAxis, "Log started\r\n");
-	write(mFilenameNineAxis, "time/sec,|A|/G,Ax/G,Ay/G,Az/G,Rvx/deg/sec,Rvy/deg/sec,Rvz/deg/sec,Rx/deg,Ry/deg,Rz/deg,Mx/uT,My/uT,Mz/uT\r\n");
-
-	gGPSSensor.setRunMode(true);
-	gPressureSensor.setRunMode(true);
-	gMotorDrive.setRunMode(true);
-    gNineAxisSensor.setRunMode(true);
-	mLastUpdateTime = time;
-	return true;
-}
-void SensorLogging::onUpdate(const struct timespec& time)
-{
-	if (Time::dt(time, mLastUpdateTime) >= 0.1)
-	{
-		mLastUpdateTime = time;
-    timespec nowtime;
-		clock_gettime(CLOCK_REALTIME,&nowtime);
-		//���O���ۑ�
-		VECTOR3 vec;
-		gGPSSensor.get(vec);
-		if (gGPSSensor.isActive())write(mFilenameGPS, "%ld.%ld,%f,%f,%f\r\n", nowtime.tv_sec,nowtime.tv_nsec,vec.x, vec.y, vec.z);
-		else write(mFilenameGPS, "unavailable\r\n");
-
-    if (gPressureSensor.isActive())write(mFilenamePressure, "%ld.%ld,%f\r\n", nowtime.tv_sec,nowtime.tv_nsec,gPressureSensor.get());
-		else write(mFilenamePressure, "unavailable\r\n");
-
-    VECTOR3 accel;
-    gNineAxisSensor.getAccel(accel);
-		if (gNineAxisSensor.isActive())write(mFilenameNineAxis, "%ld.%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\r\n",nowtime.tv_sec,nowtime.tv_nsec, gNineAxisSensor.getAx(), gNineAxisSensor.getAy(), gNineAxisSensor.getAz(),gNineAxisSensor.getRvx(),gNineAxisSensor.getRvy(),gNineAxisSensor.getRvz(),gNineAxisSensor.getRx(),gNineAxisSensor.getRy(),gNineAxisSensor.getRz(),gNineAxisSensor.getMx(),gNineAxisSensor.getMy(),gNineAxisSensor.getMz());
-		else write(mFilenameNineAxis, "unavailable\r\n");
-	}
-}
-void SensorLogging::write(const std::string& filename, const char* fmt, ...)
-{
-	std::ofstream of(filename.c_str(), std::ios::out | std::ios::app);
-
-	char buf[MAX_STRING_LENGTH];
-
-	va_list argp;
-	va_start(argp, fmt);
-	vsprintf(buf, fmt, argp);
-
-	of << buf;
-}
-SensorLogging::SensorLogging() : mLastUpdateTime()
-{
-	setName("sensorlogging");
-	setPriority(UINT_MAX, Constants::TASK_INTERVAL_SEQUENCE);
-
-	Filename("log_gps", ".txt").get(mFilenameGPS);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGPS.c_str());
-	Filename("log_pressure", ".txt").get(mFilenamePressure);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenamePressure.c_str());
-	Filename("log_nineaxis", ".txt").get(mFilenameNineAxis);
-	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameNineAxis.c_str());
-}
-SensorLogging::~SensorLogging()
-=======
 	case STEP_DEACCELERATE:	
 		dt = Time::dt(time, mLastUpdateTime);
 		if (dt > mDeaccelerateDuration)
@@ -679,6 +551,5 @@ WakingFromLie::WakingFromLie() : mShortestSpeedUpPeriod(10)
 	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
 }
 WakingFromLie::~WakingFromLie()
->>>>>>> waking
 {
 }
