@@ -11,22 +11,15 @@
 #include "sensor.h"
 #include "actuator.h"
 #include "motor.h"
-<<<<<<< HEAD
 #include <time.h>
 #include "constants.cpp"
-=======
 #include "pose_detector.h"
->>>>>>> waking
 
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 SensorLogging gSensorLoggingState;
-<<<<<<< HEAD
-
-=======
 Waking gWakingState;
 WakingFromLie gWakingFromLie;
->>>>>>> waking
 
 bool EscapingByStabi::onInit(const struct timespec& time)
 {
