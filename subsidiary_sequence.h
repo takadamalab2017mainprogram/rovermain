@@ -249,7 +249,7 @@ public:
 
 
 extern Escaping gEscapingState;
-extern Waking gWakingState;
+//extern Waking gWakingState;
 //extern WakingFromLie gWakingFromLieState;
 //extern Turning gTurningState;
 //extern Avoiding gAvoidingState;

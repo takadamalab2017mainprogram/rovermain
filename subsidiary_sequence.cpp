@@ -18,7 +18,7 @@
 EscapingRandom gEscapingRandomState;
 EscapingByStabi gEscapingByStabiState;
 SensorLogging gSensorLoggingState;
-Waking gWakingState;
+//Waking gWakingState;
 WakingFromLie gWakingFromLie;
 
 bool EscapingByStabi::onInit(const struct timespec& time)
@@ -232,7 +232,7 @@ SensorLogging::SensorLogging() : mLastUpdateTime()
 SensorLogging::~SensorLogging()
 {
 }
-
+/*
 bool Waking::onInit(const struct timespec& time)
 {
 	mCurStep = STEP_CHECK_LIE;
@@ -458,6 +458,7 @@ Waking::Waking() : mWakeRetryCount(0), mStartPower(45), mAngleThreshold(70), mDe
 Waking::~Waking()
 {
 }
+*/
 
 bool WakingFromLie::onInit(const struct timespec& time)
 {

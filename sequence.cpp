@@ -350,7 +350,7 @@ Falling::~Falling()
 
 //////Waking///////////////////
 /////////////////////////////
-/*
+
 bool Waking::onInit(const struct timespec& time)
 {
 	gMotorDrive.setRunMode(true);
@@ -404,7 +404,7 @@ Waking::Waking()
 Waking::~Waking()
 {
 }
-*/
+
 //////////////////////////////////////////////
 // Separating
 //////////////////////////////////////////////
