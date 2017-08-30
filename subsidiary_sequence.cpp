@@ -89,7 +89,7 @@ unsigned int EscapingByStabi::getTryCount()
 EscapingByStabi::EscapingByStabi()
 {
 	setName("esc");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 EscapingByStabi::~EscapingByStabi()
 {
@@ -163,7 +163,7 @@ bool EscapingRandom::onCommand(const std::vector<std::string>& args)
 EscapingRandom::EscapingRandom()
 {
 	setName("random");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 EscapingRandom::~EscapingRandom()
 {
@@ -220,7 +220,7 @@ void SensorLogging::write(const std::string& filename, const char* fmt, ...)
 SensorLogging::SensorLogging() : mLastUpdateTime()
 {
 	setName("sensorlogging");
-	setPriority(UINT_MAX, TASK_INTERVAL_SEQUENCE);
+	setPriority(UINT_MAX, Constants::TASK_INTERVAL_SEQUENCE);
 
 	Filename("log_gps", ".txt").get(mFilenameGPS);
 	Debug::print(LOG_SUMMARY, "%s\r\n", mFilenameGPS.c_str());
@@ -489,14 +489,14 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 
 		gMotorDrive.drive(mCurrentPower, mCurrentPower);
 
-		if (mNotLieCount > 100 || mCurrentPower >= MOTOR_MAX_POWER)
+		if (mNotLieCount > 100 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
 		{
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_VERIFY;
 			mLastUpdateTime = time;
 		}
 		//段々モータの速さを早くする
-		mCurrentPower += MOTOR_MAX_POWER * dt * (WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
+		mCurrentPower += Constants::MOTOR_MAX_POWER * dt * (Constants::WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (Constants::WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
 
 		break;
 	case STEP_VERIFY:
@@ -510,13 +510,13 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 				return;
 			}
 
-			if (mWakeRetryCount++ >= WAKING_RETRY_COUNT)
+			if (mWakeRetryCount++ >= Constants::WAKING_RETRY_COUNT)
 			{
 				setRunMode(false);
 				return;
 			}
-			Debug::print(LOG_SUMMARY, "WakingFromLie: Retrying (%d/%d)\r\n", mWakeRetryCount, WAKING_RETRY_COUNT);
-			gMotorDrive.drive(MOTOR_MAX_POWER, MOTOR_MAX_POWER);
+			Debug::print(LOG_SUMMARY, "WakingFromLie: Retrying (%d/%d)\r\n", mWakeRetryCount, Constants::WAKING_RETRY_COUNT);
+			gMotorDrive.drive(Constants::MOTOR_MAX_POWER, Constants::MOTOR_MAX_POWER);
 			mCurStep = STEP_FORWARD;
 			mLastUpdateTime = time;
 			mCurrentPower = 0;
@@ -542,7 +542,7 @@ void WakingFromLie::onClean()
 WakingFromLie::WakingFromLie() : mShortestSpeedUpPeriod(10)
 {
 	setName("wakinglie");
-	setPriority(TASK_PRIORITY_SEQUENCE, TASK_INTERVAL_SEQUENCE);
+	setPriority(Constants::TASK_PRIORITY_SEQUENCE, Constants::TASK_INTERVAL_SEQUENCE);
 }
 WakingFromLie::~WakingFromLie()
 
