@@ -338,6 +338,10 @@ void NineAxisSensor::onClean()
 }
 void NineAxisSensor::onUpdate(const struct timespec& time)
 {
+	
+	//更新を１秒置きにする
+	if (Time::dt(time, mLastSampleTime) <2.0) return;
+
   if(!isFIFOEnable)
   {
   wiringPiI2CWriteReg8(mFileHandle,0x72,0);
@@ -375,6 +379,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 	if (mLastSampleTime.tv_sec != 0 || mLastSampleTime.tv_nsec != 0)
 	{
 		double dt = Time::dt(time, mLastSampleTime);
+		
 		mRAngle += (newRv + mRVel) / 2 * dt;
 		normalize(mRAngle);
 	}
@@ -540,17 +545,17 @@ void NineAxisSensor::calcMagnetOffset(VECTOR3& newMagnet)
 	mMagnetMin.y = mMagnetMin.y < newMagnet.y ? mMagnetMin.y : newMagnet.y;
 	mMagnetMin.z = mMagnetMin.z < newMagnet.z ? mMagnetMin.z : newMagnet.z;
 }
-double NineAxisSensor::getMagnetTheta()
+double NineAxisSensor::getMagnetTheta()//z軸からの角度
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
 	return acos(magnet.z / magnet.norm())/ M_PI*180;
 }
-double NineAxisSensor::getMagnetPhi()
+double NineAxisSensor::getMagnetPhi()//ｘｙ平面に投影したときのｘ（北方向）軸からの角度、基本これを使う
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
 	return atan2(magnet.x,magnet.y)/ M_PI *180;
 }
-double NineAxisSensor::getMagnetNorm()
+double NineAxisSensor::getMagnetNorm()//地磁気の大きさ
 {
 	VECTOR3 magnet = mMagnet - ((mMagnetMax + mMagnetMin) / 2);
 	return magnet.norm();	
