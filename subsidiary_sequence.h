@@ -78,7 +78,7 @@ public:
 	EscapingRandom();
 	~EscapingRandom();
 };
-
+/*
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -101,7 +101,7 @@ public:
 	Waking();
 	~Waking();
 };
-
+*/
 
 //横転復帰
 class WakingFromLie : public TaskBase
