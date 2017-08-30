@@ -347,7 +347,7 @@ Falling::Falling() : mLastPressure(0), mLastMotorPulseL(0), mLastMotorPulseR(0),
 Falling::~Falling()
 {
 }
-
+/*
 //////Waking///////////////////
 /////////////////////////////
 bool Waking::onInit(const struct timespec& time)
@@ -403,6 +403,7 @@ Waking::Waking()
 Waking::~Waking()
 {
 }
+*/
 
 //////////////////////////////////////////////
 // Separating

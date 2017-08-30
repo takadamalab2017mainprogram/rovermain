@@ -62,7 +62,7 @@ public:
 	~Falling();
 };
 
-/*
+
 class Waking : public TaskBase
 {
 	struct timespec mLastUpdateTime;
@@ -76,7 +76,7 @@ public:
 	Waking();
 	~Waking();
 };
-*/
+
 
 //パラ分離状態(サーボを動かしてパラを切り離す)
 class Separating : public TaskBase
