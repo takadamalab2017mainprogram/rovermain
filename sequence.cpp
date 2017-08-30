@@ -45,6 +45,8 @@ bool Testing::onInit(const struct timespec& time)
 	gNineAxisSensor.setRunMode(true);
 	gMotorDrive.setRunMode(true);
 	gLED.setRunMode(true);
+  gLED.clearLED();
+  gLED.startHSV(0.01);
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 
@@ -190,8 +192,9 @@ bool Waiting::onInit(const struct timespec& time)
 	gMultiServo.setRunMode(true);
 	gMultiServo.fold();//スタビたたんでいる状態
 	gLED.setRunMode(true);
+  gLED.clearLED();
+  gLED.setColor(0,0,255);
 	gNineAxisSensor.setRunMode(true);
-	//gLED.hsv(0.03);
 	  Debug::print(LOG_SUMMARY, "Disconnecting Wi-Fi...\r\n");
   //system("sudo ruby /home/pi/network/disconnect.rb &");
 	return true;
@@ -266,6 +269,8 @@ bool Falling::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gLED.setRunMode(true);
+  gLED.clearLED();
+  gLED.setColor(255,0,0);
 	gNineAxisSensor.setRunMode(true);
 	gNineAxisSensor.isMonitoring = false;
 	return true;
@@ -356,6 +361,8 @@ bool Waking::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gMultiServo.setRunMode(true);
 	gLED.setRunMode(true);
+  gLED.clearLED();
+  gLED.setColor(255,255,255);
 	gMultiServo.start(Constants::BACK_STABI_RUN_ANGLE);
 	gNineAxisSensor.setRunMode(true);
 	mLastUpdateTime = time;
@@ -425,6 +432,8 @@ bool Separating::onInit(const struct timespec& time)
 	gSensorLoggingState.setRunMode(true);
 	gNineAxisSensor.setRunMode(true);
 	gLED.setRunMode(true);
+  gLED.clearLED();
+  gLED.setColor(255,255,0);
 	mLastUpdateTime = time;
 	mCurServoState = false;
 	mServoCount = 0;
@@ -539,6 +548,8 @@ bool Navigating::onInit(const struct timespec& time)
 	gMotorDrive.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
 	gLED.setRunMode(true);
+  gLED.clearLED();
+  gLED.setColor(0,255,0);
 	gMultiServo.setRunMode(true);
 	gMultiServo.Running();//走っているときの角度に設定
 	gNineAxisSensor.setRunMode(true);
@@ -594,6 +605,7 @@ void Navigating::onUpdate(const struct timespec& time)
       char s[100];
       sprintf(s,"ruby /home/pi/network/main.rb %f %f &",currentPos.y,currentPos.x);
       system(s);
+      gLED.brink(0.5,0.2);
       firstTime=false;
     }
 		//最初の座標を取得したら移動を開始する
@@ -628,6 +640,10 @@ void Navigating::onUpdate(const struct timespec& time)
 		sprintf(s,"ruby /home/pi/network/inform.rb %d",(int)goal.z);
 		system(s);
     Debug::print(LOG_SUMMARY, "Block %d completed!\r\n",(int)goal.z);
+    gBuzzer.start(200);
+    int c[]={rand()%256,rand()%256,rand()%256};
+    c[rand()%3]=255;
+    gLED.setColor(c[0],c[1],c[2]);
     getGoal(goal);
 	}
 
@@ -652,6 +668,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK =true, GPS=(%f %f)\r\n", currentPos.x, currentPos.y);
 		Debug::print(LOG_SUMMARY, " NAV STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
+    gLED.brink(0.2,0.1);
 
 	//esc by stabi と　esc by random の２つに繰り返す
 		if (gEscapingByStabiState.isActive())		//EscapingByStabi中
@@ -690,6 +707,7 @@ void Navigating::onUpdate(const struct timespec& time)
 				Time::showNowTime();
 			Debug::print(LOG_SUMMARY, "NAVIGATING: ESCAPING FINISHED,Navigating restart! \r\n");
 			gBuzzer.start(20, 10, 3);
+      gLED.brink(0.5,0.2);
 		}
 		else
 		{
@@ -917,7 +935,7 @@ void Navigating::nextState()
 
 	Time::showNowTime();
 	Debug::print(LOG_SUMMARY, "navigating finished\r\n");
-	system("sudo ruby /home/pi/network/exit_navigation.rb");
+	//system("sudo ruby /home/pi/network/exit_navigation.rb");
 	gTestingState.setRunMode(true);
 }
 void Navigating::setGoal(const VECTOR3& pos)
@@ -967,13 +985,16 @@ void Navigating::getGoal(VECTOR3& goal) {
   if (goal.z == -1) {
     //見つかりません、とりあえず停止
     gMotorDrive.drive(0);
+    gLED.clearLED();
+    gLED.rainbow(0.5);
     Debug::print(LOG_SUMMARY, "(%d)can not find the object, stop rover\r\n",(int)goal.z);
     Debug::print(LOG_SUMMARY, " NAV STOP @%f,%f\r\n",currentPos.x,currentPos.y);
     nextState();
     return;
   }
   else if (goal.z == -2) {
-
+    gLED.clearLED();
+    gLED.startHSV(0.05);
     //Goal 判定した、終わり
     Debug::print(LOG_SUMMARY, "(%d)Find the object, mission finished\r\n",(int)goal.z);
     Debug::print(LOG_SUMMARY, " NAV TARGET @%f,%f\r\n",currentPos.x,currentPos.y);
@@ -981,7 +1002,8 @@ void Navigating::getGoal(VECTOR3& goal) {
     return;
   }
   else if(goal.z==-3) {
-
+    gLED.clearLED();
+    gLED.setColor(0,255,0);
     //ルート計算中、待機する
     gMotorDrive.drive(0);
     Debug::print(LOG_SUMMARY,"(%d)Calculating the route, waiting... \r\n",(int)goal.z);
