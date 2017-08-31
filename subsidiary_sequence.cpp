@@ -487,17 +487,24 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 		if (!gPoseDetecting.isLie())mNotLieCount++;
 		else mNotLieCount = 0;
 
-		gMotorDrive.drive(mCurrentPower, mCurrentPower);
+		//gMotorDrive.drive(mCurrentPower, mCurrentPower);
+		//100から60に変える動き
+		gMotorDrive.drive(100, 100);
 
-		if (mNotLieCount > 100 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
+		if (mNotLieCount > 50)
+		{
+			gMotorDrive.drive(60, 60);
+		}
+		if (mNotLieCount > 100)
+		//if (mNotLieCount > 100 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
 		{
 			gMotorDrive.drive(0, 0);
 			mCurStep = STEP_VERIFY;
 			mLastUpdateTime = time;
 		}
 		//段々モータの速さを早くする
-		mCurrentPower += Constants::MOTOR_MAX_POWER * dt * (Constants::WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (Constants::WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
-
+		//mCurrentPower += Constants::MOTOR_MAX_POWER * dt * (Constants::WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (Constants::WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
+		
 		break;
 	case STEP_VERIFY:
 		if (Time::dt(time, mLastUpdateTime) > 3)
