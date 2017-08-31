@@ -494,8 +494,9 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 		if (mNotLieCount > 10)
 		{
 			gMotorDrive.drive(60, 60);
+
 		}
-		if (mNotLieCount > 20)
+		if (mNotLieCount>=10 && mNotLieCount > 20)
 		//if (mNotLieCount > 100 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
 		{
 			gMotorDrive.drive(0, 0);
@@ -503,7 +504,7 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 			mLastUpdateTime = time;
 		}
 		//段々モータの速さを早くする
-		//mCurrentPower += Constants::MOTOR_MAX_POWER * dt * (Constants::WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (Constants::WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
+		mCurrentPower += Constants::MOTOR_MAX_POWER * dt * (Constants::WAKING_RETRY_COUNT + 1 - mWakeRetryCount) / (Constants::WAKING_RETRY_COUNT + 1) / mShortestSpeedUpPeriod;
 		
 		break;
 	case STEP_VERIFY:
