@@ -47,6 +47,7 @@ bool Testing::onInit(const struct timespec& time)
 	gLED.setRunMode(true);
 	gSerialCommand.setRunMode(true);
 	gSensorLoggingState.setRunMode(true);
+	gWakingFromLieState.setRunMode(true);
 
 	std::function<void()> f = [&]()
 	{
@@ -531,6 +532,7 @@ bool Navigating::onInit(const struct timespec& time)
 
 	//必要なタスクを使用できるようにする
 	TaskManager::getInstance()->setRunMode(false);
+	gWakingFromLieState.setRunMode(true);
 	setRunMode(true);
 	gDelayedExecutor.setRunMode(true);
 	gBuzzer.setRunMode(true);
