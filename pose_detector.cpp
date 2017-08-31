@@ -1,7 +1,9 @@
 #include "pose_detector.h"
 #include "sensor.h"
 #include "motor.h"
-
+#define _USE_MATH_DEFINES
+#include "math.h"
+#include "constants.cpp"
 
 PoseDetecting gPoseDetecting;
 
@@ -365,8 +367,8 @@ void PoseDetecting::updateUsingIMU(double dt, double gx, double gy, double gz, d
 
 double PoseDetecting::calcEncAngle(long long left, long long right)
 {
-	double distance = (right - left) / static_cast<double>(RESOLVING_POWER) / GEAR_RATIO * DISTANCE_PER_ROTATION;
-	double rotation = distance / (2 * DISTANCE_BETWEEN_TIRES * M_PI) * 2 * 180;
+	double distance = (right - left) / static_cast<double>(Constants::RESOLVING_POWER) / Constants::GEAR_RATIO *  Constants::DISTANCE_PER_ROTATION;
+	double rotation = distance / (2 * Constants::DISTANCE_BETWEEN_TIRES * M_PI) * 2 * 180;
 	return rotation;
 }
 
@@ -385,7 +387,7 @@ mEstimatedRelativeGpsCourse(0),
  mRoverid(0)
 {
 	setName("pose");
-	setPriority(TASK_PRIORITY_SENSOR + 1,TASK_INTERVAL_SENSOR);
+	setPriority(Constants::TASK_PRIORITY_SENSOR + 1, Constants::TASK_INTERVAL_SENSOR);
 }
 
 PoseDetecting::~PoseDetecting()
