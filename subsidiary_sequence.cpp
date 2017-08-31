@@ -491,11 +491,11 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 		//100から60に変える動き
 		gMotorDrive.drive(100, 100);
 
-		if (mNotLieCount > 50)
+		if (mNotLieCount > 10)
 		{
 			gMotorDrive.drive(60, 60);
 		}
-		if (mNotLieCount > 100)
+		if (mNotLieCount > 20)
 		//if (mNotLieCount > 100 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
 		{
 			gMotorDrive.drive(0, 0);
