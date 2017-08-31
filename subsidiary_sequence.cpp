@@ -548,3 +548,4 @@ WakingFromLie::~WakingFromLie()
 
 {
 }
+WakingFromLie gWakingFromLieState;
