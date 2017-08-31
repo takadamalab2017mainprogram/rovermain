@@ -496,7 +496,7 @@ void WakingFromLie::onUpdate(const struct timespec& time)
 			gMotorDrive.drive(60, 60);
 
 		}
-		if (mNotLieCount>=10 && mNotLieCount > 20)
+		if (mNotLieCount>=10 && mNotLieCount > 20 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
 		//if (mNotLieCount > 100 || mCurrentPower >= Constants::MOTOR_MAX_POWER)
 		{
 			gMotorDrive.drive(0, 0);
