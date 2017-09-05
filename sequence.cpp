@@ -1018,28 +1018,39 @@ bool Blinding::onInit(const struct timespec& time) {
 };
 
 void Blinding::set_goal(double dis, double angle) {
+	//終点からの距離、終点がｘｙ座標平面の角度からgoalを定義
+	//この座標平面は右と上が正
 	polar_to_xy(Goal, dis, angle);
 };
 
 void Blinding::move() {
-	//今の座標と目標座標からモーターの角度を変更
-	double y = currentPos[1] - Goal[1];
+	//現在地から終点への角度を計算し、向かわせ
+	//現座標と終点との角度
+	double y = Goal[1] - currentPos[1];
 	double x = Goal[0] - currentPos[0];
 	double tagangle = atan2(y, x);
 	//radを度に変換
 	tagangle = tagangle / M_PI * 180;
 	double currentangle = gNineAxisSensor.getMagnetPhi();//今の-180~180の角度
+	//モーターを操作
 	gMotorDrive.drivePIDGyro(currentangle - tagangle, myspeed, true);
+	dis = points_to_dis(Goal, currentPos);
+	if (dis < 5) {
+		myspeed = 50;
+	}
+	else {
+		myspeed = 100;
+	}
 	gMotorDrive.drive(myspeed);
 	Debug::print(LOG_SUMMARY, "角度を%f度回す \r\n", currentangle - tagangle);
 };
 
 bool Blinding::arrived_goal() {
 	//目標点に到着しているかを判断
-	double dis = pow(pow(Goal[0] - currentPos[0], 2) +
-		pow(Goal[1] - currentPos[1], 2), 0.5);
-
+	double dis = points_to_dis(Goal, currentPos);
 	if (dis < 0.1) {
+		gMotorDrive.drive(0);
+		Debug::print(LOG_SUMMARY, "終点到着,距離 %f \r\n", dis);
 		return true;
 	}
 	else {
@@ -1048,8 +1059,15 @@ bool Blinding::arrived_goal() {
 }
 void Blinding::polar_to_xy(double pos[], double dis, double angle) {
 	//極座標からｘｙ座標に変換
+	//この座標平面は右と上が正
 	pos[0] = cos(angle) * dis;
 	pos[1] = sin(angle) * dis;
+};
+
+double Blinding::points_to_dis(double pos1[], double pos2[]) {
+	double dis = pow(pow(pos1[0] - pos2[0], 2) +
+		pow(pos1[1] - pos2[1], 2), 0.5);
+	return dis;
 };
 
 void Blinding::onUpdate(const struct timespec& time) {
@@ -1090,12 +1108,13 @@ void Blinding::onUpdate(const struct timespec& time) {
 		//今の自分の座標を更新
 		double periodtime = Time::dt(time, mLastCheckTime);
 		mLastCheckTime = time;
+		//現在の座標を求め
 		double acc = pow(pow(gNineAxisSensor.getAx() - averageAx, 2) +
 			pow(gNineAxisSensor.getAy() - averageAy, 2) +
 			pow(gNineAxisSensor.getAz() - averageAz, 2), 0.5);
 		double periodspeed = acc * ConstantNineAxisPeriod;
 		double dx = periodspeed * periodtime;
-		double currentangle = gNineAxisSensor.getMagnetPhi();//-180~180の角度
+		double currentangle = gNineAxisSensor.getMagnetPhi();//現在の-180~180の角度
 		currentangle = currentangle / 180 * M_PI;
 		currentPos[0] += cos(currentangle) * dx;
 		currentPos[1] += sin(currentangle) * dx;
@@ -1111,8 +1130,7 @@ void Blinding::onUpdate(const struct timespec& time) {
 			i.z = currentPos[1];
 			pos_history.push_back(i);
 			//今の終点への距離を表示
-			double dis = pow(pow(Goal[0] - currentPos[0], 2) +
-				pow(Goal[1] - currentPos[1], 2), 0.5);
+			double dis = points_to_dis(Goal, currentPos);			
 			Debug::print(LOG_SUMMARY, "今の座標 %f %f\r\n　終点の座標 %f %f\r\n 今の角度 %f \r\n 目標までの距離 %f \r\n",
 				currentPos[0], currentPos[1], Goal[0], Goal[1], currentangle, dis);
 		};
