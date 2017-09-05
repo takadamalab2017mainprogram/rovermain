@@ -1034,7 +1034,7 @@ void Blinding::move() {
 	double currentangle = gNineAxisSensor.getMagnetPhi();//今の-180~180の角度
 	//モーターを操作
 	gMotorDrive.drivePIDGyro(currentangle - tagangle, myspeed, true);
-	dis = points_to_dis(Goal, currentPos);
+	double dis = points_to_dis(Goal, currentPos);
 	if (dis < 5) {
 		myspeed = 50;
 	}
