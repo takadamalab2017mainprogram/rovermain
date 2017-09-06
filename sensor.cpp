@@ -340,7 +340,7 @@ void NineAxisSensor::onUpdate(const struct timespec& time)
 {
 	
 	//更新を１秒置きにする
-	if (Time::dt(time, mLastSampleTime) <2.0) return;
+//	if (Time::dt(time, mLastSampleTime) <2.0) return;
 
   if(!isFIFOEnable)
   {
