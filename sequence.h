@@ -121,7 +121,6 @@ private:
 	bool mArmMoveFlag;
 	bool mArmStopFlag;
 	double distance_from_goal_to_start;
-  bool firstTime; // 初めて位置が取れたとき
 
   bool mStuckFlag;
 

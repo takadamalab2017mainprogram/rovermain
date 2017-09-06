@@ -363,6 +363,13 @@ bool Waking::onInit(const struct timespec& time)
 	gLED.setRunMode(true);
   gLED.clearLED();
   gLED.setColor(255,255,255);
+  Debug::print(LOG_SUMMARY, "initializing goal list \r\n", mGoalPos.x, mGoalPos.y);
+  system("sudo ruby /home/pi/network/reset_goal.rb");
+  Debug::print(LOG_SUMMARY, "Calculating route...\r\n",(int)goal.z);
+  char s[100];
+  sprintf(s,"ruby /home/pi/network/main.rb %f %f &",currentPos.y,currentPos.x);
+  system(s);
+  gLED.brink(0.2);
 	gMultiServo.start(Constants::BACK_STABI_RUN_ANGLE);
 	gNineAxisSensor.setRunMode(true);
 	mLastUpdateTime = time;
@@ -560,9 +567,6 @@ bool Navigating::onInit(const struct timespec& time)
 	mArmStopFlag = true;
 	mStuckFlag = false;
 	mLastPos.clear();
-  firstTime=true;
-	Debug::print(LOG_SUMMARY, "initializing goal list \r\n", mGoalPos.x, mGoalPos.y);
-  system("sudo ruby /home/pi/network/reset_goal.rb");
 	getGoal(goal);
 
 	//最初の座標をゴールにする
@@ -600,14 +604,6 @@ void Navigating::onUpdate(const struct timespec& time)
 	//新しい座標であればバッファに追加
 	if (isNewData && isfinite(currentPos.x) && isfinite(currentPos.y) && isfinite(currentPos.z))
 	{
-    if(firstTime){
-      Debug::print(LOG_SUMMARY, "Calculating route...\r\n",(int)goal.z);
-      char s[100];
-      sprintf(s,"ruby /home/pi/network/main.rb %f %f &",currentPos.y,currentPos.x);
-      system(s);
-      gLED.brink(0.5,0.2);
-      firstTime=false;
-    }
 		//最初の座標を取得したら移動を開始する
 		if (mLastPos.empty())
 		{
@@ -668,7 +664,7 @@ void Navigating::onUpdate(const struct timespec& time)
 		//Debug::print(LOG_SUMMARY, "NAVIGATING: STUCK =true, GPS=(%f %f)\r\n", currentPos.x, currentPos.y);
 		Debug::print(LOG_SUMMARY, " NAV STUCK @%f,%f\r\n", currentPos.x, currentPos.y);
 		gBuzzer.start(20, 10, 8);
-    gLED.brink(0.2,0.1);
+    gLED.brink(0.1,0.1);
 
 	//esc by stabi と　esc by random の２つに繰り返す
 		if (gEscapingByStabiState.isActive())		//EscapingByStabi中
